@@ -1,0 +1,84 @@
+import FWCore.ParameterSet.Config as cms
+
+process = cms.Process('Demo')
+
+process.load('FWCore.MessageService.MessageLogger_cfi')
+process.MessageLogger.cerr.FwkReport.reportEvery = 500 
+
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100000) )
+
+process.source = cms.Source("PoolSource",
+    fileNames = cms.untracked.vstring(
+         
+        #'/store/group/phys_heavyions/rchudasa/lowPT_photonReco/SinglePhotonFlatPt1To20_GENSIM_Run2018/crab_SinglePhotonFlatPt1To20_RecoAOD_Run2018/210503_094727/0000/AODSIM_lowPtReco_100.root',
+        #'/store/group/phys_heavyions/rchudasa/lowPT_photonReco/SinglePhotonFlatPt1To20_GENSIM_Run2018/crab_SinglePhotonFlatPt1To20_RecoAOD_Run2018/210503_094727/0000/AODSIM_lowPtReco_101.root',
+        #'/store/group/phys_heavyions/rchudasa/lowPT_photonReco/SinglePhotonFlatPt1To20_GENSIM_Run2018/crab_SinglePhotonFlatPt1To20_RecoAOD_Run2018/210503_094727/0000/AODSIM_lowPtReco_102.root',
+        #'/store/group/phys_heavyions/rchudasa/lowPT_photonReco/SinglePhotonFlatPt1To20_GENSIM_Run2018/crab_SinglePhotonFlatPt1To20_RecoAOD_Run2018/210503_094727/0000/AODSIM_lowPtReco_103.root',
+        #'/store/group/phys_heavyions/rchudasa/lowPT_photonReco/SinglePhotonFlatPt1To20_GENSIM_Run2018/crab_SinglePhotonFlatPt1To20_RecoAOD_Run2018/210503_094727/0000/AODSIM_lowPtReco_104.root',
+        #'/store/group/phys_heavyions/rchudasa/lowPT_photonReco/SinglePhotonFlatPt1To20_GENSIM_Run2018/crab_SinglePhotonFlatPt1To20_RecoAOD_Run2018/210503_094727/0000/AODSIM_lowPtReco_105.root',
+        #'/store/group/phys_heavyions/rchudasa/lowPT_photonReco/SinglePhotonFlatPt1To20_GENSIM_Run2018/crab_SinglePhotonFlatPt1To20_RecoAOD_Run2018/210503_094727/0000/AODSIM_lowPtReco_106.root',
+        #'/store/group/phys_heavyions/rchudasa/lowPT_photonReco/SinglePhotonFlatPt1To20_GENSIM_Run2018/crab_SinglePhotonFlatPt1To20_RecoAOD_Run2018/210503_094727/0000/AODSIM_lowPtReco_107.root',
+        #'/store/group/phys_heavyions/rchudasa/lowPT_photonReco/SinglePhotonFlatPt1To20_GENSIM_Run2018/crab_SinglePhotonFlatPt1To20_RecoAOD_Run2018/210503_094727/0000/AODSIM_lowPtReco_108.root',
+        #'/store/group/phys_heavyions/rchudasa/lowPT_photonReco/SinglePhotonFlatPt1To20_GENSIM_Run2018/crab_SinglePhotonFlatPt1To20_RecoAOD_Run2018/210503_094727/0000/AODSIM_lowPtReco_109.root',
+        #'/store/group/phys_heavyions/rchudasa/lowPT_photonReco/SinglePhotonFlatPt1To20_GENSIM_Run2018/crab_SinglePhotonFlatPt1To20_RecoAOD_Run2018/210503_094727/0000/AODSIM_lowPtReco_110.root',
+        #'/store/group/phys_heavyions/rchudasa/lowPT_photonReco/SinglePhotonFlatPt1To20_GENSIM_Run2018/crab_SinglePhotonFlatPt1To20_RecoAOD_Run2018/210503_094727/0000/AODSIM_lowPtReco_111.root',
+        #'/store/group/phys_heavyions/rchudasa/lowPT_photonReco/SinglePhotonFlatPt1To20_GENSIM_Run2018/crab_SinglePhotonFlatPt1To20_RecoAOD_Run2018/210503_094727/0000/AODSIM_lowPtReco_112.root',
+        #'/store/group/phys_heavyions/rchudasa/lowPT_photonReco/SinglePhotonFlatPt1To20_GENSIM_Run2018/crab_SinglePhotonFlatPt1To20_RecoAOD_Run2018/210503_094727/0000/AODSIM_lowPtReco_113.root',
+        #'/store/group/phys_heavyions/rchudasa/lowPT_photonReco/SinglePhotonFlatPt1To20_GENSIM_Run2018/crab_SinglePhotonFlatPt1To20_RecoAOD_Run2018/210503_094727/0000/AODSIM_lowPtReco_114.root',
+        #'/store/group/phys_heavyions/rchudasa/lowPT_photonReco/SinglePhotonFlatPt1To20_GENSIM_Run2018/crab_SinglePhotonFlatPt1To20_RecoAOD_Run2018/210503_094727/0000/AODSIM_lowPtReco_115.root',
+        #'/store/group/phys_heavyions/rchudasa/lowPT_photonReco/SinglePhotonFlatPt1To20_GENSIM_Run2018/crab_SinglePhotonFlatPt1To20_RecoAOD_Run2018/210503_094727/0000/AODSIM_lowPtReco_116.root',
+        #'/store/group/phys_heavyions/rchudasa/lowPT_photonReco/SinglePhotonFlatPt1To20_GENSIM_Run2018/crab_SinglePhotonFlatPt1To20_RecoAOD_Run2018/210503_094727/0000/AODSIM_lowPtReco_117.root',
+        #'/store/group/phys_heavyions/rchudasa/lowPT_photonReco/SinglePhotonFlatPt1To20_GENSIM_Run2018/crab_SinglePhotonFlatPt1To20_RecoAOD_Run2018/210503_094727/0000/AODSIM_lowPtReco_118.root',
+        #'/store/group/phys_heavyions/rchudasa/lowPT_photonReco/SinglePhotonFlatPt1To20_GENSIM_Run2018/crab_SinglePhotonFlatPt1To20_RecoAOD_Run2018/210503_094727/0000/AODSIM_lowPtReco_119.root',
+        #'/store/group/phys_heavyions/rchudasa/lowPT_photonReco/SinglePhotonFlatPt1To20_GENSIM_Run2018/crab_SinglePhotonFlatPt1To20_RecoAOD_Run2018/210503_094727/0000/AODSIM_lowPtReco_12.root',
+        #'/store/group/phys_heavyions/rchudasa/lowPT_photonReco/SinglePhotonFlatPt1To20_GENSIM_Run2018/crab_SinglePhotonFlatPt1To20_RecoAOD_Run2018/210503_094727/0000/AODSIM_lowPtReco_120.root',
+        #'/store/group/phys_heavyions/rchudasa/lowPT_photonReco/SinglePhotonFlatPt1To20_GENSIM_Run2018/crab_SinglePhotonFlatPt1To20_RecoAOD_Run2018/210503_094727/0000/AODSIM_lowPtReco_121.root',
+        #'/store/group/phys_heavyions/rchudasa/lowPT_photonReco/SinglePhotonFlatPt1To20_GENSIM_Run2018/crab_SinglePhotonFlatPt1To20_RecoAOD_Run2018/210503_094727/0000/AODSIM_lowPtReco_122.root',
+        #'/store/group/phys_heavyions/rchudasa/lowPT_photonReco/SinglePhotonFlatPt1To20_GENSIM_Run2018/crab_SinglePhotonFlatPt1To20_RecoAOD_Run2018/210503_094727/0000/AODSIM_lowPtReco_123.root',
+        #'/store/group/phys_heavyions/rchudasa/lowPT_photonReco/SinglePhotonFlatPt1To20_GENSIM_Run2018/crab_SinglePhotonFlatPt1To20_RecoAOD_Run2018/210503_094727/0000/AODSIM_lowPtReco_124.root',
+        #'/store/group/phys_heavyions/rchudasa/lowPT_photonReco/SinglePhotonFlatPt1To20_GENSIM_Run2018/crab_SinglePhotonFlatPt1To20_RecoAOD_Run2018/210503_094727/0000/AODSIM_lowPtReco_125.root',
+        #'/store/group/phys_heavyions/rchudasa/lowPT_photonReco/SinglePhotonFlatPt1To20_GENSIM_Run2018/crab_SinglePhotonFlatPt1To20_RecoAOD_Run2018/210503_094727/0000/AODSIM_lowPtReco_126.root',
+        #'/store/group/phys_heavyions/rchudasa/lowPT_photonReco/SinglePhotonFlatPt1To20_GENSIM_Run2018/crab_SinglePhotonFlatPt1To20_RecoAOD_Run2018/210503_094727/0000/AODSIM_lowPtReco_127.root',
+        #'/store/group/phys_heavyions/rchudasa/lowPT_photonReco/SinglePhotonFlatPt1To20_GENSIM_Run2018/crab_SinglePhotonFlatPt1To20_RecoAOD_Run2018/210503_094727/0000/AODSIM_lowPtReco_128.root',
+        #'/store/group/phys_heavyions/rchudasa/lowPT_photonReco/SinglePhotonFlatPt1To20_GENSIM_Run2018/crab_SinglePhotonFlatPt1To20_RecoAOD_Run2018/210503_094727/0000/AODSIM_lowPtReco_129.root',
+      
+        '/store/group/phys_heavyions/rchudasa/lowPT_photonReco/SinglePhotonFlatPt1To20_GENSIM_Run2018/crab_SinglePhotonFlatPt1To20_default_RecoAOD_Run2018/210504_050451/0000/AODSIM_1.root',
+        '/store/group/phys_heavyions/rchudasa/lowPT_photonReco/SinglePhotonFlatPt1To20_GENSIM_Run2018/crab_SinglePhotonFlatPt1To20_default_RecoAOD_Run2018/210504_050451/0000/AODSIM_10.root',
+        '/store/group/phys_heavyions/rchudasa/lowPT_photonReco/SinglePhotonFlatPt1To20_GENSIM_Run2018/crab_SinglePhotonFlatPt1To20_default_RecoAOD_Run2018/210504_050451/0000/AODSIM_100.root',
+        '/store/group/phys_heavyions/rchudasa/lowPT_photonReco/SinglePhotonFlatPt1To20_GENSIM_Run2018/crab_SinglePhotonFlatPt1To20_default_RecoAOD_Run2018/210504_050451/0000/AODSIM_101.root',
+        '/store/group/phys_heavyions/rchudasa/lowPT_photonReco/SinglePhotonFlatPt1To20_GENSIM_Run2018/crab_SinglePhotonFlatPt1To20_default_RecoAOD_Run2018/210504_050451/0000/AODSIM_102.root',
+        '/store/group/phys_heavyions/rchudasa/lowPT_photonReco/SinglePhotonFlatPt1To20_GENSIM_Run2018/crab_SinglePhotonFlatPt1To20_default_RecoAOD_Run2018/210504_050451/0000/AODSIM_103.root',
+        '/store/group/phys_heavyions/rchudasa/lowPT_photonReco/SinglePhotonFlatPt1To20_GENSIM_Run2018/crab_SinglePhotonFlatPt1To20_default_RecoAOD_Run2018/210504_050451/0000/AODSIM_104.root',
+        '/store/group/phys_heavyions/rchudasa/lowPT_photonReco/SinglePhotonFlatPt1To20_GENSIM_Run2018/crab_SinglePhotonFlatPt1To20_default_RecoAOD_Run2018/210504_050451/0000/AODSIM_105.root',
+        '/store/group/phys_heavyions/rchudasa/lowPT_photonReco/SinglePhotonFlatPt1To20_GENSIM_Run2018/crab_SinglePhotonFlatPt1To20_default_RecoAOD_Run2018/210504_050451/0000/AODSIM_106.root',
+        '/store/group/phys_heavyions/rchudasa/lowPT_photonReco/SinglePhotonFlatPt1To20_GENSIM_Run2018/crab_SinglePhotonFlatPt1To20_default_RecoAOD_Run2018/210504_050451/0000/AODSIM_107.root',
+        '/store/group/phys_heavyions/rchudasa/lowPT_photonReco/SinglePhotonFlatPt1To20_GENSIM_Run2018/crab_SinglePhotonFlatPt1To20_default_RecoAOD_Run2018/210504_050451/0000/AODSIM_108.root',
+        '/store/group/phys_heavyions/rchudasa/lowPT_photonReco/SinglePhotonFlatPt1To20_GENSIM_Run2018/crab_SinglePhotonFlatPt1To20_default_RecoAOD_Run2018/210504_050451/0000/AODSIM_109.root',
+        '/store/group/phys_heavyions/rchudasa/lowPT_photonReco/SinglePhotonFlatPt1To20_GENSIM_Run2018/crab_SinglePhotonFlatPt1To20_default_RecoAOD_Run2018/210504_050451/0000/AODSIM_11.root',
+        '/store/group/phys_heavyions/rchudasa/lowPT_photonReco/SinglePhotonFlatPt1To20_GENSIM_Run2018/crab_SinglePhotonFlatPt1To20_default_RecoAOD_Run2018/210504_050451/0000/AODSIM_110.root',
+        '/store/group/phys_heavyions/rchudasa/lowPT_photonReco/SinglePhotonFlatPt1To20_GENSIM_Run2018/crab_SinglePhotonFlatPt1To20_default_RecoAOD_Run2018/210504_050451/0000/AODSIM_111.root',
+        '/store/group/phys_heavyions/rchudasa/lowPT_photonReco/SinglePhotonFlatPt1To20_GENSIM_Run2018/crab_SinglePhotonFlatPt1To20_default_RecoAOD_Run2018/210504_050451/0000/AODSIM_112.root',
+        '/store/group/phys_heavyions/rchudasa/lowPT_photonReco/SinglePhotonFlatPt1To20_GENSIM_Run2018/crab_SinglePhotonFlatPt1To20_default_RecoAOD_Run2018/210504_050451/0000/AODSIM_113.root',
+        '/store/group/phys_heavyions/rchudasa/lowPT_photonReco/SinglePhotonFlatPt1To20_GENSIM_Run2018/crab_SinglePhotonFlatPt1To20_default_RecoAOD_Run2018/210504_050451/0000/AODSIM_114.root',
+        '/store/group/phys_heavyions/rchudasa/lowPT_photonReco/SinglePhotonFlatPt1To20_GENSIM_Run2018/crab_SinglePhotonFlatPt1To20_default_RecoAOD_Run2018/210504_050451/0000/AODSIM_115.root',
+        '/store/group/phys_heavyions/rchudasa/lowPT_photonReco/SinglePhotonFlatPt1To20_GENSIM_Run2018/crab_SinglePhotonFlatPt1To20_default_RecoAOD_Run2018/210504_050451/0000/AODSIM_116.root',
+        
+    )
+)
+process.TFileService = cms.Service("TFileService",
+    fileName = cms.string("photon_flatpT_Run2018_default_reco.root"))
+
+
+process.demo = cms.EDAnalyzer("PhotonAnalyzer",
+    doGenParticles     = cms.bool(True),
+    doPhotons          = cms.bool(True),
+    doPFPhotons        = cms.bool(True),
+    doSuperClusters    = cms.bool(True),
+    genParticleSrc     = cms.untracked.InputTag("genParticles"),
+    gedPhotonSrc       = cms.untracked.InputTag("gedPhotons"),
+    pfPhotonSrc        = cms.untracked.InputTag("particleFlow"),
+    MustacheSCBarrelSrc= cms.InputTag("particleFlowSuperClusterECAL:particleFlowSuperClusterECALBarrel"),
+    MustacheSCEndcapSrc= cms.InputTag("particleFlowSuperClusterECAL:particleFlowSuperClusterECALEndcapWithPreshower")
+)
+
+process.p = cms.Path(process.demo)
