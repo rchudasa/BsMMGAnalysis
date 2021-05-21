@@ -99,7 +99,8 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
   doMuons_(iConfig.getParameter<bool>("doMuons")),
   doPhotons_(iConfig.getParameter<bool>("doPhotons")),
   doPFPhotons_(iConfig.getParameter<bool>("doPFPhotons")),
-  doSuperClusters_(iConfig.getParameter<bool>("doSuperClusters"))
+  doSuperClusters_(iConfig.getParameter<bool>("doSuperClusters")),
+  doHLT(iConfig.getParameter<bool>("doHLT"))
 
   //genParticleSrc_(iConfig.getUntrackedParameter<edm::InputTag>("genParticleSrc")),
   //gedPhotonSrc_(iConfig.getUntrackedParameter<edm::InputTag>("gedPhotonSrc")),
@@ -118,7 +119,13 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
 	MustacheSCBarrelCollection_             = consumes<std::vector<reco::SuperCluster>>(iConfig.getParameter<edm::InputTag>("MustacheSCBarrelSrc"));
    	MustacheSCEndcapCollection_             = consumes<std::vector<reco::SuperCluster>>(iConfig.getParameter<edm::InputTag>("MustacheSCEndcapSrc"));
    }
-  
+  if(doHLT) {
+               trigTable    =iConfig.getParameter<std::vector<std::string>>("TriggerNames");
+               triggerBits_ =consumes<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("HLTResult"));
+	    }
+	
+
+
   beamSpotToken_  	   =consumes<reco::BeamSpot>(iConfig.getParameter<edm::InputTag>("beamSpot"));
   primaryVtxToken_       =consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"));
   //simGenTocken_          =consumes<reco::GenParticleCollection>(iConfig.getParameter<edm::InputTag>("genParticles"));
@@ -150,7 +157,23 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
   theTree->Branch("event",  &event_);
   theTree->Branch("lumis",  &lumis_);
   theTree->Branch("isData", &isData_);
+  if (doHLT) {
+  // ### Trigger ###
+  //theTree->Branch("trigTable",     &TrigTable);
+  TrigTable_store=nullptr;
+  TrigResult_store=nullptr;
+  TrigPrescales_store=nullptr;
+  theTree->Branch("trigResult",    &trigResult);
+  theTree->Branch("trigPrescales", &trigPrescales);
+  theTree->Branch("l1Table",       &l1Table);
+  theTree->Branch("l1Prescales",   &l1Prescales);
   
+  SetupTriggerStorageVectors();
+  SetupTriggerBranches();
+
+ }
+
+
   if (doGenParticles_) {
     theTree->Branch("nMC",          &nMC_);
     theTree->Branch("mcPID",        &mcPID_);
@@ -316,7 +339,6 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
 void 
 BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
   using namespace edm;
-  
 
       // ## BEAMSOPT STUFF  ## //
    beamspot_x  = 0.0   ;
@@ -352,7 +374,18 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
   primaryVertex_chi2.clear();
   primaryVertex_normalizedChi2.clear();
 
+  if (doHLT) {
 
+    // ### Trigger ###
+    //TrigTable.clear();
+    trigNames.clear();
+    trigResult.clear();
+    trigPrescales.clear();
+    l1Table.clear();
+    l1Prescales.clear();
+    ClearTrggerStorages();
+  
+  }
   if (doGenParticles_) {
     nMC_ = 0;
     mcPID_                .clear();
@@ -572,9 +605,10 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
     fillGenParticles(iEvent);
   }
 
-  if (doMuons_)     fillMuons(iEvent, iSetup);
-  if (doPhotons_)    fillPhotons(iEvent, iSetup);
-  if (doPFPhotons_) fillPFPhotons(iEvent, iSetup);
+  if (doHLT) 		fillHLT(iEvent);
+  if (doMuons_)     	fillMuons(iEvent, iSetup);
+  if (doPhotons_)    	fillPhotons(iEvent, iSetup);
+  if (doPFPhotons_) 	fillPFPhotons(iEvent, iSetup);
   if (doSuperClusters_) fillSC(iEvent);
   theTree->Fill();
   
@@ -973,6 +1007,100 @@ void BsToMuMuGammaNTuplizer::fillSC(edm::Event const& e) {
     }
   }
 }
+
+
+
+void BsToMuMuGammaNTuplizer::SetupTriggerStorageVectors()
+{
+	auto numTrigs = trigTable.size();
+	TrigPrescales_store = new std::vector<int> [numTrigs];
+	TrigResult_store    = new std::vector<bool>[numTrigs];
+}
+
+void BsToMuMuGammaNTuplizer::ClearTrggerStorages()
+{
+	for(uint32_t i=0;i<trigTable.size();i++)
+	{
+		TrigResult_store[i].clear();
+		TrigPrescales_store[i].clear();
+	}
+}
+
+void BsToMuMuGammaNTuplizer::FillTrggerBranches()
+{
+	for(uint32_t i=0;i<trigTable.size();i++)
+	{
+	   int foundTrig=-1;
+	   for(uint32_t j=0;j<trigNames.size();j++)
+	   {
+		if (trigNames[j].find(trigTable[i]) != std::string::npos)
+		{
+			foundTrig=j;
+		}
+	   }
+
+	   if(foundTrig >-1) 
+	   {
+		TrigResult_store[i].push_back(true);	
+		TrigPrescales_store[i].push_back(trigPrescales[foundTrig]);	
+           }
+	   else
+	  {
+		TrigResult_store[i].push_back(false);	
+		TrigPrescales_store[i].push_back(-1);	
+	  }
+	}
+	
+}
+
+void BsToMuMuGammaNTuplizer::SetupTriggerBranches()
+{
+	std::string branchName;
+	for(uint32_t i=0;i<trigTable.size();i++)
+	{
+		branchName=trigTable[i]+"_result";
+                theTree->Branch(branchName.c_str(),&(TrigResult_store[i]));
+		branchName=trigTable[i]+"_prescale";
+                theTree->Branch(branchName.c_str(),&(TrigPrescales_store[i]));
+	}
+}
+
+void BsToMuMuGammaNTuplizer::fillHLT(edm::Event const& iEvent)
+{
+
+    edm::Handle<edm::TriggerResults>     hltTriggerResults;
+    iEvent.getByToken(triggerBits_,      hltTriggerResults);
+ 
+    HLTConfigProvider hltConfig_;
+    if (hltTriggerResults.isValid()) {
+    const edm::TriggerNames& triggerNames_ = iEvent.triggerNames(*hltTriggerResults);
+    for (unsigned int itrig = 0; itrig < hltTriggerResults->size(); itrig++){
+//        std::cout<<" i = "<<itrig<<", Name  : "<<triggerNames_.triggerName(itrig)<<" \n";
+      // Only consider the triggered case.                                                                                                                          
+      if ((*hltTriggerResults)[itrig].accept() == 1)
+      {
+        std::string triggername = triggerNames_.triggerName(itrig);
+        int triggerprescale = hltConfig_.prescaleValue(itrig, triggername);
+        // Loop over our interested HLT trigger names to find if this event contains.
+        for (unsigned int it=0; it<trigTable.size(); it++){
+          if (triggername.find(trigTable[it]) != std::string::npos) 
+            {
+              // save the no versioned case
+              trigNames.push_back(trigTable[it]);
+              trigPrescales.push_back(triggerprescale);
+            }
+         }
+       }
+      }
+   }
+   else
+   {
+	std::cout<<" Trigger result Not valid !!"<<"\n";
+   }
+   FillTrggerBranches();
+    
+}
+
 
 
 //define this as a plug-in
