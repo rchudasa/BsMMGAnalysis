@@ -185,7 +185,7 @@ private:
   edm::EDGetTokenT<std::vector<reco::Muon>>         muonToken_;
 
   // input tags 
-  edm::InputTag genParticleSrc_;
+  //edm::InputTag genParticleSrc_;
   edm::InputTag gedPhotonSrc_;
   edm::InputTag pfPhotonSrc_;
   edm::InputTag MustacheSCBarrelSrc_;
@@ -263,15 +263,13 @@ private:
 
   
    // reco::GenParticle
-   Int_t          nMC_;
-   std::vector<int>    mcPID_;
-   std::vector<int>    mcStatus_;
-   std::vector<float>  mcPt_;
-   std::vector<float>  mcEta_;
-   std::vector<float>  mcPhi_;
-   std::vector<float>  mcE_;
-   std::vector<float>  mcEt_;
-   std::vector<float>  mcMass_;
+  int  gen_nBs_, gen_nBsMuonM_, gen_nBsMuonP_ , gen_nBsPhoton_ ;
+  std::vector<bool>   gen_hasAValid_candidate_;
+  std::vector<double> gen_Bs_pt_,      gen_Bs_eta_,      gen_Bs_phi_,   gen_Bs_pz_,  gen_Bs_pdgId_;
+  std::vector<double> gen_BsMuonM_pt_, gen_BsMuonM_eta_, gen_BsMuonM_phi_;
+  std::vector<double> gen_BsMuonP_pt_, gen_BsMuonP_eta_, gen_BsMuonP_phi_;
+  std::vector<double> gen_BsPhoton_pt_, gen_BsPhoton_eta_, gen_BsPhoton_phi_;
+
 
   // ### mu+ mu- variables ###
   std::vector<double>   mumuPt_;
