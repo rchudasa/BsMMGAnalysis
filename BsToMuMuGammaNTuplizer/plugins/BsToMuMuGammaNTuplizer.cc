@@ -109,9 +109,9 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
 {
    if(doMuons_) muonToken_              = consumes<reco::MuonCollection>(iConfig.getParameter<edm::InputTag>("muons"));
   //now do what ever initialization is needed
-   if(doGenParticles_){
-	 genParticlesCollection_   = consumes<edm::View<reco::GenParticle>>(iConfig.getUntrackedParameter<edm::InputTag>("genParticleSrc"));
-   }
+  // if(doGenParticles_){
+//	 genParticlesCollection_   = consumes<edm::View<reco::GenParticle>>(iConfig.getUntrackedParameter<edm::InputTag>("genParticleSrc"));
+ //  }
    if(doPhotons_)    gedPhotonsCollection_       = consumes<std::vector<reco::Photon>>(iConfig.getUntrackedParameter<edm::InputTag>("gedPhotonSrc"));
    if(doPFPhotons_)  pfPhotonsCollection_        = consumes<std::vector<reco::PFCandidate>>(iConfig.getUntrackedParameter<edm::InputTag>("pfPhotonSrc"));
    if(doSuperClusters_){
@@ -119,9 +119,9 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
    	MustacheSCEndcapCollection_             = consumes<std::vector<reco::SuperCluster>>(iConfig.getParameter<edm::InputTag>("MustacheSCEndcapSrc"));
    }
   
-  beamSpotToken_  	   =consumes<reco::BeamSpot>(iConfig.getParameter<edm::InputTag>("beamSpot"));
+  beamSpotToken_  	 =consumes<reco::BeamSpot>(iConfig.getParameter<edm::InputTag>("beamSpot"));
   primaryVtxToken_       =consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"));
-  //simGenTocken_          =consumes<reco::GenParticleCollection>(iConfig.getParameter<edm::InputTag>("genParticles"));
+  if(doGenParticles_)simGenTocken_          =consumes<reco::GenParticleCollection>(iConfig.getParameter<edm::InputTag>("genParticles"));
 
   etaMax_muon               =  iConfig.getUntrackedParameter<double>("muon_EtaMax")        ;
   dcaMax_muon_bs            =  iConfig.getUntrackedParameter<double>("muon_dcaMAX")        ;
@@ -152,47 +152,32 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
   theTree->Branch("isData", &isData_);
   
   if (doGenParticles_) {
-    theTree->Branch("nMC",          &nMC_);
-    theTree->Branch("mcPID",        &mcPID_);
-    theTree->Branch("mcStatus",     &mcStatus_);
-    theTree->Branch("mcPt",         &mcPt_);
-    theTree->Branch("mcEta",        &mcEta_);
-    theTree->Branch("mcPhi",        &mcPhi_);
-    theTree->Branch("mcE",          &mcE_);
-    theTree->Branch("mcEt",         &mcEt_);
-    theTree->Branch("mcMass",       &mcMass_);  
+  theTree->Branch("gen_nBs"			,&gen_nBs_);
+  theTree->Branch("gen_Bs_pt"			,&gen_Bs_pt_);
+  theTree->Branch("gen_Bs_eta"			,&gen_Bs_eta_);
+  theTree->Branch("gen_Bs_phi"			,&gen_Bs_phi_);
+  theTree->Branch("gen_Bs_pz"			,&gen_Bs_pz_);
+  theTree->Branch("gen_Bs_pdgId"		,&gen_Bs_pdgId_);
+
+  theTree->Branch("gen_nBsMuonM"		,&gen_nBsMuonM_);
+  theTree->Branch("gen_BsMuonM_pt"		,&gen_BsMuonM_pt_);
+  theTree->Branch("gen_BsMuonM_eta"		,&gen_BsMuonM_eta_);
+  theTree->Branch("gen_BsMuonM_phi"		,&gen_BsMuonM_phi_);
+
+  theTree->Branch("gen_nBsMuonP"		,&gen_nBsMuonP_);
+  theTree->Branch("gen_BsMuonP_pt"		,&gen_BsMuonP_pt_);
+  theTree->Branch("gen_BsMuonP_eta"		,&gen_BsMuonP_eta_);
+  theTree->Branch("gen_BsMuonP_phi"		,&gen_BsMuonP_phi_);
+
+  theTree->Branch("gen_nBsPhoton"		,&gen_nBsPhoton_);
+  theTree->Branch("gen_BsPhoton_pt"		,&gen_BsPhoton_pt_);
+  theTree->Branch("gen_BsPhoton_eta"		,&gen_BsPhoton_eta_);
+  theTree->Branch("gen_BsPhoton_phi"		,&gen_BsPhoton_phi_);
+ 
+  theTree->Branch("gen_hasAValid_candidate"	,&gen_hasAValid_candidate_);
   }
 
   if(doMuons_){
-
-  // ### mu+ mu- Mass ###
-  theTree->Branch("mumuPt",    &mumuPt_);
-  theTree->Branch("mumuEta",   &mumuEta_);
-  theTree->Branch("mumuRapidity",&mumuRapidity_);
-  theTree->Branch("mumuPhi",   &mumuPhi_);
-  theTree->Branch("mumuMass",  &mumuMass_);
-  theTree->Branch("mumuMassE", &mumuMassE_);
-  theTree->Branch("mumuPx",    &mumuPx_);
-  theTree->Branch("mumuPy",    &mumuPy_);
-  theTree->Branch("mumuPz",    &mumuPz_);
-  theTree->Branch("mumuDR",    &mumuDR_);
-
-  // ### mu+ mu- Vtx ###
-  theTree->Branch("mumuVtxCL",       &mumuVtxCL_);
-  theTree->Branch("mumuVtxX",        &mumuVtxX_);
-  theTree->Branch("mumuVtxY",        &mumuVtxY_);
-  theTree->Branch("mumuVtxZ",        &mumuVtxZ_);
-  theTree->Branch("mumuVtxChi2",     &mumuVtxChi2_);
-  theTree->Branch("mumuVtxNdof",     &mumuVtxNdof_);
-  theTree->Branch("mumuVtxProb",     &mumuVtxProb_);
-  theTree->Branch("mumuVtxIsGoodFit",&mumuVtxIsGoodFit_);
-  theTree->Branch("mumuCosAlphaBS",  &mumuCosAlphaBS_);
-  theTree->Branch("mumuCosAlphaBSE", &mumuCosAlphaBSE_);
-  theTree->Branch("mumuLBS",         &mumuLBS_);
-  theTree->Branch("mumuLBSE",        &mumuLBSE_);
-  theTree->Branch("mumuDCA",         &mumuDCA_);
-  theTree->Branch("mumuLS",          &mumuLS_);
-  theTree->Branch("mumuLSErr",       &mumuLSErr_);
 
   // ### mu- ###  
   theTree->Branch("nMuM",             &nMuM_);
@@ -274,6 +259,35 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
   theTree->Branch("mup_isCaloMuon",    &mup_isCaloMuon_);
   theTree->Branch("mup_isPFMuon",      &mup_isPFMuon_);
 
+  // ### mu+ mu- Mass ###
+  theTree->Branch("mumuPt",    &mumuPt_);
+  theTree->Branch("mumuEta",   &mumuEta_);
+  theTree->Branch("mumuRapidity",&mumuRapidity_);
+  theTree->Branch("mumuPhi",   &mumuPhi_);
+  theTree->Branch("mumuMass",  &mumuMass_);
+  theTree->Branch("mumuMassE", &mumuMassE_);
+  theTree->Branch("mumuPx",    &mumuPx_);
+  theTree->Branch("mumuPy",    &mumuPy_);
+  theTree->Branch("mumuPz",    &mumuPz_);
+  theTree->Branch("mumuDR",    &mumuDR_);
+
+  // ### mu+ mu- Vtx ###
+  theTree->Branch("mumuVtxCL",       &mumuVtxCL_);
+  theTree->Branch("mumuVtxX",        &mumuVtxX_);
+  theTree->Branch("mumuVtxY",        &mumuVtxY_);
+  theTree->Branch("mumuVtxZ",        &mumuVtxZ_);
+  theTree->Branch("mumuVtxChi2",     &mumuVtxChi2_);
+  theTree->Branch("mumuVtxNdof",     &mumuVtxNdof_);
+  theTree->Branch("mumuVtxProb",     &mumuVtxProb_);
+  theTree->Branch("mumuVtxIsGoodFit",&mumuVtxIsGoodFit_);
+  theTree->Branch("mumuCosAlphaBS",  &mumuCosAlphaBS_);
+  theTree->Branch("mumuCosAlphaBSE", &mumuCosAlphaBSE_);
+  theTree->Branch("mumuLBS",         &mumuLBS_);
+  theTree->Branch("mumuLBSE",        &mumuLBSE_);
+  theTree->Branch("mumuDCA",         &mumuDCA_);
+  theTree->Branch("mumuLS",          &mumuLS_);
+  theTree->Branch("mumuLSErr",       &mumuLSErr_);
+
   }
   
   if (doPhotons_) {
@@ -354,49 +368,30 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
 
 
   if (doGenParticles_) {
-    nMC_ = 0;
-    mcPID_                .clear();
-    mcStatus_             .clear();
-    mcPt_                 .clear();
-    mcEta_                .clear();
-    mcPhi_                .clear();
-    mcE_                  .clear();
-    mcEt_                 .clear();
-    mcMass_               .clear();
+  
+  gen_nBs_ = 0;
+  gen_nBsMuonM_ = 0 ;
+  gen_nBsMuonP_ = 0 ;
+  gen_nBsPhoton_ = 0 ;
+
+  gen_Bs_pt_.clear() ;
+  gen_Bs_eta_.clear() ;
+  gen_Bs_phi_.clear() ;
+  gen_Bs_pz_.clear() ;
+  gen_Bs_pdgId_.clear();
+  gen_BsMuonM_pt_.clear() ;
+  gen_BsMuonM_eta_.clear() ;
+  gen_BsMuonM_phi_.clear();
+  gen_BsMuonP_pt_.clear() ;
+  gen_BsMuonP_eta_.clear() ;
+  gen_BsMuonP_phi_.clear();
+  gen_BsPhoton_pt_.clear() ;
+  gen_BsPhoton_eta_.clear() ;
+  gen_BsPhoton_phi_.clear();
+  gen_hasAValid_candidate_.clear();
   }
 
   if(doMuons_){
- // ### mu+ mu- variables ###
-    mumuPt_.clear();
-    mumuEta_.clear();
-    mumuRapidity_.clear();
-    mumuPhi_.clear();
-    mumuMass_.clear();
-    mumuMassE_.clear();
-    mumuPx_.clear();
-    mumuPy_.clear();
-    mumuPz_.clear();
-    mumuDR_.clear();
-  
-  
-    mumuVtxCL_.clear();
-    mumuVtxX_.clear();
-    mumuVtxY_.clear();
-    mumuVtxZ_.clear();  
-    mumuVtxChi2_.clear();
-    mumuVtxNdof_.clear();
-    mumuVtxProb_.clear();
-    mumuVtxIsGoodFit_.clear();
-    mumuCosAlphaBS_.clear();
-    mumuCosAlphaBSE_.clear(); 
-    mumuLBS_.clear();
-    mumuLBSE_.clear();
-    mumuDCA_.clear();
-    mumuLS_.clear();
-    mumuLSErr_.clear();
-    
-    
-  
   
    mumHighPurity_.clear();
    mumPt_.clear();
@@ -478,6 +473,35 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
    mup_isCaloMuon_.clear();
    mup_isPFMuon_.clear();
 
+// ### mu+ mu- variables ###
+    mumuPt_.clear();
+    mumuEta_.clear();
+    mumuRapidity_.clear();
+    mumuPhi_.clear();
+    mumuMass_.clear();
+    mumuMassE_.clear();
+    mumuPx_.clear();
+    mumuPy_.clear();
+    mumuPz_.clear();
+    mumuDR_.clear();
+  
+  
+    mumuVtxCL_.clear();
+    mumuVtxX_.clear();
+    mumuVtxY_.clear();
+    mumuVtxZ_.clear();  
+    mumuVtxChi2_.clear();
+    mumuVtxNdof_.clear();
+    mumuVtxProb_.clear();
+    mumuVtxIsGoodFit_.clear();
+    mumuCosAlphaBS_.clear();
+    mumuCosAlphaBSE_.clear(); 
+    mumuLBS_.clear();
+    mumuLBSE_.clear();
+    mumuDCA_.clear();
+    mumuLS_.clear();
+    mumuLSErr_.clear();
+    
   }
   
   if (doPhotons_) {
@@ -582,44 +606,112 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
 
 
 
-void BsToMuMuGammaNTuplizer::fillGenParticles(const edm::Event& e)
+void BsToMuMuGammaNTuplizer::fillGenParticles(const edm::Event& iEvent)
 {
+  
+  edm::Handle<reco::GenParticleCollection> genParticleCollection;
+  iEvent.getByToken(simGenTocken_, genParticleCollection);
+  
+  int phoMul(-1),muMMul(-1),muPMul(-1);
+  
+  
+  for(auto& aBsMeson : *genParticleCollection){
+    
+    if(abs(aBsMeson.pdgId())!=531) continue;
+       std::cout << "event:" << iEvent.id().event() << "  Bs found:" << aBsMeson.pdgId() << std::endl;
+    /* for(unsigned int j=0; j<aBsMeson.numberOfDaughters(); j++)
+       {
+       auto& bsDaughter = *(aBsMeson.daughter(j));
+       
+       if(bsDaughter.pdgId() == -13) muMMul++;
+       if(bsDaughter.pdgId() ==  13) muPMul++;
+       if(bsDaughter.pdgId() ==  22) phoMul++;
+       }
+       if(muMMul!=1 or muPMul!=1)
+       {
+       muMMul=0;
+       muPMul=0;
+       phoMul=0;
+       continue;
+       }
+       
+       if(doBsToMuMuGamma and phoMul!=1)
+       {
+       muMMul=0;
+       muPMul=0;
+       phoMul=0;
+       continue;
+       }*/
+    
+    for(unsigned int j=0; j<aBsMeson.numberOfDaughters(); j++){
+      
+      auto& bsDaughter = *(aBsMeson.daughter(j));
+      if(bsDaughter.pdgId() == -13) {
+	muMMul = j;
+	gen_BsMuonM_pt_.push_back(bsDaughter.pt());
+	gen_BsMuonM_eta_.push_back(bsDaughter.eta());
+	gen_BsMuonM_phi_.push_back(bsDaughter.phi());
+	gen_nBsMuonM_++;
+      }
+      if(bsDaughter.pdgId() ==  13){
+	muPMul = j;
+	gen_BsMuonP_pt_.push_back(bsDaughter.pt());
+	gen_BsMuonP_eta_.push_back(bsDaughter.eta());
+	gen_BsMuonP_phi_.push_back(bsDaughter.phi());
+	gen_nBsMuonP_++;
+      }
+      if(bsDaughter.pdgId() ==  22){
+	phoMul = j;
+	gen_BsPhoton_pt_.push_back(bsDaughter.pt());
+	gen_BsPhoton_eta_.push_back(bsDaughter.eta());
+	gen_BsPhoton_phi_.push_back(bsDaughter.phi());
+	gen_nBsPhoton_++;
+	
+      }
+    }  //number of daughters
+    
+    if(phoMul == -1) continue;
+    const reco::Candidate *mum = NULL;
+    const reco::Candidate *mup = NULL;
+    
+    if (muMMul != -1 && muPMul != -1) {
+      mum = aBsMeson.daughter(muMMul);
+      mup = aBsMeson.daughter(muPMul);
+    }
+    
+    if ( mum == NULL || mup == NULL) continue;
 
-  //std::cout << " fill gen loop "<< std::endl;
-  edm::Handle<edm::View<reco::GenParticle> > genParticlesHandle;
-  e.getByToken(genParticlesCollection_, genParticlesHandle);
+    std::cout << "event:" << iEvent.id().event() << "  Bs ID:" << aBsMeson.pdgId() << "  photon multiplicity:" << phoMul <<  "  negative muon number:" << muMMul << "   positive: " << muPMul << std::endl;
+
+    gen_Bs_pt_.push_back(aBsMeson.pt());
+    gen_Bs_eta_.push_back(aBsMeson.eta());
+    gen_Bs_phi_.push_back(aBsMeson.phi());
+    gen_Bs_pz_.push_back(aBsMeson.pz());
+    gen_Bs_pdgId_.push_back(aBsMeson.pdgId());
+    gen_nBs_++;
+    
+    // break;
+    
+  } // genparticle collection
+  // gen_BsMuonMMultiplicity_.push_back(muMMul);
+  // gen_BsMuonPMultiplicity_.push_back(muPMul);
+ // gen_BsPhotonMultiplicity_.push_back(phoMul);
   
-  // loop over MC particles
-  for (auto p = genParticlesHandle->begin(); p != genParticlesHandle->end(); ++p) {
-    // skip all primary particles if not particle gun MC
-    //if (!runOnParticleGun_ && !p->mother()) continue;
-    
-    //std::cout << " in gen 1st loop "<< std::endl;
-    // stable particles with pT > 5 GeV
-    bool isStableFast = (p->status() == 1 && p->pdgId()==22 && p->pt() > 0.0);
-    
-    // stable leptons
-    bool isStableLepton = (p->status() == 1 && abs(p->pdgId()) >= 11 && abs(p->pdgId()) <= 16);
-    
-    // (unstable) Z, W, H, top, bottom
-    bool isHeavy = (p->pdgId() == 23 || abs(p->pdgId()) == 24 || p->pdgId() == 25 ||
-		    abs(p->pdgId()) == 6 || abs(p->pdgId()) == 5);
-    
-    // reduce size of output root file
-    //if (!isStableFast && !isStableLepton && !isHeavy) continue;
-    //std::cout << " in gen loop "<< std::endl;
-    mcPID_   .push_back(p->pdgId());
-    mcStatus_.push_back(p->status());
-    mcPt_    .push_back(p->pt());
-    mcEta_   .push_back(p->eta());
-    mcPhi_   .push_back(p->phi());
-    mcE_     .push_back(p->energy());
-    mcEt_    .push_back(p->et());
-    mcMass_  .push_back(p->mass());
-    nMC_++;
-  } // gen-level particles loop
+/*  bool hasAValidMCCandidate= true;
+  if(muMMul!=1 or muPMul!=1 ) 
+  {
+  if(printMsg) std::cout<<" Ghost event found !! Mu+ Mu- from any of the Bs not found to == 1 "<<std::endl;
+  hasAValidMCCandidate = false;
+  }
+  else if(doBsToMuMuGamma and phoMul!=1)
+  {
+  if(printMsg) std::cout<<" Ghost event found !! gamma multiplicity from any of the Bs not found to == 1 "<<std::endl;
+  hasAValidMCCandidate = false;
+  }
   
-}
+  gen_hasAValid_candidate_.push_back(hasAValidMCCandidate);*/
+  
+} // fill gen particles
 
 
 void BsToMuMuGammaNTuplizer::fillMuons(const edm::Event& iEvent, const edm::EventSetup& iSetup){
@@ -763,7 +855,7 @@ void BsToMuMuGammaNTuplizer::fillMuons(const edm::Event& iEvent, const edm::Even
       mu_mu_mass_err = sqrt(mumu_KP->currentState().kinematicParametersError().
 			    matrix()(6,6));
       
-      std::cout << mu_mu_vtx_cl << " " << mu_mu_pt << " " << mu_mu_mass << " " << mu_mu_mass_err << std::endl;
+      //std::cout << mu_mu_vtx_cl << " " << mu_mu_pt << " " << mu_mu_mass << " " << mu_mu_mass_err << std::endl;
       
       // ######################################################
       // # Compute the distance between mumu vtx and BeamSpot #
@@ -833,8 +925,8 @@ void BsToMuMuGammaNTuplizer::fillMuons(const edm::Event& iEvent, const edm::Even
       mumuLBSE_.push_back(MuMuLSBSErr);
       mumuDCA_.push_back(mumuDCA);
       
-      std::cout << "Entry:" <<  iEvent.id().event() <<  " Neg muon " << i << " pt: " << muTrackm->pt() << " eta:" << muTrackm->eta() << std::endl;
-      std::cout << "Entry:" <<  iEvent.id().event() <<  " Pos muon " << j << " pt: " << muTrackp->pt() << " eta:" << muTrackp->eta() << std::endl;
+      std::cout << "Entry:" <<  iEvent.id().event() <<  " Neg muon " << i <<  " " << muTrackm->charge() << " pt: " << muTrackm->pt() << " eta:" << muTrackm->eta() << std::endl;
+      std::cout << "Entry:" <<  iEvent.id().event() <<  " Pos muon " << j <<  " " < muTrackp->charge() << " pt: " << muTrackp->pt() << " eta:" << muTrackp->eta() << std::endl;
 
       //// #############
       //// # Save: mu- #
