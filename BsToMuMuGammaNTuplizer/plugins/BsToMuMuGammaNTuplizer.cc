@@ -212,37 +212,67 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
   theTree->Branch("mumPhi",           &mumPhi_);
   theTree->Branch("mumCL",            &mumCL_);
   theTree->Branch("mumNormChi2",      &mumNormChi2_);
-  theTree->Branch("mumPx",            &mumPx_);
-  theTree->Branch("mumPy",            &mumPy_);
-  theTree->Branch("mumPz",            &mumPz_);
-  theTree->Branch("mumDCAVtx",        &mumDCAVtx_);
-  theTree->Branch("mumDCAVtxE",       &mumDCAVtxE_);
+  theTree->Branch("mumVx",            &mumVx_);
+  theTree->Branch("mumVy",            &mumVy_);
+  theTree->Branch("mumVz",            &mumVz_);
   theTree->Branch("mumDCABS",         &mumDCABS_);
   theTree->Branch("mumDCABSE",        &mumDCABSE_);
-  theTree->Branch("mumKinkChi2",      &mumKinkChi2_);
   theTree->Branch("mumFracHits",      &mumFracHits_);
   theTree->Branch("mumdxyBS",         &mumdxyBS_);
   theTree->Branch("mumdzBS",          &mumdzBS_);
-  theTree->Branch("mumMinIP2D",       &mumMinIP2D_);
-  theTree->Branch("mumMinIP2DE",      &mumMinIP2DE_);
-  theTree->Branch("mumMinIP",         &mumMinIP_);
-  theTree->Branch("mumMinIPS",        &mumMinIPS_);
-  theTree->Branch("mumDeltaRwithMC",  &mumDeltaRwithMC_);
-  theTree->Branch("mumCat",           &mumCat_);
   theTree->Branch("mumNPixHits",      &mumNPixHits_);
   theTree->Branch("mumNPixLayers",    &mumNPixLayers_);
   theTree->Branch("mumNTrkHits",      &mumNTrkHits_);
   theTree->Branch("mumNTrkLayers",    &mumNTrkLayers_);
   theTree->Branch("mumNMuonHits",     &mumNMuonHits_);
   theTree->Branch("mumNMatchStation", &mumNMatchStation_);
-  theTree->Branch("mumIso",           &mumIso_);
-  theTree->Branch("mumIsoPt",         &mumIsoPt_);
-  theTree->Branch("mumIsodR",         &mumIsodR_);
   theTree->Branch("mum_isGlobalMuon", &mum_isGlobalMuon_);
   theTree->Branch("mum_isTrackerMuon",&mum_isTrackerMuon_);
   theTree->Branch("mum_StandAloneMuon",&mum_StandAloneMuon_);
   theTree->Branch("mum_isCaloMuon",    &mum_isCaloMuon_);
   theTree->Branch("mum_isPFMuon",      &mum_isPFMuon_);
+
+   theTree->Branch("mum_selector"          	,  &mum_selector_); 
+   theTree->Branch("mum_isIsolationValid"  	,  &mum_isIsolationValid_);
+   theTree->Branch("mum_isPFIsolationValid"	,  &mum_isPFIsolationValid_);
+   
+   theTree->Branch("mum_isolationR03_trackSumPt"			,&mum_isolationR03_trackSumPt_);
+   theTree->Branch("mum_isolationR03_trackEcalSumEt"			,&mum_isolationR03_trackEcalSumEt_);
+   theTree->Branch("mum_isolationR03_trackHcalSumEt"			,&mum_isolationR03_trackHcalSumEt_);
+   theTree->Branch("mum_isolationR03_trackHoSumEt"			,&mum_isolationR03_trackHoSumEt_);
+   theTree->Branch("mum_isolationR03_trackNTracks"			,&mum_isolationR03_trackNTracks_);
+   theTree->Branch("mum_isolationR03_trackNJets"			,&mum_isolationR03_trackNJets_);
+   theTree->Branch("mum_isolationR03_trackerVetoSumPt"			,&mum_isolationR03_trackerVetoSumPt_);
+   theTree->Branch("mum_isolationR03_emVetoSumEt"			,&mum_isolationR03_emVetoSumEt_);
+   theTree->Branch("mum_isolationR03_hadVetoSumEt"			,&mum_isolationR03_hadVetoSumEt_);
+   theTree->Branch("mum_isolationR03_hoVetoEt"				,&mum_isolationR03_hoVetoEt_);
+
+   theTree->Branch("mum_isolationR05_trackSumPt"			,&mum_isolationR05_trackSumPt_);
+   theTree->Branch("mum_isolationR05_trackEcalSumEt"			,&mum_isolationR05_trackEcalSumEt_);
+   theTree->Branch("mum_isolationR05_trackHcalSumEt"			,&mum_isolationR05_trackHcalSumEt_);
+   theTree->Branch("mum_isolationR05_trackHoSumEt"			,&mum_isolationR05_trackHoSumEt_);
+   theTree->Branch("mum_isolationR05_trackNTracks"			,&mum_isolationR05_trackNTracks_);
+   theTree->Branch("mum_isolationR05_trackNJets"			,&mum_isolationR05_trackNJets_);
+   theTree->Branch("mum_isolationR05_trackerVetoSumPt"			,&mum_isolationR05_trackerVetoSumPt_);
+   theTree->Branch("mum_isolationR05_emVetoSumEt"			,&mum_isolationR05_emVetoSumEt_);
+   theTree->Branch("mum_isolationR05_hadVetoSumEt"			,&mum_isolationR05_hadVetoSumEt_);
+   theTree->Branch("mum_isolationR05_hoVetoEt"				,&mum_isolationR05_hoVetoEt_);
+                                                                                                                                                                                                                                                          
+   theTree->Branch("mum_PFIsolationR03_sumChargedHadronPt"		,&mum_PFIsolationR03_sumChargedHadronPt_);
+   theTree->Branch("mum_PFIsolationR03_sumChargedParticlePt"		,&mum_PFIsolationR03_sumChargedParticlePt_);
+   theTree->Branch("mum_PFIsolationR03_sumNeutralHadronEt"		,&mum_PFIsolationR03_sumNeutralHadronEt_);
+   theTree->Branch("mum_PFIsolationR03_sumPhotonEt"			,&mum_PFIsolationR03_sumPhotonEt_);
+   theTree->Branch("mum_PFIsolationR03_sumNeutralHadronEtHighThreshold",&mum_PFIsolationR03_sumNeutralHadronEtHighThreshold_);
+   theTree->Branch("mum_PFIsolationR03_sumPhotonEtHighThreshold"	,&mum_PFIsolationR03_sumPhotonEtHighThreshold_);
+   theTree->Branch("mum_PFIsolationR03_sumPUPt"			        ,&mum_PFIsolationR03_sumPUPt_);
+                                                                                                                             
+   theTree->Branch("mum_PFIsolationR04_sumChargedHadronPt"		,&mum_PFIsolationR04_sumChargedHadronPt_);
+   theTree->Branch("mum_PFIsolationR04_sumChargedParticlePt"		,&mum_PFIsolationR04_sumChargedParticlePt_);
+   theTree->Branch("mum_PFIsolationR04_sumNeutralHadronEt"		,&mum_PFIsolationR04_sumNeutralHadronEt_);
+   theTree->Branch("mum_PFIsolationR04_sumPhotonEt"			,&mum_PFIsolationR04_sumPhotonEt_);
+   theTree->Branch("mum_PFIsolationR04_sumNeutralHadronEtHighThreshold",&mum_PFIsolationR04_sumNeutralHadronEtHighThreshold_);
+   theTree->Branch("mum_PFIsolationR04_sumPhotonEtHighThreshold"	,&mum_PFIsolationR04_sumPhotonEtHighThreshold_);
+   theTree->Branch("mum_PFIsolationR04_sumPUPt"			        ,&mum_PFIsolationR04_sumPUPt_);
 
   // ### mu+ ###  
   theTree->Branch("nMuP",             &nMuP_);
@@ -252,37 +282,67 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
   theTree->Branch("mupPhi",           &mupPhi_);
   theTree->Branch("mupCL",            &mupCL_);
   theTree->Branch("mupNormChi2",      &mupNormChi2_);
-  theTree->Branch("mupPx",            &mupPx_);
-  theTree->Branch("mupPy",            &mupPy_);
-  theTree->Branch("mupPz",            &mupPz_);
-  theTree->Branch("mupDCAVtx",        &mupDCAVtx_);
-  theTree->Branch("mupDCAVtxE",       &mupDCAVtxE_);
+  theTree->Branch("mupVx",            &mupVx_);
+  theTree->Branch("mupVy",            &mupVy_);
+  theTree->Branch("mupVz",            &mupVz_);
   theTree->Branch("mupDCABS",         &mupDCABS_);
   theTree->Branch("mupDCABSE",        &mupDCABSE_);
-  theTree->Branch("mupKinkChi2",      &mupKinkChi2_);
   theTree->Branch("mupFracHits",      &mupFracHits_);
   theTree->Branch("mupdxyBS",         &mupdxyBS_);
   theTree->Branch("mupdzBS",          &mupdzBS_);
-  theTree->Branch("mupMinIP2D",       &mupMinIP2D_);
-  theTree->Branch("mupMinIP2DE",      &mupMinIP2DE_);
-  theTree->Branch("mupMinIP",         &mupMinIP_);
-  theTree->Branch("mupMinIPS",        &mupMinIPS_);
-  theTree->Branch("mupDeltaRwithMC",  &mupDeltaRwithMC_);
-  theTree->Branch("mupCat",           &mupCat_);
   theTree->Branch("mupNPixHits",      &mupNPixHits_);
   theTree->Branch("mupNPixLayers",    &mupNPixLayers_);
   theTree->Branch("mupNTrkHits",      &mupNTrkHits_);
   theTree->Branch("mupNTrkLayers",    &mupNTrkLayers_);
   theTree->Branch("mupNMuonHits",     &mupNMuonHits_);
   theTree->Branch("mupNMatchStation", &mupNMatchStation_);
-  theTree->Branch("mupIso",           &mupIso_);
-  theTree->Branch("mupIsoPt",         &mupIsoPt_);
-  theTree->Branch("mupIsodR",         &mupIsodR_);
   theTree->Branch("mup_isGlobalMuon", &mup_isGlobalMuon_);
   theTree->Branch("mup_isTrackerMuon",&mup_isTrackerMuon_);
   theTree->Branch("mup_StandAloneMuon",&mup_StandAloneMuon_);
   theTree->Branch("mup_isCaloMuon",    &mup_isCaloMuon_);
   theTree->Branch("mup_isPFMuon",      &mup_isPFMuon_);
+
+   theTree->Branch("mup_selector"          	,  &mup_selector_); 
+   theTree->Branch("mup_isIsolationValid"  	,  &mup_isIsolationValid_);
+   theTree->Branch("mup_isPFIsolationValid"	,  &mup_isPFIsolationValid_);
+   
+   theTree->Branch("mup_isolationR03_trackSumPt"			,&mup_isolationR03_trackSumPt_);
+   theTree->Branch("mup_isolationR03_trackEcalSumEt"			,&mup_isolationR03_trackEcalSumEt_);
+   theTree->Branch("mup_isolationR03_trackHcalSumEt"			,&mup_isolationR03_trackHcalSumEt_);
+   theTree->Branch("mup_isolationR03_trackHoSumEt"			,&mup_isolationR03_trackHoSumEt_);
+   theTree->Branch("mup_isolationR03_trackNTracks"			,&mup_isolationR03_trackNTracks_);
+   theTree->Branch("mup_isolationR03_trackNJets"			,&mup_isolationR03_trackNJets_);
+   theTree->Branch("mup_isolationR03_trackerVetoSumPt"			,&mup_isolationR03_trackerVetoSumPt_);
+   theTree->Branch("mup_isolationR03_emVetoSumEt"			,&mup_isolationR03_emVetoSumEt_);
+   theTree->Branch("mup_isolationR03_hadVetoSumEt"			,&mup_isolationR03_hadVetoSumEt_);
+   theTree->Branch("mup_isolationR03_hoVetoEt"				,&mup_isolationR03_hoVetoEt_);
+
+   theTree->Branch("mup_isolationR05_trackSumPt"			,&mup_isolationR05_trackSumPt_);
+   theTree->Branch("mup_isolationR05_trackEcalSumEt"			,&mup_isolationR05_trackEcalSumEt_);
+   theTree->Branch("mup_isolationR05_trackHcalSumEt"			,&mup_isolationR05_trackHcalSumEt_);
+   theTree->Branch("mup_isolationR05_trackHoSumEt"			,&mup_isolationR05_trackHoSumEt_);
+   theTree->Branch("mup_isolationR05_trackNTracks"			,&mup_isolationR05_trackNTracks_);
+   theTree->Branch("mup_isolationR05_trackNJets"			,&mup_isolationR05_trackNJets_);
+   theTree->Branch("mup_isolationR05_trackerVetoSumPt"			,&mup_isolationR05_trackerVetoSumPt_);
+   theTree->Branch("mup_isolationR05_emVetoSumEt"			,&mup_isolationR05_emVetoSumEt_);
+   theTree->Branch("mup_isolationR05_hadVetoSumEt"			,&mup_isolationR05_hadVetoSumEt_);
+   theTree->Branch("mup_isolationR05_hoVetoEt"				,&mup_isolationR05_hoVetoEt_);
+                                                                                                                                                                                                                                                          
+   theTree->Branch("mup_PFIsolationR03_sumChargedHadronPt"		,&mup_PFIsolationR03_sumChargedHadronPt_);
+   theTree->Branch("mup_PFIsolationR03_sumChargedParticlePt"		,&mup_PFIsolationR03_sumChargedParticlePt_);
+   theTree->Branch("mup_PFIsolationR03_sumNeutralHadronEt"		,&mup_PFIsolationR03_sumNeutralHadronEt_);
+   theTree->Branch("mup_PFIsolationR03_sumPhotonEt"			,&mup_PFIsolationR03_sumPhotonEt_);
+   theTree->Branch("mup_PFIsolationR03_sumNeutralHadronEtHighThreshold",&mup_PFIsolationR03_sumNeutralHadronEtHighThreshold_);
+   theTree->Branch("mup_PFIsolationR03_sumPhotonEtHighThreshold"	,&mup_PFIsolationR03_sumPhotonEtHighThreshold_);
+   theTree->Branch("mup_PFIsolationR03_sumPUPt"			        ,&mup_PFIsolationR03_sumPUPt_);
+                                                                                                                             
+   theTree->Branch("mup_PFIsolationR04_sumChargedHadronPt"		,&mup_PFIsolationR04_sumChargedHadronPt_);
+   theTree->Branch("mup_PFIsolationR04_sumChargedParticlePt"		,&mup_PFIsolationR04_sumChargedParticlePt_);
+   theTree->Branch("mup_PFIsolationR04_sumNeutralHadronEt"		,&mup_PFIsolationR04_sumNeutralHadronEt_);
+   theTree->Branch("mup_PFIsolationR04_sumPhotonEt"			,&mup_PFIsolationR04_sumPhotonEt_);
+   theTree->Branch("mup_PFIsolationR04_sumNeutralHadronEtHighThreshold",&mup_PFIsolationR04_sumNeutralHadronEtHighThreshold_);
+   theTree->Branch("mup_PFIsolationR04_sumPhotonEtHighThreshold"	,&mup_PFIsolationR04_sumPhotonEtHighThreshold_);
+   theTree->Branch("mup_PFIsolationR04_sumPUPt"			        ,&mup_PFIsolationR04_sumPUPt_);
 
   // ### mu+ mu- Mass ###
   theTree->Branch("mumuPt",    &mumuPt_);
@@ -303,15 +363,13 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
   theTree->Branch("mumuVtxZ",        &mumuVtxZ_);
   theTree->Branch("mumuVtxChi2",     &mumuVtxChi2_);
   theTree->Branch("mumuVtxNdof",     &mumuVtxNdof_);
-  theTree->Branch("mumuVtxProb",     &mumuVtxProb_);
-  theTree->Branch("mumuVtxIsGoodFit",&mumuVtxIsGoodFit_);
+
   theTree->Branch("mumuCosAlphaBS",  &mumuCosAlphaBS_);
   theTree->Branch("mumuCosAlphaBSE", &mumuCosAlphaBSE_);
   theTree->Branch("mumuLBS",         &mumuLBS_);
   theTree->Branch("mumuLBSE",        &mumuLBSE_);
   theTree->Branch("mumuDCA",         &mumuDCA_);
-  theTree->Branch("mumuLS",          &mumuLS_);
-  theTree->Branch("mumuLSErr",       &mumuLSErr_);
+
 
   }
   
@@ -428,30 +486,23 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
   }
 
   if(doMuons_){
-  
+    nMuM_ = 0;
+   nMuP_ = 0; 
    mumHighPurity_.clear();
    mumPt_.clear();
    mumEta_.clear();
    mumPhi_.clear();
    mumCL_.clear(); 
    mumNormChi2_.clear();
-   mumPx_.clear();
-   mumPy_.clear();
-   mumPz_.clear();
-   mumDCAVtx_.clear();
-   mumDCAVtxE_.clear();
+   mumVx_.clear();
+   mumVy_.clear();
+   mumVz_.clear();
+ 
    mumDCABS_.clear();
    mumDCABSE_.clear();
-   mumKinkChi2_.clear();
    mumFracHits_.clear();
    mumdxyBS_.clear();
    mumdzBS_.clear();
-   mumMinIP2D_.clear();
-   mumMinIP2DE_.clear();
-   mumMinIP_.clear();
-   mumMinIPS_.clear();
-   mumDeltaRwithMC_.clear();
-   mumCat_.clear();
    mumCharge_.clear();
    mumNPixHits_.clear();
    mumNPixLayers_.clear();
@@ -459,14 +510,54 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
    mumNTrkLayers_.clear();
    mumNMuonHits_.clear();
    mumNMatchStation_.clear();
-   mumIso_.clear();
-   mumIsoPt_.clear();
-   mumIsodR_.clear();
    mum_isGlobalMuon_.clear();
    mum_isTrackerMuon_.clear();
    mum_StandAloneMuon_.clear();
    mum_isCaloMuon_.clear();
    mum_isPFMuon_.clear();
+
+   mum_selector_.clear();
+ 
+   mum_isIsolationValid_.clear();
+   mum_isPFIsolationValid_.clear();
+   
+    mum_isolationR03_trackSumPt_.clear();
+    mum_isolationR03_trackEcalSumEt_.clear();
+    mum_isolationR03_trackHcalSumEt_.clear();
+    mum_isolationR03_trackHoSumEt_.clear();
+    mum_isolationR03_trackNTracks_.clear();
+    mum_isolationR03_trackNJets_.clear();
+    mum_isolationR03_trackerVetoSumPt_.clear();
+    mum_isolationR03_emVetoSumEt_.clear();
+    mum_isolationR03_hadVetoSumEt_.clear();
+    mum_isolationR03_hoVetoEt_.clear();
+  
+    mum_isolationR05_trackSumPt_.clear();
+    mum_isolationR05_trackEcalSumEt_.clear();
+    mum_isolationR05_trackHcalSumEt_.clear();
+    mum_isolationR05_trackHoSumEt_.clear();
+    mum_isolationR05_trackNTracks_.clear();
+    mum_isolationR05_trackNJets_.clear();
+    mum_isolationR05_trackerVetoSumPt_.clear();
+    mum_isolationR05_emVetoSumEt_.clear();
+    mum_isolationR05_hadVetoSumEt_.clear();
+    mum_isolationR05_hoVetoEt_.clear();
+  
+    mum_PFIsolationR03_sumChargedHadronPt_.clear();
+    mum_PFIsolationR03_sumChargedParticlePt_.clear();
+    mum_PFIsolationR03_sumNeutralHadronEt_.clear();
+    mum_PFIsolationR03_sumPhotonEt_.clear();
+    mum_PFIsolationR03_sumNeutralHadronEtHighThreshold_.clear();
+    mum_PFIsolationR03_sumPhotonEtHighThreshold_.clear();
+    mum_PFIsolationR03_sumPUPt_.clear();
+    
+    mum_PFIsolationR04_sumChargedHadronPt_.clear();
+    mum_PFIsolationR04_sumChargedParticlePt_.clear();
+    mum_PFIsolationR04_sumNeutralHadronEt_.clear();
+    mum_PFIsolationR04_sumPhotonEt_.clear();
+    mum_PFIsolationR04_sumNeutralHadronEtHighThreshold_.clear();
+    mum_PFIsolationR04_sumPhotonEtHighThreshold_.clear();
+    mum_PFIsolationR04_sumPUPt_.clear();
   
   
   
@@ -476,23 +567,15 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
    mupPhi_.clear();
    mupCL_.clear(); 
    mupNormChi2_.clear();
-   mupPx_.clear();
-   mupPy_.clear();
-   mupPz_.clear();
-   mupDCAVtx_.clear();
-   mupDCAVtxE_.clear();
+   mupVx_.clear();
+   mupVy_.clear();
+   mupVz_.clear();
    mupDCABS_.clear();
    mupDCABSE_.clear();
-   mupKinkChi2_.clear();
+  
    mupFracHits_.clear();
    mupdxyBS_.clear();
    mupdzBS_.clear();
-   mupMinIP2D_.clear();
-   mupMinIP2DE_.clear();
-   mupMinIP_.clear();
-   mupMinIPS_.clear();
-   mupDeltaRwithMC_.clear();
-   mupCat_.clear();
    mupCharge_.clear();
    mupNPixHits_.clear();
    mupNPixLayers_.clear();
@@ -500,14 +583,54 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
    mupNTrkLayers_.clear();
    mupNMuonHits_.clear();
    mupNMatchStation_.clear();
-   mupIso_.clear();
-   mupIsoPt_.clear();
-   mupIsodR_.clear();
    mup_isGlobalMuon_.clear();
    mup_isTrackerMuon_.clear();
    mup_StandAloneMuon_.clear();
    mup_isCaloMuon_.clear();
    mup_isPFMuon_.clear();
+
+  mup_selector_.clear();
+ 
+   mup_isIsolationValid_.clear();
+   mup_isPFIsolationValid_.clear();
+   
+    mup_isolationR03_trackSumPt_.clear();
+    mup_isolationR03_trackEcalSumEt_.clear();
+    mup_isolationR03_trackHcalSumEt_.clear();
+    mup_isolationR03_trackHoSumEt_.clear();
+    mup_isolationR03_trackNTracks_.clear();
+    mup_isolationR03_trackNJets_.clear();
+    mup_isolationR03_trackerVetoSumPt_.clear();
+    mup_isolationR03_emVetoSumEt_.clear();
+    mup_isolationR03_hadVetoSumEt_.clear();
+    mup_isolationR03_hoVetoEt_.clear();
+  
+    mup_isolationR05_trackSumPt_.clear();
+    mup_isolationR05_trackEcalSumEt_.clear();
+    mup_isolationR05_trackHcalSumEt_.clear();
+    mup_isolationR05_trackHoSumEt_.clear();
+    mup_isolationR05_trackNTracks_.clear();
+    mup_isolationR05_trackNJets_.clear();
+    mup_isolationR05_trackerVetoSumPt_.clear();
+    mup_isolationR05_emVetoSumEt_.clear();
+    mup_isolationR05_hadVetoSumEt_.clear();
+    mup_isolationR05_hoVetoEt_.clear();
+  
+    mup_PFIsolationR03_sumChargedHadronPt_.clear();
+    mup_PFIsolationR03_sumChargedParticlePt_.clear();
+    mup_PFIsolationR03_sumNeutralHadronEt_.clear();
+    mup_PFIsolationR03_sumPhotonEt_.clear();
+    mup_PFIsolationR03_sumNeutralHadronEtHighThreshold_.clear();
+    mup_PFIsolationR03_sumPhotonEtHighThreshold_.clear();
+    mup_PFIsolationR03_sumPUPt_.clear();
+    
+    mup_PFIsolationR04_sumChargedHadronPt_.clear();
+    mup_PFIsolationR04_sumChargedParticlePt_.clear();
+    mup_PFIsolationR04_sumNeutralHadronEt_.clear();
+    mup_PFIsolationR04_sumPhotonEt_.clear();
+    mup_PFIsolationR04_sumNeutralHadronEtHighThreshold_.clear();
+    mup_PFIsolationR04_sumPhotonEtHighThreshold_.clear();
+    mup_PFIsolationR04_sumPUPt_.clear();
 
 // ### mu+ mu- variables ###
     mumuPt_.clear();
@@ -528,15 +651,14 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
     mumuVtxZ_.clear();  
     mumuVtxChi2_.clear();
     mumuVtxNdof_.clear();
-    mumuVtxProb_.clear();
-    mumuVtxIsGoodFit_.clear();
+
+
     mumuCosAlphaBS_.clear();
     mumuCosAlphaBSE_.clear(); 
     mumuLBS_.clear();
     mumuLBSE_.clear();
     mumuDCA_.clear();
-    mumuLS_.clear();
-    mumuLSErr_.clear();
+ 
     
     nMuP_=0;
     nMuM_=0;
@@ -729,7 +851,7 @@ void BsToMuMuGammaNTuplizer::fillMuons(const edm::Event& iEvent, const edm::Even
   edm::Handle<std::vector<reco::Muon>> muons;
   iEvent.getByToken(muonToken_, muons);
   
-  reco::TrackRef muTrackm,muTrackp;
+  reco::TrackRef muTrackm,muTrackp, muTrack;
   reco::TransientTrack refitMupTT, refitMumTT;
   double mu_mu_vtx_cl, mu_mu_pt, mu_mu_mass, mu_mu_mass_err;
   
@@ -739,40 +861,234 @@ void BsToMuMuGammaNTuplizer::fillMuons(const edm::Event& iEvent, const edm::Even
   muonMassErr= Utility->muonMassErr;
   double chi2,ndof;
 
-  
-  //start loop for positive muons 
+ std::cout << " muon size:" << muons->size() << std::endl; 
+  //start loop on first muon 
   for (uint32_t i=0;i<muons->size();i++){
+   
+    auto &mu = muons->at(i);
+    if(muons->size() < 2 || mu.pt()  < pTMinMuons) continue;
+    muTrack = mu.innerTrack();
+
+    if ((muTrack.isNull() == true)) continue;
     
-    auto &mum=muons->at(i);
-    if(mum.pt()  < pTMinMuons) continue;
-    muTrackm= mum.innerTrack();
-    if ((muTrackm.isNull() == true) || (muTrackm->charge() != -1))   continue;
-    
-    const reco::TransientTrack muTrackmTT( muTrackm, &(*bFieldHandle));
-    if (!muTrackmTT.isValid()) continue;
+    const reco::TransientTrack muTrackTT( muTrack, &(*bFieldHandle));
+    if (!muTrackTT.isValid()) continue;
     
     // # Compute mu- DCA to BeamSpot #
-    theDCAXBS = muTrackmTT.trajectoryStateClosestToPoint(GlobalPoint(beamSpot.position().x(),beamSpot.position().y(),beamSpot.position().z()));
-    double DCAmumBS    = theDCAXBS.perigeeParameters().transverseImpactParameter();
-    double DCAmumBSErr = theDCAXBS.perigeeError().transverseImpactParameterError();
+    theDCAXBS = muTrackTT.trajectoryStateClosestToPoint(GlobalPoint(beamSpot.position().x(),beamSpot.position().y(),beamSpot.position().z()));
+    double DCAmuBS    = theDCAXBS.perigeeParameters().transverseImpactParameter();
+    double DCAmuBSErr = theDCAXBS.perigeeError().transverseImpactParameterError();
+
+    //// #############
+      //// # Save: mu- #
+      //// #############
+      if(muTrack->charge() ==-1){ 
+      mumHighPurity_.push_back( (int)muTrack->quality(reco::Track::highPurity));
+      mumPt_.push_back(muTrack->pt());
+      mumEta_.push_back(muTrack->eta());
+      mumPhi_.push_back(muTrack->phi());
+      mumCL_.push_back(TMath::Prob(muTrackTT.chi2(), static_cast<int>(rint(muTrackTT.ndof()))));
+      mumNormChi2_.push_back(muTrack->normalizedChi2());
+      mumVx_.push_back(mu.vx());
+      mumVy_.push_back(mu.vy());
+      mumVz_.push_back(mu.vz());
+      
+ 
+      mumDCABS_.push_back(DCAmuBS);
+      mumDCABSE_.push_back(DCAmuBSErr);
+      
+
+      mumFracHits_.push_back(static_cast<double>(muTrack->hitPattern().numberOfValidHits()) / static_cast<double>(muTrack->hitPattern().numberOfValidHits() +
+														muTrack->hitPattern().numberOfLostHits(reco::HitPattern::TRACK_HITS) +
+													muTrack->hitPattern().numberOfLostHits(reco::HitPattern::MISSING_INNER_HITS) +
+													muTrack->hitPattern().numberOfLostHits(reco::HitPattern::MISSING_OUTER_HITS)));
+
+      mumdxyBS_.push_back(muTrackTT.track().dxy( (beamSpot.position() )));
+      mumdzBS_.push_back(muTrackTT.track().dz(  (beamSpot.position() )));
+      
+
+      
+      mumNPixHits_.push_back(muTrack->hitPattern().numberOfValidPixelHits());
+      mumNPixLayers_.push_back(muTrack->hitPattern().pixelLayersWithMeasurement());  
+      mumNTrkHits_.push_back(muTrack->hitPattern().numberOfValidTrackerHits());
+      mumNTrkLayers_.push_back(muTrack->hitPattern().trackerLayersWithMeasurement());
+      if (mu.isGlobalMuon() == true) mumNMuonHits_.push_back(mu.globalTrack()->hitPattern().numberOfValidMuonHits());
+      else mumNMuonHits_.push_back(0);
+      mumNMatchStation_.push_back(mu.numberOfMatchedStations());
+
+         mum_isGlobalMuon_	      .push_back(mu.isGlobalMuon());
+         mum_isTrackerMuon_	      .push_back(mu.isTrackerMuon());
+         mum_StandAloneMuon_          .push_back(mu.isStandAloneMuon());
+         mum_isCaloMuon_	      .push_back(mu.isCaloMuon());
+         mum_isPFMuon_	              .push_back(mu.isPFMuon());
+
+         mum_selector_.push_back(mu.selectors()); 
+         mum_isIsolationValid_.push_back(mu.isIsolationValid());
+         mum_isPFIsolationValid_.push_back(mu.isIsolationValid());
+
+    auto &MuIsol03 = mu.isolationR03();
+    mum_isolationR03_trackSumPt_.push_back(MuIsol03.sumPt);
+    mum_isolationR03_trackEcalSumEt_.push_back(MuIsol03.emEt);
+    mum_isolationR03_trackHcalSumEt_.push_back(MuIsol03.hadEt);
+    mum_isolationR03_trackHoSumEt_.push_back(MuIsol03.hoEt);
+    mum_isolationR03_trackNTracks_.push_back(MuIsol03.nTracks);
+    mum_isolationR03_trackNJets_.push_back(MuIsol03.nJets);
+    mum_isolationR03_trackerVetoSumPt_.push_back(MuIsol03.trackerVetoPt);
+    mum_isolationR03_emVetoSumEt_.push_back(MuIsol03.emVetoEt);
+    mum_isolationR03_hadVetoSumEt_.push_back(MuIsol03.hadVetoEt);
+    mum_isolationR03_hoVetoEt_.push_back(MuIsol03.hoVetoEt);
+  
+    auto &MuIsol05 = mu.isolationR05();
+    mum_isolationR05_trackSumPt_.push_back(MuIsol05.sumPt);
+    mum_isolationR05_trackEcalSumEt_.push_back(MuIsol05.emEt);
+    mum_isolationR05_trackHcalSumEt_.push_back(MuIsol05.hadEt);
+    mum_isolationR05_trackHoSumEt_.push_back(MuIsol05.hoEt);
+    mum_isolationR05_trackNTracks_.push_back(MuIsol05.nTracks);
+    mum_isolationR05_trackNJets_.push_back(MuIsol05.nJets);
+    mum_isolationR05_trackerVetoSumPt_.push_back(MuIsol05.trackerVetoPt);
+    mum_isolationR05_emVetoSumEt_.push_back(MuIsol05.emVetoEt);
+    mum_isolationR05_hadVetoSumEt_.push_back(MuIsol05.hadVetoEt);
+    mum_isolationR05_hoVetoEt_.push_back(MuIsol05.hoVetoEt);
+  
+    auto &MuPFIsol = mu.pfIsolationR03();
+    mum_PFIsolationR03_sumChargedHadronPt_.push_back(MuPFIsol.sumChargedHadronPt);
+    mum_PFIsolationR03_sumChargedParticlePt_.push_back(MuPFIsol.sumChargedParticlePt);
+    mum_PFIsolationR03_sumNeutralHadronEt_.push_back(MuPFIsol.sumNeutralHadronEt);
+    mum_PFIsolationR03_sumPhotonEt_.push_back(MuPFIsol.sumPhotonEt);
+    mum_PFIsolationR03_sumNeutralHadronEtHighThreshold_.push_back(MuPFIsol.sumNeutralHadronEtHighThreshold);
+    mum_PFIsolationR03_sumPhotonEtHighThreshold_.push_back(MuPFIsol.sumPhotonEtHighThreshold);
+    mum_PFIsolationR03_sumPUPt_.push_back(MuPFIsol.sumPUPt);
+    
+    auto &MuPFIsol04 = mu.pfIsolationR04();
+    mum_PFIsolationR04_sumChargedHadronPt_.push_back(MuPFIsol04.sumChargedHadronPt);
+    mum_PFIsolationR04_sumChargedParticlePt_.push_back(MuPFIsol04.sumChargedParticlePt);
+    mum_PFIsolationR04_sumNeutralHadronEt_.push_back(MuPFIsol04.sumNeutralHadronEt);
+    mum_PFIsolationR04_sumPhotonEt_.push_back(MuPFIsol04.sumPhotonEt);
+    mum_PFIsolationR04_sumNeutralHadronEtHighThreshold_.push_back(MuPFIsol04.sumNeutralHadronEtHighThreshold);
+    mum_PFIsolationR04_sumPhotonEtHighThreshold_.push_back(MuPFIsol04.sumPhotonEtHighThreshold);
+    mum_PFIsolationR04_sumPUPt_.push_back(MuPFIsol04.sumPUPt);
+
+	nMuM_++; 
+      }
+      
+      //// #############
+      //// # Save: mu+ #
+      //// #############
+      if(muTrack->charge() == 1){ 
+      mupHighPurity_.push_back( (int) muTrack->quality(reco::Track::highPurity));
+      mupPt_.push_back(muTrack->pt());
+      mupEta_.push_back(muTrack->eta());
+      mupPhi_.push_back(muTrack->phi());
+      mupCL_.push_back(TMath::Prob(muTrackTT.chi2(), static_cast<int>(rint(muTrackTT.ndof()))));
+      mupNormChi2_.push_back(muTrack->normalizedChi2());
+      mupVx_.push_back(mu.vx());
+      mupVy_.push_back(mu.vy());
+      mupVz_.push_back(mu.vz());
+      
+      mupDCABS_.push_back(DCAmuBS);
+      mupDCABSE_.push_back(DCAmuBSErr);
+      mupdxyBS_.push_back(muTrackTT.track().dxy( (beamSpot.position() )));
+      mupdzBS_.push_back(muTrackTT.track().dz(  (beamSpot.position() )));
+      
+      mupFracHits_.push_back(static_cast<double>(muTrack->hitPattern().numberOfValidHits()) / 
+                                                   (  muTrack->hitPattern().numberOfValidHits() +
+						      muTrack->hitPattern().numberOfLostHits(reco::HitPattern::TRACK_HITS) +
+						      muTrack->hitPattern().numberOfLostHits(reco::HitPattern::MISSING_INNER_HITS) +
+						      muTrack->hitPattern().numberOfLostHits(reco::HitPattern::MISSING_OUTER_HITS) ) ) ;
+
+      
+      mupNPixHits_.push_back(muTrack->hitPattern().numberOfValidPixelHits());
+      mupNPixLayers_.push_back(muTrack->hitPattern().pixelLayersWithMeasurement());  
+      mupNTrkHits_.push_back(muTrack->hitPattern().numberOfValidTrackerHits());
+      mupNTrkLayers_.push_back(muTrack->hitPattern().trackerLayersWithMeasurement());
+      if (mu.isGlobalMuon() == true) mupNMuonHits_.push_back(mu.globalTrack()->hitPattern().numberOfValidMuonHits());
+      else mupNMuonHits_.push_back(0);
+      mupNMatchStation_.push_back(mu.numberOfMatchedStations());
+
+         mup_isGlobalMuon_	      .push_back(mu.isGlobalMuon());
+         mup_isTrackerMuon_	      .push_back(mu.isTrackerMuon());
+         mup_StandAloneMuon_          .push_back(mu.isStandAloneMuon());
+         mup_isCaloMuon_	      .push_back(mu.isCaloMuon());
+         mup_isPFMuon_	              .push_back(mu.isPFMuon());
+
+         mup_selector_.push_back(mu.selectors()); 
+         mup_isIsolationValid_.push_back(mu.isIsolationValid());
+         mup_isPFIsolationValid_.push_back(mu.isIsolationValid());
+
+    auto &MuIsol03 = mu.isolationR03();
+    mup_isolationR03_trackSumPt_.push_back(MuIsol03.sumPt);
+    mup_isolationR03_trackEcalSumEt_.push_back(MuIsol03.emEt);
+    mup_isolationR03_trackHcalSumEt_.push_back(MuIsol03.hadEt);
+    mup_isolationR03_trackHoSumEt_.push_back(MuIsol03.hoEt);
+    mup_isolationR03_trackNTracks_.push_back(MuIsol03.nTracks);
+    mup_isolationR03_trackNJets_.push_back(MuIsol03.nJets);
+    mup_isolationR03_trackerVetoSumPt_.push_back(MuIsol03.trackerVetoPt);
+    mup_isolationR03_emVetoSumEt_.push_back(MuIsol03.emVetoEt);
+    mup_isolationR03_hadVetoSumEt_.push_back(MuIsol03.hadVetoEt);
+    mup_isolationR03_hoVetoEt_.push_back(MuIsol03.hoVetoEt);
+  
+    auto &MuIsol05 = mu.isolationR05();
+    mup_isolationR05_trackSumPt_.push_back(MuIsol05.sumPt);
+    mup_isolationR05_trackEcalSumEt_.push_back(MuIsol05.emEt);
+    mup_isolationR05_trackHcalSumEt_.push_back(MuIsol05.hadEt);
+    mup_isolationR05_trackHoSumEt_.push_back(MuIsol05.hoEt);
+    mup_isolationR05_trackNTracks_.push_back(MuIsol05.nTracks);
+    mup_isolationR05_trackNJets_.push_back(MuIsol05.nJets);
+    mup_isolationR05_trackerVetoSumPt_.push_back(MuIsol05.trackerVetoPt);
+    mup_isolationR05_emVetoSumEt_.push_back(MuIsol05.emVetoEt);
+    mup_isolationR05_hadVetoSumEt_.push_back(MuIsol05.hadVetoEt);
+    mup_isolationR05_hoVetoEt_.push_back(MuIsol05.hoVetoEt);
+  
+    auto &MuPFIsol = mu.pfIsolationR03();
+    mup_PFIsolationR03_sumChargedHadronPt_.push_back(MuPFIsol.sumChargedHadronPt);
+    mup_PFIsolationR03_sumChargedParticlePt_.push_back(MuPFIsol.sumChargedParticlePt);
+    mup_PFIsolationR03_sumNeutralHadronEt_.push_back(MuPFIsol.sumNeutralHadronEt);
+    mup_PFIsolationR03_sumPhotonEt_.push_back(MuPFIsol.sumPhotonEt);
+    mup_PFIsolationR03_sumNeutralHadronEtHighThreshold_.push_back(MuPFIsol.sumNeutralHadronEtHighThreshold);
+    mup_PFIsolationR03_sumPhotonEtHighThreshold_.push_back(MuPFIsol.sumPhotonEtHighThreshold);
+    mup_PFIsolationR03_sumPUPt_.push_back(MuPFIsol.sumPUPt);
+    
+    auto &MuPFIsol04 = mu.pfIsolationR04();
+    mup_PFIsolationR04_sumChargedHadronPt_.push_back(MuPFIsol04.sumChargedHadronPt);
+    mup_PFIsolationR04_sumChargedParticlePt_.push_back(MuPFIsol04.sumChargedParticlePt);
+    mup_PFIsolationR04_sumNeutralHadronEt_.push_back(MuPFIsol04.sumNeutralHadronEt);
+    mup_PFIsolationR04_sumPhotonEt_.push_back(MuPFIsol04.sumPhotonEt);
+    mup_PFIsolationR04_sumNeutralHadronEtHighThreshold_.push_back(MuPFIsol04.sumNeutralHadronEtHighThreshold);
+    mup_PFIsolationR04_sumPhotonEtHighThreshold_.push_back(MuPFIsol04.sumPhotonEtHighThreshold);
+    mup_PFIsolationR04_sumPUPt_.push_back(MuPFIsol04.sumPUPt);
+
+      nMuP_++; 
+     }
+
+      //std::cout << "1st loop:" <<  iEvent.id().event() <<  " i: " << i <<  " " << muTrack->charge() << " pt: " << muTrack->pt() << " eta:" << muTrack->eta() << std::endl;
     
     
-    //start loop for positive muons 
-    for ( uint32_t j=0;j<muons->size();j++){
-      auto &mup=muons->at(j);
-      muTrackp = mup.innerTrack();
-      if ((muTrackp.isNull() == true) || (muTrackp->charge() != 1)) continue;
+    //start loop on second muon 
+    for ( uint32_t j= i+1 ;j<muons->size();j++){
+
+      auto &mu2 = muons->at(j);
+      if(i==j) continue;
+      if( (mu.charge())*(mu2.charge()) == 1) continue;
+
+      if(mu.charge() == 1){ muTrackp   =  mu.innerTrack();}
+      if(mu.charge() == -1){ muTrackm  =  mu.innerTrack();}
+      
+      if(mu2.charge() == 1) { muTrackp  = mu2.innerTrack();}
+      if(mu2.charge() == -1){ muTrackm  = mu2.innerTrack();}
+
+
+
+      //muTrackp = mup.innerTrack();
+      if ((muTrackp.isNull() == true) || (muTrackm.isNull() == true)) continue;
       
       const reco::TransientTrack muTrackpTT(muTrackp, &(*bFieldHandle));
       if (!muTrackpTT.isValid()) continue;
-      
-      // # Compute mu+ DCA to BeamSpot #
-      theDCAXBS = muTrackpTT.trajectoryStateClosestToPoint(GlobalPoint(beamSpot.position().x(),beamSpot.position().y(),beamSpot.position().z()));
-      double DCAmupBS    = theDCAXBS.perigeeParameters().transverseImpactParameter();
-      double DCAmupBSErr = theDCAXBS.perigeeError().transverseImpactParameterError();
+
+      const reco::TransientTrack muTrackmTT(muTrackm, &(*bFieldHandle));
+      if (!muTrackmTT.isValid()) continue;
       
       
-      // # Check goodness of muons closest approach #
+      // # Check goodness of dimuons closest approach #
       ClosestApp.calculate(muTrackpTT.initialFreeState(),muTrackmTT.initialFreeState());
       XingPoint = ClosestApp.crossingPoint();
       
@@ -903,14 +1219,20 @@ void BsToMuMuGammaNTuplizer::fillMuons(const edm::Event& iEvent, const edm::Even
       //// # Save: mu+ mu- #
       //// #################
       mumuPt_.push_back(mu_mu_pt);
+      mumuEta_.push_back(mydimu.Eta());
+      mumuRapidity_.push_back(mydimu.Rapidity());
+      mumuPhi_.push_back(mydimu.Phi());
       mumuMass_.push_back(mu_mu_mass);
       mumuMassE_.push_back(mu_mu_mass_err);
       
       mumuPx_.push_back(mumu_KP->currentState().globalMomentum().x());
       mumuPy_.push_back(mumu_KP->currentState().globalMomentum().y());
-      mumuPz_.push_back(mumu_KP->currentState().globalMomentum().z());
+      mumuPz_.push_back(mumu_KP->currentState().globalMomentum().z()); 
+      mumuDR_.push_back(deltaR(mu,mu2));
       
       mumuVtxCL_.push_back(mu_mu_vtx_cl);
+      mumuVtxChi2_.push_back(mumu_KV->chiSquared());
+      mumuVtxNdof_.push_back(mumu_KV->degreesOfFreedom());
       mumuVtxX_.push_back(mumu_KV->position().x());
       mumuVtxY_.push_back(mumu_KV->position().y());
       mumuVtxZ_.push_back(mumu_KV->position().z());
@@ -921,86 +1243,8 @@ void BsToMuMuGammaNTuplizer::fillMuons(const edm::Event& iEvent, const edm::Even
       mumuLBSE_.push_back(MuMuLSBSErr);
       mumuDCA_.push_back(mumuDCA);
       
-//      std::cout << "Entry:" <<  iEvent.id().event() <<  " Neg muon " << i <<  " " << muTrackm->charge() << " pt: " << muTrackm->pt() << " eta:" << muTrackm->eta() << std::endl;
-//      std::cout << "Entry:" <<  iEvent.id().event() <<  " Pos muon " << j <<  " " << muTrackp->charge() << " pt: " << muTrackp->pt() << " eta:" << muTrackp->eta() << std::endl;
-
-      //// #############
-      //// # Save: mu- #
-      //// #############
-      mumHighPurity_.push_back( (int)muTrackm->quality(reco::Track::highPurity));
-      mumPt_.push_back(muTrackm->pt());
-      mumEta_.push_back(muTrackm->eta());
-      mumPhi_.push_back(muTrackm->phi());
-      mumCL_.push_back(TMath::Prob(muTrackmTT.chi2(), static_cast<int>(rint(muTrackmTT.ndof()))));
-      mumNormChi2_.push_back(muTrackm->normalizedChi2());
-      mumPx_.push_back(refitMumTT.track().momentum().x());
-      mumPy_.push_back(refitMumTT.track().momentum().y());
-      mumPz_.push_back(refitMumTT.track().momentum().z());
-      
-      //                     mumDCAVtx_.push_back(DCAmumVtx);
-      //                     mumDCAVtxE_.push_back(DCAmumVtxErr);
-      mumDCABS_.push_back(DCAmumBS);
-      mumDCABSE_.push_back(DCAmumBSErr);
-      
-      //                     mumKinkChi2_.push_back(iMuonM->combinedQuality().trkKink);
-      mumFracHits_.push_back(static_cast<double>(muTrackm->hitPattern().numberOfValidHits()) / static_cast<double>(muTrackm->hitPattern().numberOfValidHits() +
-															   muTrackm->hitPattern().numberOfLostHits(reco::HitPattern::TRACK_HITS) +
-															   muTrackm->hitPattern().numberOfLostHits(reco::HitPattern::MISSING_INNER_HITS) +
-															   muTrackm->hitPattern().numberOfLostHits(reco::HitPattern::MISSING_OUTER_HITS)));
-      //                     theDCAXVtx = IPTools::absoluteTransverseImpactParameter(muTrackmTT, bestVtxReFit);
-      //                     mumdxyVtx_.push_back(theDCAXVtx.second.value());
-      //                     mumdzVtx_.push_back(muTrackmTT.track().dz( ));
-      mumdxyBS_.push_back(muTrackmTT.track().dxy( (beamSpot.position() )));
-      mumdzBS_.push_back(muTrackmTT.track().dz(  (beamSpot.position() )));
-      
-      //mumCat_.push_back(getMuCat(mum));
-      
-      mumNPixHits_.push_back(muTrackm->hitPattern().numberOfValidPixelHits());
-      mumNPixLayers_.push_back(muTrackm->hitPattern().pixelLayersWithMeasurement());  
-      mumNTrkHits_.push_back(muTrackm->hitPattern().numberOfValidTrackerHits());
-      mumNTrkLayers_.push_back(muTrackm->hitPattern().trackerLayersWithMeasurement());
-      if (mum.isGlobalMuon() == true) mumNMuonHits_.push_back(mum.globalTrack()->hitPattern().numberOfValidMuonHits());
-      else mumNMuonHits_.push_back(0);
-      mumNMatchStation_.push_back(mum.numberOfMatchedStations());
-      
-      
-      //// #############
-      //// # Save: mu+ #
-      //// #############
-      mupHighPurity_.push_back( (int) muTrackp->quality(reco::Track::highPurity));
-      mupPt_.push_back(muTrackp->pt());
-      mupEta_.push_back(muTrackp->eta());
-      mupPhi_.push_back(muTrackp->phi());
-      //mupCL_.push_back(TMath::Prob(muTrackpTT.chi2(), static_cast<int>(rint(muTrackpTT.ndof()))));
-      mupNormChi2_.push_back(muTrackp->normalizedChi2());
-      mupPx_.push_back(refitMupTT.track().momentum().x());
-      mupPy_.push_back(refitMupTT.track().momentum().y());
-      mupPz_.push_back(refitMupTT.track().momentum().z());
-      
-      mupDCABS_.push_back(DCAmupBS);
-      mupDCABSE_.push_back(DCAmupBSErr);
-      mupdxyBS_.push_back(muTrackpTT.track().dxy( (beamSpot.position() )));
-      mupdzBS_.push_back(muTrackpTT.track().dz(  (beamSpot.position() )));
-      
-      //                     mupKinkChi2_.push_back(iMuonP->combinedQuality().trkKink);
-      mupFracHits_.push_back(static_cast<double>(muTrackp->hitPattern().numberOfValidHits()) / 
-                                                   (  muTrackp->hitPattern().numberOfValidHits() +
-						      muTrackp->hitPattern().numberOfLostHits(reco::HitPattern::TRACK_HITS) +
-						      muTrackp->hitPattern().numberOfLostHits(reco::HitPattern::MISSING_INNER_HITS) +
-						      muTrackp->hitPattern().numberOfLostHits(reco::HitPattern::MISSING_OUTER_HITS) ) ) ;
-      //                     theDCAXVtx = IPTools::absoluteTransverseImpactParameter(muTrackpTT, bestVtxReFit);
-      //                     mupdxyVtx_.push_back(theDCAXVtx.second.value());
-      //                     mupdzVtx_.push_back(muTrackpTT.track().dz(bestVtxReFit.position()));
-      
-      //mupCat_.push_back(getMuCat(mup));
-      
-      mupNPixHits_.push_back(muTrackp->hitPattern().numberOfValidPixelHits());
-      mupNPixLayers_.push_back(muTrackp->hitPattern().pixelLayersWithMeasurement());  
-      mupNTrkHits_.push_back(muTrackp->hitPattern().numberOfValidTrackerHits());
-      mupNTrkLayers_.push_back(muTrackp->hitPattern().trackerLayersWithMeasurement());
-      if (mup.isGlobalMuon() == true) mupNMuonHits_.push_back(mup.globalTrack()->hitPattern().numberOfValidMuonHits());
-      else mupNMuonHits_.push_back(0);
-      mupNMatchStation_.push_back(mup.numberOfMatchedStations());
+     // std::cout << "2nd loop after continue:" <<  iEvent.id().event() <<  " i: " << i <<  " " << mu.charge() << " pt: " << mu.pt() << " eta:" << mu.eta() << std::endl;
+     // std::cout << "2nd loop cafter continue:" <<  iEvent.id().event() <<  " j: " << j <<  " " << mu2.charge() << " pt: " << mu2.pt() << " eta:" << mu2.eta() << std::endl << std::endl;
     }
   }
 
