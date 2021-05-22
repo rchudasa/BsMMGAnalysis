@@ -51,6 +51,8 @@
 #include "RecoEgamma/EgammaTools/interface/EffectiveAreas.h"
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 #include "TrackingTools/TransientTrack/interface/TransientTrackBuilder.h"
+#include "FWCore/Common/interface/TriggerNames.h"
+
 
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
@@ -136,7 +138,6 @@
 #include "TrackingTools/Records/interface/TransientTrackRecord.h"
 
 #include "RecoEcal/EgammaCoreTools/interface/EcalClusterLazyTools.h"
-
 #include "BsMMGAnalysis/BsToMuMuGammaNTuplizer/interface/Utils.h"
 
 
@@ -159,6 +160,7 @@ private:
    void fillPhotons      (const edm::Event&, const edm::EventSetup&);
    void fillPFPhotons    (const edm::Event&, const edm::EventSetup&);
    void fillSC           (const edm::Event&);
+   void fillHLT          (edm::Event const& );
 
      // switches
    bool doGenParticles_;
@@ -166,17 +168,20 @@ private:
    bool doPhotons_;
    bool doPFPhotons_;
    bool doSuperClusters_;
-  bool isMC;
-  bool doBsToMuMuGamma;
+   bool isMC;
+   bool doHLT;
+   bool doBsToMuMuGamma;
 
   // ----------member data ---------------------------
   edm::EDGetTokenT<reco::BeamSpot>                  beamSpotToken_;
-  edm::EDGetTokenT<reco::GenParticleCollection>   simGenTocken_;
-  edm::EDGetTokenT<std::vector<reco::Photon>>  gedPhotonsCollection_;
-  edm::EDGetTokenT<std::vector<reco::PFCandidate>>    pfPhotonsCollection_;
-  edm::EDGetTokenT<std::vector<reco::SuperCluster>>   MustacheSCBarrelCollection_;
-  edm::EDGetTokenT<std::vector<reco::SuperCluster>>   MustacheSCEndcapCollection_;
+  edm::EDGetTokenT<reco::GenParticleCollection>    genParticlesCollection_;
+  edm::EDGetTokenT<std::vector<reco::Photon>>       gedPhotonsCollection_;
+  edm::EDGetTokenT<std::vector<reco::PFCandidate>>  pfPhotonsCollection_;
+  edm::EDGetTokenT<std::vector<reco::SuperCluster>> MustacheSCBarrelCollection_;
+  edm::EDGetTokenT<std::vector<reco::SuperCluster>> MustacheSCEndcapCollection_;
+  edm::EDGetTokenT<reco::GsfElectronCollection>     gsfElectronToken_;
   edm::EDGetTokenT<reco::VertexCollection>          primaryVtxToken_;
+  edm::EDGetTokenT<edm::TriggerResults>             triggerBits_;
   edm::EDGetTokenT<std::vector<reco::Muon>>         muonToken_;
 
   // input tags 
@@ -201,6 +206,9 @@ private:
   double maxDimuonInvariantMass    ;
   double trackIP_zMax_muon 		;
   double trackIP_rMax_muon	        ;
+  
+  // Utility 
+  Utils* Utility;
     
   // Dimuon Reco vars
   TrajectoryStateClosestToPoint theDCAXBS;
@@ -238,9 +246,27 @@ private:
   std::vector<double> primaryVertex_x_error, primaryVertex_y_error,primaryVertex_z_error,primaryVertex_t_error;
   std::vector<double> primaryVertex_ntracks,primaryVertex_ndof,primaryVertex_chi2,primaryVertex_normalizedChi2;
 
+  // # Trigger #
+  std::vector<std::string>  trigTable;
+  std::vector<std::string>  trigNames;
+  std::vector<bool>         trigResult;
+  std::vector<int>          trigPrescales;
+  
+  std::vector<std::string>  *TrigTable_store;
+  std::vector<bool>         *TrigResult_store;
+  std::vector<int>          *TrigPrescales_store;
+  
+  std::vector<std::string>  l1Table;
+  std::vector<int>          l1Prescales;
+
+   void SetupTriggerStorageVectors();
+   void SetupTriggerBranches();
+   void FillTrggerBranches();
+   void ClearTrggerStorages();
+
+  
    // reco::GenParticle
   int  gen_nBs_, gen_nBsMuonM_, gen_nBsMuonP_ , gen_nBsPhoton_ ;
-  std::vector<bool>   gen_hasAValid_candidate_;
   std::vector<double> gen_Bs_pt_,      gen_Bs_eta_,      gen_Bs_phi_,   gen_Bs_pz_,  gen_Bs_pdgId_;
   std::vector<double> gen_BsMuonM_pt_, gen_BsMuonM_eta_, gen_BsMuonM_phi_;
   std::vector<double> gen_BsMuonP_pt_, gen_BsMuonP_eta_, gen_BsMuonP_phi_;
@@ -452,6 +478,10 @@ private:
    std::vector<float>  scPhiWidth_;
    std::vector<float>  scRawE_;
    std::vector<float>  scRawEt_;
+   std::vector<float>  scMinDrWithGsfElectornSC_;
+   std::vector< bool>  scFoundGsfMatch_;
+
+
 };
 
 #endif
