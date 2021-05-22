@@ -266,15 +266,13 @@ private:
   std::vector<double>  mumuVtxZ_;
   std::vector<double>  mumuVtxChi2_;
   std::vector<double>  mumuVtxNdof_;
-  std::vector<double>  mumuVtxProb_;
-  std::vector<bool>    mumuVtxIsGoodFit_;
+
   std::vector<double>  mumuCosAlphaBS_;
   std::vector<double>  mumuCosAlphaBSE_; 
   std::vector<double>  mumuLBS_;
   std::vector<double>  mumuLBSE_;
   std::vector<double>  mumuDCA_;
-  std::vector<double>   mumuLS_;
-  std::vector<double>   mumuLSErr_;
+  
 
 
   
@@ -286,23 +284,18 @@ private:
   std::vector<double>  mumPhi_;
   std::vector<double>  mumCL_; 
   std::vector<double>  mumNormChi2_;
-  std::vector<double>  mumPx_;
-  std::vector<double>  mumPy_;
-  std::vector<double>  mumPz_;
-  std::vector<double>  mumDCAVtx_;
-  std::vector<double>  mumDCAVtxE_;
+  std::vector<double>  mumVx_;
+  std::vector<double>  mumVy_;
+  std::vector<double>  mumVz_;
+
   std::vector<double>  mumDCABS_;
   std::vector<double>  mumDCABSE_;
-  std::vector<double>  mumKinkChi2_;
+
   std::vector<double>  mumFracHits_;
   std::vector<double>  mumdxyBS_;
   std::vector<double>  mumdzBS_;
-  std::vector<double>  mumMinIP2D_;
-  std::vector<double>  mumMinIP2DE_;
-  std::vector<double>  mumMinIP_;
-  std::vector<double>  mumMinIPS_;
-  std::vector<double>  mumDeltaRwithMC_;
-  std::vector<std::string> mumCat_;
+ 
+
   std::vector<int>     mumCharge_;
   std::vector<int>     mumNPixHits_;
   std::vector<int>     mumNPixLayers_;
@@ -310,15 +303,53 @@ private:
   std::vector<int>     mumNTrkLayers_;
   std::vector<int>     mumNMuonHits_;
   std::vector<int>     mumNMatchStation_;
-  std::vector<float>   mumIso_;
-  std::vector<float>   mumIsoPt_;
-  std::vector<float>   mumIsodR_;
   std::vector<bool>    mum_isGlobalMuon_;
   std::vector<bool>    mum_isTrackerMuon_;
   std::vector<bool>    mum_StandAloneMuon_;
   std::vector<bool>    mum_isCaloMuon_;
   std::vector<bool>    mum_isPFMuon_;
 
+  std::vector<uint64_t> mum_selector_; 
+  std::vector<bool>	mum_isIsolationValid_;
+  std::vector<bool>	mum_isPFIsolationValid_;
+  
+  std::vector<double>  mum_isolationR03_trackSumPt_;
+  std::vector<double>  mum_isolationR03_trackEcalSumEt_;
+  std::vector<double>  mum_isolationR03_trackHcalSumEt_;
+  std::vector<double>  mum_isolationR03_trackHoSumEt_;
+  std::vector<int>     mum_isolationR03_trackNTracks_;
+  std::vector<int>     mum_isolationR03_trackNJets_;
+  std::vector<double>  mum_isolationR03_trackerVetoSumPt_;
+  std::vector<double>  mum_isolationR03_emVetoSumEt_;
+  std::vector<double>  mum_isolationR03_hadVetoSumEt_;
+  std::vector<double>  mum_isolationR03_hoVetoEt_;
+  
+  std::vector<double>  mum_isolationR05_trackSumPt_;
+  std::vector<double>  mum_isolationR05_trackEcalSumEt_;
+  std::vector<double>  mum_isolationR05_trackHcalSumEt_;
+  std::vector<double>  mum_isolationR05_trackHoSumEt_;
+  std::vector<int>     mum_isolationR05_trackNTracks_;
+  std::vector<int>     mum_isolationR05_trackNJets_;
+  std::vector<double>  mum_isolationR05_trackerVetoSumPt_;
+  std::vector<double>  mum_isolationR05_emVetoSumEt_;
+  std::vector<double>  mum_isolationR05_hadVetoSumEt_;
+  std::vector<double>  mum_isolationR05_hoVetoEt_;
+  
+  std::vector<double>  mum_PFIsolationR03_sumChargedHadronPt_;
+  std::vector<double>  mum_PFIsolationR03_sumChargedParticlePt_;
+  std::vector<double>  mum_PFIsolationR03_sumNeutralHadronEt_;
+  std::vector<double>  mum_PFIsolationR03_sumPhotonEt_;
+  std::vector<double>  mum_PFIsolationR03_sumNeutralHadronEtHighThreshold_;
+  std::vector<double>  mum_PFIsolationR03_sumPhotonEtHighThreshold_;
+  std::vector<double>  mum_PFIsolationR03_sumPUPt_;
+  
+  std::vector<double>  mum_PFIsolationR04_sumChargedHadronPt_;
+  std::vector<double>  mum_PFIsolationR04_sumChargedParticlePt_;
+  std::vector<double>  mum_PFIsolationR04_sumNeutralHadronEt_;
+  std::vector<double>  mum_PFIsolationR04_sumPhotonEt_;
+  std::vector<double>  mum_PFIsolationR04_sumNeutralHadronEtHighThreshold_;
+  std::vector<double>  mum_PFIsolationR04_sumPhotonEtHighThreshold_;
+  std::vector<double>  mum_PFIsolationR04_sumPUPt_;
 
   // ### mu+ ###
   int 	               nMuP_; 
@@ -328,23 +359,17 @@ private:
   std::vector<double>  mupPhi_;
   std::vector<double>  mupCL_; 
   std::vector<double>  mupNormChi2_;
-  std::vector<double>  mupPx_;
-  std::vector<double>  mupPy_;
-  std::vector<double>  mupPz_;
-  std::vector<double>  mupDCAVtx_;
-  std::vector<double>  mupDCAVtxE_;
+  std::vector<double>  mupVx_;
+  std::vector<double>  mupVy_;
+  std::vector<double>  mupVz_;
+ 
   std::vector<double>  mupDCABS_;
   std::vector<double>  mupDCABSE_;
-  std::vector<double>  mupKinkChi2_;
+
   std::vector<double>  mupFracHits_;
   std::vector<double>  mupdxyBS_;
   std::vector<double>  mupdzBS_;
-  std::vector<double>  mupMinIP2D_;
-  std::vector<double>  mupMinIP2DE_;
-  std::vector<double>  mupMinIP_;
-  std::vector<double>  mupMinIPS_;
-  std::vector<double>  mupDeltaRwithMC_;
-  std::vector<std::string> mupCat_;
+ 
   std::vector<int>     mupCharge_;
   std::vector<int>     mupNPixHits_;
   std::vector<int>     mupNPixLayers_;
@@ -352,14 +377,53 @@ private:
   std::vector<int>     mupNTrkLayers_;
   std::vector<int>     mupNMuonHits_;
   std::vector<int>     mupNMatchStation_;
-  std::vector<float>   mupIso_;
-  std::vector<float>   mupIsoPt_;
-  std::vector<float>   mupIsodR_;
   std::vector<bool>    mup_isGlobalMuon_;
   std::vector<bool>    mup_isTrackerMuon_;
   std::vector<bool>    mup_StandAloneMuon_;
   std::vector<bool>    mup_isCaloMuon_;
   std::vector<bool>    mup_isPFMuon_;
+
+  std::vector<uint64_t> mup_selector_; 
+  std::vector<bool>	mup_isIsolationValid_;
+  std::vector<bool>	mup_isPFIsolationValid_;
+  
+  std::vector<double>  mup_isolationR03_trackSumPt_;
+  std::vector<double>  mup_isolationR03_trackEcalSumEt_;
+  std::vector<double>  mup_isolationR03_trackHcalSumEt_;
+  std::vector<double>  mup_isolationR03_trackHoSumEt_;
+  std::vector<int>     mup_isolationR03_trackNTracks_;
+  std::vector<int>     mup_isolationR03_trackNJets_;
+  std::vector<double>  mup_isolationR03_trackerVetoSumPt_;
+  std::vector<double>  mup_isolationR03_emVetoSumEt_;
+  std::vector<double>  mup_isolationR03_hadVetoSumEt_;
+  std::vector<double>  mup_isolationR03_hoVetoEt_;
+  
+  std::vector<double>  mup_isolationR05_trackSumPt_;
+  std::vector<double>  mup_isolationR05_trackEcalSumEt_;
+  std::vector<double>  mup_isolationR05_trackHcalSumEt_;
+  std::vector<double>  mup_isolationR05_trackHoSumEt_;
+  std::vector<int>     mup_isolationR05_trackNTracks_;
+  std::vector<int>     mup_isolationR05_trackNJets_;
+  std::vector<double>  mup_isolationR05_trackerVetoSumPt_;
+  std::vector<double>  mup_isolationR05_emVetoSumEt_;
+  std::vector<double>  mup_isolationR05_hadVetoSumEt_;
+  std::vector<double>  mup_isolationR05_hoVetoEt_;
+  
+  std::vector<double>  mup_PFIsolationR03_sumChargedHadronPt_;
+  std::vector<double>  mup_PFIsolationR03_sumChargedParticlePt_;
+  std::vector<double>  mup_PFIsolationR03_sumNeutralHadronEt_;
+  std::vector<double>  mup_PFIsolationR03_sumPhotonEt_;
+  std::vector<double>  mup_PFIsolationR03_sumNeutralHadronEtHighThreshold_;
+  std::vector<double>  mup_PFIsolationR03_sumPhotonEtHighThreshold_;
+  std::vector<double>  mup_PFIsolationR03_sumPUPt_;
+  
+  std::vector<double>  mup_PFIsolationR04_sumChargedHadronPt_;
+  std::vector<double>  mup_PFIsolationR04_sumChargedParticlePt_;
+  std::vector<double>  mup_PFIsolationR04_sumNeutralHadronEt_;
+  std::vector<double>  mup_PFIsolationR04_sumPhotonEt_;
+  std::vector<double>  mup_PFIsolationR04_sumNeutralHadronEtHighThreshold_;
+  std::vector<double>  mup_PFIsolationR04_sumPhotonEtHighThreshold_;
+  std::vector<double>  mup_PFIsolationR04_sumPUPt_;
 
 
    // reco::Photon
