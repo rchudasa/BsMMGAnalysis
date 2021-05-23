@@ -90,6 +90,7 @@
 #include "DataFormats/Math/interface/LorentzVector.h"
 #include "BsMMGAnalysis/BsToMuMuGammaNTuplizer/plugins/BsToMuMuGammaNTuplizer.h"
 #include "BsMMGAnalysis/BsToMuMuGammaNTuplizer/interface/Utils.h"
+#include "DataFormats/CaloTowers/interface/CaloTowerCollection.h"
 #include <TTree.h>
 
 
@@ -108,37 +109,47 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
   //MustacheSCBarrelSrc_(iConfig.getParameter<edm::InputTag>("MustacheSCBarrelSrc")),
   //MustacheSCEndcapSrc_(iConfig.getParameter<edm::InputTag>("MustacheSCEndcapSrc"))
 {
-
-
+  
+  
   Utility= new Utils();
   
   if(doMuons_) muonToken_              = consumes<reco::MuonCollection>(iConfig.getParameter<edm::InputTag>("muons"));
-  //now do what ever initialization is needed
-  // if(doGenParticles_){
-//	 genParticlesCollection_   = consumes<edm::View<reco::GenParticle>>(iConfig.getUntrackedParameter<edm::InputTag>("genParticleSrc"));
- //  }
-   if(doPhotons_)    gedPhotonsCollection_       = consumes<std::vector<reco::Photon>>(iConfig.getUntrackedParameter<edm::InputTag>("gedPhotonSrc"));
-   if(doPFPhotons_)  pfPhotonsCollection_        = consumes<std::vector<reco::PFCandidate>>(iConfig.getUntrackedParameter<edm::InputTag>("pfPhotonSrc"));
-   if(doSuperClusters_){
-	MustacheSCBarrelCollection_             = consumes<std::vector<reco::SuperCluster>>(iConfig.getParameter<edm::InputTag>("MustacheSCBarrelSrc"));
-   	MustacheSCEndcapCollection_             = consumes<std::vector<reco::SuperCluster>>(iConfig.getParameter<edm::InputTag>("MustacheSCEndcapSrc"));
-	gsfElectronToken_                       = consumes<reco::GsfElectronCollection>(iConfig.getParameter<edm::InputTag>("GsfElectronSrc"));
-   }
+  //caloPartToken_                 = consumes<std::vector<CaloParticle> >(iConfig.getParameter<edm::InputTag>("caloParticleCollection"));
+  
+  if(doPhotons_)    gedPhotonsCollection_       = consumes<std::vector<reco::Photon>>(iConfig.getUntrackedParameter<edm::InputTag>("gedPhotonSrc"));
+  
+  if(doPFPhotons_){
+    pfPhotonsCollection_        = consumes<std::vector<reco::PFCandidate>>(iConfig.getUntrackedParameter<edm::InputTag>("pfPhotonSrc"));
+   // pfRecHitToken_                 = consumes<std::vector<reco::PFRecHit> >(iConfig.getParameter<edm::InputTag>("pfRechitCollection"));
+   // pfClusterToken_                = consumes<std::vector<reco::PFCluster> >(iConfig.getParameter<edm::InputTag>("pfClusterCollection"));
+  }  
+  
+  if(doSuperClusters_){
+    MustacheSCBarrelCollection_             = consumes<std::vector<reco::SuperCluster>>(iConfig.getParameter<edm::InputTag>("MustacheSCBarrelSrc"));
+    MustacheSCEndcapCollection_             = consumes<std::vector<reco::SuperCluster>>(iConfig.getParameter<edm::InputTag>("MustacheSCEndcapSrc"));
+    gsfElectronToken_                       = consumes<reco::GsfElectronCollection>(iConfig.getParameter<edm::InputTag>("GsfElectronSrc"));
+    ebRechitToken_                 = consumes<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit>>>(iConfig.getParameter<edm::InputTag>("ebRechitCollection"));
+    eeRechitToken_                 = consumes<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit>>>(iConfig.getParameter<edm::InputTag>("eeRechitCollection"));
+    //ebRechitToken_                 = consumes<EcalRecHitCollection>(iConfig.getParameter<edm::InputTag>("ebRechitCollection"));
+    //eeRechitToken_                 = consumes<EcalRecHitCollection>(iConfig.getParameter<edm::InputTag>("eeRechitCollection"));
+  }
+  
   if(doHLT) {
-               trigTable    =iConfig.getParameter<std::vector<std::string>>("TriggerNames");
-               triggerBits_ =consumes<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("HLTResult"));
-	    }
+    trigTable    =iConfig.getParameter<std::vector<std::string>>("TriggerNames");
+    triggerBits_ =consumes<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("HLTResult"));
+  }
   
   beamSpotToken_  	   =consumes<reco::BeamSpot>(iConfig.getParameter<edm::InputTag>("beamSpot"));
   primaryVtxToken_       =consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"));
   if(doGenParticles_)genParticlesCollection_          =consumes<reco::GenParticleCollection>(iConfig.getParameter<edm::InputTag>("genParticles"));
-
+  
   etaMax_muon               =  iConfig.getUntrackedParameter<double>("muon_EtaMax")        ;
   dcaMax_muon_bs            =  iConfig.getUntrackedParameter<double>("muon_dcaMAX")        ;
   pTMinMuons 		      =  iConfig.getUntrackedParameter<double>("muon_minPt");
+  pTMinPFPhotons               =  iConfig.getUntrackedParameter<double>("PFPhoton_minPt");
   trackIP_zMax_muon	      =  iConfig.getUntrackedParameter<double>("muon_zIPMax")        ;
   trackIP_rMax_muon	      =  iConfig.getUntrackedParameter<double>("muon_rIPMax")        ;
-
+  
   minDimuon_pt              =  iConfig.getUntrackedParameter<double>("dimuon_minPt")      ;
   cl_dimuon_vtx             =  iConfig.getUntrackedParameter<double>("dimuon_minVtxCL")      ;
   ls_max_dimuonBS           =  iConfig.getUntrackedParameter<double>("dimuon_maxLStoBS")       ;
@@ -146,12 +157,12 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
   cosAlphaMax_dimuonBs      =  iConfig.getUntrackedParameter<double>("dimuon_maxCosAlphaToBS") ;
   minDimuonInvariantMass    =  iConfig.getUntrackedParameter<double>("dimuon_minInvMass")    ;
   maxDimuonInvariantMass    =  iConfig.getUntrackedParameter<double>("dimuon_maxInvMass")    ;
-    
+  
   printMsg=iConfig.getParameter<bool>("verbose");
   isMC=iConfig.getParameter<bool>("isMC");
   doBsToMuMuGamma=iConfig.getParameter<bool>("doBsToMuMuGamma");
-
-  
+  nBits_                         = iConfig.getParameter<int>("nBits"); 
+  doCompression_                 = iConfig.getParameter<bool>("doCompression");  
   // initialize output TTree
   edm::Service<TFileService> fs;
   theTree = fs->make<TTree>("EventTree", "Event data");
@@ -404,6 +415,45 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
   theTree->Branch("scRawEt",    &scRawEt_);
   theTree->Branch("scMinDrWithGsfElectornSC_",  &scMinDrWithGsfElectornSC_);
   theTree->Branch("scFoundGsfMatch_" ,        &scFoundGsfMatch_);
+
+      theTree->Branch("superCluster_e5x5",   &superCluster_e5x5_);
+      theTree->Branch("superCluster_e2x2Ratio",   &superCluster_e2x2Ratio_);
+      theTree->Branch("superCluster_e3x3Ratio",   &superCluster_e3x3Ratio_);
+      theTree->Branch("superCluster_eMaxRatio",   &superCluster_eMaxRatio_);
+      theTree->Branch("superCluster_e2ndRatio",   &superCluster_e2ndRatio_);
+      theTree->Branch("superCluster_eTopRatio",   &superCluster_eTopRatio_);
+      theTree->Branch("superCluster_eRightRatio",   &superCluster_eRightRatio_);
+      theTree->Branch("superCluster_eBottomRatio",   &superCluster_eBottomRatio_);
+      theTree->Branch("superCluster_eLeftRatio",   &superCluster_eLeftRatio_);
+      theTree->Branch("superCluster_e2x5MaxRatio",   &superCluster_e2x5MaxRatio_);
+      theTree->Branch("superCluster_e2x5TopRatio",   &superCluster_e2x5TopRatio_);
+      theTree->Branch("superCluster_e2x5RightRatio",   &superCluster_e2x5RightRatio_);
+      theTree->Branch("superCluster_e2x5BottomRatio",   &superCluster_e2x5BottomRatio_); 
+      theTree->Branch("superCluster_e2x5LeftRatio",   &superCluster_e2x5LeftRatio_); 
+      theTree->Branch("superCluster_swissCross",   &superCluster_swissCross_); 
+      theTree->Branch("superCluster_r9",   &superCluster_r9_);
+      theTree->Branch("superCluster_sigmaIetaIeta",   &superCluster_sigmaIetaIeta_);
+      theTree->Branch("superCluster_sigmaIetaIphi",   &superCluster_sigmaIetaIphi_);
+      theTree->Branch("superCluster_sigmaIphiIphi",   &superCluster_sigmaIphiIphi_);
+      theTree->Branch("superCluster_full5x5_e5x5",   &superCluster_full5x5_e5x5_);
+      theTree->Branch("superCluster_full5x5_e2x2Ratio",   &superCluster_full5x5_e2x2Ratio_);
+      theTree->Branch("superCluster_full5x5_e3x3Ratio",   &superCluster_full5x5_e3x3Ratio_);
+      theTree->Branch("superCluster_full5x5_eMaxRatio",   &superCluster_full5x5_eMaxRatio_);
+      theTree->Branch("superCluster_full5x5_e2ndRatio",   &superCluster_full5x5_e2ndRatio_);
+      theTree->Branch("superCluster_full5x5_eTopRatio",   &superCluster_full5x5_eTopRatio_);
+      theTree->Branch("superCluster_full5x5_eRightRatio",   &superCluster_full5x5_eRightRatio_);
+      theTree->Branch("superCluster_full5x5_eBottomRatio",   &superCluster_full5x5_eBottomRatio_);
+      theTree->Branch("superCluster_full5x5_eLeftRatio",   &superCluster_full5x5_eLeftRatio_);
+      theTree->Branch("superCluster_full5x5_e2x5MaxRatio",   &superCluster_full5x5_e2x5MaxRatio_);
+      theTree->Branch("superCluster_full5x5_e2x5TopRatio",   &superCluster_full5x5_e2x5TopRatio_);
+      theTree->Branch("superCluster_full5x5_e2x5RightRatio",   &superCluster_full5x5_e2x5RightRatio_);
+      theTree->Branch("superCluster_full5x5_e2x5BottomRatio",   &superCluster_full5x5_e2x5BottomRatio_); 
+      theTree->Branch("superCluster_full5x5_e2x5LeftRatio",   &superCluster_full5x5_e2x5LeftRatio_); 
+      theTree->Branch("superCluster_full5x5_swissCross",   &superCluster_full5x5_swissCross_); 
+      theTree->Branch("superCluster_full5x5_r9",   &superCluster_full5x5_r9_);
+      theTree->Branch("superCluster_full5x5_sigmaIetaIeta",   &superCluster_full5x5_sigmaIetaIeta_);
+      theTree->Branch("superCluster_full5x5_sigmaIetaIphi",   &superCluster_full5x5_sigmaIetaIphi_);
+      theTree->Branch("superCluster_full5x5_sigmaIphiIphi",   &superCluster_full5x5_sigmaIphiIphi_);
   }
 }
 
@@ -696,6 +746,44 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
   scMinDrWithGsfElectornSC_.clear();
   scFoundGsfMatch_.clear();
 
+   superCluster_e5x5_.clear();
+   superCluster_e2x2Ratio_.clear();
+   superCluster_e3x3Ratio_.clear();
+   superCluster_eMaxRatio_.clear();
+   superCluster_e2ndRatio_.clear();
+   superCluster_eTopRatio_.clear();
+   superCluster_eRightRatio_.clear();
+   superCluster_eBottomRatio_.clear();
+   superCluster_eLeftRatio_.clear();
+   superCluster_e2x5MaxRatio_.clear();
+   superCluster_e2x5TopRatio_.clear();
+   superCluster_e2x5RightRatio_.clear();
+   superCluster_e2x5BottomRatio_.clear();
+   superCluster_e2x5LeftRatio_.clear();
+   superCluster_swissCross_.clear();
+   superCluster_r9_.clear();
+   superCluster_sigmaIetaIeta_.clear(); 
+   superCluster_sigmaIetaIphi_.clear(); 
+   superCluster_sigmaIphiIphi_.clear(); 
+   superCluster_full5x5_e5x5_.clear();
+   superCluster_full5x5_e2x2Ratio_.clear();
+   superCluster_full5x5_e3x3Ratio_.clear();
+   superCluster_full5x5_eMaxRatio_.clear();
+   superCluster_full5x5_e2ndRatio_.clear();
+   superCluster_full5x5_eTopRatio_.clear();
+   superCluster_full5x5_eRightRatio_.clear();
+   superCluster_full5x5_eBottomRatio_.clear();
+   superCluster_full5x5_eLeftRatio_.clear();
+   superCluster_full5x5_e2x5MaxRatio_.clear();
+   superCluster_full5x5_e2x5TopRatio_.clear();
+   superCluster_full5x5_e2x5RightRatio_.clear();
+   superCluster_full5x5_e2x5BottomRatio_.clear();
+   superCluster_full5x5_e2x5LeftRatio_.clear();
+   superCluster_full5x5_swissCross_.clear();
+   superCluster_full5x5_r9_.clear();
+   superCluster_full5x5_sigmaIetaIeta_.clear(); 
+   superCluster_full5x5_sigmaIetaIphi_.clear(); 
+   superCluster_full5x5_sigmaIphiIphi_.clear();  
   }
 
   run_    = iEvent.id().run();
@@ -763,7 +851,7 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
   if (doMuons_)     	fillMuons(iEvent, iSetup);
   if (doPhotons_)    	fillPhotons(iEvent, iSetup);
   if (doPFPhotons_) 	fillPFPhotons(iEvent, iSetup);
-  if (doSuperClusters_) fillSC(iEvent);
+  if (doSuperClusters_) fillSC(iEvent, iSetup);
   theTree->Fill();
   
 }
@@ -1070,6 +1158,7 @@ void BsToMuMuGammaNTuplizer::fillMuons(const edm::Event& iEvent, const edm::Even
       if(mu2.charge() == -1){ muTrackm  = mu2.innerTrack();}
 
 
+     if(mu2.pt()  < pTMinMuons) continue;
 
       //muTrackp = mup.innerTrack();
       if ((muTrackp.isNull() == true) || (muTrackm.isNull() == true)) continue;
@@ -1269,6 +1358,7 @@ void BsToMuMuGammaNTuplizer::fillPFPhotons(const edm::Event& e, const edm::Event
   // loop over photons
   for (auto pf = pfPhotonsHandle->begin(); pf != pfPhotonsHandle->end(); ++pf) {
     if(pf->pdgId() !=22)continue;
+    if(pf->et() < pTMinPFPhotons)continue;
     phoPFE_             .push_back(pf->energy());
     phoPFEt_            .push_back(pf->et());
     phoPFEta_           .push_back(pf->eta());
@@ -1279,7 +1369,7 @@ void BsToMuMuGammaNTuplizer::fillPFPhotons(const edm::Event& e, const edm::Event
 }
 
 
-void BsToMuMuGammaNTuplizer::fillSC(edm::Event const& e) {
+void BsToMuMuGammaNTuplizer::fillSC(edm::Event const& e, const edm::EventSetup& es) {
   edm::Handle<reco::SuperClusterCollection> barrelSCHandle;
   e.getByToken(MustacheSCBarrelCollection_, barrelSCHandle);
 
@@ -1289,39 +1379,110 @@ void BsToMuMuGammaNTuplizer::fillSC(edm::Event const& e) {
   edm::Handle<reco::GsfElectronCollection> gsfElectronHandle;
   e.getByToken(gsfElectronToken_, gsfElectronHandle);
 
-  for (auto const& scs : { *barrelSCHandle, *endcapSCHandle }) {
-    for (auto const& sc : scs) {
-      //if(abs(sc.eta())>2.4)continue;
-      scE_.push_back(sc.correctedEnergy());
-      scRawE_.push_back(sc.rawEnergy());
-      scRawEt_.push_back(sc.rawEnergy()/cosh(sc.eta()));
-      scEta_.push_back(sc.eta());
-      scPhi_.push_back(sc.phi());
-      scEtaWidth_.push_back(sc.etaWidth());
-      scPhiWidth_.push_back(sc.phiWidth());
-      ++nSC_;
-      double dRmin=1e9;
-      bool foundGsfEleMatch=false;
-      for(auto const& ele : *gsfElectronHandle)
-      {
-        auto dr=deltaR(*(ele.superCluster()),sc);
-        dRmin = dr<dRmin ? dr : dRmin;
-	if( &( *(ele.superCluster()) ) == &sc) 
-	{
-	 foundGsfEleMatch=true;
-	 break;
-	}
+
+   edm::Handle<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit>>> recHitsEB;
+   //edm::Handle<EcalRecHitCollection> recHitsEB;
+      e.getByToken(ebRechitToken_, recHitsEB);
+      if (!recHitsEB.isValid()) {
+          std::cerr << "Analyze --> recHitsEB not found" << std::endl; 
+          return;
       }
-      if(gsfElectronHandle->size()<1)
-      {
-	dRmin=-0.333;
+
+   edm::Handle<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit>>> recHitsEE;
+   //edm::Handle<EcalRecHitCollection> recHitsEE;
+      e.getByToken(eeRechitToken_, recHitsEE);
+      if (!recHitsEE.isValid()) {
+          std::cerr << "Analyze --> recHitsEE not found" << std::endl; 
+          return;
       }
-      
-      scMinDrWithGsfElectornSC_.push_back(dRmin);
-      scFoundGsfMatch_.push_back(foundGsfEleMatch);
-    
-    }
-  }
+
+   locCov_.clear();
+   full5x5_locCov_.clear();
+     // for(const auto& iSuperCluster : *(superClusterEB.product())){  
+      for (auto const& scs : { *barrelSCHandle.product(), *endcapSCHandle.product() }) {
+      //for (auto const& sc : *(barrelSCHandle.product())) {
+      for (auto const& sc : scs) {
+	//if(abs(sc.eta())>2.4)continue;
+	//
+	
+	edm::ESHandle<CaloTopology> caloTopology;
+	es.get<CaloTopologyRecord>().get(caloTopology);
+	const CaloTopology* topology = caloTopology.product();
+	
+	scE_.push_back(sc.correctedEnergy());
+	scRawE_.push_back(sc.rawEnergy());
+	scRawEt_.push_back(sc.rawEnergy()/cosh(sc.eta()));
+	scEta_.push_back(sc.eta());
+	scPhi_.push_back(sc.phi());
+	scEtaWidth_.push_back(sc.etaWidth());
+	scPhiWidth_.push_back(sc.phiWidth());
+	
+	reco::CaloCluster caloBC(*sc.seed());  
+	showerShapes_.clear();
+	if(abs(sc.eta()) <= 1.442)showerShapes_ = getShowerShapes(&caloBC, &(*(recHitsEB.product())), topology);  
+	if(abs(sc.eta()) >= 1.566)showerShapes_ = getShowerShapes(&caloBC, &(*(recHitsEE.product())), topology);  
+	superCluster_e5x5_.push_back(reduceFloat(showerShapes_[0],nBits_));
+	superCluster_e2x2Ratio_.push_back(reduceFloat(showerShapes_[1],nBits_));
+	superCluster_e3x3Ratio_.push_back(reduceFloat(showerShapes_[2],nBits_));
+	superCluster_eMaxRatio_.push_back(reduceFloat(showerShapes_[3],nBits_));
+	superCluster_e2ndRatio_.push_back(reduceFloat(showerShapes_[4],nBits_));
+	superCluster_eTopRatio_.push_back(reduceFloat(showerShapes_[5],nBits_));
+	superCluster_eRightRatio_.push_back(reduceFloat(showerShapes_[6],nBits_));
+	superCluster_eBottomRatio_.push_back(reduceFloat(showerShapes_[7],nBits_));
+	superCluster_eLeftRatio_.push_back(reduceFloat(showerShapes_[8],nBits_));
+	superCluster_e2x5MaxRatio_.push_back(reduceFloat(showerShapes_[9],nBits_));
+	superCluster_e2x5TopRatio_.push_back(reduceFloat(showerShapes_[10],nBits_));
+	superCluster_e2x5RightRatio_.push_back(reduceFloat(showerShapes_[11],nBits_));
+	superCluster_e2x5BottomRatio_.push_back(reduceFloat(showerShapes_[12],nBits_));
+	superCluster_e2x5LeftRatio_.push_back(reduceFloat(showerShapes_[13],nBits_));
+	superCluster_swissCross_.push_back(reduceFloat(showerShapes_[14],nBits_));
+	superCluster_r9_.push_back(reduceFloat(showerShapes_[2]*showerShapes_[0]/sc.rawEnergy(),nBits_));
+	superCluster_sigmaIetaIeta_.push_back(reduceFloat(showerShapes_[16],nBits_)); 
+	superCluster_sigmaIetaIphi_.push_back(reduceFloat(showerShapes_[17],nBits_)); 
+	superCluster_sigmaIphiIphi_.push_back(reduceFloat(showerShapes_[18],nBits_)); 
+	superCluster_full5x5_e5x5_.push_back(reduceFloat(showerShapes_[19],nBits_));
+	superCluster_full5x5_e2x2Ratio_.push_back(reduceFloat(showerShapes_[20],nBits_));
+	superCluster_full5x5_e3x3Ratio_.push_back(reduceFloat(showerShapes_[21],nBits_));
+	superCluster_full5x5_eMaxRatio_.push_back(reduceFloat(showerShapes_[22],nBits_));
+	superCluster_full5x5_e2ndRatio_.push_back(reduceFloat(showerShapes_[23],nBits_));
+	superCluster_full5x5_eTopRatio_.push_back(reduceFloat(showerShapes_[24],nBits_));
+	superCluster_full5x5_eRightRatio_.push_back(reduceFloat(showerShapes_[25],nBits_));
+	superCluster_full5x5_eBottomRatio_.push_back(reduceFloat(showerShapes_[26],nBits_));
+	superCluster_full5x5_eLeftRatio_.push_back(reduceFloat(showerShapes_[27],nBits_));
+	superCluster_full5x5_e2x5MaxRatio_.push_back(reduceFloat(showerShapes_[28],nBits_));
+	superCluster_full5x5_e2x5TopRatio_.push_back(reduceFloat(showerShapes_[29],nBits_));
+	superCluster_full5x5_e2x5RightRatio_.push_back(reduceFloat(showerShapes_[30],nBits_));
+	superCluster_full5x5_e2x5BottomRatio_.push_back(reduceFloat(showerShapes_[31],nBits_));
+	superCluster_full5x5_e2x5LeftRatio_.push_back(reduceFloat(showerShapes_[32],nBits_));
+	superCluster_full5x5_swissCross_.push_back(reduceFloat(showerShapes_[33],nBits_));
+	superCluster_full5x5_r9_.push_back(reduceFloat(showerShapes_[21]*showerShapes_[19]/sc.rawEnergy(),nBits_));
+	superCluster_full5x5_sigmaIetaIeta_.push_back(reduceFloat(showerShapes_[35],nBits_)); 
+	superCluster_full5x5_sigmaIetaIphi_.push_back(reduceFloat(showerShapes_[36],nBits_)); 
+	superCluster_full5x5_sigmaIphiIphi_.push_back(reduceFloat(showerShapes_[37],nBits_)); 
+	
+	++nSC_;
+	double dRmin=1e9;
+	bool foundGsfEleMatch=false;
+	for(auto const& ele : *gsfElectronHandle)
+	  {
+	    auto dr=deltaR(*(ele.superCluster()),sc);
+	    dRmin = dr<dRmin ? dr : dRmin;
+	    if( &( *(ele.superCluster()) ) == &sc) 
+	      {
+		foundGsfEleMatch=true;
+		break;
+	      }
+	  }
+	if(gsfElectronHandle->size()<1)
+	  {
+	    dRmin=-0.333;
+	  }
+	
+	scMinDrWithGsfElectornSC_.push_back(dRmin);
+	scFoundGsfMatch_.push_back(foundGsfEleMatch);
+	
+      } // supercluster loop
+       }
 }
 
 
@@ -1417,6 +1578,87 @@ void BsToMuMuGammaNTuplizer::fillHLT(edm::Event const& iEvent)
     
 }
 
+std::vector<float> BsToMuMuGammaNTuplizer::getShowerShapes(reco::CaloCluster* caloBC, const EcalRecHitCollection* recHits, const CaloTopology *topology)
+{
+  std::vector<float> shapes;
+  shapes.resize(38); 
+  locCov_.clear();
+  full5x5_locCov_.clear();
+  locCov_ = EcalClusterTools::localCovariances(*caloBC, recHits, topology);
+  full5x5_locCov_ = noZS::EcalClusterTools::localCovariances(*caloBC, recHits, topology);
+    
+  float e5x5 = EcalClusterTools::e5x5(*caloBC, recHits, topology); // e5x5
+  float e3x3 = EcalClusterTools::e3x3(*caloBC, recHits, topology); // e3x3
+  float eMax = EcalClusterTools::eMax(*caloBC, recHits); // eMax
+  float eTop = EcalClusterTools::eTop(*caloBC, recHits, topology); // eTop 
+  float eRight = EcalClusterTools::eRight(*caloBC, recHits, topology); // eRight
+  float eBottom = EcalClusterTools::eBottom(*caloBC, recHits, topology); // eBottom
+  float eLeft = EcalClusterTools::eLeft(*caloBC, recHits, topology); // eLeft
+  float e4 = eTop + eRight + eBottom + eLeft;
+
+  shapes[0] = e5x5;
+  shapes[1] = EcalClusterTools::e2x2(*caloBC, recHits, topology)/e5x5; // e2x2/e5x5
+  shapes[2] = EcalClusterTools::e3x3(*caloBC, recHits, topology)/e5x5; // e3x3/e5x5
+  shapes[3] = EcalClusterTools::eMax(*caloBC,  recHits)/e5x5; // eMax/e5x5
+  shapes[4] = EcalClusterTools::e2nd(*caloBC, recHits)/e5x5; // e2nd/e5x5
+  shapes[5] = EcalClusterTools::eTop(*caloBC, recHits, topology)/e5x5; // eTop/e5x5 
+  shapes[6] = EcalClusterTools::eRight(*caloBC, recHits, topology)/e5x5; // eRight/e5x5
+  shapes[7] = EcalClusterTools::eBottom(*caloBC, recHits, topology)/e5x5; // eBottom/e5x5
+  shapes[8] = EcalClusterTools::eLeft(*caloBC, recHits, topology)/e5x5; // eLeft/e5x5
+  shapes[9] = EcalClusterTools::e2x5Max(*caloBC, recHits, topology)/e5x5; // e2x5Max/e5x5
+  shapes[10] = EcalClusterTools::e2x5Top(*caloBC, recHits, topology)/e5x5; // e2x5Top/e5x5  
+  shapes[11] = EcalClusterTools::e2x5Right(*caloBC, recHits, topology)/e5x5; // e2x5Bottom/e5x5  
+  shapes[12] = EcalClusterTools::e2x5Bottom(*caloBC, recHits, topology)/e5x5; // e2x5Left/e5x5  
+  shapes[13] = EcalClusterTools::e2x5Left(*caloBC, recHits, topology)/e5x5; // e2x5Right/e5x5   
+  shapes[14] = 1.-e4/eMax; // swissCross 
+  shapes[15] = e3x3/caloBC->energy(); // r9     
+  shapes[16] = sqrt(locCov_[0]); // sigmaIetaIeta 
+  shapes[17] = locCov_[1]; // sigmaIetaIphi
+  shapes[18] = !edm::isFinite(locCov_[2]) ? 0. : sqrt(locCov_[2]); // sigmaIphiIphi 
+
+  //if(std::isnan(shapes.at(17))) std::cout << shapes[0] << " - " << shapes[1] << " - " << shapes[2] << " - " << shapes[3] << " - " << shapes[4] << " - " << shapes[5]  << " - " << shapes[6] << " - " << shapes[7] << " - " << shapes[8] << " - " << shapes[9] << " - " << shapes[10] << " - " << shapes[11] << " - " << shapes[12] << " - " << shapes[13] << " - " << shapes[14] << " - " << shapes[15]  << " - " << shapes[16] << " - " << shapes[17] << " - " << shapes[18] << std::endl;
+
+  // full_5x5 variables
+  float full5x5_e5x5 = noZS::EcalClusterTools::e5x5(*caloBC, recHits, topology); // e5x5
+  float full5x5_e3x3 = noZS::EcalClusterTools::e3x3(*caloBC, recHits, topology); // e3x3
+  float full5x5_eMax = noZS::EcalClusterTools::eMax(*caloBC, recHits); // eMax
+  float full5x5_eTop = noZS::EcalClusterTools::eTop(*caloBC, recHits, topology); // eTop 
+  float full5x5_eRight = noZS::EcalClusterTools::eRight(*caloBC, recHits, topology); // eRight
+  float full5x5_eBottom = noZS::EcalClusterTools::eBottom(*caloBC, recHits, topology); // eBottom
+  float full5x5_eLeft = noZS::EcalClusterTools::eLeft(*caloBC, recHits, topology); // eLeft
+  float full5x5_e4 = full5x5_eTop + full5x5_eRight + full5x5_eBottom + full5x5_eLeft;
+
+  shapes[19] = full5x5_e5x5;
+  shapes[20] = noZS::EcalClusterTools::e2x2(*caloBC, recHits, topology)/full5x5_e5x5; // e2x2/e5x5
+  shapes[21] = noZS::EcalClusterTools::e3x3(*caloBC, recHits, topology)/full5x5_e5x5; // e3x3/e5x5
+  shapes[22] = noZS::EcalClusterTools::eMax(*caloBC, recHits)/full5x5_e5x5; // eMax/e5x5
+  shapes[23] = noZS::EcalClusterTools::e2nd(*caloBC, recHits)/full5x5_e5x5; // e2nd/e5x5
+  shapes[24] = noZS::EcalClusterTools::eTop(*caloBC, recHits, topology)/full5x5_e5x5; // eTop/e5x5 
+  shapes[25] = noZS::EcalClusterTools::eRight(*caloBC, recHits, topology)/full5x5_e5x5; // eRight/e5x5
+  shapes[26] = noZS::EcalClusterTools::eBottom(*caloBC, recHits, topology)/full5x5_e5x5; // eBottom/e5x5
+  shapes[27] = noZS::EcalClusterTools::eLeft(*caloBC, recHits, topology)/full5x5_e5x5; // eLeft/e5x5
+  shapes[28] = noZS::EcalClusterTools::e2x5Max(*caloBC, recHits, topology)/full5x5_e5x5; // e2x5Max/e5x5
+  shapes[29] = noZS::EcalClusterTools::e2x5Top(*caloBC, recHits, topology)/full5x5_e5x5; // e2x5Top/e5x5  
+  shapes[30] = noZS::EcalClusterTools::e2x5Right(*caloBC, recHits, topology)/full5x5_e5x5; // e2x5Bottom/e5x5  
+  shapes[31] = noZS::EcalClusterTools::e2x5Bottom(*caloBC, recHits, topology)/full5x5_e5x5; // e2x5Left/e5x5  
+  shapes[32] = noZS::EcalClusterTools::e2x5Left(*caloBC, recHits, topology)/full5x5_e5x5; // e2x5Right/e5x5   
+  shapes[33] = 1.-full5x5_e4/full5x5_eMax; // swissCross 
+  shapes[34] = full5x5_e3x3/caloBC->energy(); // r9
+  shapes[35] = sqrt(full5x5_locCov_[0]); // sigmaIetaIeta        
+  shapes[36] = full5x5_locCov_[1]; // sigmaIetaIphi          
+  shapes[37] = !edm::isFinite(full5x5_locCov_[2]) ? 0. : sqrt(full5x5_locCov_[2]); // sigmaIphiIphi
+
+  for(unsigned iVar=0; iVar<shapes.size(); iVar++)
+    if(std::isnan(shapes.at(iVar))) std::cout << "showerShape = " << iVar << " ---> NAN " << std::endl;  
+
+  return shapes; 
+}
+
+float BsToMuMuGammaNTuplizer::reduceFloat(float val, int bits)
+{
+    if(!doCompression_) return val;
+    else return MiniFloatConverter::reduceMantissaToNbitsRounding(val,bits);
+}
 
 
 //define this as a plug-in
