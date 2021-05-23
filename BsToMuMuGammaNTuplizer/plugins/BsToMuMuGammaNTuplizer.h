@@ -197,6 +197,7 @@ private:
 
  //      edm::EDGetTokenT<std::vector<CaloParticle> > caloPartToken_;
       edm::EDGetTokenT<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit>>> ebRechitToken_; 
+      edm::EDGetTokenT<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit>>> eeRechitToken_; 
       //edm::EDGetTokenT<EcalRecHitCollection> ebRechitToken_; 
  //     edm::EDGetTokenT<EcalRecHitCollection> eeRechitToken_; 
    //   edm::EDGetTokenT<std::vector<reco::PFRecHit>  > pfRecHitToken_; 

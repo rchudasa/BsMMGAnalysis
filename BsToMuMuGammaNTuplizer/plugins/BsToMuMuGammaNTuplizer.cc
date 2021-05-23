@@ -129,6 +129,7 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
     MustacheSCEndcapCollection_             = consumes<std::vector<reco::SuperCluster>>(iConfig.getParameter<edm::InputTag>("MustacheSCEndcapSrc"));
     gsfElectronToken_                       = consumes<reco::GsfElectronCollection>(iConfig.getParameter<edm::InputTag>("GsfElectronSrc"));
     ebRechitToken_                 = consumes<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit>>>(iConfig.getParameter<edm::InputTag>("ebRechitCollection"));
+    eeRechitToken_                 = consumes<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit>>>(iConfig.getParameter<edm::InputTag>("eeRechitCollection"));
     //ebRechitToken_                 = consumes<EcalRecHitCollection>(iConfig.getParameter<edm::InputTag>("ebRechitCollection"));
     //eeRechitToken_                 = consumes<EcalRecHitCollection>(iConfig.getParameter<edm::InputTag>("eeRechitCollection"));
   }
@@ -1394,23 +1395,25 @@ void BsToMuMuGammaNTuplizer::fillSC(edm::Event const& e, const edm::EventSetup& 
           return;
       }
 
-  /* edm::Handle<EcalRecHitCollection> recHitsEE;
+   edm::Handle<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit>>> recHitsEE;
+   //edm::Handle<EcalRecHitCollection> recHitsEE;
       e.getByToken(eeRechitToken_, recHitsEE);
       if (!recHitsEE.isValid()) {
           std::cerr << "Analyze --> recHitsEE not found" << std::endl; 
           return;
-      }*/
+      }
 
    locCov_.clear();
    full5x5_locCov_.clear();
      // for(const auto& iSuperCluster : *(superClusterEB.product())){  
-      // for (auto const& scs : { *barrelSCHandle, *endcapSCHandle }) {
-      for (auto const& sc : *(barrelSCHandle.product())) {
+      for (auto const& scs : { *barrelSCHandle.product(), *endcapSCHandle.product() }) {
+      //for (auto const& sc : *(barrelSCHandle.product())) {
+      for (auto const& sc : scs) {
 	//if(abs(sc.eta())>2.4)continue;
 	//
 	
 	edm::ESHandle<CaloTopology> caloTopology;
-	es .get<CaloTopologyRecord>().get(caloTopology);
+	es.get<CaloTopologyRecord>().get(caloTopology);
 	const CaloTopology* topology = caloTopology.product();
 	
 	scE_.push_back(sc.correctedEnergy());
@@ -1423,7 +1426,8 @@ void BsToMuMuGammaNTuplizer::fillSC(edm::Event const& e, const edm::EventSetup& 
 	
 	reco::CaloCluster caloBC(*sc.seed());  
 	showerShapes_.clear();
-	showerShapes_ = getShowerShapes(&caloBC, &(*(recHitsEB.product())), topology);  
+	if(abs(sc.eta()) <= 1.442)showerShapes_ = getShowerShapes(&caloBC, &(*(recHitsEB.product())), topology);  
+	if(abs(sc.eta()) >= 1.566)showerShapes_ = getShowerShapes(&caloBC, &(*(recHitsEE.product())), topology);  
 	superCluster_e5x5_.push_back(reduceFloat(showerShapes_[0],nBits_));
 	superCluster_e2x2Ratio_.push_back(reduceFloat(showerShapes_[1],nBits_));
 	superCluster_e3x3Ratio_.push_back(reduceFloat(showerShapes_[2],nBits_));
@@ -1485,7 +1489,7 @@ void BsToMuMuGammaNTuplizer::fillSC(edm::Event const& e, const edm::EventSetup& 
 	scFoundGsfMatch_.push_back(foundGsfEleMatch);
 	
       } // supercluster loop
-      // }
+       }
 }
 
 
