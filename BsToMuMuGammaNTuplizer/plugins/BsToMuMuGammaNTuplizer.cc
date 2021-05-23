@@ -786,22 +786,28 @@ void BsToMuMuGammaNTuplizer::fillGenParticles(const edm::Event& iEvent)
     for(unsigned int j=0; j<aBsMeson.numberOfDaughters(); j++){
       
       auto& bsDaughter = *(aBsMeson.daughter(j));
+      if(bsDaughter.pdgId() == -13) muMMul++;
+      if(bsDaughter.pdgId() ==  13) muPMul++;
+      if(bsDaughter.pdgId() ==  22) phoMul++;
+    }
+    if(muMMul <0 or muPMul <0 ) continue;
+    if(phoMul <0 and doBsToMuMuGamma  ) continue;
+
+    for(unsigned int j=0; j<aBsMeson.numberOfDaughters(); j++){
+      auto& bsDaughter = *(aBsMeson.daughter(j));
       if(bsDaughter.pdgId() == -13) {
-	muMMul = j;
 	gen_BsMuonM_pt_.push_back(bsDaughter.pt());
 	gen_BsMuonM_eta_.push_back(bsDaughter.eta());
 	gen_BsMuonM_phi_.push_back(bsDaughter.phi());
 	gen_nBsMuonM_++;
       }
       if(bsDaughter.pdgId() ==  13){
-	muPMul = j;
 	gen_BsMuonP_pt_.push_back(bsDaughter.pt());
 	gen_BsMuonP_eta_.push_back(bsDaughter.eta());
 	gen_BsMuonP_phi_.push_back(bsDaughter.phi());
 	gen_nBsMuonP_++;
       }
       if(bsDaughter.pdgId() ==  22){
-	phoMul = j;
 	gen_BsPhoton_pt_.push_back(bsDaughter.pt());
 	gen_BsPhoton_eta_.push_back(bsDaughter.eta());
 	gen_BsPhoton_phi_.push_back(bsDaughter.phi());
@@ -809,19 +815,6 @@ void BsToMuMuGammaNTuplizer::fillGenParticles(const edm::Event& iEvent)
 	
       }
     }  //number of daughters
-    
-    if(phoMul == -1) continue;
-    const reco::Candidate *mum = NULL;
-    const reco::Candidate *mup = NULL;
-    
-    if (muMMul != -1 && muPMul != -1) {
-      mum = aBsMeson.daughter(muMMul);
-      mup = aBsMeson.daughter(muPMul);
-    }
-    
-    if ( mum == NULL || mup == NULL) continue;
-
-    if (printMsg) std::cout << "event:" << iEvent.id().event() << "  Bs ID:" << aBsMeson.pdgId() << "  photon multiplicity:" << phoMul <<  "  negative muon number:" << muMMul << "   positive: " << muPMul << std::endl;
 
     gen_Bs_pt_.push_back(aBsMeson.pt());
     gen_Bs_eta_.push_back(aBsMeson.eta());
@@ -861,7 +854,7 @@ void BsToMuMuGammaNTuplizer::fillMuons(const edm::Event& iEvent, const edm::Even
   muonMassErr= Utility->muonMassErr;
   double chi2,ndof;
 
- std::cout << " muon size:" << muons->size() << std::endl; 
+ //std::cout << " muon size:" << muons->size() << std::endl; 
   //start loop on first muon 
   for (uint32_t i=0;i<muons->size();i++){
    
