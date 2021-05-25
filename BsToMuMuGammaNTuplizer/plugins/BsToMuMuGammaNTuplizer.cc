@@ -5,10 +5,10 @@
 //
 /**\class BsToMuMuGammaNTuplizer BsToMuMuGammaNTuplizer.cc BsMMGAnalysis/BsToMuMuGammaNTuplizer/plugins/BsToMuMuGammaNTuplizer.cc
 
- Description: [one line class summary]
+   Description: [one line class summary]
 
- Implementation:
-     [Notes on implementation]
+   Implementation:
+   [Notes on implementation]
 */
 //
 // Original Author: 
@@ -120,8 +120,8 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
   
   if(doPFPhotons_){
     pfPhotonsCollection_        = consumes<std::vector<reco::PFCandidate>>(iConfig.getUntrackedParameter<edm::InputTag>("pfPhotonSrc"));
-   // pfRecHitToken_                 = consumes<std::vector<reco::PFRecHit> >(iConfig.getParameter<edm::InputTag>("pfRechitCollection"));
-   // pfClusterToken_                = consumes<std::vector<reco::PFCluster> >(iConfig.getParameter<edm::InputTag>("pfClusterCollection"));
+    // pfRecHitToken_                 = consumes<std::vector<reco::PFRecHit> >(iConfig.getParameter<edm::InputTag>("pfRechitCollection"));
+    // pfClusterToken_                = consumes<std::vector<reco::PFCluster> >(iConfig.getParameter<edm::InputTag>("pfClusterCollection"));
   }  
   
   if(doSuperClusters_){
@@ -172,214 +172,214 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
   theTree->Branch("lumis",  &lumis_);
   theTree->Branch("isData", &isData_);
   if (doHLT) {
-  // ### Trigger ###
-  //theTree->Branch("trigTable",     &TrigTable);
-  TrigTable_store=nullptr;
-  TrigResult_store=nullptr;
-  TrigPrescales_store=nullptr;
-  theTree->Branch("trigResult",    &trigResult);
-  theTree->Branch("trigPrescales", &trigPrescales);
-  theTree->Branch("l1Table",       &l1Table);
-  theTree->Branch("l1Prescales",   &l1Prescales);
+    // ### Trigger ###
+    //theTree->Branch("trigTable",     &TrigTable);
+    TrigTable_store=nullptr;
+    TrigResult_store=nullptr;
+    TrigPrescales_store=nullptr;
+    theTree->Branch("trigResult",    &trigResult);
+    theTree->Branch("trigPrescales", &trigPrescales);
+    theTree->Branch("l1Table",       &l1Table);
+    theTree->Branch("l1Prescales",   &l1Prescales);
   
-  SetupTriggerStorageVectors();
-  SetupTriggerBranches();
+    SetupTriggerStorageVectors();
+    SetupTriggerBranches();
 
- }
+  }
 
 
   if (doGenParticles_) {
-  theTree->Branch("gen_nBs"			,&gen_nBs_);
-  theTree->Branch("gen_Bs_pt"			,&gen_Bs_pt_);
-  theTree->Branch("gen_Bs_eta"			,&gen_Bs_eta_);
-  theTree->Branch("gen_Bs_phi"			,&gen_Bs_phi_);
-  theTree->Branch("gen_Bs_pz"			,&gen_Bs_pz_);
-  theTree->Branch("gen_Bs_pdgId"		,&gen_Bs_pdgId_);
+    theTree->Branch("gen_nBs"			,&gen_nBs_);
+    theTree->Branch("gen_Bs_pt"			,&gen_Bs_pt_);
+    theTree->Branch("gen_Bs_eta"			,&gen_Bs_eta_);
+    theTree->Branch("gen_Bs_phi"			,&gen_Bs_phi_);
+    theTree->Branch("gen_Bs_pz"			,&gen_Bs_pz_);
+    theTree->Branch("gen_Bs_pdgId"		,&gen_Bs_pdgId_);
 
-  theTree->Branch("gen_nBsMuonM"		,&gen_nBsMuonM_);
-  theTree->Branch("gen_BsMuonM_pt"		,&gen_BsMuonM_pt_);
-  theTree->Branch("gen_BsMuonM_eta"		,&gen_BsMuonM_eta_);
-  theTree->Branch("gen_BsMuonM_phi"		,&gen_BsMuonM_phi_);
+    theTree->Branch("gen_nBsMuonM"		,&gen_nBsMuonM_);
+    theTree->Branch("gen_BsMuonM_pt"		,&gen_BsMuonM_pt_);
+    theTree->Branch("gen_BsMuonM_eta"		,&gen_BsMuonM_eta_);
+    theTree->Branch("gen_BsMuonM_phi"		,&gen_BsMuonM_phi_);
 
-  theTree->Branch("gen_nBsMuonP"		,&gen_nBsMuonP_);
-  theTree->Branch("gen_BsMuonP_pt"		,&gen_BsMuonP_pt_);
-  theTree->Branch("gen_BsMuonP_eta"		,&gen_BsMuonP_eta_);
-  theTree->Branch("gen_BsMuonP_phi"		,&gen_BsMuonP_phi_);
+    theTree->Branch("gen_nBsMuonP"		,&gen_nBsMuonP_);
+    theTree->Branch("gen_BsMuonP_pt"		,&gen_BsMuonP_pt_);
+    theTree->Branch("gen_BsMuonP_eta"		,&gen_BsMuonP_eta_);
+    theTree->Branch("gen_BsMuonP_phi"		,&gen_BsMuonP_phi_);
 
-  theTree->Branch("gen_nBsPhoton"		,&gen_nBsPhoton_);
-  theTree->Branch("gen_BsPhoton_pt"		,&gen_BsPhoton_pt_);
-  theTree->Branch("gen_BsPhoton_eta"		,&gen_BsPhoton_eta_);
-  theTree->Branch("gen_BsPhoton_phi"		,&gen_BsPhoton_phi_);
+    theTree->Branch("gen_nBsPhoton"		,&gen_nBsPhoton_);
+    theTree->Branch("gen_BsPhoton_pt"		,&gen_BsPhoton_pt_);
+    theTree->Branch("gen_BsPhoton_eta"		,&gen_BsPhoton_eta_);
+    theTree->Branch("gen_BsPhoton_phi"		,&gen_BsPhoton_phi_);
  
   }
 
   if(doMuons_){
 
-  // ### mu- ###  
-  theTree->Branch("nMuM",             &nMuM_);
-  theTree->Branch("mumHighPurity",    &mumHighPurity_);
-  theTree->Branch("mumPt",            &mumPt_);
-  theTree->Branch("mumEta",           &mumEta_);
-  theTree->Branch("mumPhi",           &mumPhi_);
-  theTree->Branch("mumCL",            &mumCL_);
-  theTree->Branch("mumNormChi2",      &mumNormChi2_);
-  theTree->Branch("mumVx",            &mumVx_);
-  theTree->Branch("mumVy",            &mumVy_);
-  theTree->Branch("mumVz",            &mumVz_);
-  theTree->Branch("mumDCABS",         &mumDCABS_);
-  theTree->Branch("mumDCABSE",        &mumDCABSE_);
-  theTree->Branch("mumFracHits",      &mumFracHits_);
-  theTree->Branch("mumdxyBS",         &mumdxyBS_);
-  theTree->Branch("mumdzBS",          &mumdzBS_);
-  theTree->Branch("mumNPixHits",      &mumNPixHits_);
-  theTree->Branch("mumNPixLayers",    &mumNPixLayers_);
-  theTree->Branch("mumNTrkHits",      &mumNTrkHits_);
-  theTree->Branch("mumNTrkLayers",    &mumNTrkLayers_);
-  theTree->Branch("mumNMuonHits",     &mumNMuonHits_);
-  theTree->Branch("mumNMatchStation", &mumNMatchStation_);
-  theTree->Branch("mum_isGlobalMuon", &mum_isGlobalMuon_);
-  theTree->Branch("mum_isTrackerMuon",&mum_isTrackerMuon_);
-  theTree->Branch("mum_StandAloneMuon",&mum_StandAloneMuon_);
-  theTree->Branch("mum_isCaloMuon",    &mum_isCaloMuon_);
-  theTree->Branch("mum_isPFMuon",      &mum_isPFMuon_);
+    // ### mu- ###  
+    theTree->Branch("nMuM",             &nMuM_);
+    theTree->Branch("mumHighPurity",    &mumHighPurity_);
+    theTree->Branch("mumPt",            &mumPt_);
+    theTree->Branch("mumEta",           &mumEta_);
+    theTree->Branch("mumPhi",           &mumPhi_);
+    theTree->Branch("mumCL",            &mumCL_);
+    theTree->Branch("mumNormChi2",      &mumNormChi2_);
+    theTree->Branch("mumVx",            &mumVx_);
+    theTree->Branch("mumVy",            &mumVy_);
+    theTree->Branch("mumVz",            &mumVz_);
+    theTree->Branch("mumDCABS",         &mumDCABS_);
+    theTree->Branch("mumDCABSE",        &mumDCABSE_);
+    theTree->Branch("mumFracHits",      &mumFracHits_);
+    theTree->Branch("mumdxyBS",         &mumdxyBS_);
+    theTree->Branch("mumdzBS",          &mumdzBS_);
+    theTree->Branch("mumNPixHits",      &mumNPixHits_);
+    theTree->Branch("mumNPixLayers",    &mumNPixLayers_);
+    theTree->Branch("mumNTrkHits",      &mumNTrkHits_);
+    theTree->Branch("mumNTrkLayers",    &mumNTrkLayers_);
+    theTree->Branch("mumNMuonHits",     &mumNMuonHits_);
+    theTree->Branch("mumNMatchStation", &mumNMatchStation_);
+    theTree->Branch("mum_isGlobalMuon", &mum_isGlobalMuon_);
+    theTree->Branch("mum_isTrackerMuon",&mum_isTrackerMuon_);
+    theTree->Branch("mum_StandAloneMuon",&mum_StandAloneMuon_);
+    theTree->Branch("mum_isCaloMuon",    &mum_isCaloMuon_);
+    theTree->Branch("mum_isPFMuon",      &mum_isPFMuon_);
 
-   theTree->Branch("mum_selector"          	,  &mum_selector_); 
-   theTree->Branch("mum_isIsolationValid"  	,  &mum_isIsolationValid_);
-   theTree->Branch("mum_isPFIsolationValid"	,  &mum_isPFIsolationValid_);
+    theTree->Branch("mum_selector"          	,  &mum_selector_); 
+    theTree->Branch("mum_isIsolationValid"  	,  &mum_isIsolationValid_);
+    theTree->Branch("mum_isPFIsolationValid"	,  &mum_isPFIsolationValid_);
    
-   theTree->Branch("mum_isolationR03_trackSumPt"			,&mum_isolationR03_trackSumPt_);
-   theTree->Branch("mum_isolationR03_trackEcalSumEt"			,&mum_isolationR03_trackEcalSumEt_);
-   theTree->Branch("mum_isolationR03_trackHcalSumEt"			,&mum_isolationR03_trackHcalSumEt_);
-   theTree->Branch("mum_isolationR03_trackHoSumEt"			,&mum_isolationR03_trackHoSumEt_);
-   theTree->Branch("mum_isolationR03_trackNTracks"			,&mum_isolationR03_trackNTracks_);
-   theTree->Branch("mum_isolationR03_trackNJets"			,&mum_isolationR03_trackNJets_);
-   theTree->Branch("mum_isolationR03_trackerVetoSumPt"			,&mum_isolationR03_trackerVetoSumPt_);
-   theTree->Branch("mum_isolationR03_emVetoSumEt"			,&mum_isolationR03_emVetoSumEt_);
-   theTree->Branch("mum_isolationR03_hadVetoSumEt"			,&mum_isolationR03_hadVetoSumEt_);
-   theTree->Branch("mum_isolationR03_hoVetoEt"				,&mum_isolationR03_hoVetoEt_);
+    theTree->Branch("mum_isolationR03_trackSumPt"			,&mum_isolationR03_trackSumPt_);
+    theTree->Branch("mum_isolationR03_trackEcalSumEt"			,&mum_isolationR03_trackEcalSumEt_);
+    theTree->Branch("mum_isolationR03_trackHcalSumEt"			,&mum_isolationR03_trackHcalSumEt_);
+    theTree->Branch("mum_isolationR03_trackHoSumEt"			,&mum_isolationR03_trackHoSumEt_);
+    theTree->Branch("mum_isolationR03_trackNTracks"			,&mum_isolationR03_trackNTracks_);
+    theTree->Branch("mum_isolationR03_trackNJets"			,&mum_isolationR03_trackNJets_);
+    theTree->Branch("mum_isolationR03_trackerVetoSumPt"			,&mum_isolationR03_trackerVetoSumPt_);
+    theTree->Branch("mum_isolationR03_emVetoSumEt"			,&mum_isolationR03_emVetoSumEt_);
+    theTree->Branch("mum_isolationR03_hadVetoSumEt"			,&mum_isolationR03_hadVetoSumEt_);
+    theTree->Branch("mum_isolationR03_hoVetoEt"				,&mum_isolationR03_hoVetoEt_);
 
-   theTree->Branch("mum_isolationR05_trackSumPt"			,&mum_isolationR05_trackSumPt_);
-   theTree->Branch("mum_isolationR05_trackEcalSumEt"			,&mum_isolationR05_trackEcalSumEt_);
-   theTree->Branch("mum_isolationR05_trackHcalSumEt"			,&mum_isolationR05_trackHcalSumEt_);
-   theTree->Branch("mum_isolationR05_trackHoSumEt"			,&mum_isolationR05_trackHoSumEt_);
-   theTree->Branch("mum_isolationR05_trackNTracks"			,&mum_isolationR05_trackNTracks_);
-   theTree->Branch("mum_isolationR05_trackNJets"			,&mum_isolationR05_trackNJets_);
-   theTree->Branch("mum_isolationR05_trackerVetoSumPt"			,&mum_isolationR05_trackerVetoSumPt_);
-   theTree->Branch("mum_isolationR05_emVetoSumEt"			,&mum_isolationR05_emVetoSumEt_);
-   theTree->Branch("mum_isolationR05_hadVetoSumEt"			,&mum_isolationR05_hadVetoSumEt_);
-   theTree->Branch("mum_isolationR05_hoVetoEt"				,&mum_isolationR05_hoVetoEt_);
+    theTree->Branch("mum_isolationR05_trackSumPt"			,&mum_isolationR05_trackSumPt_);
+    theTree->Branch("mum_isolationR05_trackEcalSumEt"			,&mum_isolationR05_trackEcalSumEt_);
+    theTree->Branch("mum_isolationR05_trackHcalSumEt"			,&mum_isolationR05_trackHcalSumEt_);
+    theTree->Branch("mum_isolationR05_trackHoSumEt"			,&mum_isolationR05_trackHoSumEt_);
+    theTree->Branch("mum_isolationR05_trackNTracks"			,&mum_isolationR05_trackNTracks_);
+    theTree->Branch("mum_isolationR05_trackNJets"			,&mum_isolationR05_trackNJets_);
+    theTree->Branch("mum_isolationR05_trackerVetoSumPt"			,&mum_isolationR05_trackerVetoSumPt_);
+    theTree->Branch("mum_isolationR05_emVetoSumEt"			,&mum_isolationR05_emVetoSumEt_);
+    theTree->Branch("mum_isolationR05_hadVetoSumEt"			,&mum_isolationR05_hadVetoSumEt_);
+    theTree->Branch("mum_isolationR05_hoVetoEt"				,&mum_isolationR05_hoVetoEt_);
                                                                                                                                                                                                                                                           
-   theTree->Branch("mum_PFIsolationR03_sumChargedHadronPt"		,&mum_PFIsolationR03_sumChargedHadronPt_);
-   theTree->Branch("mum_PFIsolationR03_sumChargedParticlePt"		,&mum_PFIsolationR03_sumChargedParticlePt_);
-   theTree->Branch("mum_PFIsolationR03_sumNeutralHadronEt"		,&mum_PFIsolationR03_sumNeutralHadronEt_);
-   theTree->Branch("mum_PFIsolationR03_sumPhotonEt"			,&mum_PFIsolationR03_sumPhotonEt_);
-   theTree->Branch("mum_PFIsolationR03_sumNeutralHadronEtHighThreshold",&mum_PFIsolationR03_sumNeutralHadronEtHighThreshold_);
-   theTree->Branch("mum_PFIsolationR03_sumPhotonEtHighThreshold"	,&mum_PFIsolationR03_sumPhotonEtHighThreshold_);
-   theTree->Branch("mum_PFIsolationR03_sumPUPt"			        ,&mum_PFIsolationR03_sumPUPt_);
+    theTree->Branch("mum_PFIsolationR03_sumChargedHadronPt"		,&mum_PFIsolationR03_sumChargedHadronPt_);
+    theTree->Branch("mum_PFIsolationR03_sumChargedParticlePt"		,&mum_PFIsolationR03_sumChargedParticlePt_);
+    theTree->Branch("mum_PFIsolationR03_sumNeutralHadronEt"		,&mum_PFIsolationR03_sumNeutralHadronEt_);
+    theTree->Branch("mum_PFIsolationR03_sumPhotonEt"			,&mum_PFIsolationR03_sumPhotonEt_);
+    theTree->Branch("mum_PFIsolationR03_sumNeutralHadronEtHighThreshold",&mum_PFIsolationR03_sumNeutralHadronEtHighThreshold_);
+    theTree->Branch("mum_PFIsolationR03_sumPhotonEtHighThreshold"	,&mum_PFIsolationR03_sumPhotonEtHighThreshold_);
+    theTree->Branch("mum_PFIsolationR03_sumPUPt"			        ,&mum_PFIsolationR03_sumPUPt_);
                                                                                                                              
-   theTree->Branch("mum_PFIsolationR04_sumChargedHadronPt"		,&mum_PFIsolationR04_sumChargedHadronPt_);
-   theTree->Branch("mum_PFIsolationR04_sumChargedParticlePt"		,&mum_PFIsolationR04_sumChargedParticlePt_);
-   theTree->Branch("mum_PFIsolationR04_sumNeutralHadronEt"		,&mum_PFIsolationR04_sumNeutralHadronEt_);
-   theTree->Branch("mum_PFIsolationR04_sumPhotonEt"			,&mum_PFIsolationR04_sumPhotonEt_);
-   theTree->Branch("mum_PFIsolationR04_sumNeutralHadronEtHighThreshold",&mum_PFIsolationR04_sumNeutralHadronEtHighThreshold_);
-   theTree->Branch("mum_PFIsolationR04_sumPhotonEtHighThreshold"	,&mum_PFIsolationR04_sumPhotonEtHighThreshold_);
-   theTree->Branch("mum_PFIsolationR04_sumPUPt"			        ,&mum_PFIsolationR04_sumPUPt_);
+    theTree->Branch("mum_PFIsolationR04_sumChargedHadronPt"		,&mum_PFIsolationR04_sumChargedHadronPt_);
+    theTree->Branch("mum_PFIsolationR04_sumChargedParticlePt"		,&mum_PFIsolationR04_sumChargedParticlePt_);
+    theTree->Branch("mum_PFIsolationR04_sumNeutralHadronEt"		,&mum_PFIsolationR04_sumNeutralHadronEt_);
+    theTree->Branch("mum_PFIsolationR04_sumPhotonEt"			,&mum_PFIsolationR04_sumPhotonEt_);
+    theTree->Branch("mum_PFIsolationR04_sumNeutralHadronEtHighThreshold",&mum_PFIsolationR04_sumNeutralHadronEtHighThreshold_);
+    theTree->Branch("mum_PFIsolationR04_sumPhotonEtHighThreshold"	,&mum_PFIsolationR04_sumPhotonEtHighThreshold_);
+    theTree->Branch("mum_PFIsolationR04_sumPUPt"			        ,&mum_PFIsolationR04_sumPUPt_);
 
-  // ### mu+ ###  
-  theTree->Branch("nMuP",             &nMuP_);
-  theTree->Branch("mupHighPurity",    &mupHighPurity_);
-  theTree->Branch("mupPt",            &mupPt_);
-  theTree->Branch("mupEta",           &mupEta_);
-  theTree->Branch("mupPhi",           &mupPhi_);
-  theTree->Branch("mupCL",            &mupCL_);
-  theTree->Branch("mupNormChi2",      &mupNormChi2_);
-  theTree->Branch("mupVx",            &mupVx_);
-  theTree->Branch("mupVy",            &mupVy_);
-  theTree->Branch("mupVz",            &mupVz_);
-  theTree->Branch("mupDCABS",         &mupDCABS_);
-  theTree->Branch("mupDCABSE",        &mupDCABSE_);
-  theTree->Branch("mupFracHits",      &mupFracHits_);
-  theTree->Branch("mupdxyBS",         &mupdxyBS_);
-  theTree->Branch("mupdzBS",          &mupdzBS_);
-  theTree->Branch("mupNPixHits",      &mupNPixHits_);
-  theTree->Branch("mupNPixLayers",    &mupNPixLayers_);
-  theTree->Branch("mupNTrkHits",      &mupNTrkHits_);
-  theTree->Branch("mupNTrkLayers",    &mupNTrkLayers_);
-  theTree->Branch("mupNMuonHits",     &mupNMuonHits_);
-  theTree->Branch("mupNMatchStation", &mupNMatchStation_);
-  theTree->Branch("mup_isGlobalMuon", &mup_isGlobalMuon_);
-  theTree->Branch("mup_isTrackerMuon",&mup_isTrackerMuon_);
-  theTree->Branch("mup_StandAloneMuon",&mup_StandAloneMuon_);
-  theTree->Branch("mup_isCaloMuon",    &mup_isCaloMuon_);
-  theTree->Branch("mup_isPFMuon",      &mup_isPFMuon_);
+    // ### mu+ ###  
+    theTree->Branch("nMuP",             &nMuP_);
+    theTree->Branch("mupHighPurity",    &mupHighPurity_);
+    theTree->Branch("mupPt",            &mupPt_);
+    theTree->Branch("mupEta",           &mupEta_);
+    theTree->Branch("mupPhi",           &mupPhi_);
+    theTree->Branch("mupCL",            &mupCL_);
+    theTree->Branch("mupNormChi2",      &mupNormChi2_);
+    theTree->Branch("mupVx",            &mupVx_);
+    theTree->Branch("mupVy",            &mupVy_);
+    theTree->Branch("mupVz",            &mupVz_);
+    theTree->Branch("mupDCABS",         &mupDCABS_);
+    theTree->Branch("mupDCABSE",        &mupDCABSE_);
+    theTree->Branch("mupFracHits",      &mupFracHits_);
+    theTree->Branch("mupdxyBS",         &mupdxyBS_);
+    theTree->Branch("mupdzBS",          &mupdzBS_);
+    theTree->Branch("mupNPixHits",      &mupNPixHits_);
+    theTree->Branch("mupNPixLayers",    &mupNPixLayers_);
+    theTree->Branch("mupNTrkHits",      &mupNTrkHits_);
+    theTree->Branch("mupNTrkLayers",    &mupNTrkLayers_);
+    theTree->Branch("mupNMuonHits",     &mupNMuonHits_);
+    theTree->Branch("mupNMatchStation", &mupNMatchStation_);
+    theTree->Branch("mup_isGlobalMuon", &mup_isGlobalMuon_);
+    theTree->Branch("mup_isTrackerMuon",&mup_isTrackerMuon_);
+    theTree->Branch("mup_StandAloneMuon",&mup_StandAloneMuon_);
+    theTree->Branch("mup_isCaloMuon",    &mup_isCaloMuon_);
+    theTree->Branch("mup_isPFMuon",      &mup_isPFMuon_);
 
-   theTree->Branch("mup_selector"          	,  &mup_selector_); 
-   theTree->Branch("mup_isIsolationValid"  	,  &mup_isIsolationValid_);
-   theTree->Branch("mup_isPFIsolationValid"	,  &mup_isPFIsolationValid_);
+    theTree->Branch("mup_selector"          	,  &mup_selector_); 
+    theTree->Branch("mup_isIsolationValid"  	,  &mup_isIsolationValid_);
+    theTree->Branch("mup_isPFIsolationValid"	,  &mup_isPFIsolationValid_);
    
-   theTree->Branch("mup_isolationR03_trackSumPt"			,&mup_isolationR03_trackSumPt_);
-   theTree->Branch("mup_isolationR03_trackEcalSumEt"			,&mup_isolationR03_trackEcalSumEt_);
-   theTree->Branch("mup_isolationR03_trackHcalSumEt"			,&mup_isolationR03_trackHcalSumEt_);
-   theTree->Branch("mup_isolationR03_trackHoSumEt"			,&mup_isolationR03_trackHoSumEt_);
-   theTree->Branch("mup_isolationR03_trackNTracks"			,&mup_isolationR03_trackNTracks_);
-   theTree->Branch("mup_isolationR03_trackNJets"			,&mup_isolationR03_trackNJets_);
-   theTree->Branch("mup_isolationR03_trackerVetoSumPt"			,&mup_isolationR03_trackerVetoSumPt_);
-   theTree->Branch("mup_isolationR03_emVetoSumEt"			,&mup_isolationR03_emVetoSumEt_);
-   theTree->Branch("mup_isolationR03_hadVetoSumEt"			,&mup_isolationR03_hadVetoSumEt_);
-   theTree->Branch("mup_isolationR03_hoVetoEt"				,&mup_isolationR03_hoVetoEt_);
+    theTree->Branch("mup_isolationR03_trackSumPt"			,&mup_isolationR03_trackSumPt_);
+    theTree->Branch("mup_isolationR03_trackEcalSumEt"			,&mup_isolationR03_trackEcalSumEt_);
+    theTree->Branch("mup_isolationR03_trackHcalSumEt"			,&mup_isolationR03_trackHcalSumEt_);
+    theTree->Branch("mup_isolationR03_trackHoSumEt"			,&mup_isolationR03_trackHoSumEt_);
+    theTree->Branch("mup_isolationR03_trackNTracks"			,&mup_isolationR03_trackNTracks_);
+    theTree->Branch("mup_isolationR03_trackNJets"			,&mup_isolationR03_trackNJets_);
+    theTree->Branch("mup_isolationR03_trackerVetoSumPt"			,&mup_isolationR03_trackerVetoSumPt_);
+    theTree->Branch("mup_isolationR03_emVetoSumEt"			,&mup_isolationR03_emVetoSumEt_);
+    theTree->Branch("mup_isolationR03_hadVetoSumEt"			,&mup_isolationR03_hadVetoSumEt_);
+    theTree->Branch("mup_isolationR03_hoVetoEt"				,&mup_isolationR03_hoVetoEt_);
 
-   theTree->Branch("mup_isolationR05_trackSumPt"			,&mup_isolationR05_trackSumPt_);
-   theTree->Branch("mup_isolationR05_trackEcalSumEt"			,&mup_isolationR05_trackEcalSumEt_);
-   theTree->Branch("mup_isolationR05_trackHcalSumEt"			,&mup_isolationR05_trackHcalSumEt_);
-   theTree->Branch("mup_isolationR05_trackHoSumEt"			,&mup_isolationR05_trackHoSumEt_);
-   theTree->Branch("mup_isolationR05_trackNTracks"			,&mup_isolationR05_trackNTracks_);
-   theTree->Branch("mup_isolationR05_trackNJets"			,&mup_isolationR05_trackNJets_);
-   theTree->Branch("mup_isolationR05_trackerVetoSumPt"			,&mup_isolationR05_trackerVetoSumPt_);
-   theTree->Branch("mup_isolationR05_emVetoSumEt"			,&mup_isolationR05_emVetoSumEt_);
-   theTree->Branch("mup_isolationR05_hadVetoSumEt"			,&mup_isolationR05_hadVetoSumEt_);
-   theTree->Branch("mup_isolationR05_hoVetoEt"				,&mup_isolationR05_hoVetoEt_);
+    theTree->Branch("mup_isolationR05_trackSumPt"			,&mup_isolationR05_trackSumPt_);
+    theTree->Branch("mup_isolationR05_trackEcalSumEt"			,&mup_isolationR05_trackEcalSumEt_);
+    theTree->Branch("mup_isolationR05_trackHcalSumEt"			,&mup_isolationR05_trackHcalSumEt_);
+    theTree->Branch("mup_isolationR05_trackHoSumEt"			,&mup_isolationR05_trackHoSumEt_);
+    theTree->Branch("mup_isolationR05_trackNTracks"			,&mup_isolationR05_trackNTracks_);
+    theTree->Branch("mup_isolationR05_trackNJets"			,&mup_isolationR05_trackNJets_);
+    theTree->Branch("mup_isolationR05_trackerVetoSumPt"			,&mup_isolationR05_trackerVetoSumPt_);
+    theTree->Branch("mup_isolationR05_emVetoSumEt"			,&mup_isolationR05_emVetoSumEt_);
+    theTree->Branch("mup_isolationR05_hadVetoSumEt"			,&mup_isolationR05_hadVetoSumEt_);
+    theTree->Branch("mup_isolationR05_hoVetoEt"				,&mup_isolationR05_hoVetoEt_);
                                                                                                                                                                                                                                                           
-   theTree->Branch("mup_PFIsolationR03_sumChargedHadronPt"		,&mup_PFIsolationR03_sumChargedHadronPt_);
-   theTree->Branch("mup_PFIsolationR03_sumChargedParticlePt"		,&mup_PFIsolationR03_sumChargedParticlePt_);
-   theTree->Branch("mup_PFIsolationR03_sumNeutralHadronEt"		,&mup_PFIsolationR03_sumNeutralHadronEt_);
-   theTree->Branch("mup_PFIsolationR03_sumPhotonEt"			,&mup_PFIsolationR03_sumPhotonEt_);
-   theTree->Branch("mup_PFIsolationR03_sumNeutralHadronEtHighThreshold",&mup_PFIsolationR03_sumNeutralHadronEtHighThreshold_);
-   theTree->Branch("mup_PFIsolationR03_sumPhotonEtHighThreshold"	,&mup_PFIsolationR03_sumPhotonEtHighThreshold_);
-   theTree->Branch("mup_PFIsolationR03_sumPUPt"			        ,&mup_PFIsolationR03_sumPUPt_);
+    theTree->Branch("mup_PFIsolationR03_sumChargedHadronPt"		,&mup_PFIsolationR03_sumChargedHadronPt_);
+    theTree->Branch("mup_PFIsolationR03_sumChargedParticlePt"		,&mup_PFIsolationR03_sumChargedParticlePt_);
+    theTree->Branch("mup_PFIsolationR03_sumNeutralHadronEt"		,&mup_PFIsolationR03_sumNeutralHadronEt_);
+    theTree->Branch("mup_PFIsolationR03_sumPhotonEt"			,&mup_PFIsolationR03_sumPhotonEt_);
+    theTree->Branch("mup_PFIsolationR03_sumNeutralHadronEtHighThreshold",&mup_PFIsolationR03_sumNeutralHadronEtHighThreshold_);
+    theTree->Branch("mup_PFIsolationR03_sumPhotonEtHighThreshold"	,&mup_PFIsolationR03_sumPhotonEtHighThreshold_);
+    theTree->Branch("mup_PFIsolationR03_sumPUPt"			        ,&mup_PFIsolationR03_sumPUPt_);
                                                                                                                              
-   theTree->Branch("mup_PFIsolationR04_sumChargedHadronPt"		,&mup_PFIsolationR04_sumChargedHadronPt_);
-   theTree->Branch("mup_PFIsolationR04_sumChargedParticlePt"		,&mup_PFIsolationR04_sumChargedParticlePt_);
-   theTree->Branch("mup_PFIsolationR04_sumNeutralHadronEt"		,&mup_PFIsolationR04_sumNeutralHadronEt_);
-   theTree->Branch("mup_PFIsolationR04_sumPhotonEt"			,&mup_PFIsolationR04_sumPhotonEt_);
-   theTree->Branch("mup_PFIsolationR04_sumNeutralHadronEtHighThreshold",&mup_PFIsolationR04_sumNeutralHadronEtHighThreshold_);
-   theTree->Branch("mup_PFIsolationR04_sumPhotonEtHighThreshold"	,&mup_PFIsolationR04_sumPhotonEtHighThreshold_);
-   theTree->Branch("mup_PFIsolationR04_sumPUPt"			        ,&mup_PFIsolationR04_sumPUPt_);
+    theTree->Branch("mup_PFIsolationR04_sumChargedHadronPt"		,&mup_PFIsolationR04_sumChargedHadronPt_);
+    theTree->Branch("mup_PFIsolationR04_sumChargedParticlePt"		,&mup_PFIsolationR04_sumChargedParticlePt_);
+    theTree->Branch("mup_PFIsolationR04_sumNeutralHadronEt"		,&mup_PFIsolationR04_sumNeutralHadronEt_);
+    theTree->Branch("mup_PFIsolationR04_sumPhotonEt"			,&mup_PFIsolationR04_sumPhotonEt_);
+    theTree->Branch("mup_PFIsolationR04_sumNeutralHadronEtHighThreshold",&mup_PFIsolationR04_sumNeutralHadronEtHighThreshold_);
+    theTree->Branch("mup_PFIsolationR04_sumPhotonEtHighThreshold"	,&mup_PFIsolationR04_sumPhotonEtHighThreshold_);
+    theTree->Branch("mup_PFIsolationR04_sumPUPt"			        ,&mup_PFIsolationR04_sumPUPt_);
 
-  // ### mu+ mu- Mass ###
-  theTree->Branch("mumuPt",    &mumuPt_);
-  theTree->Branch("mumuEta",   &mumuEta_);
-  theTree->Branch("mumuRapidity",&mumuRapidity_);
-  theTree->Branch("mumuPhi",   &mumuPhi_);
-  theTree->Branch("mumuMass",  &mumuMass_);
-  theTree->Branch("mumuMassE", &mumuMassE_);
-  theTree->Branch("mumuPx",    &mumuPx_);
-  theTree->Branch("mumuPy",    &mumuPy_);
-  theTree->Branch("mumuPz",    &mumuPz_);
-  theTree->Branch("mumuDR",    &mumuDR_);
+    // ### mu+ mu- Mass ###
+    theTree->Branch("mumuPt",    &mumuPt_);
+    theTree->Branch("mumuEta",   &mumuEta_);
+    theTree->Branch("mumuRapidity",&mumuRapidity_);
+    theTree->Branch("mumuPhi",   &mumuPhi_);
+    theTree->Branch("mumuMass",  &mumuMass_);
+    theTree->Branch("mumuMassE", &mumuMassE_);
+    theTree->Branch("mumuPx",    &mumuPx_);
+    theTree->Branch("mumuPy",    &mumuPy_);
+    theTree->Branch("mumuPz",    &mumuPz_);
+    theTree->Branch("mumuDR",    &mumuDR_);
 
-  // ### mu+ mu- Vtx ###
-  theTree->Branch("mumuVtxCL",       &mumuVtxCL_);
-  theTree->Branch("mumuVtxX",        &mumuVtxX_);
-  theTree->Branch("mumuVtxY",        &mumuVtxY_);
-  theTree->Branch("mumuVtxZ",        &mumuVtxZ_);
-  theTree->Branch("mumuVtxChi2",     &mumuVtxChi2_);
-  theTree->Branch("mumuVtxNdof",     &mumuVtxNdof_);
+    // ### mu+ mu- Vtx ###
+    theTree->Branch("mumuVtxCL",       &mumuVtxCL_);
+    theTree->Branch("mumuVtxX",        &mumuVtxX_);
+    theTree->Branch("mumuVtxY",        &mumuVtxY_);
+    theTree->Branch("mumuVtxZ",        &mumuVtxZ_);
+    theTree->Branch("mumuVtxChi2",     &mumuVtxChi2_);
+    theTree->Branch("mumuVtxNdof",     &mumuVtxNdof_);
 
-  theTree->Branch("mumuCosAlphaBS",  &mumuCosAlphaBS_);
-  theTree->Branch("mumuCosAlphaBSE", &mumuCosAlphaBSE_);
-  theTree->Branch("mumuLBS",         &mumuLBS_);
-  theTree->Branch("mumuLBSE",        &mumuLBSE_);
-  theTree->Branch("mumuDCA",         &mumuDCA_);
+    theTree->Branch("mumuCosAlphaBS",  &mumuCosAlphaBS_);
+    theTree->Branch("mumuCosAlphaBSE", &mumuCosAlphaBSE_);
+    theTree->Branch("mumuLBS",         &mumuLBS_);
+    theTree->Branch("mumuLBSE",        &mumuLBSE_);
+    theTree->Branch("mumuDCA",         &mumuDCA_);
 
 
   }
@@ -390,6 +390,47 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
     theTree->Branch("phoEt",                 &phoEt_);
     theTree->Branch("phoEta",                &phoEta_);
     theTree->Branch("phoPhi",                &phoPhi_);
+    theTree->Branch("phoSigmaE",               &phoSigmaE_);
+    theTree->Branch("phoCalibE",               &phoCalibE_);
+    theTree->Branch("phoCalibEt",              &phoCalibEt_);
+    theTree->Branch("phoSCE",                  &phoSCE_);
+    theTree->Branch("phoSCEt",                 &phoSCEt_);
+    theTree->Branch("phoSCRawE",               &phoSCRawE_);
+    theTree->Branch("phoESEnP1",               &phoESEnP1_);
+    theTree->Branch("phoESEnP2",               &phoESEnP2_);
+    theTree->Branch("phoSCEta",                &phoSCEta_);
+    theTree->Branch("phoSCPhi",                &phoSCPhi_);
+    theTree->Branch("phoSCEtaWidth",           &phoSCEtaWidth_);
+    theTree->Branch("phoSCPhiWidth",           &phoSCPhiWidth_);
+    theTree->Branch("phoSCBrem",               &phoSCBrem_);
+    theTree->Branch("phohasPixelSeed",         &phohasPixelSeed_);
+    theTree->Branch("phoEleVeto",              &phoEleVeto_);
+    theTree->Branch("phoR9",                   &phoR9_);
+    theTree->Branch("phoHoverE",               &phoHoverE_);
+    theTree->Branch("phoESEffSigmaRR",         &phoESEffSigmaRR_);
+    theTree->Branch("phoSigmaIEtaIEtaFull5x5", &phoSigmaIEtaIEtaFull5x5_);
+    theTree->Branch("phoSigmaIEtaIPhiFull5x5", &phoSigmaIEtaIPhiFull5x5_);
+    theTree->Branch("phoSigmaIPhiIPhiFull5x5", &phoSigmaIPhiIPhiFull5x5_);
+    theTree->Branch("phoE2x2Full5x5",          &phoE2x2Full5x5_);
+    theTree->Branch("phoE5x5Full5x5",          &phoE5x5Full5x5_);
+    theTree->Branch("phoR9Full5x5",            &phoR9Full5x5_);
+    
+    theTree->Branch("phoPFChIso",              &phoPFChIso_);
+    theTree->Branch("phoPFPhoIso",             &phoPFPhoIso_);
+    theTree->Branch("phoPFNeuIso",             &phoPFNeuIso_);
+    theTree->Branch("phoEcalPFClusterIso",     &phoEcalPFClusterIso_);
+    theTree->Branch("phoHcalPFClusterIso",     &phoHcalPFClusterIso_);
+    theTree->Branch("phoIDMVA",                &phoIDMVA_);
+   
+    theTree->Branch("phoSeedTime",             &phoSeedTime_);
+    theTree->Branch("phoSeedEnergy",           &phoSeedEnergy_);
+    theTree->Branch("phoMIPTotEnergy",         &phoMIPTotEnergy_);
+    theTree->Branch("phoMIPChi2",                      &phoMIPChi2_);
+    theTree->Branch("phoMIPSlope",                     &phoMIPSlope_);
+    theTree->Branch("phoMIPIntercept",                 &phoMIPIntercept_);
+    theTree->Branch("phoMIPNhitCone",                  &phoMIPNhitCone_);
+    theTree->Branch("phoMIPIsHalo",                    &phoMIPIsHalo_);
+
   }
 
   if (doPFPhotons_) {
@@ -401,59 +442,58 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
   }
 
   if (doSuperClusters_) {
-  theTree->Branch("nSC",                  &nSC_);
-  theTree->Branch("scE",                  &scE_);
-  theTree->Branch("scRawE",               &scRawE_);
-  theTree->Branch("scEta",                &scEta_);
-  theTree->Branch("scPhi",                &scPhi_);
-  theTree->Branch("scX",        &scX_);
-  theTree->Branch("scY",        &scY_);
-  theTree->Branch("scZ",        &scZ_);
-  theTree->Branch("scEtaWidth", &scEtaWidth_);
-  theTree->Branch("scPhiWidth", &scPhiWidth_);
-  theTree->Branch("scRawE",     &scRawE_);
-  theTree->Branch("scRawEt",    &scRawEt_);
-  theTree->Branch("scMinDrWithGsfElectornSC_",  &scMinDrWithGsfElectornSC_);
-  theTree->Branch("scFoundGsfMatch_" ,        &scFoundGsfMatch_);
+    theTree->Branch("nSC",                  &nSC_);
+    theTree->Branch("scE",                  &scE_);
+    theTree->Branch("scRawE",               &scRawE_);
+    theTree->Branch("scEta",                &scEta_);
+    theTree->Branch("scPhi",                &scPhi_);
+    theTree->Branch("scX",        &scX_);
+    theTree->Branch("scY",        &scY_);
+    theTree->Branch("scZ",        &scZ_);
+    theTree->Branch("scEtaWidth", &scEtaWidth_);
+    theTree->Branch("scPhiWidth", &scPhiWidth_);
+    theTree->Branch("scRawEt",    &scRawEt_);
+    theTree->Branch("scMinDrWithGsfElectornSC_",  &scMinDrWithGsfElectornSC_);
+    theTree->Branch("scFoundGsfMatch_" ,        &scFoundGsfMatch_);
 
-      theTree->Branch("superCluster_e5x5",   &superCluster_e5x5_);
-      theTree->Branch("superCluster_e2x2Ratio",   &superCluster_e2x2Ratio_);
-      theTree->Branch("superCluster_e3x3Ratio",   &superCluster_e3x3Ratio_);
-      theTree->Branch("superCluster_eMaxRatio",   &superCluster_eMaxRatio_);
-      theTree->Branch("superCluster_e2ndRatio",   &superCluster_e2ndRatio_);
-      theTree->Branch("superCluster_eTopRatio",   &superCluster_eTopRatio_);
-      theTree->Branch("superCluster_eRightRatio",   &superCluster_eRightRatio_);
-      theTree->Branch("superCluster_eBottomRatio",   &superCluster_eBottomRatio_);
-      theTree->Branch("superCluster_eLeftRatio",   &superCluster_eLeftRatio_);
-      theTree->Branch("superCluster_e2x5MaxRatio",   &superCluster_e2x5MaxRatio_);
-      theTree->Branch("superCluster_e2x5TopRatio",   &superCluster_e2x5TopRatio_);
-      theTree->Branch("superCluster_e2x5RightRatio",   &superCluster_e2x5RightRatio_);
-      theTree->Branch("superCluster_e2x5BottomRatio",   &superCluster_e2x5BottomRatio_); 
-      theTree->Branch("superCluster_e2x5LeftRatio",   &superCluster_e2x5LeftRatio_); 
-      theTree->Branch("superCluster_swissCross",   &superCluster_swissCross_); 
-      theTree->Branch("superCluster_r9",   &superCluster_r9_);
-      theTree->Branch("superCluster_sigmaIetaIeta",   &superCluster_sigmaIetaIeta_);
-      theTree->Branch("superCluster_sigmaIetaIphi",   &superCluster_sigmaIetaIphi_);
-      theTree->Branch("superCluster_sigmaIphiIphi",   &superCluster_sigmaIphiIphi_);
-      theTree->Branch("superCluster_full5x5_e5x5",   &superCluster_full5x5_e5x5_);
-      theTree->Branch("superCluster_full5x5_e2x2Ratio",   &superCluster_full5x5_e2x2Ratio_);
-      theTree->Branch("superCluster_full5x5_e3x3Ratio",   &superCluster_full5x5_e3x3Ratio_);
-      theTree->Branch("superCluster_full5x5_eMaxRatio",   &superCluster_full5x5_eMaxRatio_);
-      theTree->Branch("superCluster_full5x5_e2ndRatio",   &superCluster_full5x5_e2ndRatio_);
-      theTree->Branch("superCluster_full5x5_eTopRatio",   &superCluster_full5x5_eTopRatio_);
-      theTree->Branch("superCluster_full5x5_eRightRatio",   &superCluster_full5x5_eRightRatio_);
-      theTree->Branch("superCluster_full5x5_eBottomRatio",   &superCluster_full5x5_eBottomRatio_);
-      theTree->Branch("superCluster_full5x5_eLeftRatio",   &superCluster_full5x5_eLeftRatio_);
-      theTree->Branch("superCluster_full5x5_e2x5MaxRatio",   &superCluster_full5x5_e2x5MaxRatio_);
-      theTree->Branch("superCluster_full5x5_e2x5TopRatio",   &superCluster_full5x5_e2x5TopRatio_);
-      theTree->Branch("superCluster_full5x5_e2x5RightRatio",   &superCluster_full5x5_e2x5RightRatio_);
-      theTree->Branch("superCluster_full5x5_e2x5BottomRatio",   &superCluster_full5x5_e2x5BottomRatio_); 
-      theTree->Branch("superCluster_full5x5_e2x5LeftRatio",   &superCluster_full5x5_e2x5LeftRatio_); 
-      theTree->Branch("superCluster_full5x5_swissCross",   &superCluster_full5x5_swissCross_); 
-      theTree->Branch("superCluster_full5x5_r9",   &superCluster_full5x5_r9_);
-      theTree->Branch("superCluster_full5x5_sigmaIetaIeta",   &superCluster_full5x5_sigmaIetaIeta_);
-      theTree->Branch("superCluster_full5x5_sigmaIetaIphi",   &superCluster_full5x5_sigmaIetaIphi_);
-      theTree->Branch("superCluster_full5x5_sigmaIphiIphi",   &superCluster_full5x5_sigmaIphiIphi_);
+    theTree->Branch("superCluster_e5x5",   &superCluster_e5x5_);
+    theTree->Branch("superCluster_e2x2Ratio",   &superCluster_e2x2Ratio_);
+    theTree->Branch("superCluster_e3x3Ratio",   &superCluster_e3x3Ratio_);
+    theTree->Branch("superCluster_eMaxRatio",   &superCluster_eMaxRatio_);
+    theTree->Branch("superCluster_e2ndRatio",   &superCluster_e2ndRatio_);
+    theTree->Branch("superCluster_eTopRatio",   &superCluster_eTopRatio_);
+    theTree->Branch("superCluster_eRightRatio",   &superCluster_eRightRatio_);
+    theTree->Branch("superCluster_eBottomRatio",   &superCluster_eBottomRatio_);
+    theTree->Branch("superCluster_eLeftRatio",   &superCluster_eLeftRatio_);
+    theTree->Branch("superCluster_e2x5MaxRatio",   &superCluster_e2x5MaxRatio_);
+    theTree->Branch("superCluster_e2x5TopRatio",   &superCluster_e2x5TopRatio_);
+    theTree->Branch("superCluster_e2x5RightRatio",   &superCluster_e2x5RightRatio_);
+    theTree->Branch("superCluster_e2x5BottomRatio",   &superCluster_e2x5BottomRatio_); 
+    theTree->Branch("superCluster_e2x5LeftRatio",   &superCluster_e2x5LeftRatio_); 
+    theTree->Branch("superCluster_swissCross",   &superCluster_swissCross_); 
+    theTree->Branch("superCluster_r9",   &superCluster_r9_);
+    theTree->Branch("superCluster_sigmaIetaIeta",   &superCluster_sigmaIetaIeta_);
+    theTree->Branch("superCluster_sigmaIetaIphi",   &superCluster_sigmaIetaIphi_);
+    theTree->Branch("superCluster_sigmaIphiIphi",   &superCluster_sigmaIphiIphi_);
+    theTree->Branch("superCluster_full5x5_e5x5",   &superCluster_full5x5_e5x5_);
+    theTree->Branch("superCluster_full5x5_e2x2Ratio",   &superCluster_full5x5_e2x2Ratio_);
+    theTree->Branch("superCluster_full5x5_e3x3Ratio",   &superCluster_full5x5_e3x3Ratio_);
+    theTree->Branch("superCluster_full5x5_eMaxRatio",   &superCluster_full5x5_eMaxRatio_);
+    theTree->Branch("superCluster_full5x5_e2ndRatio",   &superCluster_full5x5_e2ndRatio_);
+    theTree->Branch("superCluster_full5x5_eTopRatio",   &superCluster_full5x5_eTopRatio_);
+    theTree->Branch("superCluster_full5x5_eRightRatio",   &superCluster_full5x5_eRightRatio_);
+    theTree->Branch("superCluster_full5x5_eBottomRatio",   &superCluster_full5x5_eBottomRatio_);
+    theTree->Branch("superCluster_full5x5_eLeftRatio",   &superCluster_full5x5_eLeftRatio_);
+    theTree->Branch("superCluster_full5x5_e2x5MaxRatio",   &superCluster_full5x5_e2x5MaxRatio_);
+    theTree->Branch("superCluster_full5x5_e2x5TopRatio",   &superCluster_full5x5_e2x5TopRatio_);
+    theTree->Branch("superCluster_full5x5_e2x5RightRatio",   &superCluster_full5x5_e2x5RightRatio_);
+    theTree->Branch("superCluster_full5x5_e2x5BottomRatio",   &superCluster_full5x5_e2x5BottomRatio_); 
+    theTree->Branch("superCluster_full5x5_e2x5LeftRatio",   &superCluster_full5x5_e2x5LeftRatio_); 
+    theTree->Branch("superCluster_full5x5_swissCross",   &superCluster_full5x5_swissCross_); 
+    theTree->Branch("superCluster_full5x5_r9",   &superCluster_full5x5_r9_);
+    theTree->Branch("superCluster_full5x5_sigmaIetaIeta",   &superCluster_full5x5_sigmaIetaIeta_);
+    theTree->Branch("superCluster_full5x5_sigmaIetaIphi",   &superCluster_full5x5_sigmaIetaIphi_);
+    theTree->Branch("superCluster_full5x5_sigmaIphiIphi",   &superCluster_full5x5_sigmaIphiIphi_);
   }
 }
 
@@ -466,23 +506,23 @@ void
 BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
   using namespace edm;
 
-      // ## BEAMSOPT STUFF  ## //
-   beamspot_x  = 0.0   ;
-   beamspot_y  = 0.0   ;
-   beamspot_z  = 0.0   ;
-   beamspot_x_error  = 0.0   ;
-   beamspot_y_error  = 0.0   ;
-   beamspot_z_error  = 0.0   ;
-   beamspot_dxdz  = 0.0   ;
-   beamspot_dydz  = 0.0   ;
-   beamspot_sigmaZ  = 0.0   ;
-   beamspot_dxdz_error  = 0.0   ;
-   beamspot_dydz_error  = 0.0   ;
-   beamspot_sigmaZError  = 0.0   ;
-   beamspot_beamWidthX  = 0.0   ;
-   beamspot_beamWidthY  = 0.0   ;
-   beamspot_beamWidthX_error  = 0.0   ;
-   beamspot_beamWidthY_error  = 0.0   ;
+  // ## BEAMSOPT STUFF  ## //
+  beamspot_x  = 0.0   ;
+  beamspot_y  = 0.0   ;
+  beamspot_z  = 0.0   ;
+  beamspot_x_error  = 0.0   ;
+  beamspot_y_error  = 0.0   ;
+  beamspot_z_error  = 0.0   ;
+  beamspot_dxdz  = 0.0   ;
+  beamspot_dydz  = 0.0   ;
+  beamspot_sigmaZ  = 0.0   ;
+  beamspot_dxdz_error  = 0.0   ;
+  beamspot_dydz_error  = 0.0   ;
+  beamspot_sigmaZError  = 0.0   ;
+  beamspot_beamWidthX  = 0.0   ;
+  beamspot_beamWidthY  = 0.0   ;
+  beamspot_beamWidthX_error  = 0.0   ;
+  beamspot_beamWidthY_error  = 0.0   ;
 
   // # offlinePrimaryVertices # //
   
@@ -514,62 +554,62 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
   }
   if (doGenParticles_) {
   
-  gen_nBs_ = 0;
-  gen_nBsMuonM_ = 0 ;
-  gen_nBsMuonP_ = 0 ;
-  gen_nBsPhoton_ = 0 ;
+    gen_nBs_ = 0;
+    gen_nBsMuonM_ = 0 ;
+    gen_nBsMuonP_ = 0 ;
+    gen_nBsPhoton_ = 0 ;
 
-  gen_Bs_pt_.clear() ;
-  gen_Bs_eta_.clear() ;
-  gen_Bs_phi_.clear() ;
-  gen_Bs_pz_.clear() ;
-  gen_Bs_pdgId_.clear();
-  gen_BsMuonM_pt_.clear() ;
-  gen_BsMuonM_eta_.clear() ;
-  gen_BsMuonM_phi_.clear();
-  gen_BsMuonP_pt_.clear() ;
-  gen_BsMuonP_eta_.clear() ;
-  gen_BsMuonP_phi_.clear();
-  gen_BsPhoton_pt_.clear() ;
-  gen_BsPhoton_eta_.clear() ;
-  gen_BsPhoton_phi_.clear();
+    gen_Bs_pt_.clear() ;
+    gen_Bs_eta_.clear() ;
+    gen_Bs_phi_.clear() ;
+    gen_Bs_pz_.clear() ;
+    gen_Bs_pdgId_.clear();
+    gen_BsMuonM_pt_.clear() ;
+    gen_BsMuonM_eta_.clear() ;
+    gen_BsMuonM_phi_.clear();
+    gen_BsMuonP_pt_.clear() ;
+    gen_BsMuonP_eta_.clear() ;
+    gen_BsMuonP_phi_.clear();
+    gen_BsPhoton_pt_.clear() ;
+    gen_BsPhoton_eta_.clear() ;
+    gen_BsPhoton_phi_.clear();
   }
 
   if(doMuons_){
     nMuM_ = 0;
-   nMuP_ = 0; 
-   mumHighPurity_.clear();
-   mumPt_.clear();
-   mumEta_.clear();
-   mumPhi_.clear();
-   mumCL_.clear(); 
-   mumNormChi2_.clear();
-   mumVx_.clear();
-   mumVy_.clear();
-   mumVz_.clear();
+    nMuP_ = 0; 
+    mumHighPurity_.clear();
+    mumPt_.clear();
+    mumEta_.clear();
+    mumPhi_.clear();
+    mumCL_.clear(); 
+    mumNormChi2_.clear();
+    mumVx_.clear();
+    mumVy_.clear();
+    mumVz_.clear();
  
-   mumDCABS_.clear();
-   mumDCABSE_.clear();
-   mumFracHits_.clear();
-   mumdxyBS_.clear();
-   mumdzBS_.clear();
-   mumCharge_.clear();
-   mumNPixHits_.clear();
-   mumNPixLayers_.clear();
-   mumNTrkHits_.clear();
-   mumNTrkLayers_.clear();
-   mumNMuonHits_.clear();
-   mumNMatchStation_.clear();
-   mum_isGlobalMuon_.clear();
-   mum_isTrackerMuon_.clear();
-   mum_StandAloneMuon_.clear();
-   mum_isCaloMuon_.clear();
-   mum_isPFMuon_.clear();
+    mumDCABS_.clear();
+    mumDCABSE_.clear();
+    mumFracHits_.clear();
+    mumdxyBS_.clear();
+    mumdzBS_.clear();
+    mumCharge_.clear();
+    mumNPixHits_.clear();
+    mumNPixLayers_.clear();
+    mumNTrkHits_.clear();
+    mumNTrkLayers_.clear();
+    mumNMuonHits_.clear();
+    mumNMatchStation_.clear();
+    mum_isGlobalMuon_.clear();
+    mum_isTrackerMuon_.clear();
+    mum_StandAloneMuon_.clear();
+    mum_isCaloMuon_.clear();
+    mum_isPFMuon_.clear();
 
-   mum_selector_.clear();
+    mum_selector_.clear();
  
-   mum_isIsolationValid_.clear();
-   mum_isPFIsolationValid_.clear();
+    mum_isIsolationValid_.clear();
+    mum_isPFIsolationValid_.clear();
    
     mum_isolationR03_trackSumPt_.clear();
     mum_isolationR03_trackEcalSumEt_.clear();
@@ -611,38 +651,38 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
   
   
   
-   mupHighPurity_.clear();
-   mupPt_.clear();
-   mupEta_.clear();
-   mupPhi_.clear();
-   mupCL_.clear(); 
-   mupNormChi2_.clear();
-   mupVx_.clear();
-   mupVy_.clear();
-   mupVz_.clear();
-   mupDCABS_.clear();
-   mupDCABSE_.clear();
+    mupHighPurity_.clear();
+    mupPt_.clear();
+    mupEta_.clear();
+    mupPhi_.clear();
+    mupCL_.clear(); 
+    mupNormChi2_.clear();
+    mupVx_.clear();
+    mupVy_.clear();
+    mupVz_.clear();
+    mupDCABS_.clear();
+    mupDCABSE_.clear();
   
-   mupFracHits_.clear();
-   mupdxyBS_.clear();
-   mupdzBS_.clear();
-   mupCharge_.clear();
-   mupNPixHits_.clear();
-   mupNPixLayers_.clear();
-   mupNTrkHits_.clear();
-   mupNTrkLayers_.clear();
-   mupNMuonHits_.clear();
-   mupNMatchStation_.clear();
-   mup_isGlobalMuon_.clear();
-   mup_isTrackerMuon_.clear();
-   mup_StandAloneMuon_.clear();
-   mup_isCaloMuon_.clear();
-   mup_isPFMuon_.clear();
+    mupFracHits_.clear();
+    mupdxyBS_.clear();
+    mupdzBS_.clear();
+    mupCharge_.clear();
+    mupNPixHits_.clear();
+    mupNPixLayers_.clear();
+    mupNTrkHits_.clear();
+    mupNTrkLayers_.clear();
+    mupNMuonHits_.clear();
+    mupNMatchStation_.clear();
+    mup_isGlobalMuon_.clear();
+    mup_isTrackerMuon_.clear();
+    mup_StandAloneMuon_.clear();
+    mup_isCaloMuon_.clear();
+    mup_isPFMuon_.clear();
 
-  mup_selector_.clear();
+    mup_selector_.clear();
  
-   mup_isIsolationValid_.clear();
-   mup_isPFIsolationValid_.clear();
+    mup_isIsolationValid_.clear();
+    mup_isPFIsolationValid_.clear();
    
     mup_isolationR03_trackSumPt_.clear();
     mup_isolationR03_trackEcalSumEt_.clear();
@@ -682,7 +722,7 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
     mup_PFIsolationR04_sumPhotonEtHighThreshold_.clear();
     mup_PFIsolationR04_sumPUPt_.clear();
 
-// ### mu+ mu- variables ###
+    // ### mu+ mu- variables ###
     mumuPt_.clear();
     mumuEta_.clear();
     mumuRapidity_.clear();
@@ -720,6 +760,44 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
     phoEt_                .clear();
     phoEta_               .clear();
     phoPhi_               .clear();
+    phoSigmaE_              .clear();
+    phoCalibE_              .clear();
+    phoCalibEt_             .clear();
+    phoSCE_                 .clear();
+    phoSCEt_                 .clear();
+    phoSCRawE_              .clear();
+    phoESEnP1_              .clear();
+    phoESEnP2_              .clear();
+    phoSCEta_               .clear();
+    phoSCPhi_               .clear();
+    phoSCEtaWidth_          .clear();
+    phoSCPhiWidth_          .clear();
+    phoSCBrem_              .clear();
+    phohasPixelSeed_        .clear();
+    phoEleVeto_             .clear();
+    phoR9_                  .clear();
+    phoHoverE_              .clear();
+    phoESEffSigmaRR_        .clear();
+    phoSigmaIEtaIEtaFull5x5_.clear();
+    phoSigmaIEtaIPhiFull5x5_.clear();
+    phoSigmaIPhiIPhiFull5x5_.clear();
+    phoE2x2Full5x5_         .clear();
+    phoE5x5Full5x5_         .clear();
+    phoR9Full5x5_           .clear();
+    phoPFChIso_             .clear();
+    phoPFPhoIso_            .clear();
+    phoPFNeuIso_            .clear();
+    phoEcalPFClusterIso_    .clear();
+    phoHcalPFClusterIso_    .clear();
+    phoIDMVA_               .clear();
+    phoSeedTime_            .clear();
+    phoSeedEnergy_          .clear();
+    phoMIPTotEnergy_        .clear();  
+    phoMIPChi2_           .clear();
+    phoMIPSlope_          .clear();
+    phoMIPIntercept_      .clear();
+    phoMIPNhitCone_       .clear();
+    phoMIPIsHalo_         .clear();
   }
   
   if (doPFPhotons_) {
@@ -736,54 +814,53 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
     scRawE_               .clear();
     scEta_                .clear();
     scPhi_                .clear();
-  scX_          .clear();      
-  scY_          .clear();      
-  scZ_          .clear();      
-  scEtaWidth_   .clear();         
-  scPhiWidth_   .clear();         
-  scRawE_       .clear();         
-  scRawEt_      .clear();   
-  scMinDrWithGsfElectornSC_.clear();
-  scFoundGsfMatch_.clear();
+    scX_          .clear();      
+    scY_          .clear();      
+    scZ_          .clear();      
+    scEtaWidth_   .clear();         
+    scPhiWidth_   .clear();         
+    scRawEt_      .clear();   
+    scMinDrWithGsfElectornSC_.clear();
+    scFoundGsfMatch_.clear();
 
-   superCluster_e5x5_.clear();
-   superCluster_e2x2Ratio_.clear();
-   superCluster_e3x3Ratio_.clear();
-   superCluster_eMaxRatio_.clear();
-   superCluster_e2ndRatio_.clear();
-   superCluster_eTopRatio_.clear();
-   superCluster_eRightRatio_.clear();
-   superCluster_eBottomRatio_.clear();
-   superCluster_eLeftRatio_.clear();
-   superCluster_e2x5MaxRatio_.clear();
-   superCluster_e2x5TopRatio_.clear();
-   superCluster_e2x5RightRatio_.clear();
-   superCluster_e2x5BottomRatio_.clear();
-   superCluster_e2x5LeftRatio_.clear();
-   superCluster_swissCross_.clear();
-   superCluster_r9_.clear();
-   superCluster_sigmaIetaIeta_.clear(); 
-   superCluster_sigmaIetaIphi_.clear(); 
-   superCluster_sigmaIphiIphi_.clear(); 
-   superCluster_full5x5_e5x5_.clear();
-   superCluster_full5x5_e2x2Ratio_.clear();
-   superCluster_full5x5_e3x3Ratio_.clear();
-   superCluster_full5x5_eMaxRatio_.clear();
-   superCluster_full5x5_e2ndRatio_.clear();
-   superCluster_full5x5_eTopRatio_.clear();
-   superCluster_full5x5_eRightRatio_.clear();
-   superCluster_full5x5_eBottomRatio_.clear();
-   superCluster_full5x5_eLeftRatio_.clear();
-   superCluster_full5x5_e2x5MaxRatio_.clear();
-   superCluster_full5x5_e2x5TopRatio_.clear();
-   superCluster_full5x5_e2x5RightRatio_.clear();
-   superCluster_full5x5_e2x5BottomRatio_.clear();
-   superCluster_full5x5_e2x5LeftRatio_.clear();
-   superCluster_full5x5_swissCross_.clear();
-   superCluster_full5x5_r9_.clear();
-   superCluster_full5x5_sigmaIetaIeta_.clear(); 
-   superCluster_full5x5_sigmaIetaIphi_.clear(); 
-   superCluster_full5x5_sigmaIphiIphi_.clear();  
+    superCluster_e5x5_.clear();
+    superCluster_e2x2Ratio_.clear();
+    superCluster_e3x3Ratio_.clear();
+    superCluster_eMaxRatio_.clear();
+    superCluster_e2ndRatio_.clear();
+    superCluster_eTopRatio_.clear();
+    superCluster_eRightRatio_.clear();
+    superCluster_eBottomRatio_.clear();
+    superCluster_eLeftRatio_.clear();
+    superCluster_e2x5MaxRatio_.clear();
+    superCluster_e2x5TopRatio_.clear();
+    superCluster_e2x5RightRatio_.clear();
+    superCluster_e2x5BottomRatio_.clear();
+    superCluster_e2x5LeftRatio_.clear();
+    superCluster_swissCross_.clear();
+    superCluster_r9_.clear();
+    superCluster_sigmaIetaIeta_.clear(); 
+    superCluster_sigmaIetaIphi_.clear(); 
+    superCluster_sigmaIphiIphi_.clear(); 
+    superCluster_full5x5_e5x5_.clear();
+    superCluster_full5x5_e2x2Ratio_.clear();
+    superCluster_full5x5_e3x3Ratio_.clear();
+    superCluster_full5x5_eMaxRatio_.clear();
+    superCluster_full5x5_e2ndRatio_.clear();
+    superCluster_full5x5_eTopRatio_.clear();
+    superCluster_full5x5_eRightRatio_.clear();
+    superCluster_full5x5_eBottomRatio_.clear();
+    superCluster_full5x5_eLeftRatio_.clear();
+    superCluster_full5x5_e2x5MaxRatio_.clear();
+    superCluster_full5x5_e2x5TopRatio_.clear();
+    superCluster_full5x5_e2x5RightRatio_.clear();
+    superCluster_full5x5_e2x5BottomRatio_.clear();
+    superCluster_full5x5_e2x5LeftRatio_.clear();
+    superCluster_full5x5_swissCross_.clear();
+    superCluster_full5x5_r9_.clear();
+    superCluster_full5x5_sigmaIetaIeta_.clear(); 
+    superCluster_full5x5_sigmaIetaIphi_.clear(); 
+    superCluster_full5x5_sigmaIphiIphi_.clear();  
   }
 
   run_    = iEvent.id().run();
@@ -791,7 +868,7 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
   lumis_  = iEvent.luminosityBlock();
   isData_ = iEvent.isRealData();
 
-// Get magnetic field
+  // Get magnetic field
     
   edm::ESHandle<MagneticField> bFieldHandle;
   iSetup.get<IdealMagneticFieldRecord>().get(bFieldHandle);      
@@ -919,7 +996,7 @@ void BsToMuMuGammaNTuplizer::fillGenParticles(const edm::Event& iEvent)
 void BsToMuMuGammaNTuplizer::fillMuons(const edm::Event& iEvent, const edm::EventSetup& iSetup){
 
   
-// Get magnetic field
+  // Get magnetic field
     
   edm::ESHandle<MagneticField> bFieldHandle;
   iSetup.get<IdealMagneticFieldRecord>().get(bFieldHandle);      
@@ -942,7 +1019,7 @@ void BsToMuMuGammaNTuplizer::fillMuons(const edm::Event& iEvent, const edm::Even
   muonMassErr= Utility->muonMassErr;
   double chi2,ndof;
 
- //std::cout << " muon size:" << muons->size() << std::endl; 
+  //std::cout << " muon size:" << muons->size() << std::endl; 
   //start loop on first muon 
   for (uint32_t i=0;i<muons->size();i++){
    
@@ -961,9 +1038,9 @@ void BsToMuMuGammaNTuplizer::fillMuons(const edm::Event& iEvent, const edm::Even
     double DCAmuBSErr = theDCAXBS.perigeeError().transverseImpactParameterError();
 
     //// #############
-      //// # Save: mu- #
-      //// #############
-      if(muTrack->charge() ==-1){ 
+    //// # Save: mu- #
+    //// #############
+    if(muTrack->charge() ==-1){ 
       mumHighPurity_.push_back( (int)muTrack->quality(reco::Track::highPurity));
       mumPt_.push_back(muTrack->pt());
       mumEta_.push_back(muTrack->eta());
@@ -980,9 +1057,9 @@ void BsToMuMuGammaNTuplizer::fillMuons(const edm::Event& iEvent, const edm::Even
       
 
       mumFracHits_.push_back(static_cast<double>(muTrack->hitPattern().numberOfValidHits()) / static_cast<double>(muTrack->hitPattern().numberOfValidHits() +
-														muTrack->hitPattern().numberOfLostHits(reco::HitPattern::TRACK_HITS) +
-													muTrack->hitPattern().numberOfLostHits(reco::HitPattern::MISSING_INNER_HITS) +
-													muTrack->hitPattern().numberOfLostHits(reco::HitPattern::MISSING_OUTER_HITS)));
+														  muTrack->hitPattern().numberOfLostHits(reco::HitPattern::TRACK_HITS) +
+														  muTrack->hitPattern().numberOfLostHits(reco::HitPattern::MISSING_INNER_HITS) +
+														  muTrack->hitPattern().numberOfLostHits(reco::HitPattern::MISSING_OUTER_HITS)));
 
       mumdxyBS_.push_back(muTrackTT.track().dxy( (beamSpot.position() )));
       mumdzBS_.push_back(muTrackTT.track().dz(  (beamSpot.position() )));
@@ -997,65 +1074,65 @@ void BsToMuMuGammaNTuplizer::fillMuons(const edm::Event& iEvent, const edm::Even
       else mumNMuonHits_.push_back(0);
       mumNMatchStation_.push_back(mu.numberOfMatchedStations());
 
-         mum_isGlobalMuon_	      .push_back(mu.isGlobalMuon());
-         mum_isTrackerMuon_	      .push_back(mu.isTrackerMuon());
-         mum_StandAloneMuon_          .push_back(mu.isStandAloneMuon());
-         mum_isCaloMuon_	      .push_back(mu.isCaloMuon());
-         mum_isPFMuon_	              .push_back(mu.isPFMuon());
+      mum_isGlobalMuon_	      .push_back(mu.isGlobalMuon());
+      mum_isTrackerMuon_	      .push_back(mu.isTrackerMuon());
+      mum_StandAloneMuon_          .push_back(mu.isStandAloneMuon());
+      mum_isCaloMuon_	      .push_back(mu.isCaloMuon());
+      mum_isPFMuon_	              .push_back(mu.isPFMuon());
 
-         mum_selector_.push_back(mu.selectors()); 
-         mum_isIsolationValid_.push_back(mu.isIsolationValid());
-         mum_isPFIsolationValid_.push_back(mu.isIsolationValid());
+      mum_selector_.push_back(mu.selectors()); 
+      mum_isIsolationValid_.push_back(mu.isIsolationValid());
+      mum_isPFIsolationValid_.push_back(mu.isIsolationValid());
 
-    auto &MuIsol03 = mu.isolationR03();
-    mum_isolationR03_trackSumPt_.push_back(MuIsol03.sumPt);
-    mum_isolationR03_trackEcalSumEt_.push_back(MuIsol03.emEt);
-    mum_isolationR03_trackHcalSumEt_.push_back(MuIsol03.hadEt);
-    mum_isolationR03_trackHoSumEt_.push_back(MuIsol03.hoEt);
-    mum_isolationR03_trackNTracks_.push_back(MuIsol03.nTracks);
-    mum_isolationR03_trackNJets_.push_back(MuIsol03.nJets);
-    mum_isolationR03_trackerVetoSumPt_.push_back(MuIsol03.trackerVetoPt);
-    mum_isolationR03_emVetoSumEt_.push_back(MuIsol03.emVetoEt);
-    mum_isolationR03_hadVetoSumEt_.push_back(MuIsol03.hadVetoEt);
-    mum_isolationR03_hoVetoEt_.push_back(MuIsol03.hoVetoEt);
+      auto &MuIsol03 = mu.isolationR03();
+      mum_isolationR03_trackSumPt_.push_back(MuIsol03.sumPt);
+      mum_isolationR03_trackEcalSumEt_.push_back(MuIsol03.emEt);
+      mum_isolationR03_trackHcalSumEt_.push_back(MuIsol03.hadEt);
+      mum_isolationR03_trackHoSumEt_.push_back(MuIsol03.hoEt);
+      mum_isolationR03_trackNTracks_.push_back(MuIsol03.nTracks);
+      mum_isolationR03_trackNJets_.push_back(MuIsol03.nJets);
+      mum_isolationR03_trackerVetoSumPt_.push_back(MuIsol03.trackerVetoPt);
+      mum_isolationR03_emVetoSumEt_.push_back(MuIsol03.emVetoEt);
+      mum_isolationR03_hadVetoSumEt_.push_back(MuIsol03.hadVetoEt);
+      mum_isolationR03_hoVetoEt_.push_back(MuIsol03.hoVetoEt);
   
-    auto &MuIsol05 = mu.isolationR05();
-    mum_isolationR05_trackSumPt_.push_back(MuIsol05.sumPt);
-    mum_isolationR05_trackEcalSumEt_.push_back(MuIsol05.emEt);
-    mum_isolationR05_trackHcalSumEt_.push_back(MuIsol05.hadEt);
-    mum_isolationR05_trackHoSumEt_.push_back(MuIsol05.hoEt);
-    mum_isolationR05_trackNTracks_.push_back(MuIsol05.nTracks);
-    mum_isolationR05_trackNJets_.push_back(MuIsol05.nJets);
-    mum_isolationR05_trackerVetoSumPt_.push_back(MuIsol05.trackerVetoPt);
-    mum_isolationR05_emVetoSumEt_.push_back(MuIsol05.emVetoEt);
-    mum_isolationR05_hadVetoSumEt_.push_back(MuIsol05.hadVetoEt);
-    mum_isolationR05_hoVetoEt_.push_back(MuIsol05.hoVetoEt);
+      auto &MuIsol05 = mu.isolationR05();
+      mum_isolationR05_trackSumPt_.push_back(MuIsol05.sumPt);
+      mum_isolationR05_trackEcalSumEt_.push_back(MuIsol05.emEt);
+      mum_isolationR05_trackHcalSumEt_.push_back(MuIsol05.hadEt);
+      mum_isolationR05_trackHoSumEt_.push_back(MuIsol05.hoEt);
+      mum_isolationR05_trackNTracks_.push_back(MuIsol05.nTracks);
+      mum_isolationR05_trackNJets_.push_back(MuIsol05.nJets);
+      mum_isolationR05_trackerVetoSumPt_.push_back(MuIsol05.trackerVetoPt);
+      mum_isolationR05_emVetoSumEt_.push_back(MuIsol05.emVetoEt);
+      mum_isolationR05_hadVetoSumEt_.push_back(MuIsol05.hadVetoEt);
+      mum_isolationR05_hoVetoEt_.push_back(MuIsol05.hoVetoEt);
   
-    auto &MuPFIsol = mu.pfIsolationR03();
-    mum_PFIsolationR03_sumChargedHadronPt_.push_back(MuPFIsol.sumChargedHadronPt);
-    mum_PFIsolationR03_sumChargedParticlePt_.push_back(MuPFIsol.sumChargedParticlePt);
-    mum_PFIsolationR03_sumNeutralHadronEt_.push_back(MuPFIsol.sumNeutralHadronEt);
-    mum_PFIsolationR03_sumPhotonEt_.push_back(MuPFIsol.sumPhotonEt);
-    mum_PFIsolationR03_sumNeutralHadronEtHighThreshold_.push_back(MuPFIsol.sumNeutralHadronEtHighThreshold);
-    mum_PFIsolationR03_sumPhotonEtHighThreshold_.push_back(MuPFIsol.sumPhotonEtHighThreshold);
-    mum_PFIsolationR03_sumPUPt_.push_back(MuPFIsol.sumPUPt);
+      auto &MuPFIsol = mu.pfIsolationR03();
+      mum_PFIsolationR03_sumChargedHadronPt_.push_back(MuPFIsol.sumChargedHadronPt);
+      mum_PFIsolationR03_sumChargedParticlePt_.push_back(MuPFIsol.sumChargedParticlePt);
+      mum_PFIsolationR03_sumNeutralHadronEt_.push_back(MuPFIsol.sumNeutralHadronEt);
+      mum_PFIsolationR03_sumPhotonEt_.push_back(MuPFIsol.sumPhotonEt);
+      mum_PFIsolationR03_sumNeutralHadronEtHighThreshold_.push_back(MuPFIsol.sumNeutralHadronEtHighThreshold);
+      mum_PFIsolationR03_sumPhotonEtHighThreshold_.push_back(MuPFIsol.sumPhotonEtHighThreshold);
+      mum_PFIsolationR03_sumPUPt_.push_back(MuPFIsol.sumPUPt);
     
-    auto &MuPFIsol04 = mu.pfIsolationR04();
-    mum_PFIsolationR04_sumChargedHadronPt_.push_back(MuPFIsol04.sumChargedHadronPt);
-    mum_PFIsolationR04_sumChargedParticlePt_.push_back(MuPFIsol04.sumChargedParticlePt);
-    mum_PFIsolationR04_sumNeutralHadronEt_.push_back(MuPFIsol04.sumNeutralHadronEt);
-    mum_PFIsolationR04_sumPhotonEt_.push_back(MuPFIsol04.sumPhotonEt);
-    mum_PFIsolationR04_sumNeutralHadronEtHighThreshold_.push_back(MuPFIsol04.sumNeutralHadronEtHighThreshold);
-    mum_PFIsolationR04_sumPhotonEtHighThreshold_.push_back(MuPFIsol04.sumPhotonEtHighThreshold);
-    mum_PFIsolationR04_sumPUPt_.push_back(MuPFIsol04.sumPUPt);
+      auto &MuPFIsol04 = mu.pfIsolationR04();
+      mum_PFIsolationR04_sumChargedHadronPt_.push_back(MuPFIsol04.sumChargedHadronPt);
+      mum_PFIsolationR04_sumChargedParticlePt_.push_back(MuPFIsol04.sumChargedParticlePt);
+      mum_PFIsolationR04_sumNeutralHadronEt_.push_back(MuPFIsol04.sumNeutralHadronEt);
+      mum_PFIsolationR04_sumPhotonEt_.push_back(MuPFIsol04.sumPhotonEt);
+      mum_PFIsolationR04_sumNeutralHadronEtHighThreshold_.push_back(MuPFIsol04.sumNeutralHadronEtHighThreshold);
+      mum_PFIsolationR04_sumPhotonEtHighThreshold_.push_back(MuPFIsol04.sumPhotonEtHighThreshold);
+      mum_PFIsolationR04_sumPUPt_.push_back(MuPFIsol04.sumPUPt);
 
-	nMuM_++; 
-      }
+      nMuM_++; 
+    }
       
-      //// #############
-      //// # Save: mu+ #
-      //// #############
-      if(muTrack->charge() == 1){ 
+    //// #############
+    //// # Save: mu+ #
+    //// #############
+    if(muTrack->charge() == 1){ 
       mupHighPurity_.push_back( (int) muTrack->quality(reco::Track::highPurity));
       mupPt_.push_back(muTrack->pt());
       mupEta_.push_back(muTrack->eta());
@@ -1072,10 +1149,10 @@ void BsToMuMuGammaNTuplizer::fillMuons(const edm::Event& iEvent, const edm::Even
       mupdzBS_.push_back(muTrackTT.track().dz(  (beamSpot.position() )));
       
       mupFracHits_.push_back(static_cast<double>(muTrack->hitPattern().numberOfValidHits()) / 
-                                                   (  muTrack->hitPattern().numberOfValidHits() +
-						      muTrack->hitPattern().numberOfLostHits(reco::HitPattern::TRACK_HITS) +
-						      muTrack->hitPattern().numberOfLostHits(reco::HitPattern::MISSING_INNER_HITS) +
-						      muTrack->hitPattern().numberOfLostHits(reco::HitPattern::MISSING_OUTER_HITS) ) ) ;
+			     (  muTrack->hitPattern().numberOfValidHits() +
+				muTrack->hitPattern().numberOfLostHits(reco::HitPattern::TRACK_HITS) +
+				muTrack->hitPattern().numberOfLostHits(reco::HitPattern::MISSING_INNER_HITS) +
+				muTrack->hitPattern().numberOfLostHits(reco::HitPattern::MISSING_OUTER_HITS) ) ) ;
 
       
       mupNPixHits_.push_back(muTrack->hitPattern().numberOfValidPixelHits());
@@ -1086,62 +1163,62 @@ void BsToMuMuGammaNTuplizer::fillMuons(const edm::Event& iEvent, const edm::Even
       else mupNMuonHits_.push_back(0);
       mupNMatchStation_.push_back(mu.numberOfMatchedStations());
 
-         mup_isGlobalMuon_	      .push_back(mu.isGlobalMuon());
-         mup_isTrackerMuon_	      .push_back(mu.isTrackerMuon());
-         mup_StandAloneMuon_          .push_back(mu.isStandAloneMuon());
-         mup_isCaloMuon_	      .push_back(mu.isCaloMuon());
-         mup_isPFMuon_	              .push_back(mu.isPFMuon());
+      mup_isGlobalMuon_	      .push_back(mu.isGlobalMuon());
+      mup_isTrackerMuon_	      .push_back(mu.isTrackerMuon());
+      mup_StandAloneMuon_          .push_back(mu.isStandAloneMuon());
+      mup_isCaloMuon_	      .push_back(mu.isCaloMuon());
+      mup_isPFMuon_	              .push_back(mu.isPFMuon());
 
-         mup_selector_.push_back(mu.selectors()); 
-         mup_isIsolationValid_.push_back(mu.isIsolationValid());
-         mup_isPFIsolationValid_.push_back(mu.isIsolationValid());
+      mup_selector_.push_back(mu.selectors()); 
+      mup_isIsolationValid_.push_back(mu.isIsolationValid());
+      mup_isPFIsolationValid_.push_back(mu.isIsolationValid());
 
-    auto &MuIsol03 = mu.isolationR03();
-    mup_isolationR03_trackSumPt_.push_back(MuIsol03.sumPt);
-    mup_isolationR03_trackEcalSumEt_.push_back(MuIsol03.emEt);
-    mup_isolationR03_trackHcalSumEt_.push_back(MuIsol03.hadEt);
-    mup_isolationR03_trackHoSumEt_.push_back(MuIsol03.hoEt);
-    mup_isolationR03_trackNTracks_.push_back(MuIsol03.nTracks);
-    mup_isolationR03_trackNJets_.push_back(MuIsol03.nJets);
-    mup_isolationR03_trackerVetoSumPt_.push_back(MuIsol03.trackerVetoPt);
-    mup_isolationR03_emVetoSumEt_.push_back(MuIsol03.emVetoEt);
-    mup_isolationR03_hadVetoSumEt_.push_back(MuIsol03.hadVetoEt);
-    mup_isolationR03_hoVetoEt_.push_back(MuIsol03.hoVetoEt);
+      auto &MuIsol03 = mu.isolationR03();
+      mup_isolationR03_trackSumPt_.push_back(MuIsol03.sumPt);
+      mup_isolationR03_trackEcalSumEt_.push_back(MuIsol03.emEt);
+      mup_isolationR03_trackHcalSumEt_.push_back(MuIsol03.hadEt);
+      mup_isolationR03_trackHoSumEt_.push_back(MuIsol03.hoEt);
+      mup_isolationR03_trackNTracks_.push_back(MuIsol03.nTracks);
+      mup_isolationR03_trackNJets_.push_back(MuIsol03.nJets);
+      mup_isolationR03_trackerVetoSumPt_.push_back(MuIsol03.trackerVetoPt);
+      mup_isolationR03_emVetoSumEt_.push_back(MuIsol03.emVetoEt);
+      mup_isolationR03_hadVetoSumEt_.push_back(MuIsol03.hadVetoEt);
+      mup_isolationR03_hoVetoEt_.push_back(MuIsol03.hoVetoEt);
   
-    auto &MuIsol05 = mu.isolationR05();
-    mup_isolationR05_trackSumPt_.push_back(MuIsol05.sumPt);
-    mup_isolationR05_trackEcalSumEt_.push_back(MuIsol05.emEt);
-    mup_isolationR05_trackHcalSumEt_.push_back(MuIsol05.hadEt);
-    mup_isolationR05_trackHoSumEt_.push_back(MuIsol05.hoEt);
-    mup_isolationR05_trackNTracks_.push_back(MuIsol05.nTracks);
-    mup_isolationR05_trackNJets_.push_back(MuIsol05.nJets);
-    mup_isolationR05_trackerVetoSumPt_.push_back(MuIsol05.trackerVetoPt);
-    mup_isolationR05_emVetoSumEt_.push_back(MuIsol05.emVetoEt);
-    mup_isolationR05_hadVetoSumEt_.push_back(MuIsol05.hadVetoEt);
-    mup_isolationR05_hoVetoEt_.push_back(MuIsol05.hoVetoEt);
+      auto &MuIsol05 = mu.isolationR05();
+      mup_isolationR05_trackSumPt_.push_back(MuIsol05.sumPt);
+      mup_isolationR05_trackEcalSumEt_.push_back(MuIsol05.emEt);
+      mup_isolationR05_trackHcalSumEt_.push_back(MuIsol05.hadEt);
+      mup_isolationR05_trackHoSumEt_.push_back(MuIsol05.hoEt);
+      mup_isolationR05_trackNTracks_.push_back(MuIsol05.nTracks);
+      mup_isolationR05_trackNJets_.push_back(MuIsol05.nJets);
+      mup_isolationR05_trackerVetoSumPt_.push_back(MuIsol05.trackerVetoPt);
+      mup_isolationR05_emVetoSumEt_.push_back(MuIsol05.emVetoEt);
+      mup_isolationR05_hadVetoSumEt_.push_back(MuIsol05.hadVetoEt);
+      mup_isolationR05_hoVetoEt_.push_back(MuIsol05.hoVetoEt);
   
-    auto &MuPFIsol = mu.pfIsolationR03();
-    mup_PFIsolationR03_sumChargedHadronPt_.push_back(MuPFIsol.sumChargedHadronPt);
-    mup_PFIsolationR03_sumChargedParticlePt_.push_back(MuPFIsol.sumChargedParticlePt);
-    mup_PFIsolationR03_sumNeutralHadronEt_.push_back(MuPFIsol.sumNeutralHadronEt);
-    mup_PFIsolationR03_sumPhotonEt_.push_back(MuPFIsol.sumPhotonEt);
-    mup_PFIsolationR03_sumNeutralHadronEtHighThreshold_.push_back(MuPFIsol.sumNeutralHadronEtHighThreshold);
-    mup_PFIsolationR03_sumPhotonEtHighThreshold_.push_back(MuPFIsol.sumPhotonEtHighThreshold);
-    mup_PFIsolationR03_sumPUPt_.push_back(MuPFIsol.sumPUPt);
+      auto &MuPFIsol = mu.pfIsolationR03();
+      mup_PFIsolationR03_sumChargedHadronPt_.push_back(MuPFIsol.sumChargedHadronPt);
+      mup_PFIsolationR03_sumChargedParticlePt_.push_back(MuPFIsol.sumChargedParticlePt);
+      mup_PFIsolationR03_sumNeutralHadronEt_.push_back(MuPFIsol.sumNeutralHadronEt);
+      mup_PFIsolationR03_sumPhotonEt_.push_back(MuPFIsol.sumPhotonEt);
+      mup_PFIsolationR03_sumNeutralHadronEtHighThreshold_.push_back(MuPFIsol.sumNeutralHadronEtHighThreshold);
+      mup_PFIsolationR03_sumPhotonEtHighThreshold_.push_back(MuPFIsol.sumPhotonEtHighThreshold);
+      mup_PFIsolationR03_sumPUPt_.push_back(MuPFIsol.sumPUPt);
     
-    auto &MuPFIsol04 = mu.pfIsolationR04();
-    mup_PFIsolationR04_sumChargedHadronPt_.push_back(MuPFIsol04.sumChargedHadronPt);
-    mup_PFIsolationR04_sumChargedParticlePt_.push_back(MuPFIsol04.sumChargedParticlePt);
-    mup_PFIsolationR04_sumNeutralHadronEt_.push_back(MuPFIsol04.sumNeutralHadronEt);
-    mup_PFIsolationR04_sumPhotonEt_.push_back(MuPFIsol04.sumPhotonEt);
-    mup_PFIsolationR04_sumNeutralHadronEtHighThreshold_.push_back(MuPFIsol04.sumNeutralHadronEtHighThreshold);
-    mup_PFIsolationR04_sumPhotonEtHighThreshold_.push_back(MuPFIsol04.sumPhotonEtHighThreshold);
-    mup_PFIsolationR04_sumPUPt_.push_back(MuPFIsol04.sumPUPt);
+      auto &MuPFIsol04 = mu.pfIsolationR04();
+      mup_PFIsolationR04_sumChargedHadronPt_.push_back(MuPFIsol04.sumChargedHadronPt);
+      mup_PFIsolationR04_sumChargedParticlePt_.push_back(MuPFIsol04.sumChargedParticlePt);
+      mup_PFIsolationR04_sumNeutralHadronEt_.push_back(MuPFIsol04.sumNeutralHadronEt);
+      mup_PFIsolationR04_sumPhotonEt_.push_back(MuPFIsol04.sumPhotonEt);
+      mup_PFIsolationR04_sumNeutralHadronEtHighThreshold_.push_back(MuPFIsol04.sumNeutralHadronEtHighThreshold);
+      mup_PFIsolationR04_sumPhotonEtHighThreshold_.push_back(MuPFIsol04.sumPhotonEtHighThreshold);
+      mup_PFIsolationR04_sumPUPt_.push_back(MuPFIsol04.sumPUPt);
 
       nMuP_++; 
-     }
+    }
 
-      //std::cout << "1st loop:" <<  iEvent.id().event() <<  " i: " << i <<  " " << muTrack->charge() << " pt: " << muTrack->pt() << " eta:" << muTrack->eta() << std::endl;
+    //std::cout << "1st loop:" <<  iEvent.id().event() <<  " i: " << i <<  " " << muTrack->charge() << " pt: " << muTrack->pt() << " eta:" << muTrack->eta() << std::endl;
     
     
     //start loop on second muon 
@@ -1158,7 +1235,7 @@ void BsToMuMuGammaNTuplizer::fillMuons(const edm::Event& iEvent, const edm::Even
       if(mu2.charge() == -1){ muTrackm  = mu2.innerTrack();}
 
 
-     if(mu2.pt()  < pTMinMuons) continue;
+      if(mu2.pt()  < pTMinMuons) continue;
 
       //muTrackp = mup.innerTrack();
       if ((muTrackp.isNull() == true) || (muTrackm.isNull() == true)) continue;
@@ -1325,8 +1402,8 @@ void BsToMuMuGammaNTuplizer::fillMuons(const edm::Event& iEvent, const edm::Even
       mumuLBSE_.push_back(MuMuLSBSErr);
       mumuDCA_.push_back(mumuDCA);
       
-     // std::cout << "2nd loop after continue:" <<  iEvent.id().event() <<  " i: " << i <<  " " << mu.charge() << " pt: " << mu.pt() << " eta:" << mu.eta() << std::endl;
-     // std::cout << "2nd loop cafter continue:" <<  iEvent.id().event() <<  " j: " << j <<  " " << mu2.charge() << " pt: " << mu2.pt() << " eta:" << mu2.eta() << std::endl << std::endl;
+      // std::cout << "2nd loop after continue:" <<  iEvent.id().event() <<  " i: " << i <<  " " << mu.charge() << " pt: " << mu.pt() << " eta:" << mu.eta() << std::endl;
+      // std::cout << "2nd loop cafter continue:" <<  iEvent.id().event() <<  " j: " << j <<  " " << mu2.charge() << " pt: " << mu2.pt() << " eta:" << mu2.eta() << std::endl << std::endl;
     }
   }
 
@@ -1338,12 +1415,83 @@ void BsToMuMuGammaNTuplizer::fillPhotons(const edm::Event& e, const edm::EventSe
   edm::Handle<std::vector<reco::Photon> > gedPhotonsHandle;
   e.getByToken(gedPhotonsCollection_, gedPhotonsHandle);
 
+  edm::Handle<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit>>> recHitsEB;
+  e.getByToken(ebRechitToken_, recHitsEB);
+ 
+  edm::Handle<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit>>> recHitsEE;
+  e.getByToken(eeRechitToken_, recHitsEE);
+
+  EcalClusterLazyTools       lazyTool    (e, es, ebRechitToken_, eeRechitToken_);
+  noZS::EcalClusterLazyTools lazyToolnoZS(e, es, ebRechitToken_, eeRechitToken_);
+
   // loop over photons
   for (auto pho = gedPhotonsHandle->begin(); pho != gedPhotonsHandle->end(); ++pho) {
     phoE_             .push_back(pho->energy());
     phoEt_            .push_back(pho->et());
     phoEta_           .push_back(pho->eta());
     phoPhi_           .push_back(pho->phi());
+    
+    //phoSigmaE_          .push_back(pho->userFloat("ecalEnergyErrPostCorr"));
+    //phoCalibE_          .push_back(pho->userFloat("ecalEnergyPostCorr"));
+    
+    //phoCalibEt_         .push_back(pho->et()*pho->userFloat("ecalEnergyPostCorr")/pho->energy());
+    phoSCE_             .push_back((*pho).superCluster()->energy());
+    phoSCEt_            .push_back(pho->superCluster()->energy()/cosh(pho->superCluster()->eta()));
+    phoSCRawE_          .push_back((*pho).superCluster()->rawEnergy());
+    phoESEnP1_          .push_back((*pho).superCluster()->preshowerEnergyPlane1());
+    phoESEnP2_          .push_back((*pho).superCluster()->preshowerEnergyPlane2());
+    phoSCEta_           .push_back((*pho).superCluster()->eta());
+    phoSCPhi_           .push_back((*pho).superCluster()->phi());
+    phoSCEtaWidth_      .push_back((*pho).superCluster()->etaWidth());
+    phoSCPhiWidth_      .push_back((*pho).superCluster()->phiWidth());
+    phoSCBrem_          .push_back((*pho).superCluster()->phiWidth()/(*pho).superCluster()->etaWidth());
+    phohasPixelSeed_    .push_back((Int_t)pho->hasPixelSeed());
+    //phoEleVeto_         .push_back((Int_t)pho->passElectronVeto());
+    phoR9_              .push_back(pho->r9());
+    phoHoverE_          .push_back(pho->hadTowOverEm());
+    phoESEffSigmaRR_    .push_back(lazyTool.eseffsirir(*((*pho).superCluster())));
+    
+    phoPFChIso_         .push_back(pho->chargedHadronIso()); 
+    phoPFPhoIso_        .push_back(pho->photonIso());
+    phoPFNeuIso_        .push_back(pho->neutralHadronIso());
+
+    phoEcalPFClusterIso_.push_back(pho->ecalPFClusterIso());
+    phoHcalPFClusterIso_.push_back(pho->hcalPFClusterIso());
+    //phoIDMVA_           .push_back(pho->userFloat("PhotonMVAEstimatorRunIIFall17v2Values"));  
+    
+    phoSigmaIEtaIEtaFull5x5_ .push_back(pho->full5x5_sigmaIetaIeta());
+    phoSigmaIEtaIPhiFull5x5_ .push_back(pho->full5x5_showerShapeVariables().sigmaIetaIphi);
+    phoSigmaIPhiIPhiFull5x5_ .push_back(pho->full5x5_showerShapeVariables().sigmaIphiIphi);
+    phoE2x2Full5x5_          .push_back(lazyToolnoZS.e2x2(*((*pho).superCluster()->seed())));
+    phoE5x5Full5x5_          .push_back(pho->full5x5_e5x5());
+    phoR9Full5x5_            .push_back(pho->full5x5_r9());
+    phoMIPTotEnergy_         .push_back(pho->mipTotEnergy());
+    
+    
+    phoMIPChi2_        .push_back(pho->mipChi2());
+    phoMIPSlope_       .push_back(pho->mipSlope());
+    phoMIPIntercept_   .push_back(pho->mipIntercept());
+    phoMIPNhitCone_    .push_back(pho->mipNhitCone());
+    phoMIPIsHalo_      .push_back(pho->mipIsHalo());    
+    
+    ///////////////////////////////SATURATED/UNSATURATED ///from ggFlash////
+    DetId seed = (pho->superCluster()->seed()->hitsAndFractions())[0].first;
+    bool isBarrel = seed.subdetId() == EcalBarrel;
+    const EcalRecHitCollection * rechits = (isBarrel?lazyTool.getEcalEBRecHitCollection():lazyTool.getEcalEERecHitCollection());
+    
+    EcalRecHitCollection::const_iterator theSeedHit = rechits->find(seed);
+    if (theSeedHit != rechits->end()) {
+      //std::cout<<"(*theSeedHit).time()"<<(*theSeedHit).time()<<"seed energy: "<<(*theSeedHit).energy()<<std::endl;  
+      
+      phoSeedTime_  .push_back((*theSeedHit).time());
+      phoSeedEnergy_.push_back((*theSeedHit).energy());
+
+      
+    } else{
+      phoSeedTime_  .push_back(-99.);
+      phoSeedEnergy_.push_back(-99.);
+      
+    }
     
     nPho_++;
   } // photons loop
@@ -1380,201 +1528,204 @@ void BsToMuMuGammaNTuplizer::fillSC(edm::Event const& e, const edm::EventSetup& 
   e.getByToken(gsfElectronToken_, gsfElectronHandle);
 
 
-   edm::Handle<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit>>> recHitsEB;
-   //edm::Handle<EcalRecHitCollection> recHitsEB;
-      e.getByToken(ebRechitToken_, recHitsEB);
-      if (!recHitsEB.isValid()) {
-          std::cerr << "Analyze --> recHitsEB not found" << std::endl; 
-          return;
-      }
+  edm::Handle<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit>>> recHitsEB;
+  //edm::Handle<EcalRecHitCollection> recHitsEB;
+  e.getByToken(ebRechitToken_, recHitsEB);
+  if (!recHitsEB.isValid()) {
+    std::cerr << "Analyze --> recHitsEB not found" << std::endl; 
+    return;
+  }
 
-   edm::Handle<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit>>> recHitsEE;
-   //edm::Handle<EcalRecHitCollection> recHitsEE;
-      e.getByToken(eeRechitToken_, recHitsEE);
-      if (!recHitsEE.isValid()) {
-          std::cerr << "Analyze --> recHitsEE not found" << std::endl; 
-          return;
-      }
+  edm::Handle<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit>>> recHitsEE;
+  //edm::Handle<EcalRecHitCollection> recHitsEE;
+  e.getByToken(eeRechitToken_, recHitsEE);
+  if (!recHitsEE.isValid()) {
+    std::cerr << "Analyze --> recHitsEE not found" << std::endl; 
+    return;
+  }
 
-   locCov_.clear();
-   full5x5_locCov_.clear();
-     // for(const auto& iSuperCluster : *(superClusterEB.product())){  
-      for (auto const& scs : { *barrelSCHandle.product(), *endcapSCHandle.product() }) {
-      //for (auto const& sc : *(barrelSCHandle.product())) {
-      for (auto const& sc : scs) {
-	//if(abs(sc.eta())>2.4)continue;
-	//
+  locCov_.clear();
+  full5x5_locCov_.clear();
+  // for(const auto& iSuperCluster : *(superClusterEB.product())){  
+  for (auto const& scs : { *barrelSCHandle.product(), *endcapSCHandle.product() }) {
+    //for (auto const& sc : *(barrelSCHandle.product())) {
+    for (auto const& sc : scs) {
+      //if(abs(sc.eta())>2.4)continue;
+      //
 	
-	edm::ESHandle<CaloTopology> caloTopology;
-	es.get<CaloTopologyRecord>().get(caloTopology);
-	const CaloTopology* topology = caloTopology.product();
+      edm::ESHandle<CaloTopology> caloTopology;
+      es.get<CaloTopologyRecord>().get(caloTopology);
+      const CaloTopology* topology = caloTopology.product();
 	
-	scE_.push_back(sc.correctedEnergy());
-	scRawE_.push_back(sc.rawEnergy());
-	scRawEt_.push_back(sc.rawEnergy()/cosh(sc.eta()));
-	scEta_.push_back(sc.eta());
-	scPhi_.push_back(sc.phi());
-	scEtaWidth_.push_back(sc.etaWidth());
-	scPhiWidth_.push_back(sc.phiWidth());
+      scE_.push_back(sc.correctedEnergy());
+      scRawE_.push_back(sc.rawEnergy());
+      scRawEt_.push_back(sc.rawEnergy()/cosh(sc.eta()));
+      scEta_.push_back(sc.eta());
+      scPhi_.push_back(sc.phi());
+      scX_.push_back(sc.x());
+      scY_.push_back(sc.y());
+      scZ_.push_back(sc.z());
+      scEtaWidth_.push_back(sc.etaWidth());
+      scPhiWidth_.push_back(sc.phiWidth());
 	
-	reco::CaloCluster caloBC(*sc.seed());  
-	showerShapes_.clear();
-	if(abs(sc.eta()) <= 1.442)showerShapes_ = getShowerShapes(&caloBC, &(*(recHitsEB.product())), topology);  
-	if(abs(sc.eta()) >= 1.566)showerShapes_ = getShowerShapes(&caloBC, &(*(recHitsEE.product())), topology);  
-	superCluster_e5x5_.push_back(reduceFloat(showerShapes_[0],nBits_));
-	superCluster_e2x2Ratio_.push_back(reduceFloat(showerShapes_[1],nBits_));
-	superCluster_e3x3Ratio_.push_back(reduceFloat(showerShapes_[2],nBits_));
-	superCluster_eMaxRatio_.push_back(reduceFloat(showerShapes_[3],nBits_));
-	superCluster_e2ndRatio_.push_back(reduceFloat(showerShapes_[4],nBits_));
-	superCluster_eTopRatio_.push_back(reduceFloat(showerShapes_[5],nBits_));
-	superCluster_eRightRatio_.push_back(reduceFloat(showerShapes_[6],nBits_));
-	superCluster_eBottomRatio_.push_back(reduceFloat(showerShapes_[7],nBits_));
-	superCluster_eLeftRatio_.push_back(reduceFloat(showerShapes_[8],nBits_));
-	superCluster_e2x5MaxRatio_.push_back(reduceFloat(showerShapes_[9],nBits_));
-	superCluster_e2x5TopRatio_.push_back(reduceFloat(showerShapes_[10],nBits_));
-	superCluster_e2x5RightRatio_.push_back(reduceFloat(showerShapes_[11],nBits_));
-	superCluster_e2x5BottomRatio_.push_back(reduceFloat(showerShapes_[12],nBits_));
-	superCluster_e2x5LeftRatio_.push_back(reduceFloat(showerShapes_[13],nBits_));
-	superCluster_swissCross_.push_back(reduceFloat(showerShapes_[14],nBits_));
-	superCluster_r9_.push_back(reduceFloat(showerShapes_[2]*showerShapes_[0]/sc.rawEnergy(),nBits_));
-	superCluster_sigmaIetaIeta_.push_back(reduceFloat(showerShapes_[16],nBits_)); 
-	superCluster_sigmaIetaIphi_.push_back(reduceFloat(showerShapes_[17],nBits_)); 
-	superCluster_sigmaIphiIphi_.push_back(reduceFloat(showerShapes_[18],nBits_)); 
-	superCluster_full5x5_e5x5_.push_back(reduceFloat(showerShapes_[19],nBits_));
-	superCluster_full5x5_e2x2Ratio_.push_back(reduceFloat(showerShapes_[20],nBits_));
-	superCluster_full5x5_e3x3Ratio_.push_back(reduceFloat(showerShapes_[21],nBits_));
-	superCluster_full5x5_eMaxRatio_.push_back(reduceFloat(showerShapes_[22],nBits_));
-	superCluster_full5x5_e2ndRatio_.push_back(reduceFloat(showerShapes_[23],nBits_));
-	superCluster_full5x5_eTopRatio_.push_back(reduceFloat(showerShapes_[24],nBits_));
-	superCluster_full5x5_eRightRatio_.push_back(reduceFloat(showerShapes_[25],nBits_));
-	superCluster_full5x5_eBottomRatio_.push_back(reduceFloat(showerShapes_[26],nBits_));
-	superCluster_full5x5_eLeftRatio_.push_back(reduceFloat(showerShapes_[27],nBits_));
-	superCluster_full5x5_e2x5MaxRatio_.push_back(reduceFloat(showerShapes_[28],nBits_));
-	superCluster_full5x5_e2x5TopRatio_.push_back(reduceFloat(showerShapes_[29],nBits_));
-	superCluster_full5x5_e2x5RightRatio_.push_back(reduceFloat(showerShapes_[30],nBits_));
-	superCluster_full5x5_e2x5BottomRatio_.push_back(reduceFloat(showerShapes_[31],nBits_));
-	superCluster_full5x5_e2x5LeftRatio_.push_back(reduceFloat(showerShapes_[32],nBits_));
-	superCluster_full5x5_swissCross_.push_back(reduceFloat(showerShapes_[33],nBits_));
-	superCluster_full5x5_r9_.push_back(reduceFloat(showerShapes_[21]*showerShapes_[19]/sc.rawEnergy(),nBits_));
-	superCluster_full5x5_sigmaIetaIeta_.push_back(reduceFloat(showerShapes_[35],nBits_)); 
-	superCluster_full5x5_sigmaIetaIphi_.push_back(reduceFloat(showerShapes_[36],nBits_)); 
-	superCluster_full5x5_sigmaIphiIphi_.push_back(reduceFloat(showerShapes_[37],nBits_)); 
+      reco::CaloCluster caloBC(*sc.seed());  
+      showerShapes_.clear();
+      if(abs(sc.eta()) <= 1.442)showerShapes_ = getShowerShapes(&caloBC, &(*(recHitsEB.product())), topology);  
+      if(abs(sc.eta()) >= 1.566)showerShapes_ = getShowerShapes(&caloBC, &(*(recHitsEE.product())), topology);  
+      superCluster_e5x5_.push_back(reduceFloat(showerShapes_[0],nBits_));
+      superCluster_e2x2Ratio_.push_back(reduceFloat(showerShapes_[1],nBits_));
+      superCluster_e3x3Ratio_.push_back(reduceFloat(showerShapes_[2],nBits_));
+      superCluster_eMaxRatio_.push_back(reduceFloat(showerShapes_[3],nBits_));
+      superCluster_e2ndRatio_.push_back(reduceFloat(showerShapes_[4],nBits_));
+      superCluster_eTopRatio_.push_back(reduceFloat(showerShapes_[5],nBits_));
+      superCluster_eRightRatio_.push_back(reduceFloat(showerShapes_[6],nBits_));
+      superCluster_eBottomRatio_.push_back(reduceFloat(showerShapes_[7],nBits_));
+      superCluster_eLeftRatio_.push_back(reduceFloat(showerShapes_[8],nBits_));
+      superCluster_e2x5MaxRatio_.push_back(reduceFloat(showerShapes_[9],nBits_));
+      superCluster_e2x5TopRatio_.push_back(reduceFloat(showerShapes_[10],nBits_));
+      superCluster_e2x5RightRatio_.push_back(reduceFloat(showerShapes_[11],nBits_));
+      superCluster_e2x5BottomRatio_.push_back(reduceFloat(showerShapes_[12],nBits_));
+      superCluster_e2x5LeftRatio_.push_back(reduceFloat(showerShapes_[13],nBits_));
+      superCluster_swissCross_.push_back(reduceFloat(showerShapes_[14],nBits_));
+      superCluster_r9_.push_back(reduceFloat(showerShapes_[2]*showerShapes_[0]/sc.rawEnergy(),nBits_));
+      superCluster_sigmaIetaIeta_.push_back(reduceFloat(showerShapes_[16],nBits_)); 
+      superCluster_sigmaIetaIphi_.push_back(reduceFloat(showerShapes_[17],nBits_)); 
+      superCluster_sigmaIphiIphi_.push_back(reduceFloat(showerShapes_[18],nBits_)); 
+      superCluster_full5x5_e5x5_.push_back(reduceFloat(showerShapes_[19],nBits_));
+      superCluster_full5x5_e2x2Ratio_.push_back(reduceFloat(showerShapes_[20],nBits_));
+      superCluster_full5x5_e3x3Ratio_.push_back(reduceFloat(showerShapes_[21],nBits_));
+      superCluster_full5x5_eMaxRatio_.push_back(reduceFloat(showerShapes_[22],nBits_));
+      superCluster_full5x5_e2ndRatio_.push_back(reduceFloat(showerShapes_[23],nBits_));
+      superCluster_full5x5_eTopRatio_.push_back(reduceFloat(showerShapes_[24],nBits_));
+      superCluster_full5x5_eRightRatio_.push_back(reduceFloat(showerShapes_[25],nBits_));
+      superCluster_full5x5_eBottomRatio_.push_back(reduceFloat(showerShapes_[26],nBits_));
+      superCluster_full5x5_eLeftRatio_.push_back(reduceFloat(showerShapes_[27],nBits_));
+      superCluster_full5x5_e2x5MaxRatio_.push_back(reduceFloat(showerShapes_[28],nBits_));
+      superCluster_full5x5_e2x5TopRatio_.push_back(reduceFloat(showerShapes_[29],nBits_));
+      superCluster_full5x5_e2x5RightRatio_.push_back(reduceFloat(showerShapes_[30],nBits_));
+      superCluster_full5x5_e2x5BottomRatio_.push_back(reduceFloat(showerShapes_[31],nBits_));
+      superCluster_full5x5_e2x5LeftRatio_.push_back(reduceFloat(showerShapes_[32],nBits_));
+      superCluster_full5x5_swissCross_.push_back(reduceFloat(showerShapes_[33],nBits_));
+      superCluster_full5x5_r9_.push_back(reduceFloat(showerShapes_[21]*showerShapes_[19]/sc.rawEnergy(),nBits_));
+      superCluster_full5x5_sigmaIetaIeta_.push_back(reduceFloat(showerShapes_[35],nBits_)); 
+      superCluster_full5x5_sigmaIetaIphi_.push_back(reduceFloat(showerShapes_[36],nBits_)); 
+      superCluster_full5x5_sigmaIphiIphi_.push_back(reduceFloat(showerShapes_[37],nBits_)); 
 	
-	++nSC_;
-	double dRmin=1e9;
-	bool foundGsfEleMatch=false;
-	for(auto const& ele : *gsfElectronHandle)
-	  {
-	    auto dr=deltaR(*(ele.superCluster()),sc);
-	    dRmin = dr<dRmin ? dr : dRmin;
-	    if( &( *(ele.superCluster()) ) == &sc) 
-	      {
-		foundGsfEleMatch=true;
-		break;
-	      }
-	  }
-	if(gsfElectronHandle->size()<1)
-	  {
-	    dRmin=-0.333;
-	  }
+      ++nSC_;
+      double dRmin=1e9;
+      bool foundGsfEleMatch=false;
+      for(auto const& ele : *gsfElectronHandle)
+	{
+	  auto dr=deltaR(*(ele.superCluster()),sc);
+	  dRmin = dr<dRmin ? dr : dRmin;
+	  if( &( *(ele.superCluster()) ) == &sc) 
+	    {
+	      foundGsfEleMatch=true;
+	      break;
+	    }
+	}
+      if(gsfElectronHandle->size()<1)
+	{
+	  dRmin=-0.333;
+	}
 	
-	scMinDrWithGsfElectornSC_.push_back(dRmin);
-	scFoundGsfMatch_.push_back(foundGsfEleMatch);
+      scMinDrWithGsfElectornSC_.push_back(dRmin);
+      scFoundGsfMatch_.push_back(foundGsfEleMatch);
 	
-      } // supercluster loop
-       }
+    } // supercluster loop
+  }
 }
 
 
 
 void BsToMuMuGammaNTuplizer::SetupTriggerStorageVectors()
 {
-	auto numTrigs = trigTable.size();
-	TrigPrescales_store = new std::vector<int> [numTrigs];
-	TrigResult_store    = new std::vector<bool>[numTrigs];
+  auto numTrigs = trigTable.size();
+  TrigPrescales_store = new std::vector<int> [numTrigs];
+  TrigResult_store    = new std::vector<bool>[numTrigs];
 }
 
 void BsToMuMuGammaNTuplizer::ClearTrggerStorages()
 {
-	for(uint32_t i=0;i<trigTable.size();i++)
-	{
-		TrigResult_store[i].clear();
-		TrigPrescales_store[i].clear();
-	}
+  for(uint32_t i=0;i<trigTable.size();i++)
+    {
+      TrigResult_store[i].clear();
+      TrigPrescales_store[i].clear();
+    }
 }
 
 void BsToMuMuGammaNTuplizer::FillTrggerBranches()
 {
-	for(uint32_t i=0;i<trigTable.size();i++)
+  for(uint32_t i=0;i<trigTable.size();i++)
+    {
+      int foundTrig=-1;
+      for(uint32_t j=0;j<trigNames.size();j++)
 	{
-	   int foundTrig=-1;
-	   for(uint32_t j=0;j<trigNames.size();j++)
-	   {
-		if (trigNames[j].find(trigTable[i]) != std::string::npos)
-		{
-			foundTrig=j;
-		}
-	   }
-
-	   if(foundTrig >-1) 
-	   {
-		TrigResult_store[i].push_back(true);	
-		TrigPrescales_store[i].push_back(trigPrescales[foundTrig]);	
-           }
-	   else
-	  {
-		TrigResult_store[i].push_back(false);	
-		TrigPrescales_store[i].push_back(-1);	
-	  }
+	  if (trigNames[j].find(trigTable[i]) != std::string::npos)
+	    {
+	      foundTrig=j;
+	    }
 	}
+
+      if(foundTrig >-1) 
+	{
+	  TrigResult_store[i].push_back(true);	
+	  TrigPrescales_store[i].push_back(trigPrescales[foundTrig]);	
+	}
+      else
+	{
+	  TrigResult_store[i].push_back(false);	
+	  TrigPrescales_store[i].push_back(-1);	
+	}
+    }
 	
 }
 
 void BsToMuMuGammaNTuplizer::SetupTriggerBranches()
 {
-	std::string branchName;
-	for(uint32_t i=0;i<trigTable.size();i++)
-	{
-		branchName=trigTable[i]+"_result";
-                theTree->Branch(branchName.c_str(),&(TrigResult_store[i]));
-		branchName=trigTable[i]+"_prescale";
-                theTree->Branch(branchName.c_str(),&(TrigPrescales_store[i]));
-	}
+  std::string branchName;
+  for(uint32_t i=0;i<trigTable.size();i++)
+    {
+      branchName=trigTable[i]+"_result";
+      theTree->Branch(branchName.c_str(),&(TrigResult_store[i]));
+      branchName=trigTable[i]+"_prescale";
+      theTree->Branch(branchName.c_str(),&(TrigPrescales_store[i]));
+    }
 }
 
 void BsToMuMuGammaNTuplizer::fillHLT(edm::Event const& iEvent)
 {
 
-    edm::Handle<edm::TriggerResults>     hltTriggerResults;
-    iEvent.getByToken(triggerBits_,      hltTriggerResults);
+  edm::Handle<edm::TriggerResults>     hltTriggerResults;
+  iEvent.getByToken(triggerBits_,      hltTriggerResults);
  
-    HLTConfigProvider hltConfig_;
-    if (hltTriggerResults.isValid()) {
+  HLTConfigProvider hltConfig_;
+  if (hltTriggerResults.isValid()) {
     const edm::TriggerNames& triggerNames_ = iEvent.triggerNames(*hltTriggerResults);
     for (unsigned int itrig = 0; itrig < hltTriggerResults->size(); itrig++){
-//        std::cout<<" i = "<<itrig<<", Name  : "<<triggerNames_.triggerName(itrig)<<" \n";
+      //        std::cout<<" i = "<<itrig<<", Name  : "<<triggerNames_.triggerName(itrig)<<" \n";
       // Only consider the triggered case.                                                                                                                          
       if ((*hltTriggerResults)[itrig].accept() == 1)
-      {
-        std::string triggername = triggerNames_.triggerName(itrig);
-        int triggerprescale = hltConfig_.prescaleValue(itrig, triggername);
-        // Loop over our interested HLT trigger names to find if this event contains.
-        for (unsigned int it=0; it<trigTable.size(); it++){
-          if (triggername.find(trigTable[it]) != std::string::npos) 
-            {
-              // save the no versioned case
-              trigNames.push_back(trigTable[it]);
-              trigPrescales.push_back(triggerprescale);
-            }
-         }
-       }
-      }
-   }
-   else
-   {
-	std::cout<<" Trigger result Not valid !!"<<"\n";
-   }
-   FillTrggerBranches();
+	{
+	  std::string triggername = triggerNames_.triggerName(itrig);
+	  int triggerprescale = hltConfig_.prescaleValue(itrig, triggername);
+	  // Loop over our interested HLT trigger names to find if this event contains.
+	  for (unsigned int it=0; it<trigTable.size(); it++){
+	    if (triggername.find(trigTable[it]) != std::string::npos) 
+	      {
+		// save the no versioned case
+		trigNames.push_back(trigTable[it]);
+		trigPrescales.push_back(triggerprescale);
+	      }
+	  }
+	}
+    }
+  }
+  else
+    {
+      std::cout<<" Trigger result Not valid !!"<<"\n";
+    }
+  FillTrggerBranches();
     
 }
 
@@ -1656,8 +1807,8 @@ std::vector<float> BsToMuMuGammaNTuplizer::getShowerShapes(reco::CaloCluster* ca
 
 float BsToMuMuGammaNTuplizer::reduceFloat(float val, int bits)
 {
-    if(!doCompression_) return val;
-    else return MiniFloatConverter::reduceMantissaToNbitsRounding(val,bits);
+  if(!doCompression_) return val;
+  else return MiniFloatConverter::reduceMantissaToNbitsRounding(val,bits);
 }
 
 

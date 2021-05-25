@@ -1,5 +1,6 @@
 *.pyc 
 *.root
+PhotonAnalyzer/python/__init__.pyc
 BsMMGAnalysis/BsToMuMuGammaNTuplizer/test/*.root
 *.py~
 *.txt~
