@@ -309,7 +309,8 @@ private:
   std::vector<double>   mumuPy_;
   std::vector<double>   mumuPz_;
   std::vector<double>   mumuDR_;
-
+  std::vector<int>   mumuParentMuM_;
+  std::vector<int>   mumuParentMuP_;
   // ### mu+ mu- Vtx ###
   std::vector<double>  mumuVtxCL_;
   std::vector<double>  mumuVtxX_;
@@ -347,6 +348,7 @@ private:
   std::vector<double>  mumdzBS_;
  
 
+  std::vector<int>     mumIdx_;
   std::vector<int>     mumCharge_;
   std::vector<int>     mumNPixHits_;
   std::vector<int>     mumNPixLayers_;
@@ -421,6 +423,7 @@ private:
   std::vector<double>  mupdxyBS_;
   std::vector<double>  mupdzBS_;
  
+  std::vector<int>     mupIdx_;
   std::vector<int>     mupCharge_;
   std::vector<int>     mupNPixHits_;
   std::vector<int>     mupNPixLayers_;

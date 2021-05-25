@@ -231,6 +231,7 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
     theTree->Branch("mumFracHits",      &mumFracHits_);
     theTree->Branch("mumdxyBS",         &mumdxyBS_);
     theTree->Branch("mumdzBS",          &mumdzBS_);
+    theTree->Branch("mumIdx",           &mumIdx_);
     theTree->Branch("mumNPixHits",      &mumNPixHits_);
     theTree->Branch("mumNPixLayers",    &mumNPixLayers_);
     theTree->Branch("mumNTrkHits",      &mumNTrkHits_);
@@ -301,6 +302,7 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
     theTree->Branch("mupFracHits",      &mupFracHits_);
     theTree->Branch("mupdxyBS",         &mupdxyBS_);
     theTree->Branch("mupdzBS",          &mupdzBS_);
+    theTree->Branch("mupIdx_",          &mupIdx_);
     theTree->Branch("mupNPixHits",      &mupNPixHits_);
     theTree->Branch("mupNPixLayers",    &mupNPixLayers_);
     theTree->Branch("mupNTrkHits",      &mupNTrkHits_);
@@ -366,6 +368,8 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
     theTree->Branch("mumuPy",    &mumuPy_);
     theTree->Branch("mumuPz",    &mumuPz_);
     theTree->Branch("mumuDR",    &mumuDR_);
+    theTree->Branch("mumuParentMuP",    &mumuParentMuP_);
+    theTree->Branch("mumuParentMuM",    &mumuParentMuM_);
 
     // ### mu+ mu- Vtx ###
     theTree->Branch("mumuVtxCL",       &mumuVtxCL_);
@@ -593,6 +597,7 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
     mumFracHits_.clear();
     mumdxyBS_.clear();
     mumdzBS_.clear();
+    mumIdx_.clear();
     mumCharge_.clear();
     mumNPixHits_.clear();
     mumNPixLayers_.clear();
@@ -666,6 +671,7 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
     mupFracHits_.clear();
     mupdxyBS_.clear();
     mupdzBS_.clear();
+    mupIdx_.clear();
     mupCharge_.clear();
     mupNPixHits_.clear();
     mupNPixLayers_.clear();
@@ -733,7 +739,8 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
     mumuPy_.clear();
     mumuPz_.clear();
     mumuDR_.clear();
-  
+    mumuParentMuP_.clear();
+    mumuParentMuM_.clear();
   
     mumuVtxCL_.clear();
     mumuVtxX_.clear();
@@ -1066,6 +1073,7 @@ void BsToMuMuGammaNTuplizer::fillMuons(const edm::Event& iEvent, const edm::Even
       
 
       
+      mumIdx_.push_back(i);
       mumNPixHits_.push_back(muTrack->hitPattern().numberOfValidPixelHits());
       mumNPixLayers_.push_back(muTrack->hitPattern().pixelLayersWithMeasurement());  
       mumNTrkHits_.push_back(muTrack->hitPattern().numberOfValidTrackerHits());
@@ -1155,6 +1163,7 @@ void BsToMuMuGammaNTuplizer::fillMuons(const edm::Event& iEvent, const edm::Even
 				muTrack->hitPattern().numberOfLostHits(reco::HitPattern::MISSING_OUTER_HITS) ) ) ;
 
       
+      mupIdx_.push_back(i);
       mupNPixHits_.push_back(muTrack->hitPattern().numberOfValidPixelHits());
       mupNPixLayers_.push_back(muTrack->hitPattern().pixelLayersWithMeasurement());  
       mupNTrkHits_.push_back(muTrack->hitPattern().numberOfValidTrackerHits());
@@ -1225,7 +1234,7 @@ void BsToMuMuGammaNTuplizer::fillMuons(const edm::Event& iEvent, const edm::Even
     for ( uint32_t j= i+1 ;j<muons->size();j++){
 
       auto &mu2 = muons->at(j);
-      if(i==j) continue;
+      
       if( (mu.charge())*(mu2.charge()) == 1) continue;
 
       if(mu.charge() == 1){ muTrackp   =  mu.innerTrack();}
@@ -1239,7 +1248,7 @@ void BsToMuMuGammaNTuplizer::fillMuons(const edm::Event& iEvent, const edm::Even
 
       //muTrackp = mup.innerTrack();
       if ((muTrackp.isNull() == true) || (muTrackm.isNull() == true)) continue;
-      
+     
       const reco::TransientTrack muTrackpTT(muTrackp, &(*bFieldHandle));
       if (!muTrackpTT.isValid()) continue;
 
@@ -1377,6 +1386,17 @@ void BsToMuMuGammaNTuplizer::fillMuons(const edm::Event& iEvent, const edm::Even
       //// #################
       //// # Save: mu+ mu- #
       //// #################
+      if(mu2.charge()==1) {
+        mumuParentMuM_.push_back(i);
+        mumuParentMuP_.push_back(j);
+      }
+      if(mu2.charge()==-1){
+        mumuParentMuM_.push_back(j);
+        mumuParentMuP_.push_back(i);
+
+      }
+
+      
       mumuPt_.push_back(mu_mu_pt);
       mumuEta_.push_back(mydimu.Eta());
       mumuRapidity_.push_back(mydimu.Rapidity());
