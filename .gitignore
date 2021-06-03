@@ -4,4 +4,5 @@ PhotonAnalyzer/python/__init__.pyc
 BsMMGAnalysis/BsToMuMuGammaNTuplizer/test/*.root
 *.py~
 *.txt~
+BsToMuMuGammaNTuplizer/test/crab_projects/
 Test/MiniAnalyzer/python/__init__.py

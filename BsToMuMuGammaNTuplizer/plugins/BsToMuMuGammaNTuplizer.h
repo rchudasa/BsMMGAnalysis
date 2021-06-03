@@ -292,10 +292,10 @@ private:
   
   // reco::GenParticle
   int  gen_nBs_, gen_nBsMuonM_, gen_nBsMuonP_ , gen_nBsPhoton_ ;
-  std::vector<double> gen_Bs_pt_,      gen_Bs_eta_,      gen_Bs_phi_,   gen_Bs_pz_,  gen_Bs_pdgId_;
+  std::vector<double> gen_Bs_pt_,  gen_Bs_energy_,    gen_Bs_eta_,      gen_Bs_phi_,   gen_Bs_pz_,  gen_Bs_pdgId_;
   std::vector<double> gen_BsMuonM_pt_, gen_BsMuonM_eta_, gen_BsMuonM_phi_;
   std::vector<double> gen_BsMuonP_pt_, gen_BsMuonP_eta_, gen_BsMuonP_phi_;
-  std::vector<double> gen_BsPhoton_pt_, gen_BsPhoton_eta_, gen_BsPhoton_phi_;
+  std::vector<double> gen_BsPhoton_pt_, gen_BsPhoton_energy_, gen_BsPhoton_eta_, gen_BsPhoton_phi_;
 
 
   // ### mu+ mu- variables ###

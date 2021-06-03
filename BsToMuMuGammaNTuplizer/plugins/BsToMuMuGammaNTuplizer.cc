@@ -191,8 +191,9 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
   if (doGenParticles_) {
     theTree->Branch("gen_nBs"			,&gen_nBs_);
     theTree->Branch("gen_Bs_pt"			,&gen_Bs_pt_);
-    theTree->Branch("gen_Bs_eta"			,&gen_Bs_eta_);
-    theTree->Branch("gen_Bs_phi"			,&gen_Bs_phi_);
+    theTree->Branch("gen_Bs_energy"		,&gen_Bs_energy_);
+    theTree->Branch("gen_Bs_eta"		,&gen_Bs_eta_);
+    theTree->Branch("gen_Bs_phi"		,&gen_Bs_phi_);
     theTree->Branch("gen_Bs_pz"			,&gen_Bs_pz_);
     theTree->Branch("gen_Bs_pdgId"		,&gen_Bs_pdgId_);
 
@@ -208,6 +209,7 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
 
     theTree->Branch("gen_nBsPhoton"		,&gen_nBsPhoton_);
     theTree->Branch("gen_BsPhoton_pt"		,&gen_BsPhoton_pt_);
+    theTree->Branch("gen_BsPhoton_energy"	,&gen_BsPhoton_energy_);
     theTree->Branch("gen_BsPhoton_eta"		,&gen_BsPhoton_eta_);
     theTree->Branch("gen_BsPhoton_phi"		,&gen_BsPhoton_phi_);
  
@@ -564,6 +566,7 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
     gen_nBsPhoton_ = 0 ;
 
     gen_Bs_pt_.clear() ;
+    gen_Bs_energy_.clear() ;
     gen_Bs_eta_.clear() ;
     gen_Bs_phi_.clear() ;
     gen_Bs_pz_.clear() ;
@@ -575,6 +578,7 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
     gen_BsMuonP_eta_.clear() ;
     gen_BsMuonP_phi_.clear();
     gen_BsPhoton_pt_.clear() ;
+    gen_BsPhoton_energy_.clear() ;
     gen_BsPhoton_eta_.clear() ;
     gen_BsPhoton_phi_.clear();
   }
@@ -958,8 +962,8 @@ void BsToMuMuGammaNTuplizer::fillGenParticles(const edm::Event& iEvent)
     for(unsigned int j=0; j<aBsMeson.numberOfDaughters(); j++){
       
       auto& bsDaughter = *(aBsMeson.daughter(j));
-      if(bsDaughter.pdgId() == -13) muMMul++;
-      if(bsDaughter.pdgId() ==  13) muPMul++;
+      if(bsDaughter.pdgId() == -13) muPMul++;
+      if(bsDaughter.pdgId() ==  13) muMMul++;
       if(bsDaughter.pdgId() ==  22) phoMul++;
     }
     if(muMMul <0 or muPMul <0 ) continue;
@@ -981,6 +985,7 @@ void BsToMuMuGammaNTuplizer::fillGenParticles(const edm::Event& iEvent)
       }
       if(bsDaughter.pdgId() ==  22){
 	gen_BsPhoton_pt_.push_back(bsDaughter.pt());
+	gen_BsPhoton_energy_.push_back(bsDaughter.energy());
 	gen_BsPhoton_eta_.push_back(bsDaughter.eta());
 	gen_BsPhoton_phi_.push_back(bsDaughter.phi());
 	gen_nBsPhoton_++;
@@ -989,6 +994,7 @@ void BsToMuMuGammaNTuplizer::fillGenParticles(const edm::Event& iEvent)
     }  //number of daughters
 
     gen_Bs_pt_.push_back(aBsMeson.pt());
+    gen_Bs_energy_.push_back(aBsMeson.energy());
     gen_Bs_eta_.push_back(aBsMeson.eta());
     gen_Bs_phi_.push_back(aBsMeson.phi());
     gen_Bs_pz_.push_back(aBsMeson.pz());
