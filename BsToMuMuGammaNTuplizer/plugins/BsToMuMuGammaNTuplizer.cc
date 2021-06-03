@@ -967,13 +967,13 @@ void BsToMuMuGammaNTuplizer::fillGenParticles(const edm::Event& iEvent)
 
     for(unsigned int j=0; j<aBsMeson.numberOfDaughters(); j++){
       auto& bsDaughter = *(aBsMeson.daughter(j));
-      if(bsDaughter.pdgId() == -13) {
+      if(bsDaughter.pdgId() == 13) {
 	gen_BsMuonM_pt_.push_back(bsDaughter.pt());
 	gen_BsMuonM_eta_.push_back(bsDaughter.eta());
 	gen_BsMuonM_phi_.push_back(bsDaughter.phi());
 	gen_nBsMuonM_++;
       }
-      if(bsDaughter.pdgId() ==  13){
+      if(bsDaughter.pdgId() == -13){
 	gen_BsMuonP_pt_.push_back(bsDaughter.pt());
 	gen_BsMuonP_eta_.push_back(bsDaughter.eta());
 	gen_BsMuonP_phi_.push_back(bsDaughter.phi());
