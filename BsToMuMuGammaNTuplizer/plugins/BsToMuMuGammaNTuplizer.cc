@@ -171,6 +171,39 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
   theTree->Branch("event",  &event_);
   theTree->Branch("lumis",  &lumis_);
   theTree->Branch("isData", &isData_);
+ 
+  theTree->Branch("beamspot_x",        		 &beamspot_x_);
+  theTree->Branch("beamspot_y",       		 &beamspot_y_);
+  theTree->Branch("beamspot_z",       		 &beamspot_z_);
+  theTree->Branch("beamspot_x_error",       	 &beamspot_x_error_);
+  theTree->Branch("beamspot_y_error",       	 &beamspot_y_error_);
+  theTree->Branch("beamspot_z_error",        	 &beamspot_z_error_);
+  theTree->Branch("beamspot_dxdz",               &beamspot_dxdz_);
+  theTree->Branch("beamspot_dydz",               &beamspot_dydz_);
+  theTree->Branch("beamspot_sigmaZ",             &beamspot_sigmaZ_);
+  theTree->Branch("beamspot_dxdz_error",         &beamspot_dxdz_error_);
+  theTree->Branch("beamspot_dydz_error",         &beamspot_dydz_error_);
+  theTree->Branch("beamspot_sigmaZError",        &beamspot_sigmaZError_);
+  theTree->Branch("beamspot_beamWidthX",         &beamspot_beamWidthX_);
+  theTree->Branch("beamspot_beamWidthY",         &beamspot_beamWidthY_);
+  theTree->Branch("beamspot_beamWidthX_error",   &beamspot_beamWidthX_error_);
+  theTree->Branch("beamspot_beamWidthY_error",   &beamspot_beamWidthY_error_);
+
+  theTree->Branch("nPrimaryVertex",            &nPrimaryVertex_);
+  theTree->Branch("primaryVertex_isFake",      &primaryVertex_isFake_);
+  theTree->Branch("primaryVertex_x",           &primaryVertex_x_);
+  theTree->Branch("primaryVertex_y",           &primaryVertex_y_);
+  theTree->Branch("primaryVertex_z",           &primaryVertex_z_);
+  theTree->Branch("primaryVertex_t",           &primaryVertex_t_);
+  theTree->Branch("primaryVertex_x_error",     &primaryVertex_x_error_);
+  theTree->Branch("primaryVertex_y_error",     &primaryVertex_y_error_);
+  theTree->Branch("primaryVertex_z_error",     &primaryVertex_z_error_);
+  theTree->Branch("primaryVertex_t_error",     &primaryVertex_t_error_);
+  theTree->Branch("primaryVertex_ntracks",     &primaryVertex_ntracks_);
+  theTree->Branch("primaryVertex_ndof",        &primaryVertex_ndof_);
+  theTree->Branch("primaryVertex_chi2",        &primaryVertex_chi2_); 
+  theTree->Branch("primaryVertex_normalizedChi2", &primaryVertex_normalizedChi2_);
+
   if (doHLT) {
     // ### Trigger ###
     //theTree->Branch("trigTable",     &TrigTable);
@@ -513,38 +546,38 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
   using namespace edm;
 
   // ## BEAMSOPT STUFF  ## //
-  beamspot_x  = 0.0   ;
-  beamspot_y  = 0.0   ;
-  beamspot_z  = 0.0   ;
-  beamspot_x_error  = 0.0   ;
-  beamspot_y_error  = 0.0   ;
-  beamspot_z_error  = 0.0   ;
-  beamspot_dxdz  = 0.0   ;
-  beamspot_dydz  = 0.0   ;
-  beamspot_sigmaZ  = 0.0   ;
-  beamspot_dxdz_error  = 0.0   ;
-  beamspot_dydz_error  = 0.0   ;
-  beamspot_sigmaZError  = 0.0   ;
-  beamspot_beamWidthX  = 0.0   ;
-  beamspot_beamWidthY  = 0.0   ;
-  beamspot_beamWidthX_error  = 0.0   ;
-  beamspot_beamWidthY_error  = 0.0   ;
+  beamspot_x_  = 0.0   ;
+  beamspot_y_  = 0.0   ;
+  beamspot_z_  = 0.0   ;
+  beamspot_x_error_  = 0.0   ;
+  beamspot_y_error_  = 0.0   ;
+  beamspot_z_error_  = 0.0   ;
+  beamspot_dxdz_  = 0.0   ;
+  beamspot_dydz_  = 0.0   ;
+  beamspot_sigmaZ_  = 0.0   ;
+  beamspot_dxdz_error_  = 0.0   ;
+  beamspot_dydz_error_  = 0.0   ;
+  beamspot_sigmaZError_  = 0.0   ;
+  beamspot_beamWidthX_  = 0.0   ;
+  beamspot_beamWidthY_  = 0.0   ;
+  beamspot_beamWidthX_error_  = 0.0   ;
+  beamspot_beamWidthY_error_  = 0.0   ;
 
   // # offlinePrimaryVertices # //
-  
-  primaryVertex_isFake.clear();
-  primaryVertex_x.clear();
-  primaryVertex_y.clear();
-  primaryVertex_z.clear();
-  primaryVertex_t.clear();
-  primaryVertex_x_error.clear();
-  primaryVertex_y_error.clear();
-  primaryVertex_z_error.clear();
-  primaryVertex_t_error.clear();
-  primaryVertex_ntracks.clear();
-  primaryVertex_ndof.clear();
-  primaryVertex_chi2.clear();
-  primaryVertex_normalizedChi2.clear();
+  nPrimaryVertex_ = 0;
+  primaryVertex_isFake_.clear();
+  primaryVertex_x_.clear();
+  primaryVertex_y_.clear();
+  primaryVertex_z_.clear();
+  primaryVertex_t_.clear();
+  primaryVertex_x_error_.clear();
+  primaryVertex_y_error_.clear();
+  primaryVertex_z_error_.clear();
+  primaryVertex_t_error_.clear();
+  primaryVertex_ntracks_.clear();
+  primaryVertex_ndof_.clear();
+  primaryVertex_chi2_.clear();
+  primaryVertex_normalizedChi2_.clear();
 
   if (doHLT) {
 
@@ -893,41 +926,42 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
   iEvent.getByToken(primaryVtxToken_, primaryVertexCollection);
  
   // adding  BEAMSOPT 
-  beamspot_x			= beamSpot.x0();  ;
-  beamspot_y			= beamSpot.y0();  ;
-  beamspot_z			= beamSpot.z0();  ;
-  beamspot_x_error		= beamSpot.x0Error();  ;
-  beamspot_y_error		= beamSpot.y0Error();  ;
-  beamspot_z_error		= beamSpot.z0Error();  ;
-  beamspot_dxdz   		= beamSpot.dxdz();  ;
-  beamspot_dydz	         	= beamSpot.dydz();  ;
-  beamspot_sigmaZ		= beamSpot.sigmaZ();  ;
-  beamspot_dxdz_error		= beamSpot.dxdzError();  ;
-  beamspot_dydz_error		= beamSpot.dydzError();  ;
-  beamspot_sigmaZError		= beamSpot.sigmaZ0Error();  ;
-  beamspot_beamWidthX		= beamSpot.BeamWidthX();  ;
-  beamspot_beamWidthY		= beamSpot.BeamWidthY();  ;
-  beamspot_beamWidthX_error	= beamSpot.BeamWidthXError();  ;
-  beamspot_beamWidthY_error	= beamSpot.BeamWidthXError();  ;
+  beamspot_x_			= beamSpot.x0();  ;
+  beamspot_y_			= beamSpot.y0();  ;
+  beamspot_z_			= beamSpot.z0();  ;
+  beamspot_x_error_		= beamSpot.x0Error();  ;
+  beamspot_y_error_		= beamSpot.y0Error();  ;
+  beamspot_z_error_		= beamSpot.z0Error();  ;
+  beamspot_dxdz_   		= beamSpot.dxdz();  ;
+  beamspot_dydz_         	= beamSpot.dydz();  ;
+  beamspot_sigmaZ_		= beamSpot.sigmaZ();  ;
+  beamspot_dxdz_error_		= beamSpot.dxdzError();  ;
+  beamspot_dydz_error_		= beamSpot.dydzError();  ;
+  beamspot_sigmaZError_		= beamSpot.sigmaZ0Error();  ;
+  beamspot_beamWidthX_		= beamSpot.BeamWidthX();  ;
+  beamspot_beamWidthY_		= beamSpot.BeamWidthY();  ;
+  beamspot_beamWidthX_error_	= beamSpot.BeamWidthXError();  ;
+  beamspot_beamWidthY_error_	= beamSpot.BeamWidthXError();  ;
  
   for(auto&  aVertex : *primaryVertexCollection){
 
     if( not aVertex.isValid() ) continue;
     
     // # offlinePrimaryVertices # //
-    primaryVertex_isFake .push_back(   aVertex.isFake() );
-    primaryVertex_x .push_back(   aVertex.x() );
-    primaryVertex_y .push_back(   aVertex.y()  );
-    primaryVertex_z .push_back(   aVertex.z()  );
-    primaryVertex_t .push_back(   aVertex.t()  );
-    primaryVertex_x_error .push_back(   aVertex.xError()  );
-    primaryVertex_y_error .push_back(   aVertex.yError() );
-    primaryVertex_z_error .push_back(   aVertex.zError()  );
-    primaryVertex_t_error .push_back(   aVertex.tError()  );
-    primaryVertex_ntracks .push_back(   aVertex.nTracks() );
-    primaryVertex_ndof .push_back(   aVertex.ndof() 	 	  );
-    primaryVertex_chi2 .push_back(   aVertex.chi2()  );
-    primaryVertex_normalizedChi2 .push_back(   aVertex.normalizedChi2()  );
+    primaryVertex_isFake_ .push_back(   aVertex.isFake() );
+    primaryVertex_x_ .push_back(   aVertex.x() );
+    primaryVertex_y_ .push_back(   aVertex.y()  );
+    primaryVertex_z_ .push_back(   aVertex.z()  );
+    primaryVertex_t_ .push_back(   aVertex.t()  );
+    primaryVertex_x_error_ .push_back(   aVertex.xError()  );
+    primaryVertex_y_error_ .push_back(   aVertex.yError() );
+    primaryVertex_z_error_ .push_back(   aVertex.zError()  );
+    primaryVertex_t_error_ .push_back(   aVertex.tError()  );
+    primaryVertex_ntracks_ .push_back(   aVertex.nTracks() );
+    primaryVertex_ndof_ .push_back(   aVertex.ndof() 	 	  );
+    primaryVertex_chi2_ .push_back(   aVertex.chi2()  );
+    primaryVertex_normalizedChi2_ .push_back(   aVertex.normalizedChi2()  );
+    nPrimaryVertex_++;
   } // loop over primary vertex collection
 
   // MC truth

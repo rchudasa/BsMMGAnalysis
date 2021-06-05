@@ -261,15 +261,16 @@ private:
 
 
   // # BeamSpot # //
-  double beamspot_x,beamspot_y,beamspot_z,beamspot_x_error,beamspot_y_error,beamspot_z_error;
-  double beamspot_dxdz,beamspot_dydz,beamspot_sigmaZ,beamspot_dxdz_error,beamspot_dydz_error,beamspot_sigmaZError;
-  double beamspot_beamWidthX,beamspot_beamWidthY,beamspot_beamWidthX_error,beamspot_beamWidthY_error;
+  double beamspot_x_,beamspot_y_,beamspot_z_,beamspot_x_error_,beamspot_y_error_,beamspot_z_error_;
+  double beamspot_dxdz_,beamspot_dydz_,beamspot_sigmaZ_,beamspot_dxdz_error_,beamspot_dydz_error_,beamspot_sigmaZError_;
+  double beamspot_beamWidthX_,beamspot_beamWidthY_,beamspot_beamWidthX_error_,beamspot_beamWidthY_error_;
  
   // # offlinePrimaryVertices # //
-  std::vector<bool> primaryVertex_isFake;
-  std::vector<double> primaryVertex_x, primaryVertex_y,primaryVertex_z,primaryVertex_t;
-  std::vector<double> primaryVertex_x_error, primaryVertex_y_error,primaryVertex_z_error,primaryVertex_t_error;
-  std::vector<double> primaryVertex_ntracks,primaryVertex_ndof,primaryVertex_chi2,primaryVertex_normalizedChi2;
+  int nPrimaryVertex_;
+  std::vector<bool> primaryVertex_isFake_;
+  std::vector<double> primaryVertex_x_, primaryVertex_y_,primaryVertex_z_,primaryVertex_t_;
+  std::vector<double> primaryVertex_x_error_, primaryVertex_y_error_,primaryVertex_z_error_,primaryVertex_t_error_;
+  std::vector<double> primaryVertex_ntracks_,primaryVertex_ndof_,primaryVertex_chi2_,primaryVertex_normalizedChi2_;
 
   // # Trigger #
   std::vector<std::string>  trigTable;
