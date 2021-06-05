@@ -206,7 +206,7 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
   theTree->Branch("primaryVertex_covXY",       &primaryVertex_covXY);
   theTree->Branch("primaryVertex_covXZ",       &primaryVertex_covXZ);
   theTree->Branch("primaryVertex_covYY",       &primaryVertex_covYY);
-  theTree->Branch("primaryVertex_covYY",       &primaryVertex_covYZ);
+  theTree->Branch("primaryVertex_covYZ",       &primaryVertex_covYZ);
   theTree->Branch("primaryVertex_covZZ",       &primaryVertex_covZZ);
   theTree->Branch("primaryVertex_x_error",     &primaryVertex_x_error_);
   theTree->Branch("primaryVertex_y_error",     &primaryVertex_y_error_);
@@ -806,6 +806,12 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
     mumuPx_.clear();
     mumuPy_.clear();
     mumuPz_.clear();
+    mumuCovPxPx_.clear();
+    mumuCovPxPy_.clear();
+    mumuCovPxPz_.clear();
+    mumuCovPyPy_.clear();
+    mumuCovPyPz_.clear();
+    mumuCovPzPz_.clear();
     mumuDR_.clear();
     mumuParentMuP_.clear();
     mumuParentMuM_.clear();
