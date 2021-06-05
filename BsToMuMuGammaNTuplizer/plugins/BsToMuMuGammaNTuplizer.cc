@@ -172,12 +172,19 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
   theTree->Branch("lumis",  &lumis_);
   theTree->Branch("isData", &isData_);
  
-  theTree->Branch("beamspot_x",        		 &beamspot_x_);
-  theTree->Branch("beamspot_y",       		 &beamspot_y_);
-  theTree->Branch("beamspot_z",       		 &beamspot_z_);
+  theTree->Branch("beamspot_x",         		 &beamspot_x_);
+  theTree->Branch("beamspot_y",       	    	 &beamspot_y_);
+  theTree->Branch("beamspot_z",       		     &beamspot_z_);
   theTree->Branch("beamspot_x_error",       	 &beamspot_x_error_);
   theTree->Branch("beamspot_y_error",       	 &beamspot_y_error_);
   theTree->Branch("beamspot_z_error",        	 &beamspot_z_error_);
+  theTree->Branch("beamspot_covXX",         	 &beamspot_covXX);
+  theTree->Branch("beamspot_covXY",         	 &beamspot_covXY);
+  theTree->Branch("beamspot_covXZ",         	 &beamspot_covXZ);
+  theTree->Branch("beamspot_covYY",         	 &beamspot_covYY);
+  theTree->Branch("beamspot_covYZ",         	 &beamspot_covYZ);
+  theTree->Branch("beamspot_covZZ",         	 &beamspot_covZZ);
+
   theTree->Branch("beamspot_dxdz",               &beamspot_dxdz_);
   theTree->Branch("beamspot_dydz",               &beamspot_dydz_);
   theTree->Branch("beamspot_sigmaZ",             &beamspot_sigmaZ_);
@@ -195,6 +202,12 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
   theTree->Branch("primaryVertex_y",           &primaryVertex_y_);
   theTree->Branch("primaryVertex_z",           &primaryVertex_z_);
   theTree->Branch("primaryVertex_t",           &primaryVertex_t_);
+  theTree->Branch("primaryVertex_covXX",       &primaryVertex_covXX);
+  theTree->Branch("primaryVertex_covXY",       &primaryVertex_covXY);
+  theTree->Branch("primaryVertex_covXZ",       &primaryVertex_covXZ);
+  theTree->Branch("primaryVertex_covYY",       &primaryVertex_covYY);
+  theTree->Branch("primaryVertex_covYY",       &primaryVertex_covYZ);
+  theTree->Branch("primaryVertex_covZZ",       &primaryVertex_covZZ);
   theTree->Branch("primaryVertex_x_error",     &primaryVertex_x_error_);
   theTree->Branch("primaryVertex_y_error",     &primaryVertex_y_error_);
   theTree->Branch("primaryVertex_z_error",     &primaryVertex_z_error_);
@@ -402,6 +415,12 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
     theTree->Branch("mumuPx",    &mumuPx_);
     theTree->Branch("mumuPy",    &mumuPy_);
     theTree->Branch("mumuPz",    &mumuPz_);
+    theTree->Branch("mumuCovPxPx_",    &mumuCovPxPx_);
+    theTree->Branch("mumuCovPxPy_",    &mumuCovPxPy_);
+    theTree->Branch("mumuCovPxPz_",    &mumuCovPxPz_);
+    theTree->Branch("mumuCovPyPy_",    &mumuCovPyPy_);
+    theTree->Branch("mumuCovPyPz_",    &mumuCovPyPz_);
+    theTree->Branch("mumuCovPzPz_",    &mumuCovPzPz_);
     theTree->Branch("mumuDR",    &mumuDR_);
     theTree->Branch("mumuParentMuP",    &mumuParentMuP_);
     theTree->Branch("mumuParentMuM",    &mumuParentMuM_);
@@ -411,6 +430,12 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
     theTree->Branch("mumuVtxX",        &mumuVtxX_);
     theTree->Branch("mumuVtxY",        &mumuVtxY_);
     theTree->Branch("mumuVtxZ",        &mumuVtxZ_);
+    theTree->Branch("mumuVtxCovXX_",   &mumuVtxCovXX_);
+    theTree->Branch("mumuVtxCovXY_",   &mumuVtxCovXY_);
+    theTree->Branch("mumuVtxCovXZ_",   &mumuVtxCovYY_);
+    theTree->Branch("mumuVtxCovYY_",   &mumuVtxCovYY_);
+    theTree->Branch("mumuVtxCovYZ_",   &mumuVtxCovYZ_);
+    theTree->Branch("mumuVtxCovZZ_",   &mumuVtxCovZZ_);
     theTree->Branch("mumuVtxChi2",     &mumuVtxChi2_);
     theTree->Branch("mumuVtxNdof",     &mumuVtxNdof_);
 
@@ -570,6 +595,12 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
   primaryVertex_y_.clear();
   primaryVertex_z_.clear();
   primaryVertex_t_.clear();
+  primaryVertex_covXX.clear();
+  primaryVertex_covXY.clear();
+  primaryVertex_covXZ.clear();
+  primaryVertex_covYY.clear();
+  primaryVertex_covYZ.clear();
+  primaryVertex_covZZ.clear();
   primaryVertex_x_error_.clear();
   primaryVertex_y_error_.clear();
   primaryVertex_z_error_.clear();
@@ -783,6 +814,12 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
     mumuVtxX_.clear();
     mumuVtxY_.clear();
     mumuVtxZ_.clear();  
+    mumuVtxCovXX_.clear();  
+    mumuVtxCovXY_.clear();  
+    mumuVtxCovXZ_.clear();  
+    mumuVtxCovYY_.clear();  
+    mumuVtxCovYZ_.clear();  
+    mumuVtxCovZZ_.clear();  
     mumuVtxChi2_.clear();
     mumuVtxNdof_.clear();
 
@@ -932,6 +969,13 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
   beamspot_x_error_		= beamSpot.x0Error();  ;
   beamspot_y_error_		= beamSpot.y0Error();  ;
   beamspot_z_error_		= beamSpot.z0Error();  ;
+  beamspot_covXX        = beamSpot.covariance()(0,0);
+  beamspot_covXY        = beamSpot.covariance()(0,1);
+  beamspot_covXZ        = beamSpot.covariance()(0,2);
+  beamspot_covYY        = beamSpot.covariance()(1,1);
+  beamspot_covYZ        = beamSpot.covariance()(1,2);
+  beamspot_covZZ        = beamSpot.covariance()(2,2);
+
   beamspot_dxdz_   		= beamSpot.dxdz();  ;
   beamspot_dydz_         	= beamSpot.dydz();  ;
   beamspot_sigmaZ_		= beamSpot.sigmaZ();  ;
@@ -953,6 +997,12 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
     primaryVertex_y_ .push_back(   aVertex.y()  );
     primaryVertex_z_ .push_back(   aVertex.z()  );
     primaryVertex_t_ .push_back(   aVertex.t()  );
+    primaryVertex_covXX.push_back( aVertex.covariance(0,0) );
+    primaryVertex_covXY.push_back( aVertex.covariance(0,1) );
+    primaryVertex_covXZ.push_back( aVertex.covariance(0,2) );
+    primaryVertex_covYY.push_back( aVertex.covariance(1,1) );
+    primaryVertex_covYZ.push_back( aVertex.covariance(1,2) );
+    primaryVertex_covZZ.push_back( aVertex.covariance(2,2) );
     primaryVertex_x_error_ .push_back(   aVertex.xError()  );
     primaryVertex_y_error_ .push_back(   aVertex.yError() );
     primaryVertex_z_error_ .push_back(   aVertex.zError()  );
@@ -961,6 +1011,10 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
     primaryVertex_ndof_ .push_back(   aVertex.ndof() 	 	  );
     primaryVertex_chi2_ .push_back(   aVertex.chi2()  );
     primaryVertex_normalizedChi2_ .push_back(   aVertex.normalizedChi2()  );
+
+
+
+
     nPrimaryVertex_++;
   } // loop over primary vertex collection
 
@@ -1447,6 +1501,12 @@ void BsToMuMuGammaNTuplizer::fillMuons(const edm::Event& iEvent, const edm::Even
       mumuPx_.push_back(mumu_KP->currentState().globalMomentum().x());
       mumuPy_.push_back(mumu_KP->currentState().globalMomentum().y());
       mumuPz_.push_back(mumu_KP->currentState().globalMomentum().z()); 
+      mumuCovPxPx_.push_back(mumu_KP->currentState().kinematicParametersError().matrix()(3,3)); 
+      mumuCovPxPy_.push_back(mumu_KP->currentState().kinematicParametersError().matrix()(3,4)); 
+      mumuCovPxPz_.push_back(mumu_KP->currentState().kinematicParametersError().matrix()(3,5)); 
+      mumuCovPyPy_.push_back(mumu_KP->currentState().kinematicParametersError().matrix()(4,4)); 
+      mumuCovPyPz_.push_back(mumu_KP->currentState().kinematicParametersError().matrix()(4,5)); 
+      mumuCovPzPz_.push_back(mumu_KP->currentState().kinematicParametersError().matrix()(5,5)); 
       mumuDR_.push_back(deltaR(mu,mu2));
       
       mumuVtxCL_.push_back(mu_mu_vtx_cl);
@@ -1455,6 +1515,12 @@ void BsToMuMuGammaNTuplizer::fillMuons(const edm::Event& iEvent, const edm::Even
       mumuVtxX_.push_back(mumu_KV->position().x());
       mumuVtxY_.push_back(mumu_KV->position().y());
       mumuVtxZ_.push_back(mumu_KV->position().z());
+      mumuVtxCovXX_.push_back(mumu_KV->error().cxx());
+      mumuVtxCovXY_.push_back(mumu_KV->error().cyx());
+      mumuVtxCovXZ_.push_back(mumu_KV->error().czx());
+      mumuVtxCovYY_.push_back(mumu_KV->error().cyy());
+      mumuVtxCovYZ_.push_back(mumu_KV->error().czy());
+      mumuVtxCovZZ_.push_back(mumu_KV->error().czz());
       
       mumuCosAlphaBS_.push_back(MuMuCosAlphaBS);
       mumuCosAlphaBSE_.push_back(MuMuCosAlphaBSErr);
