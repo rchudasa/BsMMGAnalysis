@@ -261,15 +261,17 @@ private:
 
 
   // # BeamSpot # //
-  double beamspot_x,beamspot_y,beamspot_z,beamspot_x_error,beamspot_y_error,beamspot_z_error;
-  double beamspot_dxdz,beamspot_dydz,beamspot_sigmaZ,beamspot_dxdz_error,beamspot_dydz_error,beamspot_sigmaZError;
-  double beamspot_beamWidthX,beamspot_beamWidthY,beamspot_beamWidthX_error,beamspot_beamWidthY_error;
- 
+  double beamspot_x_,beamspot_y_,beamspot_z_,beamspot_x_error_,beamspot_y_error_,beamspot_z_error_;
+  double beamspot_dxdz_,beamspot_dydz_,beamspot_sigmaZ_,beamspot_dxdz_error_,beamspot_dydz_error_,beamspot_sigmaZError_;
+  double beamspot_beamWidthX_,beamspot_beamWidthY_,beamspot_beamWidthX_error_,beamspot_beamWidthY_error_;
+  double beamspot_covXX,beamspot_covXY,beamspot_covXZ,beamspot_covYY,beamspot_covYZ,beamspot_covZZ;  
   // # offlinePrimaryVertices # //
-  std::vector<bool> primaryVertex_isFake;
-  std::vector<double> primaryVertex_x, primaryVertex_y,primaryVertex_z,primaryVertex_t;
-  std::vector<double> primaryVertex_x_error, primaryVertex_y_error,primaryVertex_z_error,primaryVertex_t_error;
-  std::vector<double> primaryVertex_ntracks,primaryVertex_ndof,primaryVertex_chi2,primaryVertex_normalizedChi2;
+  int nPrimaryVertex_;
+  std::vector<bool> primaryVertex_isFake_;
+  std::vector<double> primaryVertex_x_, primaryVertex_y_,primaryVertex_z_,primaryVertex_t_;
+  std::vector<double> primaryVertex_x_error_, primaryVertex_y_error_,primaryVertex_z_error_,primaryVertex_t_error_;
+  std::vector<double> primaryVertex_ntracks_,primaryVertex_ndof_,primaryVertex_chi2_,primaryVertex_normalizedChi2_;
+  std::vector<double> primaryVertex_covXX,primaryVertex_covXY,primaryVertex_covXZ,primaryVertex_covYY,primaryVertex_covYZ,primaryVertex_covZZ;  
 
   // # Trigger #
   std::vector<std::string>  trigTable;
@@ -292,10 +294,10 @@ private:
   
   // reco::GenParticle
   int  gen_nBs_, gen_nBsMuonM_, gen_nBsMuonP_ , gen_nBsPhoton_ ;
-  std::vector<double> gen_Bs_pt_,      gen_Bs_eta_,      gen_Bs_phi_,   gen_Bs_pz_,  gen_Bs_pdgId_;
+  std::vector<double> gen_Bs_pt_,  gen_Bs_energy_,    gen_Bs_eta_,      gen_Bs_phi_,   gen_Bs_pz_,  gen_Bs_pdgId_;
   std::vector<double> gen_BsMuonM_pt_, gen_BsMuonM_eta_, gen_BsMuonM_phi_;
   std::vector<double> gen_BsMuonP_pt_, gen_BsMuonP_eta_, gen_BsMuonP_phi_;
-  std::vector<double> gen_BsPhoton_pt_, gen_BsPhoton_eta_, gen_BsPhoton_phi_;
+  std::vector<double> gen_BsPhoton_pt_, gen_BsPhoton_energy_, gen_BsPhoton_eta_, gen_BsPhoton_phi_;
 
 
   // ### mu+ mu- variables ###
@@ -309,6 +311,14 @@ private:
   std::vector<double>   mumuPy_;
   std::vector<double>   mumuPz_;
   std::vector<double>   mumuDR_;
+  std::vector<double>   mumuCovPxPx_;
+  std::vector<double>   mumuCovPxPy_;
+  std::vector<double>   mumuCovPxPz_;
+  std::vector<double>   mumuCovPyPy_;
+  std::vector<double>   mumuCovPyPz_;
+  std::vector<double>   mumuCovPzPz_;
+  
+
   std::vector<int>   mumuParentMuM_;
   std::vector<int>   mumuParentMuP_;
   // ### mu+ mu- Vtx ###
@@ -316,6 +326,13 @@ private:
   std::vector<double>  mumuVtxX_;
   std::vector<double>  mumuVtxY_;
   std::vector<double>  mumuVtxZ_;
+  std::vector<double>  mumuVtxCovXX_;
+  std::vector<double>  mumuVtxCovXY_;
+  std::vector<double>  mumuVtxCovXZ_;
+  std::vector<double>  mumuVtxCovYY_;
+  std::vector<double>  mumuVtxCovYZ_;
+  std::vector<double>  mumuVtxCovZZ_;
+  
   std::vector<double>  mumuVtxChi2_;
   std::vector<double>  mumuVtxNdof_;
 
