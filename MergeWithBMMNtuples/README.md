@@ -17,3 +17,7 @@ $ root -b -q 'getEventListFromBMM5.cc("bmm5Selection.cfg")'
 -  Convert the event file list produced in step 1 to the format compatable fot `PickEvents` configuration for crab
 - use RunLumiEventFileMaker/getRunLumiEventFileForPicEvent.py for doing this 
 - Follow [this twiki](https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookPickEvents) for pickevents documentation
+
+## Step 3
+- PickEvents from DATA
+
