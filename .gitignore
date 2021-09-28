@@ -4,6 +4,11 @@ PhotonAnalyzer/python/__init__.pyc
 BsMMGAnalysis/BsToMuMuGammaNTuplizer/test/*.root
 *.py~
 *.txt~
+PhotonAnalyzer/python/__init__.pyc
 BsToMuMuGammaNTuplizer/test/crab.log
 BsToMuMuGammaNTuplizer/test/crab_projects/
+BsToMuMuGammaNTuplizer/test/dump.C
+BsToMuMuGammaNTuplizer/test/aodContent.C
+BsToMuMuGammaNTuplizer/test/config_dump.C
+BsToMuMuGammaNTuplizer/plugins/BsToMuMuGammaNTuplizer.cc_v1
 Test/MiniAnalyzer/python/__init__.py
