@@ -1,5 +1,4 @@
 #include "Bmm5Ntuple.h"
-
 R__LOAD_LIBRARY(Bmm5Ntuple_C.so)
 
 Double_t getDETA(Double_t eta1, Double_t eta2);
@@ -10,6 +9,7 @@ void getRunDetails(std::vector<string> fList,
                 string prifix,
                 Long64_t maxEvents
                 );
+
 void getEventListFromBMM5(string fname)
 {
 	fstream cfgFile(fname,ios::in);
@@ -133,6 +133,7 @@ void getRunDetails(   std::vector<string> fList,
   ntupleRawTree.fChain->SetBranchStatus("*",1);
   
   Long64_t nentries = ntupleRawTree.fChain->GetEntries();
+  std::cout<<"nentries : "<<nentries<<"\n";
   if (maxEvents >0 ) nentries = nentries > maxEvents ? maxEvents : nentries;
   cout<<"Processing Total Entries :  "<< nentries << endl;
   
@@ -230,7 +231,4 @@ Double_t getDPHI( Double_t phi1, Double_t phi2) {
 Double_t getDETA(Double_t eta1, Double_t eta2){
   return TMath::Abs(eta1 - eta2);
 }
-
-
-
 

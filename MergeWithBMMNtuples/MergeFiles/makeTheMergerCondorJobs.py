@@ -8,16 +8,51 @@ FILES_PER_MERGE=2
 MERGE_PER_JOB=2
 
 
-destination='/eos/home-a/athachay/workarea/data/BsToMuMuGamma/Run2Studies/MergedNtuples/BsToMuMuGammaNtuples/Charmonium/crab_charmonium2018A_ntuplizer/0000/'
+destination='/grid_mnt/t3storage3/athachay/bs2mumug/run2studies/CMSSW_10_6_19_patch2/src/BsMMGAnalysis/MergeWithBMMNtuples/MergeFiles/mergedBmmXfiles'
 pwd= os.environ['PWD']
 proxy_path=os.environ['X509_USER_PROXY']
 
-xrdRedirector="root://cms-xrd-global.cern.ch/"
 
-FileSource="bmmgFiles.txt"
+## For seeding jobs 
+FileSource="bmmgFileList.txt"
 Fnames=open(FileSource,'r')
 sourceFileList=Fnames.readlines()
 Fnames.close()
+
+
+motherFList=open('bmmgEvntSelection.txt','r')
+l=motherFList.readline()
+motherFMap={}
+while l:
+    if l[0]=='@':
+        items=l[1:-1].split(',')
+        run=int(items[0])
+        lumi=int(items[1])
+        fname=items[2]
+        if fname not in motherFMap:
+            motherFMap[fname]={'run':[],'lumi':[]}
+        motherFMap[fname]['run'].append(run)
+        motherFMap[fname]['lumi'].append(lumi)
+    l=motherFList.readline()
+motherFList.close()
+
+sonFList=open('bmm5EvntSelection.txt','r')
+l=sonFList.readline()
+sonFMap={}
+while l:
+    if l[0]=='@':
+        items=l[1:-1].split(',')
+        run=int(items[0])
+        lumi=int(items[1])
+        fname=items[2]
+        if run not in sonFMap:
+            sonFMap[run]={lumi:[]}
+        if lumi not in sonFMap[run]:
+            sonFMap[run][lumi]=[]
+        sonFMap[run][lumi].append(fname)
+    l=sonFList.readline()
+sonFList.close()
+
 
 cfgTxt="\
 #PARAMS_BEG\n\
@@ -77,38 +112,6 @@ fi \n\
 "
 rootCmd="root -b -q 'mergeBmmXTrees.cc(\"@@CFGFILENAME\")' \n"
 
-motherFList=open('bmmgEvntSelection.txt','r')
-l=motherFList.readline()
-motherFMap={}
-while l:
-    if l[0]=='@':
-        items=l[1:-1].split(',')
-        run=int(items[0])
-        lumi=int(items[1])
-        fname=items[2]
-        if fname not in motherFMap:
-            motherFMap[fname]={'run':[],'lumi':[]}
-        motherFMap[fname]['run'].append(run)
-        motherFMap[fname]['lumi'].append(lumi)
-    l=motherFList.readline()
-motherFList.close()
-
-sonFList=open('bmm5EvntSelection.txt','r')
-l=sonFList.readline()
-sonFMap={}
-while l:
-    if l[0]=='@':
-        items=l[1:-1].split(',')
-        run=int(items[0])
-        lumi=int(items[1])
-        fname=items[2]
-        if run not in sonFMap:
-            sonFMap[run]={lumi:[]}
-        if lumi not in sonFMap[run]:
-            sonFMap[run][lumi]=[]
-        sonFMap[run][lumi].append(fname)
-    l=sonFList.readline()
-sonFList.close()
 #print(sonFMap)
 #for r in sonFMap:
 #    print("\n\n r = ",r," -> ",end =" ")
@@ -153,13 +156,16 @@ for ii in range(NJOBS):
         tmp=""
         searchFiels=[]
         for src in srcFiles:
+            if src not in motherFMap:
+                print("job seed file not found in mother filelist !! -> ",src)
+                continue
             for run,lumi in zip(motherFMap[src]['run'],motherFMap[src]['lumi']):
                 if run not in sonFMap:
-                    print("r  not in search files, run = ",run," , lumi : ",lumi," , parent : ",src)
+                    print("run  not in sonMap files, run = ",run," , lumi : ",lumi," , parent : ",src)
                     lostLumis+=1
                     continue
                 if lumi not in sonFMap[run]:
-                    print("l  not in search files, run = ",run," , lumi : ",lumi," , parent : ",src)
+                    print("lumi  not in sonMap files, run = ",run," , lumi : ",lumi," , parent : ",src)
                     lostLumis+=1
                     continue
                 for fn in sonFMap[run][lumi]:
