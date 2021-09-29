@@ -85,24 +85,24 @@ void getEventListFromBMM5(string fname)
             if(field.compare("DoSelection")==0){
                  getline(strStream, field);
                  if(std::atoi(field.c_str())==1)  doSelection=1;
-                 else doGenSelection = 0;
-                 cout<<" setting doGenSelection  = "<<doGenSelection<<"\n";
+                 else doSelection = 0;
+                 cout<<" setting doSelection  = "<<doSelection<<"\n";
             }
        }
 	}
 
 
-	getRunDetails(fList,ofilename,ofilenameTxt,prefix, maxEvents);
-	
-}
-
-void getRunDetails(   std::vector<string> fList,
-                           string ofilename,
-                           string ofilenameTxt,
-                           string prefix,
-                           Long64_t maxEvents
-                   )
-{
+//	getRunDetails(fList,ofilename,ofilenameTxt,prefix, maxEvents);
+//	
+//}
+//
+//void getRunDetails(   std::vector<string> fList,
+//                           string ofilename,
+//                           string ofilenameTxt,
+//                           string prefix,
+//                           Long64_t maxEvents
+//                   )
+//{
 
   Long64_t NMAX=1e9;
   
