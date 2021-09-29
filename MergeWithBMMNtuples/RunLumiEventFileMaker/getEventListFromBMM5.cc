@@ -41,6 +41,7 @@ void getEventListFromBMM5(string fname)
     string ofilenameTxt("output.txt");
     string prefix("");
     Long64_t maxEvents(10);
+    bool doSelection(0);
     
     cfgFile.clear();
     cfgFile.seekg(0,ios::beg);
@@ -80,6 +81,12 @@ void getEventListFromBMM5(string fname)
                  getline(strStream, field);
                  maxEvents=std::atoi(field.c_str());
                  cout<<" setting maxEvents  = "<<maxEvents<<"\n";
+            }
+            if(field.compare("DoSelection")==0){
+                 getline(strStream, field);
+                 if(std::atoi(field.c_str())==1)  doSelection=1;
+                 else doGenSelection = 0;
+                 cout<<" setting doGenSelection  = "<<doGenSelection<<"\n";
             }
        }
 	}
@@ -154,32 +161,34 @@ void getRunDetails(   std::vector<string> fList,
       evt++;
       nb = ntupleRawTree.fChain->GetEntry(jentry);   nbytes += nb;
 	  
-     // TriggerSelection
-     bool triggerSelection = false;
-     triggerSelection = triggerSelection or ntupleRawTree.HLT_DoubleMu4_3_Bs ;
-     if(not triggerSelection) continue;
-     
-     // Event Selection criterias : TODO
-     bool dimuonSelection=false; 
-     for(int i=0;i<ntupleRawTree.nmm;i++)
+     if(doSelection)
      {
-        mu1_Idx=ntupleRawTree.mm_mu1_index[i];
-        mu2_Idx=ntupleRawTree.mm_mu2_index[i];
-        
-        // Low Pt Mva ID from miniAOD selector (1=LowPtMvaLoose, 2=LowPtMvaMedium)
-        // if( ntupleRawTree.Muon_mvaLowPtId[mu1_Idx] >= 1 ) continue;
-        // if( ntupleRawTree.Muon_mvaLowPtId[mu2_Idx] >= 1 ) continue;
+         // TriggerSelection
+         bool triggerSelection = false;
+         triggerSelection = triggerSelection or ntupleRawTree.HLT_DoubleMu4_3_Bs ;
+         if(not triggerSelection) continue;
+         
+         // Event Selection criterias : TODO
+         bool dimuonSelection=false; 
+         for(int i=0;i<ntupleRawTree.nmm;i++)
+         {
+            mu1_Idx=ntupleRawTree.mm_mu1_index[i];
+            mu2_Idx=ntupleRawTree.mm_mu2_index[i];
+            
+            // Low Pt Mva ID from miniAOD selector (1=LowPtMvaLoose, 2=LowPtMvaMedium)
+            // if( ntupleRawTree.Muon_mvaLowPtId[mu1_Idx] >= 1 ) continue;
+            // if( ntupleRawTree.Muon_mvaLowPtId[mu2_Idx] >= 1 ) continue;
 
-        // soft MVA ID
-        if(not ntupleRawTree.Muon_softMvaId[mu1_Idx] ) continue;
-        if(not ntupleRawTree.Muon_softMvaId[mu2_Idx] ) continue;
+            // soft MVA ID
+            if(not ntupleRawTree.Muon_softMvaId[mu1_Idx] ) continue;
+            if(not ntupleRawTree.Muon_softMvaId[mu2_Idx] ) continue;
 
-        dimuonSelection = true;
-        break;
-     }
+            dimuonSelection = true;
+            break;
+         }
 
-    if(not dimuonSelection) continue;
-
+        if(not dimuonSelection) continue;
+    }
      run=ntupleRawTree.run;
      lumi=ntupleRawTree.luminosityBlock;
      event=ntupleRawTree.event;

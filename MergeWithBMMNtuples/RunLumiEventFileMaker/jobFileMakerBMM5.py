@@ -25,6 +25,7 @@ configurationTxt="\
 #FLIST_END\n\
 \n\
 #PARAMS_BEG\n\
+DoSelection=0\n\
 MaxEvents=-1\n\
 OutputPrefix=\n\
 OutputFile=bmm5EvntSelection_@@IDX.root\n\
@@ -41,7 +42,7 @@ error = $Fp(filename)run.$(Cluster).stderr\n\
 log = $Fp(filename)run.$(Cluster).log\n\
 +JobFlavour = \"longlunch\"\n\
 "
-condorScript=open('jobSubmit.sub','w')
+condorScript=open('subCondorBMM5.sub','w')
 condorScript.write(condorScriptString)
 
 
@@ -49,10 +50,11 @@ condorScript.write(condorScriptString)
 runScriptTxt="\
 #!/bin/bash\n\
 set -x\n\
+mv @@RUNSCRIPT @@RUNSCRIPT.busy \n\
 source /cvmfs/cms.cern.ch/cmsset_default.sh \n\
 export HOME="+HOME+"\n\
 export X509_USER_PROXY="+proxy_path+"\n\
-cd "+pwd+"/@@DIRNAME \n\
+cd @@DIRNAME \n\
 eval `scramv1 runtime -sh`\n\
 cp  "+pwd+"/Bmm5Ntuple* .\n\
 cp  "+pwd+"/getEventListFromBMM5.cc .\n\
@@ -60,9 +62,10 @@ root -b -q 'getEventListFromBMM5.cc(\"@@CFGFILENAME\")'\n\
 if [ $? -eq 0 ]; then \n\
     mv *.root "+destination+"\n\
     mv *.txt "+destination+"\n\
-    mv @@RUNSCRIPT @@RUNSCRIPT.sucess \n\
+    mv @@RUNSCRIPT.busy @@RUNSCRIPT.sucess \n\
     echo OK\n\
 else\n\
+    mv @@RUNSCRIPT.busy @@RUNSCRIPT \n\
     echo FAIL\n\
 fi\n\
 "
