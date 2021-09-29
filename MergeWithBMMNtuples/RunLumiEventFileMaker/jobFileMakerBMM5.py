@@ -7,7 +7,7 @@ ZERO_OFFSET=0
 FILES_PER_JOB=2
 destination='/grid_mnt/t3storage3/athachay/bs2mumug/run2studies/CMSSW_10_6_19_patch2/src/BsMMGAnalysis/MergeWithBMMNtuples/RunLumiEventFileMaker/runLumiList/'
 
-FileSource ="fnames.txt"
+FileSource ="bmm5FileList.txt"
 
 pwd=os.environ['PWD']
 proxy_path=os.environ['X509_USER_PROXY']
