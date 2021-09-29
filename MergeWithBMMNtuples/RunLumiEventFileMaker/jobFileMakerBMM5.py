@@ -67,8 +67,8 @@ else\n\
 fi\n\
 "
 
-if not os.path.exists('Jobs'):
-    os.system('mkdir Jobs')
+if not os.path.exists('JobsBMM5'):
+    os.system('mkdir JobsBMM5')
 print("Making ",NJOBS," Jobs ")
 
 njobs=0
@@ -82,7 +82,7 @@ for ii in range(NJOBS):
     if len(sourceFileList) ==0:
        break 
 
-    dirName= pwd+'/Jobs/Job_'+str(i)
+    dirName= pwd+'/JobsBMM5/Job_'+str(i)
     
     print(i," Job Made")
     if os.path.exists(dirName):
