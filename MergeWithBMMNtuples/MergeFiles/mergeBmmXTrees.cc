@@ -146,7 +146,7 @@ void doMerging(   std::vector<string> fMotherList,
   TFile * mergedTreeFile = new  TFile((prefix+ofilename).c_str(),"recreate");
 
    // Setting up the TChain for the BMMG Ntuples
-   TChain *motherTreeChain = new TChain("Ntuples/EventTree");
+   TChain *motherTreeChain = new TChain("BMMGNtuples/EventTree");
    for (int i=0;i<fMotherList.size();i++)
    {
 	    motherTreeChain->Add(fMotherList.at(i).c_str());

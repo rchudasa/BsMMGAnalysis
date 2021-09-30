@@ -4,8 +4,8 @@ import os
 NJOBS=1000
 NEVENTS_PER_JOB = -1
 ZERO_OFFSET=0
-FILES_PER_MERGE=2
-MERGE_PER_JOB=2
+FILES_PER_MERGE=1
+MERGE_PER_JOB=1
 
 
 destination='/grid_mnt/t3storage3/athachay/bs2mumug/run2studies/CMSSW_10_6_19_patch2/src/BsMMGAnalysis/MergeWithBMMNtuples/MergeFiles/mergedBmmXfiles'
@@ -20,7 +20,10 @@ sourceFileList=Fnames.readlines()
 Fnames.close()
 
 
-motherFList=open('bmmgEvntSelection.txt','r')
+ferr = open("error.log",'w')
+
+
+motherFList=open('bmmGEvntSelection.txt','r')
 l=motherFList.readline()
 motherFMap={}
 while l:
@@ -57,7 +60,7 @@ sonFList.close()
 cfgTxt="\
 #PARAMS_BEG\n\
 OutputPrefix=\n\
-OutputFile=mergedCharmonium2018A0000_BMMG_@@IDX.root\n\
+OutputFile=bmmXMerged_@@IDX.root\n\
 MaxEvents=-1\n\
 #PARAMS_END\n\
 #MOTHER_FILELIST_BEG\n\
@@ -77,7 +80,7 @@ error = $Fp(filename)cdr.stderr\n\
 log = $Fp(filename)cdr.log\n\
 +JobFlavour = \"longlunch\"\n\
 "
-condorScript=open('jobSubmit.sub','w')
+condorScript=open('subMergerJobs.sub','w')
 condorScript.write(condorScriptString)
 
 
@@ -103,12 +106,16 @@ cp BMMGNtuple* @@DIRNAME\n\
 cp genericTreeBranchSelector* @@DIRNAME\n\
 cp mergeBmmXTrees.cc @@DIRNAME\n\
 cd "+pwd+"/@@DIRNAME \n\
+mv @@RUNSCRIPTNAME @@RUNSCRIPTNAME.busy \n\
 eval `scramv1 runtime -sh`\n\
 SUCCESS=1\n\
 @@ROOTCMD\n\
 if [ $SUCCESS -eq 1 ]; then \n\
-    mv @@RUNSCRIPTNAME @@RUNSCRIPTNAME.success\n\
-fi \n\
+    mv @@RUNSCRIPTNAME.busy @@RUNSCRIPTNAME.success\n\
+else\n\
+    mv @@RUNSCRIPTNAME.busy @@RUNSCRIPTNAME \n\
+    echo FAIL\n\
+fi\n\
 "
 rootCmd="root -b -q 'mergeBmmXTrees.cc(\"@@CFGFILENAME\")' \n"
 
@@ -134,6 +141,7 @@ for ii in range(NJOBS):
         os.system('mkdir '+dirName)
     rootCMDtemp=""
     runScriptBareName='run'+str(i)+'.sh'
+
     for jj in range(MERGE_PER_JOB):
         if len(sourceFileList)<FILES_PER_MERGE:
             FILES_PER_MERGE=len(sourceFileList)
@@ -151,35 +159,46 @@ for ii in range(NJOBS):
         for j in range(FILES_PER_MERGE):
             srcFiles.append(sourceFileList.pop(0)[:-1])
             tmp+=srcFiles[-1]+"\n"
+        
         cfgTxttmp=cfgTxttmp.replace("@@MOTHERFNAMES",tmp)
         
         tmp=""
         searchFiels=[]
+        mF=0
+        snF=0
+        sF=0
         for src in srcFiles:
             if src not in motherFMap:
-                print("job seed file not found in mother filelist !! -> ",src)
+                ferr.write( str(i) + '\t'+"job seed file not found in mother filelist !! -> "+src+'\n')
+                mF+=1
                 continue
             for run,lumi in zip(motherFMap[src]['run'],motherFMap[src]['lumi']):
                 if run not in sonFMap:
-                    print("run  not in sonMap files, run = ",run," , lumi : ",lumi," , parent : ",src)
+                    ferr.write(str(i)+'\t'+"run  not in sonMap files, run = "+str(run)+" , lumi : "+str(lumi)+" , parent : "+src+"\n")
                     lostLumis+=1
+                    snF+=1
                     continue
                 if lumi not in sonFMap[run]:
-                    print("lumi  not in sonMap files, run = ",run," , lumi : ",lumi," , parent : ",src)
+                    ferr.write(str(i) + '\t' + "lumi  not in sonMap files, run = "+str(run)+" , lumi : "+str(lumi)+" , parent : "+src+"\n")
                     lostLumis+=1
+                    snF+=1
                     continue
                 for fn in sonFMap[run][lumi]:
                     if fn not in searchFiels:
                         searchFiels.append(fn)
+                        sF+=1
         for fn in searchFiels:
             tmp+= fn + "\n"
         cfgTxttmp=cfgTxttmp.replace("@@SONFNAMES",tmp)
-        
         cfgTxttmp=cfgTxttmp.replace("@@MAXEVENTS",str(NEVENTS_PER_JOB))
         cfgFile.write(cfgTxttmp)
         cfgFile.close()   
         rootCMDtemp+=rootCmd.replace("@@CFGFILENAME",cfgFileName)
         rootCMDtemp+=exitCheckScript
+        print("\t Job made with nSource = ",len(srcFiles),
+              " nMothers failed : ",mF,
+              " nSons = ",sF ," , nSons Lost =  ",snF )
+
     runScriptName=dirName+'/'+runScriptBareName
     runScript=open(runScriptName,'w')
     tmp=runScriptTxt.replace("@@DIRNAME",dirName)
@@ -189,6 +208,5 @@ for ii in range(NJOBS):
     runScript.close()
     os.system('chmod +x '+runScriptName)
     condorScript.write("queue filename matching ("+runScriptName+")\n")
-
 print("Lost Lumis : " , lostLumis," Number of files left : ", len(sourceFileList) )
 condorScript.close()
