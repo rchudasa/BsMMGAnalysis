@@ -1,19 +1,15 @@
 #!/usr/bin/env python3
 
-fout=open('bmm5RunLumiEventListFile.txt','w')
-f=open('fanmelist.txt','r')
-ifnames=[]
-l=f.readline()
-while l:
-    ifnames.append(l[:-1])
-    l=f.readline()
-f.close()
-    
+
+ifnames=['bmmGEvntSelection.txt']
+
 run='0'
 lumi='0'
 evt='0'
 i=0
 imax=len(ifnames)
+
+fout=open('EventListFile.txt','w')
 for fname in ifnames:
     print( " doing : ",i," / ",imax,"\t",fname)
     i+=1
