@@ -66,14 +66,14 @@ _Follow [this twiki](https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookPick
     - I usually copy the branch list from BmmXNtuple.h and edit in vi to the format described below. 
 - Customize the `genericTreeBranchSelector` class to have the proper data members and functions.Use `makeTheClassTemplate.py` script to make the customizations. See usage as :
   - Fill the `branchList` file with template
-  ```
-  className, datatype, BranchName,arrayVar
-  ```
-    - classname : tag to the source tree
-    - datatype  : the datatype of the branch
-    - BranchName : Name of the branch in original tree
-    - arrayVar   : length of the array in the event [ not mandatory for non array branches]
-  - Note : vector<DTYPE> branches will be converted to array type branches automatically
+     ```
+     className, datatype, BranchName,arrayVar
+     ```
+     - classname : tag to the source tree
+     - datatype  : the datatype of the branch
+     - BranchName : Name of the branch in original tree
+     - arrayVar   : length of the array in the event [ not mandatory for non array branches]
+     - Note : vector<DTYPE> branches will be converted to array type branches automatically
   - Then execute the `makeTheClassTemplate.py`  to produce `Functoion.cc` file.
   ```
   ./makeTheClassTemplate.py
