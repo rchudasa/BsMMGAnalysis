@@ -42,11 +42,12 @@ this step will produce a *.txt and *.root file
     $ ./getRunLumiEventFileForPicEvent.py
     ```
   - This step will produce `EventListFile.txt` file
-- Use edmPickEvent.p profided by the CMSSW framework for produsing  crab configs
+- Use edmPickEvent.py profided by the CMSSW framework for produsing  crab configs
   ```
   $ cmsenv
   $ edmPickEvents.py "/Charmonium/Run2018C-17Sep2018-v1/AOD" EventListFile.txt --crab 
   ```
+  - If the size of the files of interest is large , use the pickEvents.json file created by the `getRunLumiEventFileForPicEvent.py`
 - Edit the crab config `pickevents_crab.py`
   - By default the cms config that will be run is 
    ```
