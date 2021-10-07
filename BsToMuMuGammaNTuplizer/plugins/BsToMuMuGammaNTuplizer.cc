@@ -1885,8 +1885,8 @@ void BsToMuMuGammaNTuplizer::fillSC(edm::Event const& e, const edm::EventSetup& 
 	int dIEtaAbs = std::abs(calDIEta(seedHcalIEta, hcalrh.id().ieta()));
 	int dIPhiAbs = std::abs(calDIPhi(seedHcalIPhi, hcalrh.id().iphi()));
 
-        std::cout << e.id().event() << " Seed IEta" << seedHcalIEta << "  SeedIPhi" << seedHcalIPhi << " dEta:" << dIEtaAbs << " dPhi:" << dIPhiAbs << std::endl;
-        std::cout << e.id().event() << " HCAL energy" << hcalrh.energy() << std::endl;
+//        std::cout << e.id().event() << " Seed IEta" << seedHcalIEta << "  SeedIPhi" << seedHcalIPhi << " dEta:" << dIEtaAbs << " dPhi:" << dIPhiAbs << std::endl;
+//        std::cout << e.id().event() << " HCAL energy" << hcalrh.energy() << std::endl;
 
 	if ( (dIEtaAbs <= maxDIEta_) && (dIPhiAbs <= maxDIPhi_) &&  (hcalrh.energy()>getMinEnergyHCAL_(hcalrh.id()) ) ) {
 	  hcalRechitIEta_.push_back(hcalrh.id().ieta());
