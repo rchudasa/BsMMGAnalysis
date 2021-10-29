@@ -1,32 +1,40 @@
 #!/usr/bin/env python3
 import os
 
-NJOBS=1000
+NJOBS=10
 NEVENTS_PER_JOB = -1
 ZERO_OFFSET=0
 FILES_PER_MERGE=1
 MERGE_PER_JOB=1
 
 
-destination='/grid_mnt/t3storage3/athachay/bs2mumug/run2studies/CMSSW_10_6_19_patch2/src/BsMMGAnalysis/MergeWithBMMNtuples/MergeFiles/mergedBmmXfiles'
+destination='/eos/home-a/athachay/workarea/data/BsToMuMuGamma/Run2Studies/MergedNtuples/BsToMuMuGammaNtuples/Charmonium/crab_charmonium2018A_ntuplizer_V2'
 pwd= os.environ['PWD']
 proxy_path=os.environ['X509_USER_PROXY']
 
 
 ## For seeding jobs 
+print("Reading the master filelist to sed the jobs !! ")
 FileSource="bmmgFileList.txt"
 Fnames=open(FileSource,'r')
 sourceFileList=Fnames.readlines()
+print("Read ",len(sourceFileList)," seed files")
 Fnames.close()
-
 
 ferr = open("error.log",'w')
 
-
-motherFList=open('bmmGEvntSelection.txt','r')
+mFileName="bmmGEvntSelection.txt"
+print("\nReading the mother FileList :  ",mFileName)
+motherFList=open(mFileName,'r')
 l=motherFList.readline()
 motherFMap={}
+n=0
 while l:
+    if(n%100000 == 0):
+        print("\nRead lines : ",end="")
+    if(n%10000 == 0):
+        print(" , ",n/1000,"k",end="")
+    n+=1
     if l[0]=='@':
         items=l[1:-1].split(',')
         run=int(items[0])
@@ -40,9 +48,16 @@ while l:
 motherFList.close()
 
 sonFList=open('bmm5EvntSelection.txt','r')
+print("\nReading the son FileList :  ",mFileName)
 l=sonFList.readline()
 sonFMap={}
+n=0
 while l:
+    n+=1
+    if(n%100000 == 0):
+        print("\nRead lines : ",end="")
+    if(n%10000 == 0):
+        print(" , ",n/1000,"k",end="")
     if l[0]=='@':
         items=l[1:-1].split(',')
         run=int(items[0])
@@ -60,7 +75,7 @@ sonFList.close()
 cfgTxt="\
 #PARAMS_BEG\n\
 OutputPrefix=\n\
-OutputFile=bmmXMerged_@@IDX.root\n\
+OutputFile=bmmXMerged2018data_@@IDX.root\n\
 MaxEvents=-1\n\
 #PARAMS_END\n\
 #MOTHER_FILELIST_BEG\n\
@@ -104,6 +119,7 @@ cd "+pwd+"\n\
 cp Bmm5Ntuple* @@DIRNAME\n\
 cp BMMGNtuple* @@DIRNAME\n\
 cp genericTreeBranchSelector* @@DIRNAME\n\
+cp *.h @@DIRNAME\n\
 cp mergeBmmXTrees.cc @@DIRNAME\n\
 cd "+pwd+"/@@DIRNAME \n\
 mv @@RUNSCRIPTNAME @@RUNSCRIPTNAME.busy \n\

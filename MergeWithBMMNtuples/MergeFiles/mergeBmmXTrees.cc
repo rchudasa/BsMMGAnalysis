@@ -19,9 +19,6 @@ OutputFileTxt=bmm5EvntSelection_0.txt
 
 */
 #include "genericTreeBranchSelector.h"
-R__LOAD_LIBRARY(genericTreeBranchSelector_C.so)
-
-
 
 void doMerging (std::vector<string> fMotherList,
                 std::vector<string> fSonList,
@@ -76,7 +73,7 @@ void mergeBmmXTrees(string fname)
             if(field.compare("OutputPrefix")==0){
                  getline(strStream, field);
                  prefix=field;
-                 std::cout<<" setting prefix = "<<prefix<<"\n";
+                 std::cout<<" setting prefix = |"<<prefix<<"|\n";
             }
             if(field.compare("MaxEvents")==0){
                  getline(strStream, field);
@@ -144,9 +141,10 @@ void doMerging(   std::vector<string> fMotherList,
 
 
   TFile * mergedTreeFile = new  TFile((prefix+ofilename).c_str(),"recreate");
+  mergedTreeFile->cd();
 
    // Setting up the TChain for the BMMG Ntuples
-   TChain *motherTreeChain = new TChain("BMMGNtuples/EventTree");
+   TChain *motherTreeChain = new TChain("Ntuples/EventTree");
    for (int i=0;i<fMotherList.size();i++)
    {
 	    motherTreeChain->Add(fMotherList.at(i).c_str());
@@ -170,13 +168,15 @@ void doMerging(   std::vector<string> fMotherList,
 
   Long64_t nentries = treeBranchSelector.bG.fChain->GetEntries();
   cout<<"Total Available Entries :  "<< nentries << endl;
+  if( nentries == 0) exit(1);
   nentries = nentries < maxEvent ? nentries : maxEvent;
   cout<<"Processing Total Entries :  "<< nentries << endl;
+  if( nentries == 0) exit(2);
 
   Long64_t jentry=0,eventCount=0,evt=0;
   Long64_t nb = 0,nbytes=0 ;
   
-  for ( ; jentry<nentries;jentry++) 
+  for ( ; jentry<nentries-1;jentry++) 
     {
       //if (jentry%2500==0) 
         { 
@@ -195,18 +195,16 @@ void doMerging(   std::vector<string> fMotherList,
       s_run   = treeBranchSelector.b5.run;
       s_lumi = treeBranchSelector.b5.luminosityBlock;
       s_event = treeBranchSelector.b5.event;
-
+      
       std::cout<<jentry<<"  FLG : "<< bool(nb>0) <<" :  nb : "<<nb<<"  BMMG {  "<<run<<","<<lumi<<","<<event<<" }  ,{ "<<s_run<<"."<<s_lumi<<","<<s_event<<"}\n";
       if ( nb < 0 ) continue;
 
       treeBranchSelector.Fill();
         
     }
- 
   mergedTreeFile->cd();
   treeBranchSelector.Write();
   mergedTreeFile->Close();
-
   return;
 
 

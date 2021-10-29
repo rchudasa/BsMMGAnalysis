@@ -48,4 +48,7 @@
 <use   name="roofit"/>
 <use   name="roofitcore"/>
 <use   name="boost_python"/>
+<use   name="DataFormats/CaloRecHit"/>
+<use   name="DataFormats/EcalRecHit"/>
+<use   name="DataFormats/DetId"/>
 <flags EDM_PLUGIN="1"/>

@@ -1,8 +1,8 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
-// Thu Aug 12 18:19:40 2021 by ROOT version 6.14/09
+// Wed Oct 27 17:00:50 2021 by ROOT version 6.14/09
 // from TTree EventTree/Event data
-// found on file: /eos/home-a/athachay/workarea/data/BsToMuMuGamma/Run2Studies/BsToMuMuGammaNtuples/Charmonium/crab_charmonium2018A_ntuplizer/0000/Charmonium_Run2018A12Nov2019_UL2018_rsbv1_hadd1.root
+// found on file: Charmonium_Run2018A12Nov2019_UL2018_rsbv1_1.root
 //////////////////////////////////////////////////////////
 
 #ifndef BMMGNtuple_h
@@ -13,7 +13,6 @@
 #include <TFile.h>
 
 // Header file for the classes stored in the TTree if any.
-#include "vector"
 #include "vector"
 #include "vector"
 #include "vector"
@@ -75,20 +74,6 @@ public :
    vector<double>  *primaryVertex_ndof;
    vector<double>  *primaryVertex_chi2;
    vector<double>  *primaryVertex_normalizedChi2;
-   vector<bool>    *trigResult;
-   vector<int>     *trigPrescales;
-   vector<string>  *l1Table;
-   vector<int>     *l1Prescales;
-   vector<bool>    *HLT_DoubleMu4_3_Bs_v14_result;
-   vector<int>     *HLT_DoubleMu4_3_Bs_v14_prescale;
-   vector<bool>    *HLT_DoubleMu4_3_Jpsi_v2_result;
-   vector<int>     *HLT_DoubleMu4_3_Jpsi_v2_prescale;
-   vector<bool>    *HLT_DoubleMu4_JpsiTrk_Displaced_v15_result;
-   vector<int>     *HLT_DoubleMu4_JpsiTrk_Displaced_v15_prescale;
-   vector<bool>    *HLT_DoubleMu4_LowMassNonResonantTrk_Displaced_v15_result;
-   vector<int>     *HLT_DoubleMu4_LowMassNonResonantTrk_Displaced_v15_prescale;
-   vector<bool>    *HLT_DoubleMu4_Mass3p8_DZ_PFHT350_v8_result;
-   vector<int>     *HLT_DoubleMu4_Mass3p8_DZ_PFHT350_v8_prescale;
    Int_t           nPho;
    vector<float>   *phoE;
    vector<float>   *phoEt;
@@ -139,6 +124,7 @@ public :
    vector<float>   *phoPFPhi;
    Int_t           nSC;
    vector<float>   *scE;
+   vector<float>   *scEt;
    vector<float>   *scRawE;
    vector<float>   *scEta;
    vector<float>   *scPhi;
@@ -150,44 +136,63 @@ public :
    vector<float>   *scRawEt;
    vector<float>   *scMinDrWithGsfElectornSC_;
    vector<bool>    *scFoundGsfMatch_;
-   vector<float>   *superCluster_e5x5;
-   vector<float>   *superCluster_e2x2Ratio;
-   vector<float>   *superCluster_e3x3Ratio;
-   vector<float>   *superCluster_eMaxRatio;
-   vector<float>   *superCluster_e2ndRatio;
-   vector<float>   *superCluster_eTopRatio;
-   vector<float>   *superCluster_eRightRatio;
-   vector<float>   *superCluster_eBottomRatio;
-   vector<float>   *superCluster_eLeftRatio;
-   vector<float>   *superCluster_e2x5MaxRatio;
-   vector<float>   *superCluster_e2x5TopRatio;
-   vector<float>   *superCluster_e2x5RightRatio;
-   vector<float>   *superCluster_e2x5BottomRatio;
-   vector<float>   *superCluster_e2x5LeftRatio;
-   vector<float>   *superCluster_swissCross;
-   vector<float>   *superCluster_r9;
-   vector<float>   *superCluster_sigmaIetaIeta;
-   vector<float>   *superCluster_sigmaIetaIphi;
-   vector<float>   *superCluster_sigmaIphiIphi;
-   vector<float>   *superCluster_full5x5_e5x5;
-   vector<float>   *superCluster_full5x5_e2x2Ratio;
-   vector<float>   *superCluster_full5x5_e3x3Ratio;
-   vector<float>   *superCluster_full5x5_eMaxRatio;
-   vector<float>   *superCluster_full5x5_e2ndRatio;
-   vector<float>   *superCluster_full5x5_eTopRatio;
-   vector<float>   *superCluster_full5x5_eRightRatio;
-   vector<float>   *superCluster_full5x5_eBottomRatio;
-   vector<float>   *superCluster_full5x5_eLeftRatio;
-   vector<float>   *superCluster_full5x5_e2x5MaxRatio;
-   vector<float>   *superCluster_full5x5_e2x5TopRatio;
-   vector<float>   *superCluster_full5x5_e2x5RightRatio;
-   vector<float>   *superCluster_full5x5_e2x5BottomRatio;
-   vector<float>   *superCluster_full5x5_e2x5LeftRatio;
-   vector<float>   *superCluster_full5x5_swissCross;
-   vector<float>   *superCluster_full5x5_r9;
-   vector<float>   *superCluster_full5x5_sigmaIetaIeta;
-   vector<float>   *superCluster_full5x5_sigmaIetaIphi;
-   vector<float>   *superCluster_full5x5_sigmaIphiIphi;
+   vector<float>   *scE5x5;
+   vector<float>   *scE2x2Ratio;
+   vector<float>   *scE3x3Ratio;
+   vector<float>   *scEMaxRatio;
+   vector<float>   *scE2ndRatio;
+   vector<float>   *scETopRatio;
+   vector<float>   *scERightRatio;
+   vector<float>   *scEBottomRatio;
+   vector<float>   *scELeftRatio;
+   vector<float>   *scE2x5MaxRatio;
+   vector<float>   *scE2x5TopRatio;
+   vector<float>   *scE2x5RightRatio;
+   vector<float>   *scE2x5BottomRatio;
+   vector<float>   *scE2x5LeftRatio;
+   vector<float>   *scSwissCross;
+   vector<float>   *scR9;
+   vector<float>   *scSigmaIetaIeta;
+   vector<float>   *scSigmaIetaIphi;
+   vector<float>   *scSigmaIphiIphi;
+   vector<float>   *scFull5x5_e5x5;
+   vector<float>   *scFull5x5_e2x2Ratio;
+   vector<float>   *scFull5x5_e3x3Ratio;
+   vector<float>   *scFull5x5_eMaxRatio;
+   vector<float>   *scFull5x5_e2ndRatio;
+   vector<float>   *scFull5x5_eTopRatio;
+   vector<float>   *scFull5x5_eRightRatio;
+   vector<float>   *scFull5x5_eBottomRatio;
+   vector<float>   *scFull5x5_eLeftRatio;
+   vector<float>   *scFull5x5_e2x5MaxRatio;
+   vector<float>   *scFull5x5_e2x5TopRatio;
+   vector<float>   *scFull5x5_e2x5RightRatio;
+   vector<float>   *scFull5x5_e2x5BottomRatio;
+   vector<float>   *scFull5x5_e2x5LeftRatio;
+   vector<float>   *scFull5x5_swissCross;
+   vector<float>   *scFull5x5_r9;
+   vector<float>   *scFull5x5_sigmaIetaIeta;
+   vector<float>   *scFull5x5_sigmaIetaIphi;
+   vector<float>   *scFull5x5_sigmaIphiIphi;
+   Int_t           nhcalRechit;
+   vector<float>   *hcalRechitIEta;
+   vector<float>   *hcalRechitIPhi;
+   vector<float>   *hcalRechitEnergy;
+   vector<float>   *scPFChIso1;
+   vector<float>   *scPFChIso2;
+   vector<float>   *scPFChIso3;
+   vector<float>   *scPFChIso4;
+   vector<float>   *scPFChIso5;
+   vector<float>   *scPFPhoIso1;
+   vector<float>   *scPFPhoIso2;
+   vector<float>   *scPFPhoIso3;
+   vector<float>   *scPFPhoIso4;
+   vector<float>   *scPFPhoIso5;
+   vector<float>   *scPFNeuIso1;
+   vector<float>   *scPFNeuIso2;
+   vector<float>   *scPFNeuIso3;
+   vector<float>   *scPFNeuIso4;
+   vector<float>   *scPFNeuIso5;
 
    // List of branches
    TBranch        *b_run;   //!
@@ -236,20 +241,6 @@ public :
    TBranch        *b_primaryVertex_ndof;   //!
    TBranch        *b_primaryVertex_chi2;   //!
    TBranch        *b_primaryVertex_normalizedChi2;   //!
-   TBranch        *b_trigResult;   //!
-   TBranch        *b_trigPrescales;   //!
-   TBranch        *b_l1Table;   //!
-   TBranch        *b_l1Prescales;   //!
-   TBranch        *b_HLT_DoubleMu4_3_Bs_v14_result;   //!
-   TBranch        *b_HLT_DoubleMu4_3_Bs_v14_prescale;   //!
-   TBranch        *b_HLT_DoubleMu4_3_Jpsi_v2_result;   //!
-   TBranch        *b_HLT_DoubleMu4_3_Jpsi_v2_prescale;   //!
-   TBranch        *b_HLT_DoubleMu4_JpsiTrk_Displaced_v15_result;   //!
-   TBranch        *b_HLT_DoubleMu4_JpsiTrk_Displaced_v15_prescale;   //!
-   TBranch        *b_HLT_DoubleMu4_LowMassNonResonantTrk_Displaced_v15_result;   //!
-   TBranch        *b_HLT_DoubleMu4_LowMassNonResonantTrk_Displaced_v15_prescale;   //!
-   TBranch        *b_HLT_DoubleMu4_Mass3p8_DZ_PFHT350_v8_result;   //!
-   TBranch        *b_HLT_DoubleMu4_Mass3p8_DZ_PFHT350_v8_prescale;   //!
    TBranch        *b_nPho;   //!
    TBranch        *b_phoE;   //!
    TBranch        *b_phoEt;   //!
@@ -300,6 +291,7 @@ public :
    TBranch        *b_phoPFPhi;   //!
    TBranch        *b_nSC;   //!
    TBranch        *b_scE;   //!
+   TBranch        *b_scEt;   //!
    TBranch        *b_scRawE;   //!
    TBranch        *b_scEta;   //!
    TBranch        *b_scPhi;   //!
@@ -311,44 +303,63 @@ public :
    TBranch        *b_scRawEt;   //!
    TBranch        *b_scMinDrWithGsfElectornSC_;   //!
    TBranch        *b_scFoundGsfMatch_;   //!
-   TBranch        *b_superCluster_e5x5;   //!
-   TBranch        *b_superCluster_e2x2Ratio;   //!
-   TBranch        *b_superCluster_e3x3Ratio;   //!
-   TBranch        *b_superCluster_eMaxRatio;   //!
-   TBranch        *b_superCluster_e2ndRatio;   //!
-   TBranch        *b_superCluster_eTopRatio;   //!
-   TBranch        *b_superCluster_eRightRatio;   //!
-   TBranch        *b_superCluster_eBottomRatio;   //!
-   TBranch        *b_superCluster_eLeftRatio;   //!
-   TBranch        *b_superCluster_e2x5MaxRatio;   //!
-   TBranch        *b_superCluster_e2x5TopRatio;   //!
-   TBranch        *b_superCluster_e2x5RightRatio;   //!
-   TBranch        *b_superCluster_e2x5BottomRatio;   //!
-   TBranch        *b_superCluster_e2x5LeftRatio;   //!
-   TBranch        *b_superCluster_swissCross;   //!
-   TBranch        *b_superCluster_r9;   //!
-   TBranch        *b_superCluster_sigmaIetaIeta;   //!
-   TBranch        *b_superCluster_sigmaIetaIphi;   //!
-   TBranch        *b_superCluster_sigmaIphiIphi;   //!
-   TBranch        *b_superCluster_full5x5_e5x5;   //!
-   TBranch        *b_superCluster_full5x5_e2x2Ratio;   //!
-   TBranch        *b_superCluster_full5x5_e3x3Ratio;   //!
-   TBranch        *b_superCluster_full5x5_eMaxRatio;   //!
-   TBranch        *b_superCluster_full5x5_e2ndRatio;   //!
-   TBranch        *b_superCluster_full5x5_eTopRatio;   //!
-   TBranch        *b_superCluster_full5x5_eRightRatio;   //!
-   TBranch        *b_superCluster_full5x5_eBottomRatio;   //!
-   TBranch        *b_superCluster_full5x5_eLeftRatio;   //!
-   TBranch        *b_superCluster_full5x5_e2x5MaxRatio;   //!
-   TBranch        *b_superCluster_full5x5_e2x5TopRatio;   //!
-   TBranch        *b_superCluster_full5x5_e2x5RightRatio;   //!
-   TBranch        *b_superCluster_full5x5_e2x5BottomRatio;   //!
-   TBranch        *b_superCluster_full5x5_e2x5LeftRatio;   //!
-   TBranch        *b_superCluster_full5x5_swissCross;   //!
-   TBranch        *b_superCluster_full5x5_r9;   //!
-   TBranch        *b_superCluster_full5x5_sigmaIetaIeta;   //!
-   TBranch        *b_superCluster_full5x5_sigmaIetaIphi;   //!
-   TBranch        *b_superCluster_full5x5_sigmaIphiIphi;   //!
+   TBranch        *b_scE5x5;   //!
+   TBranch        *b_scE2x2Ratio;   //!
+   TBranch        *b_scE3x3Ratio;   //!
+   TBranch        *b_scEMaxRatio;   //!
+   TBranch        *b_scE2ndRatio;   //!
+   TBranch        *b_scETopRatio;   //!
+   TBranch        *b_scERightRatio;   //!
+   TBranch        *b_scEBottomRatio;   //!
+   TBranch        *b_scELeftRatio;   //!
+   TBranch        *b_scE2x5MaxRatio;   //!
+   TBranch        *b_scE2x5TopRatio;   //!
+   TBranch        *b_scE2x5RightRatio;   //!
+   TBranch        *b_scE2x5BottomRatio;   //!
+   TBranch        *b_scE2x5LeftRatio;   //!
+   TBranch        *b_scSwissCross;   //!
+   TBranch        *b_scR9;   //!
+   TBranch        *b_scSigmaIetaIeta;   //!
+   TBranch        *b_scSigmaIetaIphi;   //!
+   TBranch        *b_scSigmaIphiIphi;   //!
+   TBranch        *b_scFull5x5_e5x5;   //!
+   TBranch        *b_scFull5x5_e2x2Ratio;   //!
+   TBranch        *b_scFull5x5_e3x3Ratio;   //!
+   TBranch        *b_scFull5x5_eMaxRatio;   //!
+   TBranch        *b_scFull5x5_e2ndRatio;   //!
+   TBranch        *b_scFull5x5_eTopRatio;   //!
+   TBranch        *b_scFull5x5_eRightRatio;   //!
+   TBranch        *b_scFull5x5_eBottomRatio;   //!
+   TBranch        *b_scFull5x5_eLeftRatio;   //!
+   TBranch        *b_scFull5x5_e2x5MaxRatio;   //!
+   TBranch        *b_scFull5x5_e2x5TopRatio;   //!
+   TBranch        *b_scFull5x5_e2x5RightRatio;   //!
+   TBranch        *b_scFull5x5_e2x5BottomRatio;   //!
+   TBranch        *b_scFull5x5_e2x5LeftRatio;   //!
+   TBranch        *b_scFull5x5_swissCross;   //!
+   TBranch        *b_scFull5x5_r9;   //!
+   TBranch        *b_scFull5x5_sigmaIetaIeta;   //!
+   TBranch        *b_scFull5x5_sigmaIetaIphi;   //!
+   TBranch        *b_scFull5x5_sigmaIphiIphi;   //!
+   TBranch        *b_nhcalRechit;   //!
+   TBranch        *b_hcalRechitIEta;   //!
+   TBranch        *b_hcalRechitIPhi;   //!
+   TBranch        *b_hcalRechitEnergy;   //!
+   TBranch        *b_scPFChIso1;   //!
+   TBranch        *b_scPFChIso2;   //!
+   TBranch        *b_scPFChIso3;   //!
+   TBranch        *b_scPFChIso4;   //!
+   TBranch        *b_scPFChIso5;   //!
+   TBranch        *b_scPFPhoIso1;   //!
+   TBranch        *b_scPFPhoIso2;   //!
+   TBranch        *b_scPFPhoIso3;   //!
+   TBranch        *b_scPFPhoIso4;   //!
+   TBranch        *b_scPFPhoIso5;   //!
+   TBranch        *b_scPFNeuIso1;   //!
+   TBranch        *b_scPFNeuIso2;   //!
+   TBranch        *b_scPFNeuIso3;   //!
+   TBranch        *b_scPFNeuIso4;   //!
+   TBranch        *b_scPFNeuIso5;   //!
 
    BMMGNtuple(TTree *tree=0);
    virtual ~BMMGNtuple();
@@ -356,7 +367,7 @@ public :
    virtual Int_t    GetEntry(Long64_t entry);
    virtual Long64_t LoadTree(Long64_t entry);
    virtual void     Init(TTree *tree);
-  // virtual void     Loop();
+ //  virtual void     Loop();
    virtual Bool_t   Notify();
    virtual void     Show(Long64_t entry = -1);
 };
@@ -369,6 +380,12 @@ BMMGNtuple::BMMGNtuple(TTree *tree) : fChain(0)
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    if (tree == 0) {
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("Charmonium_Run2018A12Nov2019_UL2018_rsbv1_1.root");
+      if (!f || !f->IsOpen()) {
+         f = new TFile("Charmonium_Run2018A12Nov2019_UL2018_rsbv1_1.root");
+      }
+      TDirectory * dir = (TDirectory*)f->Get("Charmonium_Run2018A12Nov2019_UL2018_rsbv1_1.root:/Ntuples");
+      dir->GetObject("EventTree",tree);
 
    }
    Init(tree);
@@ -429,20 +446,6 @@ void BMMGNtuple::Init(TTree *tree)
    primaryVertex_ndof = 0;
    primaryVertex_chi2 = 0;
    primaryVertex_normalizedChi2 = 0;
-   trigResult = 0;
-   trigPrescales = 0;
-   l1Table = 0;
-   l1Prescales = 0;
-   HLT_DoubleMu4_3_Bs_v14_result = 0;
-   HLT_DoubleMu4_3_Bs_v14_prescale = 0;
-   HLT_DoubleMu4_3_Jpsi_v2_result = 0;
-   HLT_DoubleMu4_3_Jpsi_v2_prescale = 0;
-   HLT_DoubleMu4_JpsiTrk_Displaced_v15_result = 0;
-   HLT_DoubleMu4_JpsiTrk_Displaced_v15_prescale = 0;
-   HLT_DoubleMu4_LowMassNonResonantTrk_Displaced_v15_result = 0;
-   HLT_DoubleMu4_LowMassNonResonantTrk_Displaced_v15_prescale = 0;
-   HLT_DoubleMu4_Mass3p8_DZ_PFHT350_v8_result = 0;
-   HLT_DoubleMu4_Mass3p8_DZ_PFHT350_v8_prescale = 0;
    phoE = 0;
    phoEt = 0;
    phoEta = 0;
@@ -490,6 +493,7 @@ void BMMGNtuple::Init(TTree *tree)
    phoPFEta = 0;
    phoPFPhi = 0;
    scE = 0;
+   scEt = 0;
    scRawE = 0;
    scEta = 0;
    scPhi = 0;
@@ -501,44 +505,62 @@ void BMMGNtuple::Init(TTree *tree)
    scRawEt = 0;
    scMinDrWithGsfElectornSC_ = 0;
    scFoundGsfMatch_ = 0;
-   superCluster_e5x5 = 0;
-   superCluster_e2x2Ratio = 0;
-   superCluster_e3x3Ratio = 0;
-   superCluster_eMaxRatio = 0;
-   superCluster_e2ndRatio = 0;
-   superCluster_eTopRatio = 0;
-   superCluster_eRightRatio = 0;
-   superCluster_eBottomRatio = 0;
-   superCluster_eLeftRatio = 0;
-   superCluster_e2x5MaxRatio = 0;
-   superCluster_e2x5TopRatio = 0;
-   superCluster_e2x5RightRatio = 0;
-   superCluster_e2x5BottomRatio = 0;
-   superCluster_e2x5LeftRatio = 0;
-   superCluster_swissCross = 0;
-   superCluster_r9 = 0;
-   superCluster_sigmaIetaIeta = 0;
-   superCluster_sigmaIetaIphi = 0;
-   superCluster_sigmaIphiIphi = 0;
-   superCluster_full5x5_e5x5 = 0;
-   superCluster_full5x5_e2x2Ratio = 0;
-   superCluster_full5x5_e3x3Ratio = 0;
-   superCluster_full5x5_eMaxRatio = 0;
-   superCluster_full5x5_e2ndRatio = 0;
-   superCluster_full5x5_eTopRatio = 0;
-   superCluster_full5x5_eRightRatio = 0;
-   superCluster_full5x5_eBottomRatio = 0;
-   superCluster_full5x5_eLeftRatio = 0;
-   superCluster_full5x5_e2x5MaxRatio = 0;
-   superCluster_full5x5_e2x5TopRatio = 0;
-   superCluster_full5x5_e2x5RightRatio = 0;
-   superCluster_full5x5_e2x5BottomRatio = 0;
-   superCluster_full5x5_e2x5LeftRatio = 0;
-   superCluster_full5x5_swissCross = 0;
-   superCluster_full5x5_r9 = 0;
-   superCluster_full5x5_sigmaIetaIeta = 0;
-   superCluster_full5x5_sigmaIetaIphi = 0;
-   superCluster_full5x5_sigmaIphiIphi = 0;
+   scE5x5 = 0;
+   scE2x2Ratio = 0;
+   scE3x3Ratio = 0;
+   scEMaxRatio = 0;
+   scE2ndRatio = 0;
+   scETopRatio = 0;
+   scERightRatio = 0;
+   scEBottomRatio = 0;
+   scELeftRatio = 0;
+   scE2x5MaxRatio = 0;
+   scE2x5TopRatio = 0;
+   scE2x5RightRatio = 0;
+   scE2x5BottomRatio = 0;
+   scE2x5LeftRatio = 0;
+   scSwissCross = 0;
+   scR9 = 0;
+   scSigmaIetaIeta = 0;
+   scSigmaIetaIphi = 0;
+   scSigmaIphiIphi = 0;
+   scFull5x5_e5x5 = 0;
+   scFull5x5_e2x2Ratio = 0;
+   scFull5x5_e3x3Ratio = 0;
+   scFull5x5_eMaxRatio = 0;
+   scFull5x5_e2ndRatio = 0;
+   scFull5x5_eTopRatio = 0;
+   scFull5x5_eRightRatio = 0;
+   scFull5x5_eBottomRatio = 0;
+   scFull5x5_eLeftRatio = 0;
+   scFull5x5_e2x5MaxRatio = 0;
+   scFull5x5_e2x5TopRatio = 0;
+   scFull5x5_e2x5RightRatio = 0;
+   scFull5x5_e2x5BottomRatio = 0;
+   scFull5x5_e2x5LeftRatio = 0;
+   scFull5x5_swissCross = 0;
+   scFull5x5_r9 = 0;
+   scFull5x5_sigmaIetaIeta = 0;
+   scFull5x5_sigmaIetaIphi = 0;
+   scFull5x5_sigmaIphiIphi = 0;
+   hcalRechitIEta = 0;
+   hcalRechitIPhi = 0;
+   hcalRechitEnergy = 0;
+   scPFChIso1 = 0;
+   scPFChIso2 = 0;
+   scPFChIso3 = 0;
+   scPFChIso4 = 0;
+   scPFChIso5 = 0;
+   scPFPhoIso1 = 0;
+   scPFPhoIso2 = 0;
+   scPFPhoIso3 = 0;
+   scPFPhoIso4 = 0;
+   scPFPhoIso5 = 0;
+   scPFNeuIso1 = 0;
+   scPFNeuIso2 = 0;
+   scPFNeuIso3 = 0;
+   scPFNeuIso4 = 0;
+   scPFNeuIso5 = 0;
    // Set branch addresses and branch pointers
    if (!tree) return;
    fChain = tree;
@@ -591,20 +613,6 @@ void BMMGNtuple::Init(TTree *tree)
    fChain->SetBranchAddress("primaryVertex_ndof", &primaryVertex_ndof, &b_primaryVertex_ndof);
    fChain->SetBranchAddress("primaryVertex_chi2", &primaryVertex_chi2, &b_primaryVertex_chi2);
    fChain->SetBranchAddress("primaryVertex_normalizedChi2", &primaryVertex_normalizedChi2, &b_primaryVertex_normalizedChi2);
-   fChain->SetBranchAddress("trigResult", &trigResult, &b_trigResult);
-   fChain->SetBranchAddress("trigPrescales", &trigPrescales, &b_trigPrescales);
-   fChain->SetBranchAddress("l1Table", &l1Table, &b_l1Table);
-   fChain->SetBranchAddress("l1Prescales", &l1Prescales, &b_l1Prescales);
-   fChain->SetBranchAddress("HLT_DoubleMu4_3_Bs_v14_result", &HLT_DoubleMu4_3_Bs_v14_result, &b_HLT_DoubleMu4_3_Bs_v14_result);
-   fChain->SetBranchAddress("HLT_DoubleMu4_3_Bs_v14_prescale", &HLT_DoubleMu4_3_Bs_v14_prescale, &b_HLT_DoubleMu4_3_Bs_v14_prescale);
-   fChain->SetBranchAddress("HLT_DoubleMu4_3_Jpsi_v2_result", &HLT_DoubleMu4_3_Jpsi_v2_result, &b_HLT_DoubleMu4_3_Jpsi_v2_result);
-   fChain->SetBranchAddress("HLT_DoubleMu4_3_Jpsi_v2_prescale", &HLT_DoubleMu4_3_Jpsi_v2_prescale, &b_HLT_DoubleMu4_3_Jpsi_v2_prescale);
-   fChain->SetBranchAddress("HLT_DoubleMu4_JpsiTrk_Displaced_v15_result", &HLT_DoubleMu4_JpsiTrk_Displaced_v15_result, &b_HLT_DoubleMu4_JpsiTrk_Displaced_v15_result);
-   fChain->SetBranchAddress("HLT_DoubleMu4_JpsiTrk_Displaced_v15_prescale", &HLT_DoubleMu4_JpsiTrk_Displaced_v15_prescale, &b_HLT_DoubleMu4_JpsiTrk_Displaced_v15_prescale);
-   fChain->SetBranchAddress("HLT_DoubleMu4_LowMassNonResonantTrk_Displaced_v15_result", &HLT_DoubleMu4_LowMassNonResonantTrk_Displaced_v15_result, &b_HLT_DoubleMu4_LowMassNonResonantTrk_Displaced_v15_result);
-   fChain->SetBranchAddress("HLT_DoubleMu4_LowMassNonResonantTrk_Displaced_v15_prescale", &HLT_DoubleMu4_LowMassNonResonantTrk_Displaced_v15_prescale, &b_HLT_DoubleMu4_LowMassNonResonantTrk_Displaced_v15_prescale);
-   fChain->SetBranchAddress("HLT_DoubleMu4_Mass3p8_DZ_PFHT350_v8_result", &HLT_DoubleMu4_Mass3p8_DZ_PFHT350_v8_result, &b_HLT_DoubleMu4_Mass3p8_DZ_PFHT350_v8_result);
-   fChain->SetBranchAddress("HLT_DoubleMu4_Mass3p8_DZ_PFHT350_v8_prescale", &HLT_DoubleMu4_Mass3p8_DZ_PFHT350_v8_prescale, &b_HLT_DoubleMu4_Mass3p8_DZ_PFHT350_v8_prescale);
    fChain->SetBranchAddress("nPho", &nPho, &b_nPho);
    fChain->SetBranchAddress("phoE", &phoE, &b_phoE);
    fChain->SetBranchAddress("phoEt", &phoEt, &b_phoEt);
@@ -655,6 +663,7 @@ void BMMGNtuple::Init(TTree *tree)
    fChain->SetBranchAddress("phoPFPhi", &phoPFPhi, &b_phoPFPhi);
    fChain->SetBranchAddress("nSC", &nSC, &b_nSC);
    fChain->SetBranchAddress("scE", &scE, &b_scE);
+   fChain->SetBranchAddress("scEt", &scEt, &b_scEt);
    fChain->SetBranchAddress("scRawE", &scRawE, &b_scRawE);
    fChain->SetBranchAddress("scEta", &scEta, &b_scEta);
    fChain->SetBranchAddress("scPhi", &scPhi, &b_scPhi);
@@ -666,44 +675,63 @@ void BMMGNtuple::Init(TTree *tree)
    fChain->SetBranchAddress("scRawEt", &scRawEt, &b_scRawEt);
    fChain->SetBranchAddress("scMinDrWithGsfElectornSC_", &scMinDrWithGsfElectornSC_, &b_scMinDrWithGsfElectornSC_);
    fChain->SetBranchAddress("scFoundGsfMatch_", &scFoundGsfMatch_, &b_scFoundGsfMatch_);
-   fChain->SetBranchAddress("superCluster_e5x5", &superCluster_e5x5, &b_superCluster_e5x5);
-   fChain->SetBranchAddress("superCluster_e2x2Ratio", &superCluster_e2x2Ratio, &b_superCluster_e2x2Ratio);
-   fChain->SetBranchAddress("superCluster_e3x3Ratio", &superCluster_e3x3Ratio, &b_superCluster_e3x3Ratio);
-   fChain->SetBranchAddress("superCluster_eMaxRatio", &superCluster_eMaxRatio, &b_superCluster_eMaxRatio);
-   fChain->SetBranchAddress("superCluster_e2ndRatio", &superCluster_e2ndRatio, &b_superCluster_e2ndRatio);
-   fChain->SetBranchAddress("superCluster_eTopRatio", &superCluster_eTopRatio, &b_superCluster_eTopRatio);
-   fChain->SetBranchAddress("superCluster_eRightRatio", &superCluster_eRightRatio, &b_superCluster_eRightRatio);
-   fChain->SetBranchAddress("superCluster_eBottomRatio", &superCluster_eBottomRatio, &b_superCluster_eBottomRatio);
-   fChain->SetBranchAddress("superCluster_eLeftRatio", &superCluster_eLeftRatio, &b_superCluster_eLeftRatio);
-   fChain->SetBranchAddress("superCluster_e2x5MaxRatio", &superCluster_e2x5MaxRatio, &b_superCluster_e2x5MaxRatio);
-   fChain->SetBranchAddress("superCluster_e2x5TopRatio", &superCluster_e2x5TopRatio, &b_superCluster_e2x5TopRatio);
-   fChain->SetBranchAddress("superCluster_e2x5RightRatio", &superCluster_e2x5RightRatio, &b_superCluster_e2x5RightRatio);
-   fChain->SetBranchAddress("superCluster_e2x5BottomRatio", &superCluster_e2x5BottomRatio, &b_superCluster_e2x5BottomRatio);
-   fChain->SetBranchAddress("superCluster_e2x5LeftRatio", &superCluster_e2x5LeftRatio, &b_superCluster_e2x5LeftRatio);
-   fChain->SetBranchAddress("superCluster_swissCross", &superCluster_swissCross, &b_superCluster_swissCross);
-   fChain->SetBranchAddress("superCluster_r9", &superCluster_r9, &b_superCluster_r9);
-   fChain->SetBranchAddress("superCluster_sigmaIetaIeta", &superCluster_sigmaIetaIeta, &b_superCluster_sigmaIetaIeta);
-   fChain->SetBranchAddress("superCluster_sigmaIetaIphi", &superCluster_sigmaIetaIphi, &b_superCluster_sigmaIetaIphi);
-   fChain->SetBranchAddress("superCluster_sigmaIphiIphi", &superCluster_sigmaIphiIphi, &b_superCluster_sigmaIphiIphi);
-   fChain->SetBranchAddress("superCluster_full5x5_e5x5", &superCluster_full5x5_e5x5, &b_superCluster_full5x5_e5x5);
-   fChain->SetBranchAddress("superCluster_full5x5_e2x2Ratio", &superCluster_full5x5_e2x2Ratio, &b_superCluster_full5x5_e2x2Ratio);
-   fChain->SetBranchAddress("superCluster_full5x5_e3x3Ratio", &superCluster_full5x5_e3x3Ratio, &b_superCluster_full5x5_e3x3Ratio);
-   fChain->SetBranchAddress("superCluster_full5x5_eMaxRatio", &superCluster_full5x5_eMaxRatio, &b_superCluster_full5x5_eMaxRatio);
-   fChain->SetBranchAddress("superCluster_full5x5_e2ndRatio", &superCluster_full5x5_e2ndRatio, &b_superCluster_full5x5_e2ndRatio);
-   fChain->SetBranchAddress("superCluster_full5x5_eTopRatio", &superCluster_full5x5_eTopRatio, &b_superCluster_full5x5_eTopRatio);
-   fChain->SetBranchAddress("superCluster_full5x5_eRightRatio", &superCluster_full5x5_eRightRatio, &b_superCluster_full5x5_eRightRatio);
-   fChain->SetBranchAddress("superCluster_full5x5_eBottomRatio", &superCluster_full5x5_eBottomRatio, &b_superCluster_full5x5_eBottomRatio);
-   fChain->SetBranchAddress("superCluster_full5x5_eLeftRatio", &superCluster_full5x5_eLeftRatio, &b_superCluster_full5x5_eLeftRatio);
-   fChain->SetBranchAddress("superCluster_full5x5_e2x5MaxRatio", &superCluster_full5x5_e2x5MaxRatio, &b_superCluster_full5x5_e2x5MaxRatio);
-   fChain->SetBranchAddress("superCluster_full5x5_e2x5TopRatio", &superCluster_full5x5_e2x5TopRatio, &b_superCluster_full5x5_e2x5TopRatio);
-   fChain->SetBranchAddress("superCluster_full5x5_e2x5RightRatio", &superCluster_full5x5_e2x5RightRatio, &b_superCluster_full5x5_e2x5RightRatio);
-   fChain->SetBranchAddress("superCluster_full5x5_e2x5BottomRatio", &superCluster_full5x5_e2x5BottomRatio, &b_superCluster_full5x5_e2x5BottomRatio);
-   fChain->SetBranchAddress("superCluster_full5x5_e2x5LeftRatio", &superCluster_full5x5_e2x5LeftRatio, &b_superCluster_full5x5_e2x5LeftRatio);
-   fChain->SetBranchAddress("superCluster_full5x5_swissCross", &superCluster_full5x5_swissCross, &b_superCluster_full5x5_swissCross);
-   fChain->SetBranchAddress("superCluster_full5x5_r9", &superCluster_full5x5_r9, &b_superCluster_full5x5_r9);
-   fChain->SetBranchAddress("superCluster_full5x5_sigmaIetaIeta", &superCluster_full5x5_sigmaIetaIeta, &b_superCluster_full5x5_sigmaIetaIeta);
-   fChain->SetBranchAddress("superCluster_full5x5_sigmaIetaIphi", &superCluster_full5x5_sigmaIetaIphi, &b_superCluster_full5x5_sigmaIetaIphi);
-   fChain->SetBranchAddress("superCluster_full5x5_sigmaIphiIphi", &superCluster_full5x5_sigmaIphiIphi, &b_superCluster_full5x5_sigmaIphiIphi);
+   fChain->SetBranchAddress("scE5x5", &scE5x5, &b_scE5x5);
+   fChain->SetBranchAddress("scE2x2Ratio", &scE2x2Ratio, &b_scE2x2Ratio);
+   fChain->SetBranchAddress("scE3x3Ratio", &scE3x3Ratio, &b_scE3x3Ratio);
+   fChain->SetBranchAddress("scEMaxRatio", &scEMaxRatio, &b_scEMaxRatio);
+   fChain->SetBranchAddress("scE2ndRatio", &scE2ndRatio, &b_scE2ndRatio);
+   fChain->SetBranchAddress("scETopRatio", &scETopRatio, &b_scETopRatio);
+   fChain->SetBranchAddress("scERightRatio", &scERightRatio, &b_scERightRatio);
+   fChain->SetBranchAddress("scEBottomRatio", &scEBottomRatio, &b_scEBottomRatio);
+   fChain->SetBranchAddress("scELeftRatio", &scELeftRatio, &b_scELeftRatio);
+   fChain->SetBranchAddress("scE2x5MaxRatio", &scE2x5MaxRatio, &b_scE2x5MaxRatio);
+   fChain->SetBranchAddress("scE2x5TopRatio", &scE2x5TopRatio, &b_scE2x5TopRatio);
+   fChain->SetBranchAddress("scE2x5RightRatio", &scE2x5RightRatio, &b_scE2x5RightRatio);
+   fChain->SetBranchAddress("scE2x5BottomRatio", &scE2x5BottomRatio, &b_scE2x5BottomRatio);
+   fChain->SetBranchAddress("scE2x5LeftRatio", &scE2x5LeftRatio, &b_scE2x5LeftRatio);
+   fChain->SetBranchAddress("scSwissCross", &scSwissCross, &b_scSwissCross);
+   fChain->SetBranchAddress("scR9", &scR9, &b_scR9);
+   fChain->SetBranchAddress("scSigmaIetaIeta", &scSigmaIetaIeta, &b_scSigmaIetaIeta);
+   fChain->SetBranchAddress("scSigmaIetaIphi", &scSigmaIetaIphi, &b_scSigmaIetaIphi);
+   fChain->SetBranchAddress("scSigmaIphiIphi", &scSigmaIphiIphi, &b_scSigmaIphiIphi);
+   fChain->SetBranchAddress("scFull5x5_e5x5", &scFull5x5_e5x5, &b_scFull5x5_e5x5);
+   fChain->SetBranchAddress("scFull5x5_e2x2Ratio", &scFull5x5_e2x2Ratio, &b_scFull5x5_e2x2Ratio);
+   fChain->SetBranchAddress("scFull5x5_e3x3Ratio", &scFull5x5_e3x3Ratio, &b_scFull5x5_e3x3Ratio);
+   fChain->SetBranchAddress("scFull5x5_eMaxRatio", &scFull5x5_eMaxRatio, &b_scFull5x5_eMaxRatio);
+   fChain->SetBranchAddress("scFull5x5_e2ndRatio", &scFull5x5_e2ndRatio, &b_scFull5x5_e2ndRatio);
+   fChain->SetBranchAddress("scFull5x5_eTopRatio", &scFull5x5_eTopRatio, &b_scFull5x5_eTopRatio);
+   fChain->SetBranchAddress("scFull5x5_eRightRatio", &scFull5x5_eRightRatio, &b_scFull5x5_eRightRatio);
+   fChain->SetBranchAddress("scFull5x5_eBottomRatio", &scFull5x5_eBottomRatio, &b_scFull5x5_eBottomRatio);
+   fChain->SetBranchAddress("scFull5x5_eLeftRatio", &scFull5x5_eLeftRatio, &b_scFull5x5_eLeftRatio);
+   fChain->SetBranchAddress("scFull5x5_e2x5MaxRatio", &scFull5x5_e2x5MaxRatio, &b_scFull5x5_e2x5MaxRatio);
+   fChain->SetBranchAddress("scFull5x5_e2x5TopRatio", &scFull5x5_e2x5TopRatio, &b_scFull5x5_e2x5TopRatio);
+   fChain->SetBranchAddress("scFull5x5_e2x5RightRatio", &scFull5x5_e2x5RightRatio, &b_scFull5x5_e2x5RightRatio);
+   fChain->SetBranchAddress("scFull5x5_e2x5BottomRatio", &scFull5x5_e2x5BottomRatio, &b_scFull5x5_e2x5BottomRatio);
+   fChain->SetBranchAddress("scFull5x5_e2x5LeftRatio", &scFull5x5_e2x5LeftRatio, &b_scFull5x5_e2x5LeftRatio);
+   fChain->SetBranchAddress("scFull5x5_swissCross", &scFull5x5_swissCross, &b_scFull5x5_swissCross);
+   fChain->SetBranchAddress("scFull5x5_r9", &scFull5x5_r9, &b_scFull5x5_r9);
+   fChain->SetBranchAddress("scFull5x5_sigmaIetaIeta", &scFull5x5_sigmaIetaIeta, &b_scFull5x5_sigmaIetaIeta);
+   fChain->SetBranchAddress("scFull5x5_sigmaIetaIphi", &scFull5x5_sigmaIetaIphi, &b_scFull5x5_sigmaIetaIphi);
+   fChain->SetBranchAddress("scFull5x5_sigmaIphiIphi", &scFull5x5_sigmaIphiIphi, &b_scFull5x5_sigmaIphiIphi);
+   fChain->SetBranchAddress("nhcalRechit", &nhcalRechit, &b_nhcalRechit);
+   fChain->SetBranchAddress("hcalRechitIEta", &hcalRechitIEta, &b_hcalRechitIEta);
+   fChain->SetBranchAddress("hcalRechitIPhi", &hcalRechitIPhi, &b_hcalRechitIPhi);
+   fChain->SetBranchAddress("hcalRechitEnergy", &hcalRechitEnergy, &b_hcalRechitEnergy);
+   fChain->SetBranchAddress("scPFChIso1", &scPFChIso1, &b_scPFChIso1);
+   fChain->SetBranchAddress("scPFChIso2", &scPFChIso2, &b_scPFChIso2);
+   fChain->SetBranchAddress("scPFChIso3", &scPFChIso3, &b_scPFChIso3);
+   fChain->SetBranchAddress("scPFChIso4", &scPFChIso4, &b_scPFChIso4);
+   fChain->SetBranchAddress("scPFChIso5", &scPFChIso5, &b_scPFChIso5);
+   fChain->SetBranchAddress("scPFPhoIso1", &scPFPhoIso1, &b_scPFPhoIso1);
+   fChain->SetBranchAddress("scPFPhoIso2", &scPFPhoIso2, &b_scPFPhoIso2);
+   fChain->SetBranchAddress("scPFPhoIso3", &scPFPhoIso3, &b_scPFPhoIso3);
+   fChain->SetBranchAddress("scPFPhoIso4", &scPFPhoIso4, &b_scPFPhoIso4);
+   fChain->SetBranchAddress("scPFPhoIso5", &scPFPhoIso5, &b_scPFPhoIso5);
+   fChain->SetBranchAddress("scPFNeuIso1", &scPFNeuIso1, &b_scPFNeuIso1);
+   fChain->SetBranchAddress("scPFNeuIso2", &scPFNeuIso2, &b_scPFNeuIso2);
+   fChain->SetBranchAddress("scPFNeuIso3", &scPFNeuIso3, &b_scPFNeuIso3);
+   fChain->SetBranchAddress("scPFNeuIso4", &scPFNeuIso4, &b_scPFNeuIso4);
+   fChain->SetBranchAddress("scPFNeuIso5", &scPFNeuIso5, &b_scPFNeuIso5);
    Notify();
 }
 

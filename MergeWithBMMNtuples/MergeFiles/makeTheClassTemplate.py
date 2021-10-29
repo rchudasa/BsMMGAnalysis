@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+fillingDebugOn =False
 shortExt={\
 'string'          :   'C',\
 'Char_t'          :   'B',\
@@ -132,19 +133,28 @@ while l:
 stlVectorToArrayConversionFuntion_Fill+="\n\n"
 
 for arryLens in fillArray_dict:
-    tmp ="\tfor( UInt_t i=0; i< UInt_t ( "+fillArray_dict[arryLens]['sizeFrom']+") ; i++ ) { \n" 
+    tmp=""
+    if(fillingDebugOn): tmp+='\tstd::cout<<__LINE__<<"'+arryLens+'"<<endl ; \n'
+    tmp +="\tfor( UInt_t i=0; i< UInt_t ( "+fillArray_dict[arryLens]['sizeFrom']+") ; i++ ) { \n" 
+    tmp +="\t\t if( i>= MAX_ARRAY_SIZE ) {    break;}\n "
     for arrs,src in zip(fillArray_dict[arryLens]['slaveArrays'],fillArray_dict[arryLens]['sourceVects']):
+
+#        if(fillingDebugOn): tmp+='\tstd::cout<<__LINE__<<" '+arryLens+' "<<"'+src+'"<<endl ; \n'
+
         tmp+="\t\t"+arrs+"[i] = "+src+"->at(i);\n"
     tmp+="\n\t}\n\n"
     stlVectorToArrayConversionFuntion_Fill+=tmp
      
-f=open("Funtions.cc",'w')
-f.write("//      DATAMEMBERS   \n\n")
+f=open("DataMembers.h",'w')
+f.write("//      DATAMEMBERS   \n")
 f.write(dataMemberDefenitionCount)
 f.write("\n\n")
 f.write(dataMemberDefenitionArray)
-
 f.write("//      END DATA MEMBERS   \n\n")
+f.close()
+
+
+f=open("MemberFunction.h",'w')
 f.write("void genericTreeBranchSelector::FillTheArraysFromVectors()\n")
 f.write("{\n")
 f.write(stlVectorToArrayConversionFuntion_Count)

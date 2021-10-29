@@ -1,12 +1,12 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
-// Thu Aug 12 18:07:05 2021 by ROOT version 6.14/09
+// Wed Oct 27 17:01:16 2021 by ROOT version 6.14/09
 // from TTree Events/Events
-// found on file: /eos/cms/store/group/phys_bphys/bmm/bmm5/NanoAOD/516/Charmonium+Run2018A-12Nov2019_UL2018_rsb-v1+MINIAOD/005AE8E0-8D0B-4149-BE7D-B1C75688B3B3.root
+// found on file: 005AE8E0-8D0B-4149-BE7D-B1C75688B3B3.root
 //////////////////////////////////////////////////////////
 
-#ifndef Bmm5Ntuple_h
-#define Bmm5Ntuple_h
+#ifndef BMM5Ntuple_h
+#define BMM5Ntuple_h
 
 #include <TROOT.h>
 #include <TChain.h>
@@ -14,7 +14,7 @@
 
 // Header file for the classes stored in the TTree if any.
 
-class Bmm5Ntuple {
+class BMM5Ntuple {
 public :
    TTree          *fChain;   //!pointer to the analyzed TTree or TChain
    Int_t           fCurrent; //!current Tree number in a TChain
@@ -3759,42 +3759,48 @@ public :
    TBranch        *b_HLT_Diphoton30_18_PVrealAND_R9Id_AND_IsoCaloId_AND_HE_R9Id_NoPixelVeto_Mass55;   //!
    TBranch        *b_HLTriggerFinalPath;   //!
 
-   Bmm5Ntuple(TTree *tree=0);
-   virtual ~Bmm5Ntuple();
+   BMM5Ntuple(TTree *tree=0);
+   virtual ~BMM5Ntuple();
    virtual Int_t    Cut(Long64_t entry);
    virtual Int_t    GetEntry(Long64_t entry);
    virtual Long64_t LoadTree(Long64_t entry);
    virtual void     Init(TTree *tree);
+ //  virtual void     Loop();
    virtual Bool_t   Notify();
    virtual void     Show(Long64_t entry = -1);
 };
 
 #endif
 
-#ifdef Bmm5Ntuple_cxx
-Bmm5Ntuple::Bmm5Ntuple(TTree *tree) : fChain(0) 
+#ifdef BMM5Ntuple_cxx
+BMM5Ntuple::BMM5Ntuple(TTree *tree) : fChain(0) 
 {
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    if (tree == 0) {
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("005AE8E0-8D0B-4149-BE7D-B1C75688B3B3.root");
+      if (!f || !f->IsOpen()) {
+         f = new TFile("005AE8E0-8D0B-4149-BE7D-B1C75688B3B3.root");
+      }
+      f->GetObject("Events",tree);
 
    }
    Init(tree);
 }
 
-Bmm5Ntuple::~Bmm5Ntuple()
+BMM5Ntuple::~BMM5Ntuple()
 {
    if (!fChain) return;
    delete fChain->GetCurrentFile();
 }
 
-Int_t Bmm5Ntuple::GetEntry(Long64_t entry)
+Int_t BMM5Ntuple::GetEntry(Long64_t entry)
 {
 // Read contents of entry.
    if (!fChain) return 0;
    return fChain->GetEntry(entry);
 }
-Long64_t Bmm5Ntuple::LoadTree(Long64_t entry)
+Long64_t BMM5Ntuple::LoadTree(Long64_t entry)
 {
 // Set the environment to read one entry
    if (!fChain) return -5;
@@ -3807,7 +3813,7 @@ Long64_t Bmm5Ntuple::LoadTree(Long64_t entry)
    return centry;
 }
 
-void Bmm5Ntuple::Init(TTree *tree)
+void BMM5Ntuple::Init(TTree *tree)
 {
    // The Init() function is called when the selector needs to initialize
    // a new tree or chain. Typically here the branch addresses and branch
@@ -5693,7 +5699,7 @@ void Bmm5Ntuple::Init(TTree *tree)
    Notify();
 }
 
-Bool_t Bmm5Ntuple::Notify()
+Bool_t BMM5Ntuple::Notify()
 {
    // The Notify() function is called when a new file is opened. This
    // can be either for a new TTree in a TChain or when when a new TTree
@@ -5704,18 +5710,18 @@ Bool_t Bmm5Ntuple::Notify()
    return kTRUE;
 }
 
-void Bmm5Ntuple::Show(Long64_t entry)
+void BMM5Ntuple::Show(Long64_t entry)
 {
 // Print contents of entry.
 // If entry is not specified, print current entry
    if (!fChain) return;
    fChain->Show(entry);
 }
-Int_t Bmm5Ntuple::Cut(Long64_t entry)
+Int_t BMM5Ntuple::Cut(Long64_t entry)
 {
 // This function may be called from Loop.
 // returns  1 if entry is accepted.
 // returns -1 otherwise.
    return 1;
 }
-#endif // #ifdef Bmm5Ntuple_cxx
+#endif // #ifdef BMM5Ntuple_cxx
