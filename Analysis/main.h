@@ -1,5 +1,7 @@
 #include "Util.h"
 
+/*
+
 Int_t setupDimuonBranches( TTree* outTree ,std::map<string, Int_t > &candidateMap , double * storageArray , Int_t offset=0 , Int_t size =0)
 {
     #include  "setupDimu.cc"
@@ -43,3 +45,4 @@ void assignSC( std::map<string, Int_t > candidateMap, MergedBMMX &ntupleRawTree,
         #include "assignSc.cc"
     }
 }
+*/
