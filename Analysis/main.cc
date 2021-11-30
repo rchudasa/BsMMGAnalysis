@@ -8,9 +8,17 @@
 #include "main.h"
 #include "BMMGAnalysis.h" 
 
-int  main()
+int  main(int argc,char *argv[])
 {
-    string cfgFile="analysis2018.cfg";
+
+    if(argc<2)
+    {
+        std::cout<<" Usage : \n"
+                 <<"         ./main.exe <configfile.cfg>\n\n";
+        exit(1);
+    }
+
+    string cfgFile(argv[1]);
     Long64_t maxEvents(-1000);
     
     //   TTree * outTree   = new TTree("AnalysisTree","Reduced branches from the Merged [bmm5+bmmX] trees.");

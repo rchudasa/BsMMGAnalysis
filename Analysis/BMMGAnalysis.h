@@ -1,6 +1,6 @@
-
+#include <iostream>
 #include "Util.h"
-#include "MergedBMMX2018Data.h"
+
 
 #define PHO_MASS 0.0
 // PDG 2012
@@ -12,7 +12,8 @@
 #define NSC_MAX   50
 #define NMUONS_MAX  20
 
-
+#define MergedBMMX2018Data_cxx
+#include "MergedBMMX2018Data.h"
 typedef MergedBMMX2018Data MergedBMMX ;
 
 
