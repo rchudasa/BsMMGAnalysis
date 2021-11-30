@@ -12,6 +12,7 @@
 #define NSC_MAX   50
 #define NMUONS_MAX  20
 
+
 #define MergedBMMX2018Data_cxx
 #include "MergedBMMX2018Data.h"
 typedef MergedBMMX2018Data MergedBMMX ;

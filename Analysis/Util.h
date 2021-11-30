@@ -37,6 +37,4 @@ Double_t getDR( Double_t eta1, Double_t phi1,Double_t eta2 ,Double_t phi2) {
 
 }
 
-
-
 #endif
