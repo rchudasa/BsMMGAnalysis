@@ -41,6 +41,13 @@ void BMMGAnalysis::AllocateBMMGBranches()
 
 void BMMGAnalysis::Analyze()
 {
+ 
+    /************************************************************************************
+
+ Make sure the branches used here are not turned off to 0 by BMMGAnalysis::setupBranchStatus()
+
+    *************************************************************************************/
+
     TLorentzVector diMuLV,photonLV,bmmgLV;
     Double_t dr;
     
@@ -176,7 +183,10 @@ void BMMGAnalysis::Analyze()
        EventCount++;
        outTree->Fill();
     }
-    std::cout<<"\n\nAnalysis loop completed\n\n";
+    std::cout<<"\n\n"
+            <<"  Number of Events with candidates = "<<EventCount<<"\n"
+            <<"  Analysis loop completed"
+            <<"  \n\n";
 
 }
 

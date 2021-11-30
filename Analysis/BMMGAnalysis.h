@@ -149,7 +149,14 @@ void BMMGAnalysis::setupInputTree()
 
 void BMMGAnalysis::setupBranchStatus()
 {
+    //ntupleRawTree.fChain->SetBranchStatus("b5_Electron_",0);
+    //ntupleRawTree.fChain->SetBranchStatus("*MET*",0);
+    //ntupleRawTree.fChain->SetBranchStatus("*Jet*",0);
+    //ntupleRawTree.fChain->SetBranchStatus("*Tau*",0);
+    //ntupleRawTree.fChain->SetBranchStatus("*b5_L1_*",0);
+    //ntupleRawTree.fChain->SetBranchStatus("*b5_HLT_*",0);
 
+    //ntupleRawTree.fChain->SetBranchStatus("b5_HLT_DoubleMu4_3_Bs",1);
 }
 
 void BMMGAnalysis::setupOutPuts()
