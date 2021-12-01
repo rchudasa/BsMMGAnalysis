@@ -200,7 +200,7 @@ void BMMGAnalysis::setupInputTree()
     nentries = treeChain->GetEntries();
     if( maxEvents < 0) maxEvents = nentries;
     maxEvents = nentries < maxEvents ? nentries: maxEvents;
-    cout<<"Available total number of events"<<nentries<<" \n";
+    cout<<"Available total number of events "<<nentries<<" \n";
     
     ntupleRawTree.Init(treeChain);
 
