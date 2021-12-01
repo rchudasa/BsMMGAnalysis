@@ -1,6 +1,17 @@
 #include <iostream>
 #include "Util.h"
 
+#include "TFile.h"
+#include "TTree.h"
+#include "TString.h"
+#include "TSystem.h"
+#include "TROOT.h"
+
+#include "TMVA/Tools.h"
+#include "TMVA/Reader.h"
+#include "TMVA/MethodCuts.h"
+
+
 
 #define PHO_MASS 0.0
 // PDG 2012
@@ -17,6 +28,29 @@
 #include "MergedBMMX2018Data.h"
 typedef MergedBMMX2018Data MergedBMMX ;
 
+struct PhotonMVAvariables
+{
+
+  float energy ;
+  float et ;
+  float eta ;
+  float rawE ;
+  float full5x5_e5x5  ;
+  float full5x5_r9  ;
+  float sigmaIetaIeta  ;
+  float sigmaIetaIphi  ;
+  float etaWidth  ;
+  float phiWidth  ;
+  
+  float r9  ;
+  float swisross  ;
+  float PFPhoIso ;
+  float PFNeuIso ;
+  float PFChIso ;
+  float FoundGsfMatch;
+  float e2x5_MaxRatio; 
+
+};
 
 class BMMGAnalysis 
 {
@@ -57,7 +91,18 @@ class BMMGAnalysis
     std::map<string,string> string_parameters;
     std::map<string,Double_t> double_parameters;
     Long64_t nentries, maxEvents ;
-    
+ 
+    // Photon MVA vars 
+    bool doPhotonMVA;
+    bool hasWeightFiles;
+    bool hasSetupPhotonMVA;
+    TMVA::Reader *reader ;
+    PhotonMVAvariables photonMVAdata;
+    TString photonIdxMVAWeightFile;
+    Float_t photonMVAValue;
+
+
+
     // Analysis Cuts
     Double_t maxMuMuDr          ;
     Double_t maxDimuPhotonDr    ;
@@ -80,8 +125,11 @@ class BMMGAnalysis
     void SaveFile();
     void setupOutPuts();
     void SetupAnalysis();
-
+    
     // Analysis Functions
+    void doPhotonMVAScores();
+    void setUpPhotonMVA();
+    
     Int_t doMuonSelection(Int_t muIdx, bool isLead);
     Int_t doPhotonSelection(Int_t scIdx);
     void Analyze();
@@ -107,8 +155,17 @@ void BMMGAnalysis::Init(string cfgFileName)
     minDimuMass        =1.0;
     maxMMGMass         =6.2;
     minMMGMass         =4.4;
+    doPhotonMVA        =false;
+    photonIdxMVAWeightFile="";
+    hasWeightFiles=false;
 
     readParameters(cfgFileName);
+    
+    if(doPhotonMVA)
+    {
+       setUpPhotonMVA();
+    }
+        
     initDone=true;
 }
 
@@ -209,6 +266,7 @@ void BMMGAnalysis::readParameters(string fname)
     cfgModeFlag=false;
     std::istringstream strStream;
     std::string field;
+    Int_t tmpI;
 
 	while(std::getline(cfgFile,line))
 	{
@@ -224,7 +282,7 @@ void BMMGAnalysis::readParameters(string fname)
            if(field.compare("OutputFile")==0){
                  getline(strStream, field);
                  ofileName=field;
-                 //std::cout<<" setting ofileName = "<<ofileName<<"\n";
+                 std::cout<<" setting ofileName = "<<ofileName<<"\n";
             }
             if(field.compare("OutputPrefix")==0){
                  getline(strStream, field);
@@ -266,8 +324,18 @@ void BMMGAnalysis::readParameters(string fname)
                  minMMGMass=std::atof(field.c_str());
                  cout<<" setting minMMGMass  = "<<minMMGMass<<"\n";
             }
-
-
+             if(field.compare("DoPhotonMVAID")==0){
+                 getline(strStream, field);
+                 tmpI=std::atoi(field.c_str());
+                 doPhotonMVA= tmpI >0 ? 1 : 0;
+                 cout<<" setting DoPhotonMVAID  = "<<doPhotonMVA<<"\n";
+            }
+             if(field.compare("PhotonIDWeightFile")==0){
+                 hasWeightFiles=true;
+                 getline(strStream, field);
+                 photonIdxMVAWeightFile=field;
+                 std::cout<<" setting photonIdxMVAWeightFile = "<<photonIdxMVAWeightFile<<"\n";
+            }
        }
     }
 
@@ -288,6 +356,11 @@ void BMMGAnalysis::readParameters(string fname)
     for( auto name : InFileList)
     {
         std::cout<<"\t"<<name<<"\n";
+    }
+
+    if(doPhotonMVA)
+    {
+        setUpPhotonMVA();
     }
 }
 

@@ -1,4 +1,69 @@
 
+
+
+void BMMGAnalysis::setUpPhotonMVA()
+{
+    if(not hasWeightFiles)
+    {
+        std::cout<<"Weights are not provided exiting ! \n";
+        exit(4);
+    }
+
+    std::cout<<" ******** Setting up PhotonMVA ID *********\n"
+             <<"Weight file : "<<photonIdxMVAWeightFile<<"\n";
+    reader =  new TMVA::Reader( "!Color:!Silent" );
+    
+    reader->AddVariable("et", &(photonMVAdata.et));
+    reader->AddVariable("rawE", &(photonMVAdata.rawE));
+    reader->AddVariable("sigmaIetaIeta", &(photonMVAdata.sigmaIetaIeta));
+    //reader->AddVariable("sigmaIetaIphi", &(photonMVAdata.sigmaIetaIphi));
+    reader->AddVariable("FoundGsfMatch", &(photonMVAdata.FoundGsfMatch));
+    reader->AddVariable("r9", &(photonMVAdata.r9));
+    reader->AddVariable("etaWidth", &(photonMVAdata.etaWidth));
+    reader->AddVariable("PFPhoIso", &(photonMVAdata.PFPhoIso));
+    reader->AddVariable("PFNeuIso", &(photonMVAdata.PFNeuIso)); 
+    reader->AddVariable("PFChIso", &(photonMVAdata.PFChIso)); 
+    reader->AddVariable("full5x5_e5x5", &(photonMVAdata.full5x5_e5x5));
+    reader->AddVariable("full5x5_r9", &(photonMVAdata.full5x5_r9));
+    //reader->AddVariable("e2x5_MaxRatio", &(photonMVAdata.e2x5_MaxRatio));
+    reader->BookMVA("LowPtPhotonIdMVA_MLP", photonIdxMVAWeightFile );
+
+    hasSetupPhotonMVA=true;
+}
+
+void BMMGAnalysis::doPhotonMVAScores()
+{   
+    if(not hasSetupPhotonMVA)
+    {
+        std::cout<<" MVA not setup : "<<hasSetupPhotonMVA<<"\n";
+    }
+    for(int  i=0  ; i < ntupleRawTree.bG_nSC ; i++)
+    {
+      photonMVAdata.energy        = ntupleRawTree.bG_scE[i] ;
+      photonMVAdata.et            = ntupleRawTree.bG_scEt[i] ;
+      photonMVAdata.eta           = ntupleRawTree.bG_scEta[i] ;
+      photonMVAdata.rawE          = ntupleRawTree.bG_scRawE[i] ;
+      photonMVAdata.full5x5_e5x5  = ntupleRawTree.bG_scFull5x5_e5x5[i] ;
+      photonMVAdata.full5x5_r9    = ntupleRawTree.bG_scFull5x5_r9[i] ;
+      photonMVAdata.sigmaIetaIeta = ntupleRawTree.bG_scSigmaIetaIeta[i] ;
+   //   photonMVAdata.sigmaIetaIphi = ntupleRawTree.bG_scSigmaIetaIphi[i] ;
+      photonMVAdata.etaWidth      = ntupleRawTree.bG_scEtaWidth[i] ;
+      photonMVAdata.phiWidth      = ntupleRawTree.bG_scPhiWidth[i] ;
+      photonMVAdata.r9            = ntupleRawTree.bG_scR9[i] ;
+      photonMVAdata.swisross      = ntupleRawTree.bG_scSwissCross[i] ;
+      photonMVAdata.PFPhoIso      = ntupleRawTree.bG_scPFPhoIso3[i] ;
+      photonMVAdata.PFNeuIso      = ntupleRawTree.bG_scPFNeuIso3[i] ;
+      photonMVAdata.PFChIso       = ntupleRawTree.bG_scPFChIso3[i] ;
+      photonMVAdata.FoundGsfMatch = ntupleRawTree.bG_scFoundGsfMatch_[i] ;
+  //    photonMVAdata.e2x5_MaxRatio = ntupleRawTree.bG_sc ; 
+     
+      photonMVAValue = reader->EvaluateMVA("LowPtPhotonIdMVA_MLP");
+      storageArrayDouble[ i + candidateMapInt["scPhotonMVAScore"]  ]   = photonMVAValue ;
+   }
+    
+
+}
+
 void BMMGAnalysis::AllocateBMMGBranches()
 {
     outTree->Branch("nDiMuCandidates",&(nDiMuCandidates));
@@ -9,6 +74,12 @@ void BMMGAnalysis::AllocateBMMGBranches()
     candidateMapInt["nBMMGCandidatesPerDimu"]   = storageIdxFilledInt ;
     outTree->Branch("nBMMGCandidatesPerDimu",&(storageArrayInt[storageIdxFilledInt]),"nBMMGCandidatesPerDimu[nDiMuCandidates]/I");storageIdxFilledInt+=NDIMU_MAX;
     
+    if(doPhotonMVA)
+    {
+        candidateMapDouble["scPhotonMVAScore"]   = storageIdxFilledDouble ;
+        outTree->Branch("scPhotonMVAScore",&storageArrayDouble[storageIdxFilledDouble],"scPhotonMVAScore[bG_nSC]/D"); storageIdxFilledDouble+=NSC_MAX;
+    }
+
     candidateMapDouble["mumu_dr"]   = storageIdxFilledDouble ;
     outTree->Branch("mumu_dr",&(storageArrayDouble[storageIdxFilledDouble]),"mumu_dr[nDiMuCandidates]/D");storageIdxFilledDouble+=NDIMU_MAX;
 
@@ -56,6 +127,7 @@ void BMMGAnalysis::Analyze()
     cout<<"\nProcessing total "<<maxEvents<<" events \n\n";
    
     Long64_t EventCount=0;
+    Long64_t EventCountWithCand=0;
     Long64_t nb = 0,nbytes=0 ;
     for (Long64_t jentry=0; jentry<maxEvents; jentry++)
     {   
@@ -79,7 +151,8 @@ void BMMGAnalysis::Analyze()
 
        if(not isTriggerd) continue;
 
-        for(Int_t i=0;i<NSTORAGE_ARRAY_MAX;i++)
+       
+       for(Int_t i=0;i<NSTORAGE_ARRAY_MAX;i++)
             storageArrayDouble[i]=0;
        for(int phoSCIdx=0;phoSCIdx < ntupleRawTree.bG_nSC ; phoSCIdx++)
             photonSelectionCheck[phoSCIdx]=-1;
@@ -91,6 +164,12 @@ void BMMGAnalysis::Analyze()
        
 
        nBMMGCandidates=0;
+
+       if(doPhotonMVA)
+       {
+            doPhotonMVAScores();
+
+       }
        for(int mumuIdx=0; mumuIdx < ntupleRawTree.b5_nmm;mumuIdx++)
        {    
            // Muon Selection
@@ -98,7 +177,6 @@ void BMMGAnalysis::Analyze()
            if(rslt > 0) continue;
 		   rslt=doMuonSelection( ntupleRawTree.b5_mm_mu2_index[mumuIdx], false);
            if(rslt > 0) continue;
-           
            // Dimuon Selection
            diMuLV.SetPtEtaPhiM(     ntupleRawTree.b5_mm_kin_pt[mumuIdx],   \
                                     ntupleRawTree.b5_mm_kin_eta[mumuIdx],  \
@@ -107,10 +185,11 @@ void BMMGAnalysis::Analyze()
            
            dr= getDR( ntupleRawTree.b5_mm_kin_mu1eta[mumuIdx], ntupleRawTree.b5_mm_kin_mu1phi[mumuIdx] ,
                     ntupleRawTree.b5_mm_kin_mu2eta[mumuIdx], ntupleRawTree.b5_mm_kin_mu2phi[mumuIdx] );
-           if (dr < maxMuMuDr ) continue;
+           if (dr > maxMuMuDr ) continue;
            if( diMuLV.M() < minDimuMass or diMuLV.M() > maxDimuMass) continue;   
            storageArrayDouble[nDiMuCandidates + candidateMapDouble["mumu_dr"] ]   = dr ;
             
+
             /*
                     VERTEX SELECTION STUFF
             */
@@ -131,14 +210,12 @@ void BMMGAnalysis::Analyze()
                if( photonSelectionCheck[phoSCIdx] > 0) continue;
 
                dr=getDR(ntupleRawTree.bG_scEta[phoSCIdx],ntupleRawTree.bG_scPhi[phoSCIdx],dimuEta,dimuPhi);
-
-               if(dr > maxDimuPhotonDr ) continue;
-
                auto et= ntupleRawTree.bG_scE[phoSCIdx]/cosh(ntupleRawTree.bG_scEta[phoSCIdx]);
-
                photonLV.SetPtEtaPhiM( et       ,     ntupleRawTree.bG_scEta[phoSCIdx],
                                                        ntupleRawTree.bG_scPhi[phoSCIdx], PHO_MASS );
                bmmgLV = diMuLV + photonLV;
+               if(dr > maxDimuPhotonDr ) continue;
+
                
                if(bmmgLV.M() < minMMGMass or bmmgLV.M() > maxMMGMass ) continue;
 
@@ -179,12 +256,18 @@ void BMMGAnalysis::Analyze()
        
        //assignSC(candidateMapDouble, ntupleRawTree,storageArrayDouble);
        //assignMuons(candidateMapDouble, ntupleRawTree,storageArrayDouble);
-
+    
        EventCount++;
+       if(nBMMGCandidates >0)
+       {
+        std::cout<<"\t "<<ntupleRawTree.b5_run<<" , "<<ntupleRawTree.b5_event<<" : Number of nBMMGCandidates = "<<nBMMGCandidates<<"\n";
+        EventCountWithCand++;
+       }
        outTree->Fill();
     }
     std::cout<<"\n\n"
-            <<"  Number of Events with candidates = "<<EventCount<<"\n"
+            <<"  Number of Events with trigger = "<<EventCount<<"\n"
+            <<"  Number of Events with candidates = "<<EventCountWithCand<<"\n"
             <<"  Analysis loop completed"
             <<"  \n\n";
 
@@ -223,5 +306,6 @@ Int_t BMMGAnalysis::doPhotonSelection(Int_t scIdx)
 {
     
     if(ntupleRawTree.bG_scEta[scIdx] > 1.0 ) return 1;
+    
     return 0;
 }

@@ -1,7 +1,8 @@
 
 CXX 		=g++
-LIBS		=`root-config --libs`
-CXXFLAGS 	=-g3 -std=c++11  `root-config --cflags`
+LIBS		=`root-config --libs` -lTMVA 
+
+CXXFLAGS 	=-g3 -std=c++11  `root-config --cflags` 
 INCPATH     =.
 
 TARGET		=main.exe
