@@ -1,6 +1,4 @@
 
-
-
 void BMMGAnalysis::setUpPhotonMVA()
 {
     if(not hasWeightFiles)
@@ -148,7 +146,10 @@ void BMMGAnalysis::Analyze()
        
        // Trigger Selection
        if( ntupleRawTree.b5_HLT_DoubleMu4_3_Bs ) isTriggerd=true;
-
+       if( ntupleRawTree.b5_HLT_DoubleMu4_3_Jpsi ) isTriggerd=true;
+       if( ntupleRawTree.b5_HLT_Dimuon0_Jpsi_NoVertexing ) isTriggerd=true;
+       //if( ntupleRawTree.b5_HLT_Dimuon0_Jpsi_NoVertexing_L1_4R_0er1p5R ) isTriggerd=true;
+    
        if(not isTriggerd) continue;
 
        
@@ -305,7 +306,7 @@ Int_t BMMGAnalysis::doMuonSelection(Int_t muIdx, bool isLead)
 Int_t BMMGAnalysis::doPhotonSelection(Int_t scIdx)
 {
     
-    if(ntupleRawTree.bG_scEta[scIdx] > 1.0 ) return 1;
+    if( storageArrayDouble[ scIdx + candidateMapInt["scPhotonMVAScore"]  ] > 0.43 ) return 1;
     
     return 0;
 }
