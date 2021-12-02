@@ -108,6 +108,54 @@ void BMMGAnalysis::AllocateBMMGBranches()
     std::cout<<" Storage usage : " <<storageIdxFilledDouble<<" doubles and "<<storageIdxFilledInt<<" ints.\n ";
 }
 
+void bookHistograms()
+{
+     const int   pTNBins=50;
+     const float pTmin(0.0);
+     const float pTmax(50.0);
+
+     const int   massNBins=50;
+     const float massMin(0.0);
+     const float massMax(50.0);
+     
+     const int   deltaRNBins=50;
+     const float deltaRMin(0.0);
+     const float deltaRMax(50.0);
+    
+    // Mu Hist
+     th1fStore["mu_Pt"]     = new TH1F("mu_Pt","Pt of mu Candidate", pTBins , pTmin  , pTmax  );
+     th1fStore["mu_Charge"]     = new TH1F("mu_charge","charge of mu Candidate", 3 , -1.5  , 1.5  );
+     th1fStore["mu_pFIsol"]     = new TH1F("mu_charge","charge of mu Candidate", 3 , -1.5  , 1.5  );
+    
+
+    // SC Hists
+    
+
+
+    // Mu Mu Hist
+     th1fStore["dimu_mumuDeltaR"]      = new TH1F("mumuDeltaR","#Delta(#mu,#mu)", deltaRNBins , deltaRMin  , deltaRMax  );
+     th1fStore["dimu_muLeadPt"]     = new TH1F("dimu_muLeadPt","Pt of lead mu Candidate", pTBins , pTmin  , pTmax  );
+     th1fStore["dimu_muSubLeadPt"]  = new TH1F("dimu_muSubLeadPt","Pt of sub-lead mu Candidate", pTBins , pTmin  , pTmax  );
+
+    // BMMG HISTS
+
+     th1fStore["bmmg_muLeadPt"]     = new TH1F("bmmg_muLeadPt","Pt of lead mu Candidate", pTBins , pTmin  , pTmax  );
+     th1fStore["bmmg_muSubLeadPt"]  = new TH1F("bmmg_muSubLeadPt","Pt of sub-lead mu Candidate", pTBins , pTmin  , pTmax  );
+     th1fStore["bmmg_photonPt"]     = new TH1F("bmmg_photonPt","Pt of photon  Candidate", pTBins , pTmin  , pTmax  );
+     
+     th1fStore["bmmg_mumuDeltaR"]      = new TH1F("bmmg_mumuDeltaR","#Delta(#mu,#mu)", deltaRNBins , deltaRMin  , deltaRMax  );
+     th1fStore["bmmg_dimuGammaDeltaR"] = new TH1F("bmmg_dimuGammaDeltaR","#Delta(#mu#mu,#gamma)", deltaRNBins , deltaRMin  , deltaRMax  );
+
+     th1fStore["bmmg_mmMass"]  = new TH1F("bmmg_mmMass","InvMass of mumu Candidate", massNBins , massMin , massMax  );
+     th1fStore["bmmg_mmgMass"] = new TH1F("bmmg_mmgMass","InvMass of mmgCandidate" , massNBins , massMin , massMax  );
+
+}
+
+void fillHistograms()
+{
+
+}
+
 void BMMGAnalysis::Analyze()
 {
  

@@ -80,6 +80,10 @@ class BMMGAnalysis
     Int_t storageIdxFilledDouble; 
     Int_t* photonSelectionCheck;
     
+    // Histograms to Store
+    
+    std::map<TString,TH1F*> th1fStore;
+
     // OutPut Tree vars
     Int_t nDiMuCandidates;
     Int_t nBMMGCandidates;
