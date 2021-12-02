@@ -5,14 +5,17 @@ LIBS		=`root-config --libs` -lTMVA
 CXXFLAGS 	=-g3 -std=c++11  `root-config --cflags` 
 INCPATH     =.
 
-TARGET		= analysis2018.exe
+TARGET		= analysis
 all:	$(TARGET) 
 
 main.exe : main.cc Util.h BMMGAnalysis.h BMMGAnalysis.cc 
 	$(CXX) $(CXXFLAGS) -I$(INCPATH) -o $@ $<  $(LIBS)
 
-analysis2018.exe : main.cc Util.h BMMGAnalysis.h BMMGAnalysis.cc 
-	$(CXX) $(CXXFLAGS) -I$(INCPATH) -o $@ $<  $(LIBS)
+analysisNtupleMaker : analysisNtupleMaker.cc Util.h BMMGAnalysis.h BMMGAnalysis.cc 
+	$(CXX) $(CXXFLAGS) -I$(INCPATH) -o $@.exe $<  $(LIBS)
+
+analysis : analysis.cc Util.h BMMGAnalysis.h BMMGAnalysis.cc 
+	$(CXX) $(CXXFLAGS) -I$(INCPATH) -o $@.exe $<  $(LIBS)
 
 clean :
 	@rm *.exe

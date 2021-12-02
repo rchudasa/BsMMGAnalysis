@@ -120,6 +120,7 @@ class BMMGAnalysis
     BMMGAnalysis();
     
     void Init( string cfgFileName);
+
     // Helper funtions
     void readParameters(string fname);
     void setupInputTree();
@@ -127,9 +128,19 @@ class BMMGAnalysis
     void AllocateBMMGBranches();
     void setupBranchStatus();
     void SaveFile();
-    void setupOutPuts();
-    void SetupAnalysis();
+    void SetupAnalysis(bool makeTreeCopy=false);
+    void setupOutPuts(bool makeTreeCopy=false);
     
+    // Histogram Related Functions
+    void bookHistograms();
+    void fill_muonHists();
+    void fill_scHists();
+    void fill_photonHists();
+    void fill_dimuonHists(Int_t mumuIdx);
+    void fill_dimuonEnvironmentHists(Int_t mumuIdx);
+    void fill_bmmgHists(TLorentzVector &bmmgLV,Int_t mumuIdx, Int_t phoSCIdx);
+    void fill_globalEventHists();
+
     // Analysis Functions
     void doPhotonMVAScores();
     void setUpPhotonMVA();
@@ -153,6 +164,8 @@ void BMMGAnalysis::Init(string cfgFileName)
     ofileName="output.root";
     maxEvents=1000;
     
+    outTree=nullptr;
+
     maxMuMuDr          =1.4;
     maxDimuPhotonDr    =1.4;
     maxDimuMass        =6.0;
@@ -173,7 +186,7 @@ void BMMGAnalysis::Init(string cfgFileName)
     initDone=true;
 }
 
-void BMMGAnalysis::SetupAnalysis()
+void BMMGAnalysis::SetupAnalysis(bool makeTreeCopy)
 {
 
     if( not initDone) 
@@ -183,8 +196,8 @@ void BMMGAnalysis::SetupAnalysis()
     }
     
     setupInputTree();
-    setupOutPuts();
-
+    bookHistograms();
+    setupOutPuts(makeTreeCopy);
 }
 
 void BMMGAnalysis::setupInputTree()
@@ -222,14 +235,18 @@ void BMMGAnalysis::setupBranchStatus()
     //ntupleRawTree.fChain->SetBranchStatus("b5_HLT_DoubleMu4_3_Bs",1);
 }
 
-void BMMGAnalysis::setupOutPuts()
+void BMMGAnalysis::setupOutPuts(bool makeTreeCopy)
 {
    outputFile = new  TFile((prefix+ofileName).c_str(),"recreate");    
     
    setupBranchStatus();
-   outTree   = treeChain->CloneTree(0);
    AllocateMemory();
-   AllocateBMMGBranches();
+   if(makeTreeCopy)
+   {
+    outTree   = treeChain->CloneTree(0);
+    AllocateBMMGBranches();
+   }
+
 }
 
 void BMMGAnalysis::AllocateMemory()
@@ -251,8 +268,20 @@ void BMMGAnalysis::AllocateMemory()
 
 void BMMGAnalysis::SaveFile()
 {
+    outputFile->cd();
 
-    outTree->Write();
+    if(outTree)
+        outTree->Write();
+       
+    for (std::map<TString,TH1F *>::iterator it=th1fStore.begin() ; it!=th1fStore.end(); ++it)
+    {
+        
+        std::cout<<"Writing "<<it->first<<" to file ! \n";
+        auto &ahist = *(it->second); 
+        ahist.Write();
+    }
+
+
     outputFile->Write();
     outputFile->Purge();
     outputFile->Close();

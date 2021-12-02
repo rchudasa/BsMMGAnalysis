@@ -4,7 +4,7 @@ import sys
 version='v1'
 """
     Usage
-    ./dajk.py <InputFileListFname> <destination> <jobPrefix>
+    ./makeCondorJobForAnalysis.py <InputFileListFname> <destination> <jobPrefix>
 
 """
 
@@ -27,7 +27,7 @@ tag=""
 if len(sys.argv) > 1:
     FileSource=sys.argv[1]  
 else:
-    print("Usage\n\t./dajk.py <InputFileListFname> <destination> <NJOBS> <jobPrefix>")
+    print("Usage\n\t./makeCondorJobForAnalysis.py <InputFileListFname> <destination> <NJOBS> <jobPrefix>")
     sys.exit(1)
 if len(sys.argv) > 2:
     destination=sys.argv[2]  
@@ -53,7 +53,7 @@ MaxDimuMass=6.0\n\
 MaxMMGMass=6.5\n\
 MinMMGMass=4.1\n\
 DoPhotonMVAID=1\n\
-PhotonIDWeightFile=/afs/cern.ch/work/a/athachay/private/bs2mumug/run2studies/Analysis/CMSSW_10_6_4_patch1/src/BsMMGAnalysis/Analysis/mvaParameters/weights/TMVAClassification_MLP_v0.weights.xml\n\
+PhotonIDWeightFile=/grid_mnt/t3storage3/athachay/bs2mumug/run2studies/analysis/CMSSW_10_6_4_patch1/src/BsMMGAnalysis/Analysis/mvaParameters/weights/TMVAClassification_MLP_v0.weights.xml\n\
 #PARAMS_END\n\
 #FILELIST_BEG\n\
 @@FNAMES\n\
@@ -82,10 +82,10 @@ cd @@DIRNAME \n\
 eval `scramv1 runtime -sh`\n\
 TMPDIR=`mktemp -d`\n\
 cd $TMPDIR\n\
-cp  "+pwd+"/analysis2018.exe .\n\
+cp  "+pwd+"/analysis.exe .\n\
 cp @@DIRNAME/@@CFGFILENAME .\n\
 mv @@RUNSCRIPT @@RUNSCRIPT.busy \n\
-./analysis2018.exe @@CFGFILENAME\n\
+./analysis.exe @@CFGFILENAME\n\
 if [ $? -eq 0 ]; then \n\
     mv analysisRun2_"+version+"_"+tag+"_@@IDX.root "+destination+"\n\
     mv @@CFGFILENAME " + destination + "\n\
