@@ -503,7 +503,7 @@ Int_t BMMGAnalysis::doMuonSelection(Int_t muIdx, bool isLead)
 Int_t BMMGAnalysis::doPhotonSelection(Int_t scIdx)
 {
     
-    if( storageArrayDouble[ scIdx + candidateMapInt["scPhotonMVAScore"]  ] > 0.43 ) return 1;
+    if( storageArrayDouble[ scIdx + candidateMapInt["scPhotonMVAScore"]  ] < 0.43 ) return 1;
     
     return 0;
 }
