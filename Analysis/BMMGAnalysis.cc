@@ -125,7 +125,11 @@ void BMMGAnalysis::Analyze()
                
                rslt=doBMMGSelection(mumuIdx,phoSCIdx);
                if(rslt > 0) continue;
-
+               
+               auto et= ntupleRawTree.bG_scE[phoSCIdx]/cosh(ntupleRawTree.bG_scEta[phoSCIdx]);
+               photonLV.SetPtEtaPhiM( et,ntupleRawTree.bG_scEta[phoSCIdx],ntupleRawTree.bG_scPhi[phoSCIdx], PHO_MASS );
+               bmmgLV = diMuLV + photonLV;
+                
                fill_bmmgHists( bmmgLV , mumuIdx, phoSCIdx );
 
                storageArrayDouble[  nBMMGCandidates + candidateMapDouble["dimuGamma_dr"]          ]   = dr           ;
@@ -310,7 +314,7 @@ void BMMGAnalysis::bookHistograms()
      const float etamin(-3.5);
      const float etamax(3.5);
 
-     const int   massNBins=80;
+     const int   massNBins=20*100;
      const float massMin(0.0);
      const float massMax(20.0);
      
@@ -749,10 +753,7 @@ Int_t BMMGAnalysis::doBMMGSelection(Int_t mumuIdx, Int_t phoSCIdx)
    
    if(dr > maxDimuPhotonDr ) return 1;
 
-/*   auto et= ntupleRawTree.bG_scE[phoSCIdx]/cosh(ntupleRawTree.bG_scEta[phoSCIdx]);
-   
-   photonLV.SetPtEtaPhiM( et,ntupleRawTree.bG_scEta[phoSCIdx],ntupleRawTree.bG_scPhi[phoSCIdx], PHO_MASS );
-   bmmgLV = diMuLV + photonLV;
+/*   
    
 
    auto pvMatch=getPVMatch(mumuIdx);
