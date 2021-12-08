@@ -209,7 +209,7 @@ private:
   edm::EDGetTokenT<reco::VertexCollection>          primaryVtxToken_;
   edm::EDGetTokenT<edm::TriggerResults>             triggerBits_;
   edm::EDGetTokenT<std::vector<reco::Muon>>         muonToken_;
-
+    
   edm::EDGetTokenT<edm::SortedCollection<HBHERecHit,edm::StrictWeakOrdering<HBHERecHit>>> hbheRechitToken_; 
   edm::EDGetTokenT<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit>>> ebRechitToken_; 
   edm::EDGetTokenT<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit>>> eeRechitToken_; 
@@ -309,6 +309,7 @@ private:
   // reco::GenParticle
   int  gen_nBs_, gen_nBsMuonM_, gen_nBsMuonP_ , gen_nBsPhoton_ ;
   std::vector<double> gen_Bs_pt_,  gen_Bs_energy_,    gen_Bs_eta_,      gen_Bs_phi_,   gen_Bs_pz_,  gen_Bs_pdgId_;
+  std::vector<double> gen_Bs_vx_,      gen_Bs_vy_,   gen_Bs_vz_;
   std::vector<double> gen_BsMuonM_pt_, gen_BsMuonM_eta_, gen_BsMuonM_phi_;
   std::vector<double> gen_BsMuonP_pt_, gen_BsMuonP_eta_, gen_BsMuonP_phi_;
   std::vector<double> gen_BsPhoton_pt_, gen_BsPhoton_energy_, gen_BsPhoton_eta_, gen_BsPhoton_phi_;

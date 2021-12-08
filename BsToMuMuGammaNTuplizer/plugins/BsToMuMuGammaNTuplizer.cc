@@ -108,12 +108,10 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
   doSuperClusters_(iConfig.getParameter<bool>("doSuperClusters")),
   doHLT(iConfig.getParameter<bool>("doHLT")),
   Run2_2018_(iConfig.getParameter<bool>("Run2_2018"))
-
 {
   
   
   Utility= new Utils();
-  
   if(doMuons_) muonToken_              = consumes<reco::MuonCollection>(iConfig.getParameter<edm::InputTag>("muons"));
   //caloPartToken_                 = consumes<std::vector<CaloParticle> >(iConfig.getParameter<edm::InputTag>("caloParticleCollection"));
   
@@ -237,6 +235,9 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
     theTree->Branch("gen_Bs_eta"		,&gen_Bs_eta_);
     theTree->Branch("gen_Bs_phi"		,&gen_Bs_phi_);
     theTree->Branch("gen_Bs_pz"			,&gen_Bs_pz_);
+    theTree->Branch("gen_Bs_vx"			,&gen_Bs_vx_);
+    theTree->Branch("gen_Bs_vy"			,&gen_Bs_vy_);
+    theTree->Branch("gen_Bs_vz"			,&gen_Bs_vz_);
     theTree->Branch("gen_Bs_pdgId"		,&gen_Bs_pdgId_);
 
     theTree->Branch("gen_nBsMuonM"		,&gen_nBsMuonM_);
@@ -669,6 +670,9 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
     gen_Bs_eta_.clear() ;
     gen_Bs_phi_.clear() ;
     gen_Bs_pz_.clear() ;
+    gen_Bs_vx_.clear() ;
+    gen_Bs_vy_.clear() ;
+    gen_Bs_vz_.clear() ;
     gen_Bs_pdgId_.clear();
     gen_BsMuonM_pt_.clear() ;
     gen_BsMuonM_eta_.clear() ;
@@ -1030,8 +1034,6 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
 
   // Get magnetic field
     
-  edm::ESHandle<MagneticField> bFieldHandle;
-  iSetup.get<IdealMagneticFieldRecord>().get(bFieldHandle);      
   //  Get BeamSpot
   edm::Handle<reco::BeamSpot> beamSpotH;
   iEvent.getByToken(beamSpotToken_, beamSpotH);
@@ -1135,7 +1137,7 @@ void BsToMuMuGammaNTuplizer::fillGenParticles(const edm::Event& iEvent)
     } 
   } //if flat pT
   
- /* int phoMul(-1),muMMul(-1),muPMul(-1);
+ int phoMul(-1),muMMul(-1),muPMul(-1);
   
   
   for(auto& aBsMeson : *genParticleCollection){
@@ -1181,11 +1183,14 @@ void BsToMuMuGammaNTuplizer::fillGenParticles(const edm::Event& iEvent)
     gen_Bs_eta_.push_back(aBsMeson.eta());
     gen_Bs_phi_.push_back(aBsMeson.phi());
     gen_Bs_pz_.push_back(aBsMeson.pz());
+    gen_Bs_vx_.push_back(aBsMeson.vx());
+    gen_Bs_vy_.push_back(aBsMeson.vy());
+    gen_Bs_vz_.push_back(aBsMeson.vz());
     gen_Bs_pdgId_.push_back(aBsMeson.pdgId());
     gen_nBs_++;
     
   } // genparticle collection
-  */
+  
 } // fill gen particles
 
 
@@ -1642,10 +1647,11 @@ void BsToMuMuGammaNTuplizer::fillPhotons(const edm::Event& e, const edm::EventSe
   edm::Handle<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit>>> recHitsEE;
   e.getByToken(eeRechitToken_, recHitsEE);
 
-  EcalClusterLazyTools       lazyTool    (e, es, ebRechitToken_, eeRechitToken_);
-  noZS::EcalClusterLazyTools lazyToolnoZS(e, es, ebRechitToken_, eeRechitToken_);
-
-  // loop over photons
+    EcalClusterLazyTools::ESGetTokens ecalClusterToolsESGetTokens_(consumesCollector());
+    EcalClusterLazyTools       lazyTool    (e,ecalClusterToolsESGetTokens_.get(es), ebRechitToken_, eeRechitToken_);
+    noZS::EcalClusterLazyTools lazyToolnoZS(e,ecalClusterToolsESGetTokens_.get(es), ebRechitToken_, eeRechitToken_);
+ 
+ // loop over photons
   for (auto pho = gedPhotonsHandle->begin(); pho != gedPhotonsHandle->end(); ++pho) {
     phoE_             .push_back(pho->energy());
     phoEt_            .push_back(pho->et());
@@ -1698,23 +1704,14 @@ void BsToMuMuGammaNTuplizer::fillPhotons(const edm::Event& e, const edm::EventSe
     ///////////////////////////////SATURATED/UNSATURATED ///from ggFlash////
     DetId seed = (pho->superCluster()->seed()->hitsAndFractions())[0].first;
     bool isBarrel = seed.subdetId() == EcalBarrel;
-    const EcalRecHitCollection * rechits = (isBarrel?lazyTool.getEcalEBRecHitCollection():lazyTool.getEcalEERecHitCollection());
-    
-    EcalRecHitCollection::const_iterator theSeedHit = rechits->find(seed);
-    if (theSeedHit != rechits->end()) {
-      //std::cout<<"(*theSeedHit).time()"<<(*theSeedHit).time()<<"seed energy: "<<(*theSeedHit).energy()<<std::endl;  
-      
-      phoSeedTime_  .push_back((*theSeedHit).time());
-      phoSeedEnergy_.push_back((*theSeedHit).energy());
-
-      
+   if (isBarrel) {
+      phoSeedTime_  .push_back(lazyTool.SuperClusterSeedTime(*((*pho).superCluster())));
     } else{
-      phoSeedTime_  .push_back(-99.);
-      phoSeedEnergy_.push_back(-99.);
-      
+      phoSeedTime_  .push_back(lazyToolnoZS.SuperClusterSeedTime(*((*pho).superCluster())));
     }
-    
-    nPho_++;
+    phoSeedEnergy_.push_back(((*pho).superCluster()->seed())->energy());
+ 
+       nPho_++;
   } // photons loop
 }
 
@@ -1770,9 +1767,9 @@ void BsToMuMuGammaNTuplizer::fillSC(edm::Event const& e, const edm::EventSetup& 
   }
   edm::ESHandle<CaloGeometry> theCaloGeometry;
   es.get<CaloGeometryRecord>().get(theCaloGeometry);
-  
   edm::ESHandle<CaloTowerConstituentsMap> towerMap_;
   es.get<CaloGeometryRecord>().get(towerMap_);
+  
  
   locCov_.clear();
   full5x5_locCov_.clear();
@@ -1782,10 +1779,9 @@ void BsToMuMuGammaNTuplizer::fillSC(edm::Event const& e, const edm::EventSetup& 
     for (auto const& sc : scs) {
       //if(abs(sc.eta())>2.4)continue;
       //
-      
       edm::ESHandle<CaloTopology> caloTopology;
       es.get<CaloTopologyRecord>().get(caloTopology);
-      const CaloTopology* topology = caloTopology.product();
+      const CaloTopology* topology = caloTopology.product();    
       
       scE_.push_back(sc.correctedEnergy());
       scEt_.push_back(sc.correctedEnergy()/cosh(sc.eta()));
