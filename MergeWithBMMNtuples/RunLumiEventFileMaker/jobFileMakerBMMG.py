@@ -1,13 +1,23 @@
 #!/usr/bin/env python3
 import os
+import sys
 
 NJOBS=20000
 NEVENTS_PER_JOB = -1
 ZERO_OFFSET=0
-FILES_PER_JOB=2
-destination='/grid_mnt/t3storage3/athachay/bs2mumug/run2studies/CMSSW_10_6_19_patch2/src/BsMMGAnalysis/MergeWithBMMNtuples/RunLumiEventFileMaker/runLumiList/'
+FILES_PER_JOB=20
+destination='/grid_mnt/t3storage3/athachay/bs2mumug/run2studies/ntuplizer/data/CMSSW_10_6_4_patch1/src/BsMMGAnalysis/MergeWithBMMNtuples/RunLumiEventFileMaker/RunLumiFiles_charmoniumD'
 
 FileSource ="bmmgFileList.txt"
+tag=""
+if len(sys.argv) > 1:
+    FileSource=sys.argv[1]
+if len(sys.argv)>2:
+    destination=os.path.abspath(sys.argv[2])
+if len(sys.argv) > 3:
+    FILES_PER_JOB=int(sys.argv[3])
+if len(sys.argv) > 4:
+    tag=sys.argv[4]
 
 pwd=os.environ['PWD']
 proxy_path=os.environ['X509_USER_PROXY']
@@ -40,7 +50,7 @@ error = $Fp(filename)run.$(Cluster).stderr\n\
 log = $Fp(filename)run.$(Cluster).log\n\
 +JobFlavour = \"longlunch\"\n\
 "
-condorScript=open('subCondorBMMG.sub','w')
+condorScript=open('subCondorBMMG'+tag+'.sub','w')
 condorScript.write(condorScriptString)
 
 
@@ -54,6 +64,9 @@ export X509_USER_PROXY="+proxy_path+"\n\
 cd @@DIRNAME \n\
 mv @@RUNSCRIPT @@RUNSCRIPT.busy \n\
 eval `scramv1 runtime -sh`\n\
+TMPDIR=`mktemp -d`\n\
+cp @@CFGFILENAME $TMPDIR \n\
+cd $TMPDIR\n\
 cp  "+pwd+"/BmmGNtuple* .\n\
 cp  "+pwd+"/getEventListFromBMMG.cc .\n\
 root -b -q 'getEventListFromBMMG.cc(\"@@CFGFILENAME\")'\n\
@@ -66,26 +79,32 @@ else\n\
     mv @@RUNSCRIPT.busy @@RUNSCRIPT \n\
     echo FAIL\n\
 fi\n\
+rm  BmmGNtuple* \n\
 "
 
-if not os.path.exists('JobsBmmG'):
-    os.system('mkdir JobsBmmG')
-print("Making ",NJOBS," Jobs ")
+head = "JobsBmmG" + tag
+if not os.path.exists(head):
+    os.system('mkdir '+ head)
+
+n = int( len(sourceFileList)/FILES_PER_JOB ) + 1
+print("Making ",n," Jobs ")
 
 njobs=0
 for ii in range(NJOBS):
     i=ii+ZERO_OFFSET
     
     if len(sourceFileList)<FILES_PER_JOB:
-       print("fname count less than required .. stoping ")
+       print("\nfname count less than required .. stoping ")
        FILES_PER_JOB=len(sourceFileList)
     
     if len(sourceFileList) ==0:
        break 
 
-    dirName= pwd+'/JobsBmmG/Job_'+str(i)
-    
-    print(i," Job Made")
+    dirName= pwd+'/'+head+'/Job_'+str(i)
+    if(ii%25==0):
+        print("\n Job Made : ",end="")
+    print( ii ,end =" ")
+
     if os.path.exists(dirName):
         k=True
     else:
@@ -101,7 +120,9 @@ for ii in range(NJOBS):
     cfgFile.write(tmp)
     cfgFile.close()   
     
-    runScriptName=dirName+'/run'+str(i)+'.sh'
+    runScriptName=dirName+'/'+tag+'_run'+str(i)+'.sh'
+    if os.path.exists(runScriptName+".*"):
+        os.system("rm "+runScriptName+'.*')
     runScript=open(runScriptName,'w')
     tmp=runScriptTxt.replace("@@DIRNAME",dirName)
     tmp=tmp.replace("@@CFGFILENAME",cfgFileName)
@@ -111,6 +132,7 @@ for ii in range(NJOBS):
     os.system('chmod +x '+runScriptName)
     condorScript.write("queue filename matching ("+runScriptName+")\n")
     njobs+=1
+print()
 print(" Number of jobs made : ", njobs)
 print(" Number of files left : ", len(sourceFileList) )
 condorScript.close()

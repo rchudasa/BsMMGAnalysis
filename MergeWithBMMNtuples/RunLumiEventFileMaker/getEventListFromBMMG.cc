@@ -99,15 +99,21 @@ void getRunDetails(   std::vector<string> fList,
 
   Long64_t NMAX=1e9;
   
-  TChain *treeChain = new TChain("BMMGNtuples/EventTree");
+  TChain *treeChain = new TChain("Ntuples/EventTree");
   TFile * ofile= new TFile((prefix+ofilename).c_str(),"recreate");
-
+   
+   int fileAdd;
    for (int i=0;i<fList.size();i++)
    {
-	    treeChain->Add(fList.at(i).c_str());
+	    fileAdd=treeChain->AddFile(fList.at(i).c_str(),-1);
+        if(fileAdd !=1 )
+        {
+            std::cout<<"File not added :" <<fList.at(i) <<"\n";
+            exit(2);
+        }
    }
 
-  cout << "Total Number of Events Available : " << treeChain->GetEntriesFast()  << endl;
+  cout << "Total Number of Events Available : " << treeChain->GetEntries()  << endl;
   
   BmmGNtuple ntupleRawTree(treeChain);
 
@@ -141,12 +147,21 @@ void getRunDetails(   std::vector<string> fList,
   Long64_t nb = 0,nbytes=0 ;
  
   UInt_t mu1_Idx,mu2_Idx;
+
+  auto t_start = std::chrono::high_resolution_clock::now();
+  auto t_end = std::chrono::high_resolution_clock::now();
+
   for (; jentry<nentries;jentry++) 
     {
 
       if (jentry%2500==0) 
-      { 
-	    cout << "--> " << jentry << "/" << nentries<<endl;
+      {
+         t_end = std::chrono::high_resolution_clock::now();
+         cout<<"Processing Entry in event loop : "<<jentry<<" / "<<nentries<<"  [ "<<100.0*jentry/nentries<<"  % ]  "
+             << " Elapsed time : "<< std::chrono::duration<double, std::milli>(t_end-t_start).count()/1000.0
+             <<"  Estimated time left : "<< std::chrono::duration<double, std::milli>(t_end-t_start).count()*( nentries - jentry)/jentry* 0.001
+             <<"\n";
+        
       }
       
       Long64_t ientry_evt = ntupleRawTree.LoadTree(jentry);
