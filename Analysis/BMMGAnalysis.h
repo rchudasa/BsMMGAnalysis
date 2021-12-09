@@ -354,7 +354,7 @@ void BMMGAnalysis::readParameters(string fname)
             if(field.compare("MaxDimuPhotonDr")==0){
                  getline(strStream, field);
                  maxDimuPhotonDr=std::atof(field.c_str());
-                 cout<<" setting maxMuMuDr  = "<<maxDimuPhotonDr<<"\n";
+                 cout<<" setting maxDimuPhotonDr  = "<<maxDimuPhotonDr<<"\n";
             }
              if(field.compare("MaxMMGMass")==0){
                  getline(strStream, field);
@@ -379,7 +379,7 @@ void BMMGAnalysis::readParameters(string fname)
                  std::cout<<" setting photonIdxMVAWeightFile = "<<photonIdxMVAWeightFile<<"\n";
             }
             
-            if(field.compare("MinDiMuMass")==0){
+            if(field.compare("MinDimuMass")==0){
                  minDimuMass.clear();
                  cout<<" setting minDimuMass  = { ";
                  while( strStream >> aDouble )
@@ -389,7 +389,7 @@ void BMMGAnalysis::readParameters(string fname)
                  }
                  cout<<" }\n";
             }            
-            if(field.compare("MaxDiMuMass")==0){
+            if(field.compare("MaxDimuMass")==0){
                  maxDimuMass.clear();
                  cout<<" setting maxDimuMass  = { ";
                  while( strStream >> aDouble )
