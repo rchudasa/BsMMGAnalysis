@@ -8,8 +8,8 @@ INCPATH     =.
 TARGET		= analysis
 all:	$(TARGET) 
 
-main.exe : main.cc Util.h BMMGAnalysis.h BMMGAnalysis.cc 
-	$(CXX) $(CXXFLAGS) -I$(INCPATH) -o $@ $<  $(LIBS)
+main : main.cc Util.h BMMGAnalysis.h BMMGAnalysis.cc 
+	$(CXX) $(CXXFLAGS) -I$(INCPATH) -o $@.exe $<  $(LIBS)
 
 analysisNtupleMaker : analysisNtupleMaker.cc Util.h BMMGAnalysis.h BMMGAnalysis.cc 
 	$(CXX) $(CXXFLAGS) -I$(INCPATH) -o $@.exe $<  $(LIBS)
