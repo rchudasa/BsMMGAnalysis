@@ -14,5 +14,8 @@ main.exe : main.cc Util.h BMMGAnalysis.h BMMGAnalysis.cc
 analysis2018.exe : main.cc Util.h BMMGAnalysis.h BMMGAnalysis.cc 
 	$(CXX) $(CXXFLAGS) -I$(INCPATH) -o $@ $<  $(LIBS)
 
+runlumi.exe : runLumi.cc RunLumiSelector.h
+	$(CXX) $(CXXFLAGS) -I$(INCPATH) -o $@ $<  $(LIBS)
+
 clean :
 	@rm *.exe

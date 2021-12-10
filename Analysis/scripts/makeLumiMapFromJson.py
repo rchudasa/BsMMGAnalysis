@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 import sys
 import os
 import ROOT
@@ -7,6 +7,11 @@ import array
 
 iFname="goldenJson.txt"
 oFname="goldenJson.root"
+
+if len(sys.argv) >1:
+    iFname=sys.argv[1]
+if len(sys.argv) >2:
+    oFname=sys.argv[2]
 
 ofile=ROOT.TFile(oFname,"RECREATE")
 oTree=ROOT.TTree("RunLumiMask","Run , nLumiSets , minLumi[nLumiSets] , maxLumi[nLumiSets]" )
