@@ -127,15 +127,23 @@ void BMMGAnalysis::Analyze()
     Long64_t EventCount=0;
     Long64_t EventCountWithCand=0;
     Long64_t nb = 0,nbytes=0 ;
+
+    auto t_start = std::chrono::high_resolution_clock::now();
+    auto t_end = std::chrono::high_resolution_clock::now();
+           
     for (Long64_t jentry=0; jentry<maxEvents; jentry++)
     {   
 
        nDiMuCandidates=0;
        isTriggerd=false;
        
-       if(jentry%500 == 0 )
+       if(jentry%2000 == 0 )
        {
-            cout<<"Processing jentry : "<<jentry<<"\n";
+            t_end = std::chrono::high_resolution_clock::now();
+            cout<<"Processing Entry "<<jentry<<" / "<<maxEvents<<"  [ "<<100.0*jentry/maxEvents<<"  % ]  "
+                << " Elapsed time : "<< std::chrono::duration<double, std::milli>(t_end-t_start).count()/1000.0
+                <<"  Estimated time left : "<< std::chrono::duration<double, std::milli>(t_end-t_start).count()*( maxEvents  - jentry )/( jentry + 1e-10 ) * 0.001
+                <<endl;
        }
 	
        Long64_t ientry_evt = ntupleRawTree.LoadTree(jentry);

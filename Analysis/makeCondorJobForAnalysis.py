@@ -12,7 +12,7 @@ version='v1'
 NJOBS=20000
 NEVENTS_PER_JOB = -1
 ZERO_OFFSET=0
-FILES_PER_JOB=2
+FILES_PER_JOB=40
 
 
 pwd=os.environ['PWD']
@@ -100,7 +100,9 @@ fi\n\
 head='Jobs'+tag
 if not os.path.exists(head ):
     os.system('mkdir '+head)
-n=len(sourceFileList)/FILES_PER_JOB + 1
+
+n=int(len(sourceFileList)/FILES_PER_JOB) + 1
+
 if n < NJOBS:
     NJOBS=n
 print("Making ",NJOBS," Jobs ")
@@ -110,7 +112,7 @@ for ii in range(NJOBS):
     i=ii+ZERO_OFFSET
     
     if len(sourceFileList)<FILES_PER_JOB:
-       print("fname count less than required .. stoping ")
+       print("\nfname count less than required .. stoping ")
        FILES_PER_JOB=len(sourceFileList)
     
     if len(sourceFileList) ==0:
@@ -118,7 +120,7 @@ for ii in range(NJOBS):
 
     dirName= pwd+'/'+head+'/Job_'+str(i)
     
-    if(ii%10) : print("\nJob Made : ",end = " " )
+    if(ii%10==0) : print("\nJob Made : ",end = " " )
     print(ii,end =" ")
 
     if os.path.exists(dirName):
@@ -148,6 +150,7 @@ for ii in range(NJOBS):
     os.system('chmod +x '+runScriptName)
     condorScript.write("queue filename matching ("+runScriptName+")\n")
     njobs+=1
+print()
 print(" Number of jobs made : ", njobs)
 print(" Number of files left : ", len(sourceFileList) )
 condorScript.close()
