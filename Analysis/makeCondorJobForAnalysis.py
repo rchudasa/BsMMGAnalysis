@@ -4,7 +4,7 @@ import sys
 version='v1'
 """
     Usage
-    ./dajk.py <InputFileListFname> <destination> <jobPrefix>
+    ./makeCondorJobForAnalysis.py <InputFileListFname> <destination> <NJOBS> <NEVENTS_PER_JOB> <jobPrefix>
 
 """
 
@@ -27,14 +27,26 @@ tag=""
 if len(sys.argv) > 1:
     FileSource=sys.argv[1]  
 else:
-    print("Usage\n\t./dajk.py <InputFileListFname> <destination> <NJOBS> <jobPrefix>")
+    print("Usage\n\t./makeCondorJobForAnalysis.py <InputFileListFname> <destination> <NJOBS> <NEVENTS_PER_JOB> <jobPrefix>")
     sys.exit(1)
 if len(sys.argv) > 2:
     destination=sys.argv[2]  
 if len(sys.argv) > 3:
     NJOBS=int(sys.argv[3])  
 if len(sys.argv) > 4:
-    tag=sys.argv[4]  
+    NEVENTS_PER_JOB=int(sys.argv[4])  
+if len(sys.argv) > 5:
+    tag=sys.argv[5]  
+
+if(not os.path.exists(destination)):
+    os.system("mkdir -p "+destination)
+destination=os.path.abspath(destination)
+
+print("Source file list ",FileSource)
+print("destination : ",destination)
+print("NJOBS : ",NJOBS)
+print("NEVENTS_PER_JOB : ",NEVENTS_PER_JOB)
+print("tag : ",tag)
 
 Fnames=open(FileSource,'r')
 sourceFileList=Fnames.readlines()
@@ -48,12 +60,13 @@ OutputPrefix=\n\
 MaxEvents=@@MAXEVENTS\n\
 MaxMuMuDr=1.40\n\
 MaxDimuPhotonDr=1.40\n\
-MinDimuMass=0.5\n\
-MaxDimuMass=6.0\n\
+MinDimuMass= 1.0    3.160\n\
+MaxDimuMass= 3.086  5.365 \n\
 MaxMMGMass=6.5\n\
 MinMMGMass=4.1\n\
 DoPhotonMVAID=1\n\
-PhotonIDWeightFile=/afs/cern.ch/work/a/athachay/private/bs2mumug/run2studies/Analysis/CMSSW_10_6_4_patch1/src/BsMMGAnalysis/Analysis/mvaParameters/weights/TMVAClassification_MLP_v0.weights.xml\n\
+PhotonIDWeightFile="+pwd+"/mvaParameters/weights/TMVAClassification_MLP_v0.weights.xml\n\
+RunLumiMask=/grid_mnt/t3storage3/athachay/bs2mumug/run2studies/analysis/CMSSW_10_6_4_patch1/src/BsMMGAnalysis/Analysis/certification/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.root\n\
 #PARAMS_END\n\
 #FILELIST_BEG\n\
 @@FNAMES\n\
@@ -82,15 +95,20 @@ cd @@DIRNAME \n\
 eval `scramv1 runtime -sh`\n\
 TMPDIR=`mktemp -d`\n\
 cd $TMPDIR\n\
-cp  "+pwd+"/analysis2018.exe .\n\
+cp  "+pwd+"/analysis.exe .\n\
 cp @@DIRNAME/@@CFGFILENAME .\n\
 mv @@RUNSCRIPT @@RUNSCRIPT.busy \n\
-./analysis2018.exe @@CFGFILENAME\n\
+./analysis.exe @@CFGFILENAME\n\
 if [ $? -eq 0 ]; then \n\
     mv analysisRun2_"+version+"_"+tag+"_@@IDX.root "+destination+"\n\
-    mv @@CFGFILENAME " + destination + "\n\
-    mv @@RUNSCRIPT.busy @@RUNSCRIPT.sucess \n\
-    echo OK\n\
+    if [ $? -eq 0 ] ; then \n\
+        mv @@CFGFILENAME " + destination + "\n\
+        mv @@RUNSCRIPT.busy @@RUNSCRIPT.sucess \n\
+        echo OK\n\
+    else\n\
+        mv @@RUNSCRIPT.busy @@RUNSCRIPT \n\
+        echo FAIL\n\
+    fi\n\
 else\n\
     mv @@RUNSCRIPT.busy @@RUNSCRIPT \n\
     echo FAIL\n\
@@ -102,7 +120,6 @@ if not os.path.exists(head ):
     os.system('mkdir '+head)
 
 n=int(len(sourceFileList)/FILES_PER_JOB) + 1
-
 if n < NJOBS:
     NJOBS=n
 print("Making ",NJOBS," Jobs ")
@@ -140,6 +157,8 @@ for ii in range(NJOBS):
     cfgFile.close()   
     
     runScriptName=dirName+'/'+tag+'run'+str(i)+'.sh'
+    if os.path.exists(runScriptName+'.sucess'):
+       os.system('rm '+runScriptName+'.sucess')
     runScript=open(runScriptName,'w')
     tmp=runScriptTxt.replace("@@DIRNAME",dirName)
     tmp=tmp.replace("@@IDX",str(i))

@@ -1,16 +1,20 @@
 #include <iostream>
 #include "Util.h"
 #include "chrono"
+
 #include "TROOT.h"
 #include "TFile.h"
 #include "TTree.h"
 #include "TString.h"
 #include "TSystem.h"
+#include "TMath.h"
+#include "Math/Vector3D.h"
 
 #include "TMVA/Tools.h"
 #include "TMVA/Reader.h"
 #include "TMVA/MethodCuts.h"
 
+#include "RunLumiSelector.h"
 
 
 #define PHO_MASS 0.0
@@ -70,6 +74,7 @@ class BMMGAnalysis
     MergedBMMX ntupleRawTree;
     
     // Storage Vars
+    
     // Defenition of the storage of type Double_t
     Double_t *storageArrayDouble;
     std::map<string, Int_t > candidateMapDouble;
@@ -80,12 +85,22 @@ class BMMGAnalysis
     Int_t storageIdxFilledDouble; 
     Int_t* photonSelectionCheck;
     
+    // Histograms to Store
+    
+    std::map<TString,TH1F*> th1fStore;
+
     // OutPut Tree vars
     Int_t nDiMuCandidates;
     Int_t nBMMGCandidates;
     Int_t nBMMGCandidatesPerDimu;
     bool isTriggerd;
-    
+     
+
+    // RunLumiMask
+    bool doRunLumiMask;
+    TString runLumiMaskFname;
+    RunLumiSelector runLumiMask;
+
     // book keeping vars
     bool initDone;
     std::map<string,string> string_parameters;
@@ -101,21 +116,23 @@ class BMMGAnalysis
     TString photonIdxMVAWeightFile;
     Float_t photonMVAValue;
 
-
-
+    // Muon MVA CUT
+    const Double_t BDTWorkingPoint ; 
+    
     // Analysis Cuts
     Double_t maxMuMuDr          ;
     Double_t maxDimuPhotonDr    ;
-    Double_t maxDimuMass        ;
-    Double_t minDimuMass        ;
     Double_t maxMMGMass         ;
     Double_t minMMGMass         ;
-    // Member functions 
-    
+    std::vector<Double_t> minDimuMass;
+    std::vector<Double_t> maxDimuMass;
+
+                                      // Member functions 
     // Constructor
     BMMGAnalysis();
     
     void Init( string cfgFileName);
+
     // Helper funtions
     void readParameters(string fname);
     void setupInputTree();
@@ -123,19 +140,40 @@ class BMMGAnalysis
     void AllocateBMMGBranches();
     void setupBranchStatus();
     void SaveFile();
-    void setupOutPuts();
-    void SetupAnalysis();
+    void SetupAnalysis(bool makeTreeCopy=false);
+    void setupOutPuts(bool makeTreeCopy=false);
     
+    // Histogram Related Functions
+    void bookHistograms();
+    void fill_muonHists();
+    void fill_scHists();
+    void fill_photonHists();
+    void fill_dimuonHists();
+    void fill_dimuonHists(Int_t mumuIdx);
+    void fill_dimuonEnvironmentHists(Int_t mumuIdx);
+    void fill_bmmgHists(TLorentzVector &bmmgLV,Int_t mumuIdx, Int_t phoSCIdx);
+    void fill_globalEventHists();
+
     // Analysis Functions
     void doPhotonMVAScores();
     void setUpPhotonMVA();
     
     Int_t doMuonSelection(Int_t muIdx, bool isLead);
+    Int_t doDimuonSelection(Int_t mumuIdx);
+    Int_t doVertexSelection(Int_t mumuIdx);
+    Int_t doBMMGSelection(Int_t mumuIdx , Int_t phoSCIdx);
     Int_t doPhotonSelection(Int_t scIdx);
+    Int_t getPVMatch(Int_t mumuIdx);
     void Analyze();
+    
+
+    // Temporary vars with class scope
+    TLorentzVector bmmgLV,diMuLV,photonLV;
+    ROOT::Math::XYZVector svDisplacementVecor, bmmg3Momentum ;
 };
 
-BMMGAnalysis::BMMGAnalysis()
+BMMGAnalysis::BMMGAnalysis():
+BDTWorkingPoint(0.58)
 {
     initDone=false;
 }
@@ -145,19 +183,22 @@ void BMMGAnalysis::Init(string cfgFileName)
     treeName="mergedTree";
     prefix="workarea/";
     ofileName="output.root";
+    runLumiMaskFname="";
     InFileList.clear();
     ofileName="output.root";
     maxEvents=1000;
     
+    outTree=nullptr;
+
     maxMuMuDr          =1.4;
     maxDimuPhotonDr    =1.4;
-    maxDimuMass        =6.0;
-    minDimuMass        =1.0;
     maxMMGMass         =6.2;
     minMMGMass         =4.4;
     doPhotonMVA        =false;
     photonIdxMVAWeightFile="";
     hasWeightFiles=false;
+    minDimuMass.clear(); minDimuMass.push_back(0.0);
+    maxDimuMass.clear(); maxDimuMass.push_back(6.0);
 
     readParameters(cfgFileName);
     
@@ -165,11 +206,14 @@ void BMMGAnalysis::Init(string cfgFileName)
     {
        setUpPhotonMVA();
     }
-        
+    if(doRunLumiMask)
+    {
+        runLumiMask.loadRunLumiMask(runLumiMaskFname);
+    }
     initDone=true;
 }
 
-void BMMGAnalysis::SetupAnalysis()
+void BMMGAnalysis::SetupAnalysis(bool makeTreeCopy)
 {
 
     if( not initDone) 
@@ -179,8 +223,8 @@ void BMMGAnalysis::SetupAnalysis()
     }
     
     setupInputTree();
-    setupOutPuts();
-
+    bookHistograms();
+    setupOutPuts(makeTreeCopy);
 }
 
 void BMMGAnalysis::setupInputTree()
@@ -192,9 +236,11 @@ void BMMGAnalysis::setupInputTree()
     }
 
     treeChain = new TChain(treeName.c_str());
+    auto rslt=0;
     for(auto i=0;i<InFileList.size();i++)
     {
-        treeChain->Add(InFileList[i].c_str());
+        rslt=treeChain->AddFile(InFileList[i].c_str(),-1);
+        if(rslt!=1) exit(112);
     }
     
     nentries = treeChain->GetEntries();
@@ -218,14 +264,18 @@ void BMMGAnalysis::setupBranchStatus()
     //ntupleRawTree.fChain->SetBranchStatus("b5_HLT_DoubleMu4_3_Bs",1);
 }
 
-void BMMGAnalysis::setupOutPuts()
+void BMMGAnalysis::setupOutPuts(bool makeTreeCopy)
 {
    outputFile = new  TFile((prefix+ofileName).c_str(),"recreate");    
     
    setupBranchStatus();
-   outTree   = treeChain->CloneTree(0);
    AllocateMemory();
-   AllocateBMMGBranches();
+   if(makeTreeCopy)
+   {
+    outTree   = treeChain->CloneTree(0);
+    AllocateBMMGBranches();
+   }
+
 }
 
 void BMMGAnalysis::AllocateMemory()
@@ -247,8 +297,20 @@ void BMMGAnalysis::AllocateMemory()
 
 void BMMGAnalysis::SaveFile()
 {
+    outputFile->cd();
 
-    outTree->Write();
+    if(outTree)
+        outTree->Write();
+       
+    for (std::map<TString,TH1F *>::iterator it=th1fStore.begin() ; it!=th1fStore.end(); ++it)
+    {
+        
+        //std::cout<<"Writing "<<it->first<<" to file ! \n";
+        auto &ahist = *(it->second); 
+        ahist.Write();
+    }
+
+
     outputFile->Write();
     outputFile->Purge();
     outputFile->Close();
@@ -260,6 +322,8 @@ void BMMGAnalysis::readParameters(string fname)
     fstream cfgFile(fname,ios::in);
 	string line;
 	bool cfgModeFlag=false;
+
+    Double_t aDouble;
 
     cfgFile.clear();
     cfgFile.seekg(0,ios::beg);
@@ -289,6 +353,12 @@ void BMMGAnalysis::readParameters(string fname)
                  prefix=field;
                  cout<<" setting prefix = "<<prefix<<"\n";
             }
+            if(field.compare("RunLumiMask")==0){
+                 getline(strStream, field);
+                 runLumiMaskFname=field;
+                 doRunLumiMask=true;
+                 cout<<" setting runLumiMaskFname = "<<runLumiMaskFname<<"\n";
+            }
             if(field.compare("MaxEvents")==0){
                  getline(strStream, field);
                  maxEvents=std::atoi(field.c_str());
@@ -302,17 +372,7 @@ void BMMGAnalysis::readParameters(string fname)
             if(field.compare("MaxDimuPhotonDr")==0){
                  getline(strStream, field);
                  maxDimuPhotonDr=std::atof(field.c_str());
-                 cout<<" setting maxMuMuDr  = "<<maxDimuPhotonDr<<"\n";
-            }
-            if(field.compare("MinDimuMass")==0){
-                 getline(strStream, field);
-                 minDimuMass=std::atof(field.c_str());
-                 cout<<" setting maxDimuMass  = "<<maxDimuMass<<"\n";
-            }
-            if(field.compare("MaxDimuMass")==0){
-                 getline(strStream, field);
-                 maxDimuMass=std::atof(field.c_str());
-                 cout<<" setting maxDimuMass  = "<<maxDimuMass<<"\n";
+                 cout<<" setting maxDimuPhotonDr  = "<<maxDimuPhotonDr<<"\n";
             }
              if(field.compare("MaxMMGMass")==0){
                  getline(strStream, field);
@@ -336,6 +396,27 @@ void BMMGAnalysis::readParameters(string fname)
                  photonIdxMVAWeightFile=field;
                  std::cout<<" setting photonIdxMVAWeightFile = "<<photonIdxMVAWeightFile<<"\n";
             }
+            
+            if(field.compare("MinDimuMass")==0){
+                 minDimuMass.clear();
+                 cout<<" setting minDimuMass  = { ";
+                 while( strStream >> aDouble )
+                 {
+                    cout<<aDouble<<", ";
+                    minDimuMass.push_back(aDouble);
+                 }
+                 cout<<" }\n";
+            }            
+            if(field.compare("MaxDimuMass")==0){
+                 maxDimuMass.clear();
+                 cout<<" setting maxDimuMass  = { ";
+                 while( strStream >> aDouble )
+                 {
+                    cout<<aDouble<<", ";
+                    maxDimuMass.push_back(aDouble);
+                 }
+                 cout<<" }\n";
+            } 
        }
     }
 
@@ -352,6 +433,7 @@ void BMMGAnalysis::readParameters(string fname)
 	   if(line=="#END") break;
 	   InFileList.push_back(line);
 	}
+
     std::cout<<"File List has the following files : \n";
     for( auto name : InFileList)
     {
