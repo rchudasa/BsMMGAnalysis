@@ -49,5 +49,18 @@
         Charm18D
         
   (40 is a normal number u can keep for merging .. can try our other options as well )
-    
+ 
+ ### Measuring Luminosity For data
+ - Use [getRunLumiEventFileForPicEvent.py](https://github.com/ats2008/BsMMGAnalysis/blob/main/MergeWithBMMNtuples/EventPickWithBMMGNtuplizer/getRunLumiEventFileForPicEvent.py) for making LumiJson from the outputs of [jobFileMakerBMMG.py](https://github.com/ats2008/BsMMGAnalysis/blob/main/MergeWithBMMNtuples/RunLumiEventFileMaker/jobFileMakerBMMG.py).
+ - Make the intercetion json with gonden json file :
+  ```
+  cmsenv
+  compareJSON.py --and Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt LumiFileCharmoniumC.json goldenLumiFileCharmoniumC.json
+  ```
+ - Obtain the Luminosity measurement using [brilcalc](https://cms-service-lumi.web.cern.ch/cms-service-lumi/brilwsdoc.html#brilcalc)
+ ```
+ brilcalc lumi -i goldenLumiFileCharmoniumC.json -u /fb --hltpath "HLT_DoubleMu4_3_Bs_v*"
+ ```
+
+ 
   
