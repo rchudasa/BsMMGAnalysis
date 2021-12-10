@@ -440,10 +440,6 @@ void BMMGAnalysis::readParameters(string fname)
         std::cout<<"\t"<<name<<"\n";
     }
 
-    if(doPhotonMVA)
-    {
-        setUpPhotonMVA();
-    }
 }
 
 #include "BMMGAnalysis.cc"
