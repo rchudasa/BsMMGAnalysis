@@ -14,7 +14,10 @@ main : main.cc Util.h BMMGAnalysis.h BMMGAnalysis.cc
 analysisNtupleMaker : analysisNtupleMaker.cc Util.h BMMGAnalysis.h BMMGAnalysis.cc 
 	$(CXX) $(CXXFLAGS) -I$(INCPATH) -o $@.exe $<  $(LIBS)
 
-analysis : analysis.cc Util.h BMMGAnalysis.h BMMGAnalysis.cc 
+analysis : analysis.cc Util.h BMMGAnalysis.h BMMGAnalysis.cc RunLumiSelector.h
+	$(CXX) $(CXXFLAGS) -I$(INCPATH) -o $@.exe $<  $(LIBS)
+
+runlumi : runLumi.cc RunLumiSelector.h
 	$(CXX) $(CXXFLAGS) -I$(INCPATH) -o $@.exe $<  $(LIBS)
 
 clean :
