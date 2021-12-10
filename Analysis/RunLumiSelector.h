@@ -23,7 +23,7 @@ class RunLumiSelector {
             loadedMask=false;
             
         }
-        void loadRunLumiMask(TString fname, TString treeName);
+        void loadRunLumiMask(TString fname, TString treeName="RunLumiMask");
         bool checkRunLumi(Int_t run, Int_t lumi);
 
 };

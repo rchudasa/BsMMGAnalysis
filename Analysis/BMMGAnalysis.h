@@ -11,6 +11,7 @@
 #include "TMVA/Reader.h"
 #include "TMVA/MethodCuts.h"
 
+#include "RunLumiSelector.h"
 
 
 #define PHO_MASS 0.0
@@ -85,7 +86,13 @@ class BMMGAnalysis
     Int_t nBMMGCandidates;
     Int_t nBMMGCandidatesPerDimu;
     bool isTriggerd;
-    
+     
+
+    // RunLumiMask
+    bool doRunLumiMask;
+    TString runLumiMaskFname;
+    RunLumiSelector runLumiMask;
+
     // book keeping vars
     bool initDone;
     std::map<string,string> string_parameters;
@@ -145,6 +152,7 @@ void BMMGAnalysis::Init(string cfgFileName)
     treeName="mergedTree";
     prefix="workarea/";
     ofileName="output.root";
+    runLumiMaskFname="";
     InFileList.clear();
     ofileName="output.root";
     maxEvents=1000;
@@ -165,7 +173,10 @@ void BMMGAnalysis::Init(string cfgFileName)
     {
        setUpPhotonMVA();
     }
-        
+    if(doRunLumiMask)
+    {
+        runLumiMask.loadRunLumiMask(runLumiMaskFname);
+    }
     initDone=true;
 }
 
@@ -288,6 +299,12 @@ void BMMGAnalysis::readParameters(string fname)
                  getline(strStream, field);
                  prefix=field;
                  cout<<" setting prefix = "<<prefix<<"\n";
+            }
+            if(field.compare("RunLumiMask")==0){
+                 getline(strStream, field);
+                 runLumiMaskFname=field;
+                 doRunLumiMask=true;
+                 cout<<" setting runLumiMaskFname = "<<runLumiMaskFname<<"\n";
             }
             if(field.compare("MaxEvents")==0){
                  getline(strStream, field);
