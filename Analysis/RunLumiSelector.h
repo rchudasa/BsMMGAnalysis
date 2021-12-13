@@ -4,10 +4,9 @@
  *      mail   : aravindsugunan@gmail.com
  */
 
-
 #include "vector"
 #include "map"
-
+#include "TFile.h"
 struct LumiSet
 {
     int min,max;  
@@ -15,7 +14,7 @@ struct LumiSet
 
 class RunLumiSelector {
     
-    std::map<TString,vector<LumiSet> *> runLumiMask;
+    std::map<Int_t,vector<LumiSet> *> runLumiMask;
     bool loadedMask;
     public :
         RunLumiSelector()
@@ -25,12 +24,36 @@ class RunLumiSelector {
         }
         void loadRunLumiMask(TString fname, TString treeName="RunLumiMask");
         bool checkRunLumi(Int_t run, Int_t lumi);
+        void printAllActiveLumis();
 
 };
 
+void RunLumiSelector::printAllActiveLumis()
+{
+
+       
+ /*   for (std::map<TString,TH1F *>::iterator it=th1fStore.begin() ; it!=th1fStore.end(); ++it)
+    {
+        
+        //std::cout<<"Writing "<<it->first<<" to file ! \n";
+        auto &ahist = *(it->second); 
+        ahist.Write();
+    }
+*/
+
+    for(auto i : runLumiMask)
+    {
+        std::cout<<"\nRun : "<<i.first<<" : ";
+        for(auto j :  *(i.second))
+        {
+                std::cout<<"["<<j.min<<","<<j.max<<"] , ";
+        }       
+    }
+}
+
 void RunLumiSelector::loadRunLumiMask(TString fname,TString treeName)
 {
-    auto file=TFile(fname,"READ");
+    TFile file(fname,"READ");
     auto runLumiTree=(TTree * ) file.Get(treeName);
     Int_t run;
     Int_t nLumiSets;
@@ -61,6 +84,7 @@ void RunLumiSelector::loadRunLumiMask(TString fname,TString treeName)
         }
         
     }
+
 
     file.Close();
     loadedMask=true;
