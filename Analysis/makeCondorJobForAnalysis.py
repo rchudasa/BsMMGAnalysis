@@ -24,28 +24,37 @@ xrdRedirector="root://cms-xrd-global.cern.ch/"
 FileSource ="bmm5FileList.txt"
 destination='/grid_mnt/t3storage3/athachay/bs2mumug/run2studies/CMSSW_10_6_19_patch2/src/BsMMGAnalysis/MergeWithBMMNtuples/RunLumiEventFileMaker/runLumiList/'
 tag=""
-
-if len(sys.argv) > 1:
-    FileSource=sys.argv[1]  
-else:
-    print("Usage\n\t./makeCondorJobForAnalysis.py <InputFileListFname> <destination> <NJOBS> <FILES_PER_JOB> <jobPrefix>")
-    sys.exit(1)
+argC=1
 if len(sys.argv) > 2:
-    destination=sys.argv[2]  
-if len(sys.argv) > 3:
-    NJOBS=int(sys.argv[3])  
-if len(sys.argv) > 4:
-    FILES_PER_JOB=int(sys.argv[4])  
-if len(sys.argv) > 5:
-    tag=sys.argv[5]  
+    executable=sys.argv[argC]  
+    argC+=1
+    FileSource=sys.argv[argC]  
+else:
+    print("Usage\n\t./makeCondorJobForAnalysis.py <EXECUTABLE> <InputFileListFname> <destination> <NJOBS> <FILES_PER_JOB> <jobPrefix>")
+    sys.exit(1)
+
+argC+=1
+if len(sys.argv) > argC:
+    destination=sys.argv[argC]  
+argC+=1
+if len(sys.argv) > argC:
+    NJOBS=int(sys.argv[argC])  
+argC+=1
+if len(sys.argv) > argC:
+    FILES_PER_JOB=int(sys.argv[argC])  
+argC+=1
+if len(sys.argv) > argC:
+    tag=sys.argv[argC]  
 
 if(not os.path.exists(destination)):
     os.system("mkdir -p "+destination)
 destination=os.path.abspath(destination)
 
+print("Executable ",executable)
 print("Source file list ",FileSource)
 print("destination : ",destination)
 print("NJOBS : ",NJOBS)
+print("FILES_PER_JOB : ",FILES_PER_JOB)
 print("NEVENTS_PER_JOB : ",NEVENTS_PER_JOB)
 print("tag : ",tag)
 
