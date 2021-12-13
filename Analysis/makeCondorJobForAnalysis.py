@@ -8,11 +8,12 @@ version='v1'
 
 """
 
+executable='analysisNtupleMaker.exe'
 
 NJOBS=20000
 NEVENTS_PER_JOB = -1
 ZERO_OFFSET=0
-FILES_PER_JOB=1
+FILES_PER_JOB=40
 
 
 pwd=os.environ['PWD']
@@ -27,14 +28,14 @@ tag=""
 if len(sys.argv) > 1:
     FileSource=sys.argv[1]  
 else:
-    print("Usage\n\t./makeCondorJobForAnalysis.py <InputFileListFname> <destination> <NJOBS> <NEVENTS_PER_JOB> <jobPrefix>")
+    print("Usage\n\t./makeCondorJobForAnalysis.py <InputFileListFname> <destination> <NJOBS> <FILES_PER_JOB> <jobPrefix>")
     sys.exit(1)
 if len(sys.argv) > 2:
     destination=sys.argv[2]  
 if len(sys.argv) > 3:
     NJOBS=int(sys.argv[3])  
 if len(sys.argv) > 4:
-    NEVENTS_PER_JOB=int(sys.argv[4])  
+    FILES_PER_JOB=int(sys.argv[4])  
 if len(sys.argv) > 5:
     tag=sys.argv[5]  
 
@@ -65,8 +66,8 @@ MaxDimuMass= 3.086  5.365 \n\
 MaxMMGMass=6.5\n\
 MinMMGMass=4.1\n\
 DoPhotonMVAID=1\n\
-PhotonIDWeightFile="+pwd+"/mvaParameters/weights/TMVAClassification_MLP_v0.weights.xml\n\
-RunLumiMask=/grid_mnt/t3storage3/athachay/bs2mumug/run2studies/analysis/CMSSW_10_6_4_patch1/src/BsMMGAnalysis/Analysis/certification/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.root\n\
+PhotonIDWeightFile="+pwd+"/Data/mvaParameters/weights/TMVAClassification_MLP_v0.weights.xml\n\
+RunLumiMask="+pwd+"/Data/certification/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.root\n\
 #PARAMS_END\n\
 #FILELIST_BEG\n\
 @@FNAMES\n\
@@ -95,10 +96,10 @@ cd @@DIRNAME \n\
 eval `scramv1 runtime -sh`\n\
 TMPDIR=`mktemp -d`\n\
 cd $TMPDIR\n\
-cp  "+pwd+"/analysis.exe .\n\
+cp  "+pwd+"/"+executable+" .\n\
 cp @@DIRNAME/@@CFGFILENAME .\n\
 mv @@RUNSCRIPT @@RUNSCRIPT.busy \n\
-./analysis.exe @@CFGFILENAME\n\
+./"+executable+" @@CFGFILENAME\n\
 if [ $? -eq 0 ]; then \n\
     mv analysisRun2_"+version+"_"+tag+"_@@IDX.root "+destination+"\n\
     if [ $? -eq 0 ] ; then \n\
@@ -118,6 +119,7 @@ fi\n\
 head='Jobs'+tag
 if not os.path.exists(head ):
     os.system('mkdir '+head)
+
 n=int(len(sourceFileList)/FILES_PER_JOB) + 1
 if n < NJOBS:
     NJOBS=n
@@ -168,6 +170,7 @@ for ii in range(NJOBS):
     os.system('chmod +x '+runScriptName)
     condorScript.write("queue filename matching ("+runScriptName+")\n")
     njobs+=1
+print()
 print(" Number of jobs made : ", njobs)
 print(" Number of files left : ", len(sourceFileList) )
 condorScript.close()
