@@ -30,18 +30,33 @@ int  main(int argc,char *argv[])
 */
 
   run=1; lumi=10;
-  std::cout<<run<< " , "<<lumi <<"  :  checkRunLumi  = "<<goldenJsonSelctor.checkRunLumi(run,lumi)<<"\n";
+  std::cout<<run<< " , "<<lumi <<" truth :  "<<0<<"  :  checkRunLumi  = "<<goldenJsonSelctor.checkRunLumi(run,lumi)<<"\n";
 
   run=315265; lumi=4;
-  std::cout<<run<< " , "<<lumi <<"  :  checkRunLumi  = "<<goldenJsonSelctor.checkRunLumi(run,lumi)<<"\n";
+  std::cout<<run<< " , "<<lumi <<" truth :  "<<1<<"  :  checkRunLumi  = "<<goldenJsonSelctor.checkRunLumi(run,lumi)<<"\n";
   
   run=315265; lumi=20;
-  std::cout<<run<< " , "<<lumi <<"  :  checkRunLumi  = "<<goldenJsonSelctor.checkRunLumi(run,lumi)<<"\n";
+  std::cout<<run<< " , "<<lumi <<" truth :  "<<1<<"  :  checkRunLumi  = "<<goldenJsonSelctor.checkRunLumi(run,lumi)<<"\n";
 
   run=315265; lumi=58;
-  std::cout<<run<< " , "<<lumi <<"  :  checkRunLumi  = "<<goldenJsonSelctor.checkRunLumi(run,lumi)<<"\n";
+  std::cout<<run<< " , "<<lumi <<" truth :  "<<1<<"  :  checkRunLumi  = "<<goldenJsonSelctor.checkRunLumi(run,lumi)<<"\n";
 
   run=315265; lumi=60;
-  std::cout<<run<< " , "<<lumi <<"  :  checkRunLumi  = "<<goldenJsonSelctor.checkRunLumi(run,lumi)<<"\n";
+  std::cout<<run<< " , "<<lumi <<" truth :  "<<0<<"  :  checkRunLumi  = "<<goldenJsonSelctor.checkRunLumi(run,lumi)<<"\n";
+
+  run=315363; lumi=1;
+  std::cout<<run<< " , "<<lumi <<" truth :  "<<1<<"  :  checkRunLumi  = "<<goldenJsonSelctor.checkRunLumi(run,lumi)<<"\n";
+
+  run=315363; lumi=36;
+  std::cout<<run<< " , "<<lumi <<" truth :  "<<0<<"  :  checkRunLumi  = "<<goldenJsonSelctor.checkRunLumi(run,lumi)<<"\n";
+
+  run=315363; lumi=48;
+  std::cout<<run<< " , "<<lumi <<" truth :  "<<0<<"  :  checkRunLumi  = "<<goldenJsonSelctor.checkRunLumi(run,lumi)<<"\n";
+
+  run=315363; lumi=70;
+  std::cout<<run<< " , "<<lumi <<" truth :  "<<1<<"  :  checkRunLumi  = "<<goldenJsonSelctor.checkRunLumi(run,lumi)<<"\n";
+
+  run=315363; lumi=90;
+  std::cout<<run<< " , "<<lumi <<" truth :  "<<1<<"  :  checkRunLumi  = "<<goldenJsonSelctor.checkRunLumi(run,lumi)<<"\n";
 
 }
