@@ -92,9 +92,16 @@ void BMMGAnalysis::Analyze()
        fill_photonHists();
        fill_dimuonHists();
        nDiMuNoVertexCandidates=0;
+       //std::cout<<"\nnMM = "<<ntupleRawTree.b5_nmm<<" , nmu : "<< ntupleRawTree.b5_nMuon<<"\n";
        for(int mumuIdx=0; mumuIdx < ntupleRawTree.b5_nmm;mumuIdx++)
        {    
+           if(ntupleRawTree.b5_mm_mu1_index[mumuIdx] < 0 or ntupleRawTree.b5_mm_mu2_index[mumuIdx] <0 ) continue;  
+           if(ntupleRawTree.b5_mm_mu1_index[mumuIdx] >= ntupleRawTree.b5_nMuon ) continue;
+           if(ntupleRawTree.b5_mm_mu2_index[mumuIdx] >= ntupleRawTree.b5_nMuon ) continue;
 
+           //std::cout<<"\tmumuIdx : "<<mumuIdx<<" : m1,m2 : "<<ntupleRawTree.b5_mm_mu1_index[mumuIdx]<<", "<<ntupleRawTree.b5_mm_mu2_index[mumuIdx]<<"\n";
+           //std::cout<<"\tmumuIdx : "<<mumuIdx<<" : m1pt,m2pt : "<<ntupleRawTree.b5_mm_mu1_pt[mumuIdx]<<", "<<ntupleRawTree.b5_mm_mu2_pt[mumuIdx]<<"\n";
+           //std::cout<<"\tmumu    : "<<mumuIdx<<" : MASS : "<<ntupleRawTree.b5_mm_mass[mumuIdx]<<"\n";
            // Muon Selection
 		   rslt=doMuonSelection( ntupleRawTree.b5_mm_mu1_index[mumuIdx], true);
            // std::cout<<"\tmuon1 rslt : "<<rslt<<"\n";
@@ -681,7 +688,7 @@ void BMMGAnalysis::fill_globalEventHists()
 Int_t BMMGAnalysis::doMuonSelection(Int_t muIdx, bool isLead)
 {
     
-    
+ //   std::cout<<"\t\t  muIdx : "<<muIdx<<"\n"; 
     if(  ntupleRawTree.b5_Muon_pt[muIdx] < 4.0 )  return 1;
    
     // auto muGblId= ntupleRawTree.b5_mm_mu1_index[muIdx];
