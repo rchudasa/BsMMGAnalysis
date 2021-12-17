@@ -18,13 +18,13 @@ $ root -b -q 'getEventListFromBMMG.cc("bmmGSelection.cfg")'
 this step will produce a *.txt and *.root file
 - Use scripts `jobFileMakerBMM5.py ` and `jobFileMakerBMMG.py` to make jobs in condor
   ```
-  # requires bmm5FileList.txt that contains full path to the file locations .. note : root:// .. too will work as location
-  ./jobFileMakerBMM5.py
-  condor_submit subCondorBMM5.sub
-  
-  # requires bmmgFileList.txt that contains full path to the file locations .. note : root:// .. too will work as location
-  ./jobFileMakerBMMG.py
-  condor_submit subCondorBMMG.sub
+  # ./jogFileMakerBMMX.py <FileSource> <destination> <filesPerJob> <tag> 
+  ./jobFileMakerBMMX_test.py bmm5_mc_bkg_hPMuNu_BsToKMuNu_v2.files \
+          /eos/home-a/athachay/workarea/bs2mumug/run2studies/ntuplizer/RunLumiFileMaker/MC/bmm5_mc_bkg_hPMuNu_BsToKMuNu_v2\
+          5 \
+          100 \
+          BsToKMuNu
+  condor_submit subCondorBMMXBsToKMuNu.sub
   ```
 
 #### Merging the Ntuples
