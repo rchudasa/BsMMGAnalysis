@@ -1,17 +1,10 @@
 # Merging BMMG Ntuples with the BMM5 Ntuples
 
 - For Datas the merging process foillows 3 steps :
-  - Step 1 : Processing of BMM5 ntuples to make a list of events/lumis/runs stored in them.
-  - Step 2 : Using PickEvents workflow to submit BMMG Ntuplizer to crab
-  - Step 3 : Processing od BMMG ntuples to make a list of events/lumis/runs stored in them.
-  - Step 4 : Submitting the condor jobs for merging the ntuples
-
-- For Datas the merging process foillows 3 steps :
   - Step 1 : Make the BMMG and BMM5 Ntuples of the smaple of interest.
   - Step 2 : Processing of BMM5 ntuples to make a list of events/lumis/runs stored in them.
   - Step 3 : Processing od BMMG ntuples to make a list of events/lumis/runs stored in them.
   - Step 4 : Submitting the condor jobs for merging the ntuples
-
 
 ## Workflow 
 #### Processing of BMM5 / BMMG ntuples to get events/lumis/runs list.
@@ -25,41 +18,14 @@ $ root -b -q 'getEventListFromBMMG.cc("bmmGSelection.cfg")'
 this step will produce a *.txt and *.root file
 - Use scripts `jobFileMakerBMM5.py ` and `jobFileMakerBMMG.py` to make jobs in condor
   ```
-  # requires bmm5FileList.txt that contains full path to the file locations .. note : root:// .. too will work as location
-  ./jobFileMakerBMM5.py
-  condor_submit subCondorBMM5.sub
-  
-  # requires bmmgFileList.txt that contains full path to the file locations .. note : root:// .. too will work as location
-  ./jobFileMakerBMMG.py
-  condor_submit subCondorBMMG.sub
+  # ./jogFileMakerBMMX.py <FileSource> <destination> <filesPerJob> <tag> 
+  ./jobFileMakerBMMX_test.py bmm5_mc_bkg_hPMuNu_BsToKMuNu_v2.files \
+          /eos/home-a/athachay/workarea/bs2mumug/run2studies/ntuplizer/RunLumiFileMaker/MC/bmm5_mc_bkg_hPMuNu_BsToKMuNu_v2\
+          5 \
+          100 \
+          BsToKMuNu
+  condor_submit subCondorBMMXBsToKMuNu.sub
   ```
-#### PickEvents workflow to submit BMMG Ntuplizer jobs to crab
-- Convert the event file list produced in step 1 to the format compatable fot `PickEvents` configuration for crab
-- This can be done by using the `BsMMGAnalysis/EventPickWithBMMGNtuplizer/getRunLumiEventFileForPicEvent.py`
-  - Change the ifnames to have the name of files made in the step 1.
-    ```
-    $ cd BsMMGAnalysis/EventPickWithBMMGNtuplizer/
-    $ ./getRunLumiEventFileForPicEvent.py
-    ```
-  - This step will produce `EventListFile.txt` file
-- Use edmPickEvent.py profided by the CMSSW framework for produsing  crab configs
-  ```
-  $ cmsenv
-  $ edmPickEvents.py "/Charmonium/Run2018C-17Sep2018-v1/AOD" EventListFile.txt --crab 
-  ```
-  - If the size of the files of interest is large , use the pickEvents.json file created by the `getRunLumiEventFileForPicEvent.py`
-- Edit the crab config `pickevents_crab.py`
-  - By default the cms config that will be run is 
-   ```
-   /cvmfs/cms.cern.ch/slc7_amd64_gcc820/cms/cmssw-patch/CMSSW_10_6_19_patch2/src/PhysicsTools/Utilities/configuration/copyPickMerge_cfg.py
-   ```
-   Edit it according to your customizations !! see `BsMMGAnalysis/MergeWithBMMNtuples/EventPickWithBMMGNtuplizer/PickMerge_cfg.py` for an example customiztion that will work for the BMMG ntuplization
-    - Edit `config.JobType.psetName` to poit to the customized cms config   
-    - Change the `config.JobType.pyCfgParams` to give proper output file name template.
-    - Change `config.Data.outLFNDirBase`
-    - **Change config.Site.storageSite**
-  
-_Follow [this twiki](https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookPickEvents) for pickevents documentation_
 
 #### Merging the Ntuples
 - Update the `Bmm5Ntuple.h` and `BmmGNtuple.h` with relavant headers of the Ntuples of interest.
