@@ -24,6 +24,7 @@ int  main(int argc,char *argv[])
     //   TTree * outTree   = new TTree("AnalysisTree","Reduced branches from the Merged [bmm5+bmmX] trees.");
     
     BMMGAnalysis analyzer2018;
+    std::cout<<"Initializing with cfg : "<<cfgFile<<"\n";
     analyzer2018.Init(cfgFile);
     
     analyzer2018.SetupAnalysis();

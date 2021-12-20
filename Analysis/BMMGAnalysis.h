@@ -95,6 +95,10 @@ class BMMGAnalysis
     Int_t nBMMGCandidatesPerDimu;
     bool isTriggerd;
      
+    // isMC
+    bool isMC;
+    bool doGenMatching;
+    bool doReducedTree;
 
     // RunLumiMask
     bool doRunLumiMask;
@@ -353,10 +357,15 @@ void BMMGAnalysis::readParameters(string fname)
                  prefix=field;
                  cout<<" setting prefix = "<<prefix<<"\n";
             }
+            if(field.compare("DoRunLumiMask")==0){
+                 getline(strStream, field);
+                 tmpI=std::atoi(field.c_str());
+                 doRunLumiMask= tmpI >0 ? 1 : 0;
+                 cout<<" setting doRunLumiMask  = "<<doRunLumiMask<<"\n";
+            }
             if(field.compare("RunLumiMask")==0){
                  getline(strStream, field);
                  runLumiMaskFname=field;
-                 doRunLumiMask=true;
                  cout<<" setting runLumiMaskFname = "<<runLumiMaskFname<<"\n";
             }
             if(field.compare("MaxEvents")==0){
