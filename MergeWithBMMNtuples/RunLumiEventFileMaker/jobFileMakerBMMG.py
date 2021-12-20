@@ -2,6 +2,9 @@
 import os
 import sys
 
+UsageStr = "\
+\n./jogFileMakerBMMG.py <FileSource> <destination> <filesPerJob> <tag> \
+"
 NJOBS=20000
 NEVENTS_PER_JOB = -1
 ZERO_OFFSET=0
@@ -12,12 +15,17 @@ FileSource ="bmmgFileList.txt"
 tag=""
 if len(sys.argv) > 1:
     FileSource=sys.argv[1]
+else:
+    print(UsageStr)
+    sys.exit(1)
 if len(sys.argv)>2:
     destination=os.path.abspath(sys.argv[2])
 if len(sys.argv) > 3:
     FILES_PER_JOB=int(sys.argv[3])
 if len(sys.argv) > 4:
-    tag=sys.argv[4]
+    NJOBS=int(sys.argv[4])
+if len(sys.argv) > 5:
+    tag=sys.argv[5]
 
 pwd=os.environ['PWD']
 proxy_path=os.environ['X509_USER_PROXY']
@@ -36,8 +44,8 @@ configurationTxt="\
 #PARAMS_BEG\n\
 MaxEvents=-1\n\
 OutputPrefix=\n\
-OutputFile=bmmGEvntSelection_@@IDX.root\n\
-OutputFileTxt=bmmGEvntSelection_@@IDX.txt\n\
+OutputFile=bmm5EvntSelection_@@IDX.root\n\
+OutputFileTxt=bmm5EvntSelection_@@IDX.txt\n\
 #PARAMS_END\n\
 \n\
 #EOF\n\
@@ -67,7 +75,7 @@ eval `scramv1 runtime -sh`\n\
 TMPDIR=`mktemp -d`\n\
 cp @@CFGFILENAME $TMPDIR \n\
 cd $TMPDIR\n\
-cp  "+pwd+"/BmmGNtuple* .\n\
+cp  "+pwd+"/Bmm5Ntuple* .\n\
 cp  "+pwd+"/getEventListFromBMMG.cc .\n\
 root -b -q 'getEventListFromBMMG.cc(\"@@CFGFILENAME\")'\n\
 if [ $? -eq 0 ]; then \n\
@@ -79,10 +87,10 @@ else\n\
     mv @@RUNSCRIPT.busy @@RUNSCRIPT \n\
     echo FAIL\n\
 fi\n\
-rm  BmmGNtuple* \n\
+rm  Bmm5Ntuple* \n\
 "
 
-head = "JobsBmmG" + tag
+head = "JobsBmm5" + tag
 if not os.path.exists(head):
     os.system('mkdir '+ head)
 
@@ -110,7 +118,7 @@ for ii in range(NJOBS):
     else:
         os.system('mkdir '+dirName)
     
-    cfgFileName='bmmGSelection_'+str(i)+'.cfg'
+    cfgFileName='bmm5Selection_'+str(i)+'.cfg'
     cfgFile=open(dirName+'/'+cfgFileName,'w')
     tmp=""
     for j in range(FILES_PER_JOB):
