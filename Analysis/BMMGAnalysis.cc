@@ -45,22 +45,26 @@ void BMMGAnalysis::Analyze()
                       << " Elapsed time : "<< std::chrono::duration<double, std::milli>(t_end-t_start).count()/1000.0
                       <<"  Estimated time left : "<< std::chrono::duration<double, std::milli>(t_end-t_start).count()*( maxEvents - jentry)/(1e-9 + jentry)* 0.001
                       <<std::endl;
+       
        }
-       if( (prevRun != ntupleRawTree.b5_run) or (prevLumi != ntupleRawTree.b5_luminosityBlock) )
+
+       if(doRunLumiMask)
        {
-            prevRun  = ntupleRawTree.b5_run;
-            prevLumi = ntupleRawTree.b5_luminosityBlock;
+        if( (prevRun != ntupleRawTree.b5_run) or (prevLumi != ntupleRawTree.b5_luminosityBlock) )
+        {
+             prevRun  = ntupleRawTree.b5_run;
+             prevLumi = ntupleRawTree.b5_luminosityBlock;
 
-            goodRunLumi =  runLumiMask.checkRunLumi(prevRun,prevLumi);
+             goodRunLumi =  runLumiMask.checkRunLumi(prevRun,prevLumi);
 
-            if(not goodRunLumi)
-            {
-                std::cout<<"Masking : ( "<<prevRun<<" , "<<prevLumi<<" ) \n";
-            }
+             if(not goodRunLumi)
+             {
+                 std::cout<<"Masking : ( "<<prevRun<<" , "<<prevLumi<<" ) \n";
+             }
+        }
+
+        if(not goodRunLumi) continue;
        }
-
-       if(not goodRunLumi) continue;
-
        
     //   std::cout<<"Processing Entry in event loop : "<<jentry<<" / "<<maxEvents<<"  [ "<<100.0*jentry/maxEvents<<"  % ]  "<<"\n";
        
