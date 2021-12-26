@@ -28,7 +28,7 @@ int  main(int argc,char *argv[])
     analyzer2018.Init(cfgFile);
     
     analyzer2018.SetupAnalysis();
-    analyzer2018.Analyze();
+    analyzer2018.GenAnalyze();
     analyzer2018.SaveFile();
     
 }
