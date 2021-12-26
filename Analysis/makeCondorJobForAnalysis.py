@@ -76,6 +76,7 @@ MaxMMGMass=6.5\n\
 MinMMGMass=4.1\n\
 DoPhotonMVAID=1\n\
 PhotonIDWeightFile="+pwd+"/Data/mvaParameters/weights/TMVAClassification_MLP_v0.weights.xml\n\
+DoRunLumiMask=0\n\
 RunLumiMask="+pwd+"/Data/certification/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.root\n\
 #PARAMS_END\n\
 #FILELIST_BEG\n\
