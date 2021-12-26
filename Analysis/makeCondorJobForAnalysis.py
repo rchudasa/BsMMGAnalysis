@@ -23,7 +23,7 @@ xrdRedirector="root://cms-xrd-global.cern.ch/"
 
 FileSource ="bmm5FileList.txt"
 destination='/grid_mnt/t3storage3/athachay/bs2mumug/run2studies/CMSSW_10_6_19_patch2/src/BsMMGAnalysis/MergeWithBMMNtuples/RunLumiEventFileMaker/runLumiList/'
-tag=""
+BMMGAnalysis::Analyze()tag=""
 argC=1
 if len(sys.argv) > 2:
     executable=sys.argv[argC]  
