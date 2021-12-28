@@ -149,11 +149,11 @@ class BMMGAnalysis
     
     // Histogram Related Functions
     void bookHistograms();
-    void fill_muonHists();
-    void fill_scHists();
-    void fill_photonHists();
-    void fill_dimuonHists();
-    void fill_dimuonHists(Int_t mumuIdx);
+    void fill_muonHists(Int_t idx=-1);
+    void fill_scHists(Int_t idx =-1);
+    void fill_photonHists(Int_t idx  = -1);
+    void fill_dimuonPassHists(Int_t idx=-1);
+    void fill_dimuonHists(Int_t mumuIdx=-1);
     void fill_dimuonEnvironmentHists(Int_t mumuIdx);
     void fill_bmmgHists(TLorentzVector &bmmgLV,Int_t mumuIdx, Int_t phoSCIdx);
     void fill_globalEventHists();
@@ -168,14 +168,15 @@ class BMMGAnalysis
     Int_t doBMMGSelection(Int_t mumuIdx , Int_t phoSCIdx);
     Int_t doPhotonSelection(Int_t scIdx);
     Int_t getPVMatch(Int_t mumuIdx);
+    void setupReducedAnalysisTreeBranches();
     void Analyze();
+    void GenAnalyze();
     
 
     // Temporary vars with class scope
     TLorentzVector bmmgLV,diMuLV,photonLV;
     ROOT::Math::XYZVector svDisplacementVecor, bmmg3Momentum ;
 };
-
 BMMGAnalysis::BMMGAnalysis():
 BDTWorkingPoint(0.58)
 {
@@ -201,6 +202,9 @@ void BMMGAnalysis::Init(string cfgFileName)
     doPhotonMVA        =false;
     photonIdxMVAWeightFile="";
     hasWeightFiles=false;
+    
+    doRunLumiMask=false;
+    doReducedTree=true;
     minDimuMass.clear(); minDimuMass.push_back(0.0);
     maxDimuMass.clear(); maxDimuMass.push_back(6.0);
 
@@ -276,8 +280,14 @@ void BMMGAnalysis::setupOutPuts(bool makeTreeCopy)
    AllocateMemory();
    if(makeTreeCopy)
    {
-    outTree   = treeChain->CloneTree(0);
     AllocateBMMGBranches();
+    if(doReducedTree)
+     {
+     setupReducedAnalysisTreeBranches();
+    }
+    else {
+    outTree   = treeChain->CloneTree(0);
+    }
    }
 
 }
