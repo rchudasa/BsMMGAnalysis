@@ -44,8 +44,8 @@ configurationTxt="\
 #PARAMS_BEG\n\
 MaxEvents=-1\n\
 OutputPrefix=\n\
-OutputFile=bmm5EvntSelection_@@IDX.root\n\
-OutputFileTxt=bmm5EvntSelection_@@IDX.txt\n\
+OutputFile=bmmGEvntSelection_@@IDX.root\n\
+OutputFileTxt=bmmGEvntSelection_@@IDX.txt\n\
 #PARAMS_END\n\
 \n\
 #EOF\n\
@@ -75,7 +75,7 @@ eval `scramv1 runtime -sh`\n\
 TMPDIR=`mktemp -d`\n\
 cp @@CFGFILENAME $TMPDIR \n\
 cd $TMPDIR\n\
-cp  "+pwd+"/Bmm5Ntuple* .\n\
+cp  "+pwd+"/BmmGNtuple* .\n\
 cp  "+pwd+"/getEventListFromBMMG.cc .\n\
 root -b -q 'getEventListFromBMMG.cc(\"@@CFGFILENAME\")'\n\
 if [ $? -eq 0 ]; then \n\
@@ -87,10 +87,10 @@ else\n\
     mv @@RUNSCRIPT.busy @@RUNSCRIPT \n\
     echo FAIL\n\
 fi\n\
-rm  Bmm5Ntuple* \n\
+rm  BmmGNtuple* \n\
 "
 
-head = "JobsBmm5" + tag
+head = "JobsBmmG" + tag
 if not os.path.exists(head):
     os.system('mkdir '+ head)
 
@@ -118,7 +118,7 @@ for ii in range(NJOBS):
     else:
         os.system('mkdir '+dirName)
     
-    cfgFileName='bmm5Selection_'+str(i)+'.cfg'
+    cfgFileName='bmmGSelection_'+str(i)+'.cfg'
     cfgFile=open(dirName+'/'+cfgFileName,'w')
     tmp=""
     for j in range(FILES_PER_JOB):
