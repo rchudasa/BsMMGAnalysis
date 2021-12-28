@@ -295,7 +295,7 @@ void BMMGAnalysis::GenAnalyze()
        if( ntupleRawTree.b5_HLT_DoubleMu4_3_Jpsi ) isTriggerd=true;
        if( ntupleRawTree.b5_HLT_Dimuon0_Jpsi_NoVertexing ) isTriggerd=true;
        if( ntupleRawTree.b5_HLT_Dimuon0_Jpsi_NoVertexing_L1_4R_0er1p5R ) isTriggerd=true;
-       if(not isTriggerd) continue;
+       //if(not isTriggerd) continue;
        if( isTriggerd ) EventCountWithTrigger++;
       for(Int_t i=0;i<NSTORAGE_ARRAY_MAX;i++)
             storageArrayDouble[i]=0;
@@ -1210,7 +1210,7 @@ void BMMGAnalysis::bookHistograms()
      th1fStore["dimu_DCA"]  = new TH1F("dimu_Dca","DCA(#mu#mu) for #mu#mu Candidate" ,100 , 0.0 , 0.050  );
      th1fStore["dimu_VertexOtherTrackDOCA"]  = new TH1F("dimu_VertexOtherTrackDOCA","DCA(#mu#mu vertex, other track) for #mu#mu Candidate" ,100 , 0.0 , 5.0 );
      th1fStore["dimu_L3D"]              = new TH1F("dimu_L3D","l_{3D}(#mu#mu) for #mu#mu Candidate" ,120 , 0.0 , 6.0  );
-     th1fStore["dimu_L3Dsignificance"]  = new TH1F("dimu_L3Dsignificance","l_{3D}(#mu#mu)/#sigma(l_{3D}) for #mu#mu Candidate" ,50 , 0.0 , 2.5  );
+     th1fStore["dimu_L3Dsignificance"]  = new TH1F("dimu_L3Dsignificance","l_{3D}(#mu#mu)/#sigma(l_{3D}) for #mu#mu Candidate" ,400 , 0.0 , 100  );
      th1fStore["dimu_LXY"]              = new TH1F("dimu_LXY","l_{XY}(#mu#mu) for #mu#mu Candidate" ,50 , 0.0 , 2.0  );
      th1fStore["dimu_LXYsignificance"]  = new TH1F("dimu_LXYsignificance","l_{XY}(#mu#mu)/#sigma(l_{XY}) for #mu#mu Candidate" ,240 , 0.0 , 120.0 );
      th1fStore["dimu_IPwrtPV"]              = new TH1F("dimu_IPwrtPV","IP(#mu#mu) wrt. PV for #mu#mu Candidate" , 80 , 0.0 , 0.40  );
@@ -1553,7 +1553,11 @@ Int_t BMMGAnalysis::doMuonSelection(Int_t muIdx, bool isLead)
     
  //   std::cout<<"\t\t  muIdx : "<<muIdx<<"\n"; 
     if(  ntupleRawTree.b5_Muon_pt[muIdx] < 4.0 )  return 1;
-   
+    if(  abs(ntupleRawTree.b5_Muon_eta[muIdx]) > 1.4 )  return 2;
+    if(not ntupleRawTree.b5_Muon_isTracker[muIdx]) return 4;
+    if(not ntupleRawTree.b5_Muon_isGlobal[muIdx]) return 5;
+    if(not ntupleRawTree.b5_Muon_looseId[muIdx]) return 6;
+    if(not ntupleRawTree.b5_MuonId_highPurity[muIdx]) return 7;
     // auto muGblId= ntupleRawTree.b5_mm_mu1_index[muIdx];
     // Soft Muon ID   : Cut Based
     
@@ -1570,7 +1574,7 @@ Int_t BMMGAnalysis::doMuonSelection(Int_t muIdx, bool isLead)
     // BMM5 MVA
 
 
-    if(ntupleRawTree.b5_MuonId_newSoftMuonMva[muIdx] < BDTWorkingPoint ) return 3;
+    if(ntupleRawTree.b5_MuonId_newSoftMuonMva[muIdx] < BDTWorkingPoint ) return 8;
 
     return 0;
 
