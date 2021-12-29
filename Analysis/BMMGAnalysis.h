@@ -149,6 +149,7 @@ class BMMGAnalysis
     
     // Histogram Related Functions
     void bookHistograms();
+    Double_t getDCAGammaToDimuVertex(Int_t mumuIdx,Int_t phoId);
     void fill_muonHists(Int_t idx=-1);
     void fill_scHists(Int_t idx =-1);
     void fill_photonHists(Int_t idx  = -1);
