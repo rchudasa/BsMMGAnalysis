@@ -17,7 +17,13 @@ int  main(int argc,char *argv[])
                  <<"         ./main.exe <configfile.cfg>\n\n";
         exit(1);
     }
-
+    int val(0);
+    
+    if(argc > 2)
+    {
+        val=atoi(argv[2]);        
+    }
+    std::cout<<"\n VAL = "<<val<<"\n";
     string cfgFile(argv[1]);
     Long64_t maxEvents(-1000);
     
@@ -28,7 +34,8 @@ int  main(int argc,char *argv[])
     analyzer2018.Init(cfgFile);
     
     analyzer2018.SetupAnalysis();
-    analyzer2018.GenAnalyze();
+    if(val==0)   analyzer2018.GenAnalyze();
+    if(val==1)   analyzer2018.Analyze();
     analyzer2018.SaveFile();
     
 }

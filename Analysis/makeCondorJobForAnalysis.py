@@ -4,11 +4,21 @@ import sys
 version='v1'
 """
     Usage
-    ./makeCondorJobForAnalysis.py <InputFileListFname> <destination> <NJOBS> <NEVENTS_PER_JOB> <jobPrefix>
+    ./makeCondorJobForAnalysis.py <EXECUTABLE> <InputFileListFname> <CFG_TEMPLATE> <analysisOption> <destination> <NJOBS> <FILES_PER_JOB> <jobPrefix>"
 
 """
 
+def loadConfigTemplate(fname):
+    f=open(fname,'r')
+    txt=f.readlines()
+    f.close()
+    cfgString="".join(txt)
+    return cfgString    
+
+
 executable='analysisNtupleMaker.exe'
+analysisOption='1'
+
 
 NJOBS=20000
 NEVENTS_PER_JOB = -1
@@ -23,16 +33,22 @@ xrdRedirector="root://cms-xrd-global.cern.ch/"
 
 FileSource ="bmm5FileList.txt"
 destination='/grid_mnt/t3storage3/athachay/bs2mumug/run2studies/CMSSW_10_6_19_patch2/src/BsMMGAnalysis/MergeWithBMMNtuples/RunLumiEventFileMaker/runLumiList/'
-BMMGAnalysis::Analyze()tag=""
+cfgTemplateFname="analysis2018Temp.cfg"
+tag=""
 argC=1
 if len(sys.argv) > 2:
     executable=sys.argv[argC]  
     argC+=1
     FileSource=sys.argv[argC]  
 else:
-    print("Usage\n\t./makeCondorJobForAnalysis.py <EXECUTABLE> <InputFileListFname> <destination> <NJOBS> <FILES_PER_JOB> <jobPrefix>")
+    print("Usage\n\t./makeCondorJobForAnalysis.py <EXECUTABLE> <InputFileListFname> <CFG_TEMPLATE> <analysisOption> <destination> <NJOBS> <FILES_PER_JOB> <jobPrefix>")
     sys.exit(1)
-
+argC+=1
+if len(sys.argv) > argC:
+    cfgTemplateFname=sys.argv[argC]  
+argC+=1
+if len(sys.argv) > argC:
+    analysisOption=sys.argv[argC]  
 argC+=1
 if len(sys.argv) > argC:
     destination=sys.argv[argC]  
@@ -52,6 +68,8 @@ destination=os.path.abspath(destination)
 
 print("Executable ",executable)
 print("Source file list ",FileSource)
+print("CFG template  file ",cfgTemplateFname)
+print("analysis Type ",analysisOption)
 print("destination : ",destination)
 print("NJOBS : ",NJOBS)
 print("FILES_PER_JOB : ",FILES_PER_JOB)
@@ -63,33 +81,17 @@ sourceFileList=Fnames.readlines()
 Fnames.close()
 print("Number avilable files = ",len(sourceFileList))
 
-configurationTxt="\
-#PARAMS_BEG\n\
-OutputFile=analysisRun2_"+version+"_"+tag+"_@@IDX.root\n\
-OutputPrefix=\n\
-MaxEvents=@@MAXEVENTS\n\
-MaxMuMuDr=1.40\n\
-MaxDimuPhotonDr=1.40\n\
-MinDimuMass= 1.0    3.160\n\
-MaxDimuMass= 3.086  5.365 \n\
-MaxMMGMass=6.5\n\
-MinMMGMass=4.1\n\
-DoPhotonMVAID=1\n\
-PhotonIDWeightFile="+pwd+"/Data/mvaParameters/weights/TMVAClassification_MLP_v0.weights.xml\n\
-DoRunLumiMask=0\n\
-RunLumiMask="+pwd+"/Data/certification/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.root\n\
-#PARAMS_END\n\
-#FILELIST_BEG\n\
-@@FNAMES\n\
-#FILELIST_END\n\
-"
+configurationTxt= loadConfigTemplate(cfgTemplateFname)
+configurationTxt= configurationTxt.replace("@@PWD",pwd)
+configurationTxt= configurationTxt.replace("@@VERSION",version)
+configurationTxt= configurationTxt.replace("@@TAG",tag)
 
 condorScriptString="\
 executable = $(filename)\n\
 output = $Fp(filename)run.$(Cluster).stdout\n\
 error = $Fp(filename)run.$(Cluster).stderr\n\
 log = $Fp(filename)run.$(Cluster).log\n\
-+JobFlavour = \"longlunch\"\n\
++JobFlavour = \"espresso\"\n\
 "
 
 condorScript=open('job'+tag+'.sub','w')
@@ -109,7 +111,7 @@ cd $TMPDIR\n\
 cp  "+pwd+"/"+executable+" .\n\
 cp @@DIRNAME/@@CFGFILENAME .\n\
 mv @@RUNSCRIPT @@RUNSCRIPT.busy \n\
-./"+executable+" @@CFGFILENAME\n\
+./"+executable+" @@CFGFILENAME "+analysisOption+"\n\
 if [ $? -eq 0 ]; then \n\
     mv analysisRun2_"+version+"_"+tag+"_@@IDX.root "+destination+"\n\
     if [ $? -eq 0 ] ; then \n\

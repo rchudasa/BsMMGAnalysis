@@ -122,7 +122,7 @@ void BMMGAnalysis::Analyze()
            nDiMuNoVertexCandidates++;
            rslt = doVertexSelection(mumuIdx);
            //std::cout<<"\tDimuon Vertex rslt : "<<rslt<<"\n";
-           if(rslt > 0) continue;
+           //if(rslt > 0) continue;
            
 
            auto dr= getDR( ntupleRawTree.b5_mm_kin_mu1eta[mumuIdx], ntupleRawTree.b5_mm_kin_mu1phi[mumuIdx] ,
@@ -1257,6 +1257,12 @@ void BMMGAnalysis::bookHistograms()
     th1fStore["dimu_photonMultiplicityDrMax0p9"] = new TH1F("dimu_photonMultiplicityDrMax0p9","Multiplicity of photon around #mu#mu , #Delta R < 0.9",15, -0.5,14.5);
     th1fStore["dimu_photonMultiplicityDrMax1p1"] = new TH1F("dimu_photonMultiplicityDrMax1p1","Multiplicity of photon around #mu#mu , #Delta R < 1.1",15, -0.5,14.5);
     th1fStore["dimu_photonMultiplicityDrMax1p3"] = new TH1F("dimu_photonMultiplicityDrMax1p3","Multiplicity of photon around #mu#mu , #Delta R < 1.3",15, -0.5,14.5);
+    
+    th1fStore["dimu_dcaGammaDimuSVDrMax0p5"] = new TH1F("dimu_dcaGammaDimuSVDrMax0p5","DCA(#mu#mu,#gamma) for #mu#mu#gamma Candidate" ,200 , 0.0 , 2.00 );
+    th1fStore["dimu_dcaGammaDimuSVDrMax0p7"] = new TH1F("dimu_dcaGammaDimuSVDrMax0p7","DCA(#mu#mu,#gamma) for #mu#mu#gamma Candidate" ,200 , 0.0 , 2.00 );
+    th1fStore["dimu_dcaGammaDimuSVDrMax0p9"] = new TH1F("dimu_dcaGammaDimuSVDrMax0p9","DCA(#mu#mu,#gamma) for #mu#mu#gamma Candidate" ,200 , 0.0 , 2.00 );
+    th1fStore["dimu_dcaGammaDimuSVDrMax1p1"] = new TH1F("dimu_dcaGammaDimuSVDrMax1p1","DCA(#mu#mu,#gamma) for #mu#mu#gamma Candidate" ,200 , 0.0 , 2.00 );
+    th1fStore["dimu_dcaGammaDimuSVDrMax1p3"] = new TH1F("dimu_dcaGammaDimuSVDrMax1p3","DCA(#mu#mu,#gamma) for #mu#mu#gamma Candidate" ,200 , 0.0 , 2.00 );
  
     // BMMG HISTS
      th1fStore["bmmg_photonPt"]         = new TH1F("bmmg_photonPt","Pt of photon  Candidate", pTBins , pTmin  , pTmax  );
@@ -1293,7 +1299,8 @@ void BMMGAnalysis::bookHistograms()
      th1fStore["bmmg_NTrakCloseSig2"]= new TH1F("bmmg_NTrakCloseSig2","#trk d(trk,sv) < 0.3 & d(trk,sv)/#sigma_{d}(trk,sv) < 2 for #mu#mu#gamma Candidate" ,100 , -0.50 , 99.5  );
      th1fStore["bmmg_NTrakCloseSig3"]= new TH1F("bmmg_NTrakCloseSig3","#trk d(trk,sv) < 0.3 & d(trk,sv)/#sigma_{d}(trk,sv) < 3 for #mu#mu#gamma Candidate" ,100 , -0.50 , 99.5  );
      th1fStore["bmmg_Isolation"]  = new TH1F("bmmg_Isolation","I(#mu#mu) for #mu#mu#gamma Candidate" ,120 , -0.10 , 1.1  );
- 
+     th1fStore["bmmg_dcaGammaDimuSV"] = new TH1F("bmmg_dcaGammaDimuSV","DCA(#mu#mu,#gamma) for #mu#mu#gamma Candidate" ,200 , 0.0 , 2.00 );
+
     // Global Event Hists
     th1fStore["dimuPass_bmmgCandidateMultiplicity"]   = new TH1F("dimuPass_bmmgCandidateMultiplicity","Multiplicity of BMMG Candidates Per dimuon",15, -0.5,14.5);
     th1fStore["dimuPass_Multiplicity"]       = new TH1F("dimuPass_Multiplicity","Multiplicity of dimu Candidates in an event",15, -0.5,14.5);
@@ -1451,11 +1458,31 @@ void BMMGAnalysis::fill_dimuonEnvironmentHists(Int_t mumuIdx)
             
             dr = getDR(eta,phi , ntupleRawTree.bG_scEta[i], ntupleRawTree.bG_scPhi[i]);
             
-            if(dr < 0.5 ) array[0]++;
-            if(dr < 0.7 ) array[1]++;
-            if(dr < 0.9 ) array[2]++;
-            if(dr < 1.1 ) array[3]++;
-            if(dr < 1.3 ) array[4]++;
+            if(dr < 0.5 )  
+            { 
+                array[0]++;
+		        th1fStore["dimu_dcaGammaDimuSVDrMax0p5"]->Fill(getDCAGammaToDimuVertex(mumuIdx,i));
+			}
+            if(dr < 0.7 )  
+            { 
+                array[1]++;
+		        th1fStore["dimu_dcaGammaDimuSVDrMax0p7"]->Fill(getDCAGammaToDimuVertex(mumuIdx,i));
+			}
+            if(dr < 0.9 )  
+            { 
+                array[2]++;
+		        th1fStore["dimu_dcaGammaDimuSVDrMax0p9"]->Fill(getDCAGammaToDimuVertex(mumuIdx,i));
+			}
+            if(dr < 1.1 )  
+            { 
+                array[3]++;
+		        th1fStore["dimu_dcaGammaDimuSVDrMax1p1"]->Fill(getDCAGammaToDimuVertex(mumuIdx,i));
+			}
+            if(dr < 1.3 )  
+            { 
+                array[4]++;
+		        th1fStore["dimu_dcaGammaDimuSVDrMax1p3"]->Fill(getDCAGammaToDimuVertex(mumuIdx,i));
+			}
         }
     
     th1fStore["dimu_photonMultiplicityDrMax0p5"]->Fill(array[0]); 
@@ -1531,6 +1558,7 @@ void BMMGAnalysis::fill_bmmgHists(  TLorentzVector &bmmgLV , Int_t mumuIdx, Int_
 
     th1fStore["bmmg_beta"]           ->Fill(beta);
     th1fStore["bmmg_cosbeta"]        ->Fill(cos_beta);
+    th1fStore["bmmg_dcaGammaDimuSV"]        ->Fill(getDCAGammaToDimuVertex(mumuIdx,phoSCIdx));
 
 }
 
@@ -1690,3 +1718,20 @@ Int_t BMMGAnalysis::getPVMatch(Int_t mumuIdx)
 
 }
 
+Double_t BMMGAnalysis::getDCAGammaToDimuVertex(Int_t mumuIdx,Int_t phoId)
+{
+   
+    Double_t x1[3],x2[3],p[3];
+    
+    x1[0] = ntupleRawTree.b5_mm_kin_vtx_x[mumuIdx];
+    x1[1] = ntupleRawTree.b5_mm_kin_vtx_y[mumuIdx];
+    x1[2] = ntupleRawTree.b5_mm_kin_vtx_z[mumuIdx];
+    
+    x2[0] = 0.0; x2[1] = 0.0 ; x2[2] =0.0;
+
+    p[0] = ntupleRawTree.b5_SV_x[mumuIdx];
+    p[1] = ntupleRawTree.b5_SV_y[mumuIdx];
+    p[2] = ntupleRawTree.b5_SV_z[mumuIdx];
+    
+    return  getDCALineAndPoint( x1 , x2 , p );
+}
