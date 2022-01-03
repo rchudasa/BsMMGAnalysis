@@ -99,7 +99,7 @@ class BMMGAnalysis
     bool isMC;
     bool doGenMatching;
     bool doReducedTree;
-
+    bool doTriggerFiltering;
     // RunLumiMask
     bool doRunLumiMask;
     TString runLumiMaskFname;
@@ -109,6 +109,7 @@ class BMMGAnalysis
     bool initDone;
     std::map<string,string> string_parameters;
     std::map<string,Double_t> double_parameters;
+    std::vector<TTree*> treesToStore;
     Long64_t nentries, maxEvents ;
  
     // Photon MVA vars 
@@ -146,7 +147,7 @@ class BMMGAnalysis
     void SaveFile();
     void SetupAnalysis(bool makeTreeCopy=false);
     void setupOutPuts(bool makeTreeCopy=false);
-    
+    Int_t getMuonMatch(Double_t muEta,Double_t muPhi);
     // Histogram Related Functions
     void bookHistograms();
     Double_t getDCAGammaToDimuVertex(Int_t mumuIdx,Int_t phoId);
@@ -178,6 +179,7 @@ class BMMGAnalysis
     TLorentzVector bmmgLV,diMuLV,photonLV;
     ROOT::Math::XYZVector svDisplacementVecor, bmmg3Momentum ;
 };
+
 BMMGAnalysis::BMMGAnalysis():
 BDTWorkingPoint(0.58)
 {
@@ -201,6 +203,7 @@ void BMMGAnalysis::Init(string cfgFileName)
     maxMMGMass         =6.2;
     minMMGMass         =4.4;
     doPhotonMVA        =false;
+    doTriggerFiltering=false;
     photonIdxMVAWeightFile="";
     hasWeightFiles=false;
     
@@ -281,14 +284,16 @@ void BMMGAnalysis::setupOutPuts(bool makeTreeCopy)
    AllocateMemory();
    if(makeTreeCopy)
    {
-    AllocateBMMGBranches();
     if(doReducedTree)
      {
+     outTree   = new TTree("mergedTree","Reduced Merged tree");
      setupReducedAnalysisTreeBranches();
     }
     else {
     outTree   = treeChain->CloneTree(0);
     }
+    
+    AllocateBMMGBranches();
    }
 
 }
@@ -367,6 +372,12 @@ void BMMGAnalysis::readParameters(string fname)
                  getline(strStream, field);
                  prefix=field;
                  cout<<" setting prefix = "<<prefix<<"\n";
+            }
+            if(field.compare("DoTriggerFiltering")==0){
+                 getline(strStream, field);
+                 tmpI=std::atoi(field.c_str());
+                 doTriggerFiltering= tmpI >0 ? 1 : 0;
+                 cout<<" setting doTriggerFiltering  = "<<doTriggerFiltering<<"\n";
             }
             if(field.compare("DoRunLumiMask")==0){
                  getline(strStream, field);
