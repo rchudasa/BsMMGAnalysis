@@ -14,10 +14,10 @@ int  main(int argc,char *argv[])
     if(argc<2)
     {
         std::cout<<" Usage : \n"
-                 <<"         ./main.exe <configfile.cfg>\n\n";
+                 <<"         ./main.exe <configfile.cfg> <DO_GEN>\n\n";
         exit(1);
     }
-    int val(0);
+    int val(1);
     
     if(argc > 2)
     {
@@ -34,8 +34,16 @@ int  main(int argc,char *argv[])
     analyzer2018.Init(cfgFile);
     
     analyzer2018.SetupAnalysis();
-    if(val==0)   analyzer2018.GenAnalyze();
-    if(val==1)   analyzer2018.Analyze();
+    if(val==0) {
+        std::cout<<" Doing GEN Analysis "<<"\n";
+        analyzer2018.GenAnalyze();
+    
+    }
+    if(val==1) {
+        std::cout<<" Doing Data Analysis "<<"\n";
+        analyzer2018.Analyze();
+    }
+
     analyzer2018.SaveFile();
     
 }
