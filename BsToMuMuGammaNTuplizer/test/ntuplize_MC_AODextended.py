@@ -26,7 +26,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 50
 
 #process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(20) )
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(200) )
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
+#process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 #process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10000) )
 
 process.options = cms.untracked.PSet( numberOfConcurrentLuminosityBlocks = cms.untracked.uint32(1),
@@ -43,8 +43,7 @@ process.options = cms.untracked.PSet( numberOfConcurrentLuminosityBlocks = cms.u
 process.source = cms.Source("PoolSource",
      duplicateCheckMode=cms.untracked.string("noDuplicateCheck"),
     fileNames = cms.untracked.vstring(
-   #'file:/grid_mnt/t3storage3/athachay/bs2mumug/photonID/analysis/CMSSW_10_6_29/src/BsMMGAnalysis/BsToMuMuGammaNTuplizer/test/aodBs3MMGUL18.root'
-   'file:qcd30To50RecoSample.root'
+   '/store/mc/RunIISummer19UL18RECO/QCD_Pt_30to50_TuneCP5_13TeV_pythia8/AODSIM/106X_upgrade2018_realistic_v11_L1v1_ext1-v2/10000/5FE97F9B-083C-9241-A7F0-6CFF243A6956.root'
    )
 )
 process.TFileService = cms.Service("TFileService",
@@ -89,7 +88,7 @@ process.Ntuples = cms.EDAnalyzer("BsToMuMuGammaNTuplizer",
 	dimuon_maxDCAMuMu 	= cms.untracked.double(1e5),	
 	dimuon_maxCosAlphaToBS 	= cms.untracked.double(1e5),	
 	isMC = cms.bool(True),
-    doGenParticles     = cms.bool(True),
+    doGenParticles     = cms.bool(False),
 	doBsToMuMuGamma = cms.bool(False),
     doFlatPt           = cms.bool(True),
     genParticles       = cms.InputTag("genParticles"),
@@ -106,11 +105,11 @@ process.Ntuples = cms.EDAnalyzer("BsToMuMuGammaNTuplizer",
     pfPhotonSrc        = cms.untracked.InputTag("particleFlow"),
     doParticleFlow     = cms.bool(True),
     particlFlowSrc     = cms.InputTag("particleFlow"),
-    doGeneralTracks    = cms.bool(True),
+    doGeneralTracks    = cms.bool(False),
     generalTrackSrc    = cms.InputTag("generalTracks"),
-    doHCALClusters     = cms.bool(True),
+    doHCALClusters     = cms.bool(False),
     hcalClusterSrc     = cms.InputTag("particleFlowClusterHCAL"),
-    doECALClusters     = cms.bool(True),
+    doECALClusters     = cms.bool(False),
     ecalClusterSrc     = cms.InputTag("particleFlowClusterECAL"),
     doHLT              = cms.bool(False),
 	TriggerNames = cms.vstring("HLT_DoubleMu4_3_Bs_v14"),
