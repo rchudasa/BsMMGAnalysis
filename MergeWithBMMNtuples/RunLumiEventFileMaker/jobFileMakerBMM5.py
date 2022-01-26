@@ -1,23 +1,42 @@
 #!/usr/bin/env python3
 import os
+import sys
 
+UsageStr = "\
+\n./jogFileMakerBMM5.py <FileSource> <destination> <filesPerJob> <tag> \
+"
 NJOBS=20000
 NEVENTS_PER_JOB = -1
 ZERO_OFFSET=0
-FILES_PER_JOB=2
-destination='/grid_mnt/t3storage3/athachay/bs2mumug/run2studies/CMSSW_10_6_19_patch2/src/BsMMGAnalysis/MergeWithBMMNtuples/RunLumiEventFileMaker/runLumiList/'
+FILES_PER_JOB=20
+destination='/grid_mnt/t3storage3/athachay/bs2mumug/run2studies/ntuplizer/data/CMSSW_10_6_4_patch1/src/BsMM5Analysis/MergeWithBMMNtuples/RunLumiEventFileMaker/RunLumiFiles_charmoniumD'
 
-FileSource ="bmm5FileList.txt"
+FileSource ="bmmgFileList.txt"
+tag=""
+if len(sys.argv) > 1:
+    FileSource=sys.argv[1]
+else:
+    print(UsageStr)
+    sys.exit(1)
+if len(sys.argv)>2:
+    destination=os.path.abspath(sys.argv[2])
+if len(sys.argv) > 3:
+    FILES_PER_JOB=int(sys.argv[3])
+if len(sys.argv) > 4:
+    NJOBS=int(sys.argv[4])
+if len(sys.argv) > 5:
+    tag=sys.argv[5]
 
 pwd=os.environ['PWD']
 proxy_path=os.environ['X509_USER_PROXY']
 HOME=os.environ['HOME']
-xrdRedirector="root://cms-xrd-global.cern.ch/"
 
 Fnames=open(FileSource,'r')
 sourceFileList=Fnames.readlines()
 Fnames.close()
 
+if not os.path.exists(destination):
+    os.system('mkdir -p '+destination)    
 
 configurationTxt="\
 #FLIST_BEG\n\
@@ -25,7 +44,6 @@ configurationTxt="\
 #FLIST_END\n\
 \n\
 #PARAMS_BEG\n\
-DoSelection=0\n\
 MaxEvents=-1\n\
 OutputPrefix=\n\
 OutputFile=bmm5EvntSelection_@@IDX.root\n\
@@ -42,7 +60,7 @@ error = $Fp(filename)run.$(Cluster).stderr\n\
 log = $Fp(filename)run.$(Cluster).log\n\
 +JobFlavour = \"longlunch\"\n\
 "
-condorScript=open('subCondorBMM5.sub','w')
+condorScript=open('subCondorBMM5'+tag+'.sub','w')
 condorScript.write(condorScriptString)
 
 
@@ -50,44 +68,53 @@ condorScript.write(condorScriptString)
 runScriptTxt="\
 #!/bin/bash\n\
 set -x\n\
-mv @@RUNSCRIPT @@RUNSCRIPT.busy \n\
 source /cvmfs/cms.cern.ch/cmsset_default.sh \n\
 export HOME="+HOME+"\n\
 export X509_USER_PROXY="+proxy_path+"\n\
 cd @@DIRNAME \n\
+mv @@RUNSCRIPT @@RUNSCRIPT.busy \n\
 eval `scramv1 runtime -sh`\n\
+TMPDIR=`mktemp -d`\n\
+cp @@CFGFILENAME $TMPDIR \n\
+cd $TMPDIR\n\
 cp  "+pwd+"/Bmm5Ntuple* .\n\
 cp  "+pwd+"/getEventListFromBMM5.cc .\n\
 root -b -q 'getEventListFromBMM5.cc(\"@@CFGFILENAME\")'\n\
 if [ $? -eq 0 ]; then \n\
     mv *.root "+destination+"\n\
-    mv *.txt "+destination+"\n\
+    mv *.txt  "+destination+"\n\
     mv @@RUNSCRIPT.busy @@RUNSCRIPT.sucess \n\
     echo OK\n\
 else\n\
     mv @@RUNSCRIPT.busy @@RUNSCRIPT \n\
     echo FAIL\n\
 fi\n\
+rm  Bmm5Ntuple* \n\
 "
 
-if not os.path.exists('JobsBMM5'):
-    os.system('mkdir JobsBMM5')
-print("Making ",NJOBS," Jobs ")
+head = "JobsBmm5" + tag
+if not os.path.exists(head):
+    os.system('mkdir '+ head)
+
+n = int( len(sourceFileList)/FILES_PER_JOB ) + 1
+print("Making ",n," Jobs ")
 
 njobs=0
 for ii in range(NJOBS):
     i=ii+ZERO_OFFSET
     
     if len(sourceFileList)<FILES_PER_JOB:
-       print("fname count less than required .. stoping ")
+       print("\nfname count less than required .. stoping ")
        FILES_PER_JOB=len(sourceFileList)
     
     if len(sourceFileList) ==0:
        break 
 
-    dirName= pwd+'/JobsBMM5/Job_'+str(i)
-    
-    print(i," Job Made")
+    dirName= pwd+'/'+head+'/Job_'+str(i)
+    if(ii%25==0):
+        print("\n Job Made : ",end="")
+    print( ii ,end =" ")
+
     if os.path.exists(dirName):
         k=True
     else:
@@ -103,7 +130,9 @@ for ii in range(NJOBS):
     cfgFile.write(tmp)
     cfgFile.close()   
     
-    runScriptName=dirName+'/run'+str(i)+'.sh'
+    runScriptName=dirName+'/'+tag+'_run'+str(i)+'.sh'
+    if os.path.exists(runScriptName+".*"):
+        os.system("rm "+runScriptName+'.*')
     runScript=open(runScriptName,'w')
     tmp=runScriptTxt.replace("@@DIRNAME",dirName)
     tmp=tmp.replace("@@CFGFILENAME",cfgFileName)
@@ -113,6 +142,7 @@ for ii in range(NJOBS):
     os.system('chmod +x '+runScriptName)
     condorScript.write("queue filename matching ("+runScriptName+")\n")
     njobs+=1
+print()
 print(" Number of jobs made : ", njobs)
 print(" Number of files left : ", len(sourceFileList) )
 condorScript.close()

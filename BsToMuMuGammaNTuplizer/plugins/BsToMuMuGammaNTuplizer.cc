@@ -23,9 +23,17 @@
 #include <string>
 #include "TH1.h"
 
+#include "DataFormats/CaloTowers/interface/CaloTowerDetId.h"
+#include "RecoEgamma/EgammaIsolationAlgos/interface/EgammaHcalIsolation.h"
+#include "RecoEgamma/EgammaElectronAlgos/interface/ElectronHcalHelper.h"
+#include "Geometry/CaloTopology/interface/CaloTowerConstituentsMap.h"
+#include "RecoEgamma/EgammaIsolationAlgos/interface/EgammaHadTower.h"
+#include "RecoEgamma/EgammaIsolationAlgos/interface/EGHcalRecHitSelector.h"
+#include "BsMMGAnalysis/BsToMuMuGammaNTuplizer/plugins/pfIsoCalculator.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "DataFormats/DetId/interface/DetId.h"
 #include "DataFormats/EcalDetId/interface/EBDetId.h"
+#include "DataFormats/EcalDetId/interface/EEDetId.h"
 #include "DataFormats/GsfTrackReco/interface/GsfTrack.h"
 #include "DataFormats/Math/interface/deltaR.h"
 #include "DataFormats/MuonReco/interface/MuonSelectors.h"
@@ -68,6 +76,7 @@
 #include "DataFormats/EcalRecHit/interface/EcalRecHit.h"
 #include "DataFormats/EgammaCandidates/interface/Conversion.h"
 #include "DataFormats/EgammaCandidates/interface/GsfElectron.h"
+#include "DataFormats/EgammaCandidates/interface/HIPhotonIsolation.h"
 #include "DataFormats/EgammaCandidates/interface/Photon.h"
 #include "DataFormats/EgammaReco/interface/SuperClusterFwd.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
@@ -89,51 +98,71 @@
 #include "BsMMGAnalysis/BsToMuMuGammaNTuplizer/plugins/BsToMuMuGammaNTuplizer.h"
 #include "BsMMGAnalysis/BsToMuMuGammaNTuplizer/interface/Utils.h"
 #include "DataFormats/CaloTowers/interface/CaloTowerCollection.h"
-#include "DataFormats/CaloTowers/interface/CaloTowerDetId.h"
-#include "RecoEgamma/EgammaIsolationAlgos/interface/EgammaHcalIsolation.h"
-#include "RecoEgamma/EgammaElectronAlgos/interface/ElectronHcalHelper.h"
-#include "Geometry/CaloTopology/interface/CaloTowerConstituentsMap.h"
 #include <TTree.h>
-#include "RecoEgamma/EgammaIsolationAlgos/interface/EgammaHadTower.h"
-#include "RecoEgamma/EgammaIsolationAlgos/interface/EGHcalRecHitSelector.h"
-#include "BsMMGAnalysis/BsToMuMuGammaNTuplizer/plugins/pfIsoCalculator.h"
+
 
 BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig) :
 
   doGenParticles_(iConfig.getParameter<bool>("doGenParticles")),
-  doFlatPt_(iConfig.getParameter<bool>("doFlatPt")),
   doMuons_(iConfig.getParameter<bool>("doMuons")),
   doPhotons_(iConfig.getParameter<bool>("doPhotons")),
   doPFPhotons_(iConfig.getParameter<bool>("doPFPhotons")),
   doSuperClusters_(iConfig.getParameter<bool>("doSuperClusters")),
+  doParticleFlow(iConfig.getParameter<bool>("doParticleFlow")),
+  doGeneralTracks(iConfig.getParameter<bool>("doGeneralTracks")),
+  doECALClusters(iConfig.getParameter<bool>("doECALClusters")),
+  doHCALClusters(iConfig.getParameter<bool>("doECALClusters")),
+  doFlatPt_(iConfig.getParameter<bool>("doFlatPt")),
+  Run2_2018_(iConfig.getParameter<bool>("Run2_2018")),
   doHLT(iConfig.getParameter<bool>("doHLT")),
-  Run2_2018_(iConfig.getParameter<bool>("Run2_2018"))
-
+  energyMatrixSize_(2)
 {
   
-  
+  energyMatrixSizeFull_=(2*energyMatrixSize_+1)*(2*energyMatrixSize_+1);
   Utility= new Utils();
   
   if(doMuons_) muonToken_              = consumes<reco::MuonCollection>(iConfig.getParameter<edm::InputTag>("muons"));
-  //caloPartToken_                 = consumes<std::vector<CaloParticle> >(iConfig.getParameter<edm::InputTag>("caloParticleCollection"));
-  
   if(doPhotons_)    gedPhotonsCollection_       = consumes<std::vector<reco::Photon>>(iConfig.getUntrackedParameter<edm::InputTag>("gedPhotonSrc"));
   
+  if(doPFPhotons_ or doSuperClusters_){
     pfPhotonsCollection_        = consumes<edm::View<reco::PFCandidate>>(iConfig.getUntrackedParameter<edm::InputTag>("pfPhotonSrc"));
+  }  
   
   if(doSuperClusters_){
     MustacheSCBarrelCollection_             = consumes<std::vector<reco::SuperCluster>>(iConfig.getParameter<edm::InputTag>("MustacheSCBarrelSrc"));
     MustacheSCEndcapCollection_             = consumes<std::vector<reco::SuperCluster>>(iConfig.getParameter<edm::InputTag>("MustacheSCEndcapSrc"));
     gsfElectronToken_                       = consumes<reco::GsfElectronCollection>(iConfig.getParameter<edm::InputTag>("GsfElectronSrc"));
     hbheRechitToken_               = consumes<edm::SortedCollection<HBHERecHit,edm::StrictWeakOrdering<HBHERecHit>>>(iConfig.getParameter<edm::InputTag>("hbheRechitCollection"));
+  }
+  if(doSuperClusters_ or doECALClusters) {
     ebRechitToken_                 = consumes<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit>>>(iConfig.getParameter<edm::InputTag>("ebRechitCollection"));
     eeRechitToken_                 = consumes<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit>>>(iConfig.getParameter<edm::InputTag>("eeRechitCollection"));
   }
-  
+  if(doParticleFlow)
+  {
+     pfCandidateCollection_        = consumes<reco::PFCandidateCollection>(iConfig.getParameter<edm::InputTag>("particlFlowSrc"));
+  }
+  if(doHCALClusters)
+  {
+     //std::cout<<" doHCALClusters : is true \n";
+     hcalClusterCollection_        = consumes<reco::PFClusterCollection>(iConfig.getParameter<edm::InputTag>("hcalClusterSrc"));
+  }
+  if(doECALClusters)
+  {
+     ecalClusterCollection_        = consumes<reco::PFClusterCollection>(iConfig.getParameter<edm::InputTag>("ecalClusterSrc"));
+  }
+  if(doGeneralTracks)
+  {
+     generalTracksCollection_        = consumes<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("generalTrackSrc"));
+  }
+
+
   if(doHLT) {
     trigTable    =iConfig.getParameter<std::vector<std::string>>("TriggerNames");
     triggerBits_ =consumes<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("HLTResult"));
   }
+
+
   
   beamSpotToken_  	   =consumes<reco::BeamSpot>(iConfig.getParameter<edm::InputTag>("beamSpot"));
   primaryVtxToken_       =consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"));
@@ -160,6 +189,7 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
   nBits_                         = iConfig.getParameter<int>("nBits"); 
   doCompression_                 = iConfig.getParameter<bool>("doCompression");  
   // initialize output TTree
+  
   edm::Service<TFileService> fs;
   theTree = fs->make<TTree>("EventTree", "Event data");
   
@@ -254,7 +284,7 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
     theTree->Branch("gen_BsPhoton_energy"	,&gen_BsPhoton_energy_);
     theTree->Branch("gen_BsPhoton_eta"		,&gen_BsPhoton_eta_);
     theTree->Branch("gen_BsPhoton_phi"		,&gen_BsPhoton_phi_);
- 
+    
     if(doFlatPt_){
     theTree->Branch("nMC",          &nMC_);
     theTree->Branch("mcPID",        &mcPID_);
@@ -269,6 +299,7 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
     theTree->Branch("mcEt",         &mcEt_);
     theTree->Branch("mcMass",       &mcMass_);
    }
+ 
   }
 
   if(doMuons_){
@@ -593,7 +624,27 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
     theTree->Branch("scPFNeuIso4",             &scPFNeuIso4_);
     theTree->Branch("scPFNeuIso5",             &scPFNeuIso5_);
 
+
+
+   
   }
+  if(doParticleFlow)
+  {
+     addParticleFlowBranches();
+  }
+  if(doHCALClusters)
+  {
+     addHCALCluserBranches();
+  }
+  if(doECALClusters)
+  {
+     addECALCluserBranches();
+  }
+  if(doGeneralTracks)
+  {
+     addGeneralTracksBranches();
+  }
+
 }
 
 //BsToMuMuGammaNTuplizer::~BsToMuMuGammaNTuplizer(){
@@ -680,8 +731,7 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
     gen_BsPhoton_energy_.clear() ;
     gen_BsPhoton_eta_.clear() ;
     gen_BsPhoton_phi_.clear();
-  
-   if(doFlatPt_){
+    if(doFlatPt_){
     nMC_ = 0;
     mcPID_                .clear();
     mcStatus_             .clear();
@@ -695,7 +745,7 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
     mcEt_                 .clear();
     mcMass_               .clear();
      }
-   }
+}
 
   if(doMuons_){
     nMuM_ = 0;
@@ -771,7 +821,9 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
     mum_PFIsolationR04_sumNeutralHadronEtHighThreshold_.clear();
     mum_PFIsolationR04_sumPhotonEtHighThreshold_.clear();
     mum_PFIsolationR04_sumPUPt_.clear();
-    
+  
+  
+  
     mupHighPurity_.clear();
     mupPt_.clear();
     mupEta_.clear();
@@ -958,7 +1010,7 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
     scRawEt_      .clear();   
     scMinDrWithGsfElectornSC_.clear();
     scFoundGsfMatch_.clear();
-
+    
     scE5x5_.clear();
     scE2x2Ratio_.clear();
     scE3x3Ratio_.clear();
@@ -1021,6 +1073,7 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
     scPFNeuIso4_            .clear();
     scPFNeuIso5_            .clear();
 
+
   }
 
   run_    = iEvent.id().run();
@@ -1030,8 +1083,6 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
 
   // Get magnetic field
     
-  edm::ESHandle<MagneticField> bFieldHandle;
-  iSetup.get<IdealMagneticFieldRecord>().get(bFieldHandle);      
   //  Get BeamSpot
   edm::Handle<reco::BeamSpot> beamSpotH;
   iEvent.getByToken(beamSpotToken_, beamSpotH);
@@ -1065,7 +1116,7 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
   beamspot_beamWidthY_		= beamSpot.BeamWidthY();  ;
   beamspot_beamWidthX_error_	= beamSpot.BeamWidthXError();  ;
   beamspot_beamWidthY_error_	= beamSpot.BeamWidthXError();  ;
-
+ 
   reco::Vertex pv(math::XYZPoint(0, 0, -999), math::Error<3>::type()); 
   for(auto&  aVertex : *primaryVertexCollection){
 
@@ -1092,20 +1143,27 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
     primaryVertex_chi2_ .push_back(   aVertex.chi2()  );
     primaryVertex_normalizedChi2_ .push_back(   aVertex.normalizedChi2()  );
 
+
     pv = aVertex;
     nPrimaryVertex_++;
   } // loop over primary vertex collection
 
   // MC truth
-  if (isMC) {
+  if (isMC and doGenParticles_) {
     fillGenParticles(iEvent);
   }
 
-  if (doHLT) 		fillHLT(iEvent);
+  if (doHLT) 		    fillHLT(iEvent);
   if (doMuons_)     	fillMuons(iEvent, iSetup);
   if (doPhotons_)    	fillPhotons(iEvent, iSetup);
   if (doPFPhotons_) 	fillPFPhotons(iEvent, iSetup);
-  if (doSuperClusters_) fillSC(iEvent, iSetup, pv);
+  if (doSuperClusters_) fillSC(iEvent, iSetup,pv);
+  if (doHCALClusters) {
+        fillHCALClusterCollection(iEvent,iSetup);
+  }
+  if (doECALClusters)  fillECALClusterCollection(iEvent,iSetup);
+  if (doGeneralTracks)  fillGeneralTrackCollectionBranches(iEvent,iSetup);
+  if (doParticleFlow)   fillPFCandiateCollection(iEvent,iSetup);
   theTree->Fill();
   
 }
@@ -1117,7 +1175,9 @@ void BsToMuMuGammaNTuplizer::fillGenParticles(const edm::Event& iEvent)
   
   edm::Handle<reco::GenParticleCollection> genParticleCollection;
   iEvent.getByToken(genParticlesCollection_, genParticleCollection);
- 
+  
+  int phoMul(-1),muMMul(-1),muPMul(-1);
+  
   if(doFlatPt_){
     for (auto p = genParticleCollection->begin(); p != genParticleCollection->end(); ++p) {
       mcPID_   .push_back(p->pdgId());
@@ -1133,10 +1193,7 @@ void BsToMuMuGammaNTuplizer::fillGenParticles(const edm::Event& iEvent)
       mcMass_  .push_back(p->mass());
       nMC_++;      
     } 
-  } //if flat pT
-  
- /* int phoMul(-1),muMMul(-1),muPMul(-1);
-  
+  }
   
   for(auto& aBsMeson : *genParticleCollection){
     
@@ -1185,7 +1242,7 @@ void BsToMuMuGammaNTuplizer::fillGenParticles(const edm::Event& iEvent)
     gen_nBs_++;
     
   } // genparticle collection
-  */
+  
 } // fill gen particles
 
 
@@ -1641,9 +1698,13 @@ void BsToMuMuGammaNTuplizer::fillPhotons(const edm::Event& e, const edm::EventSe
  
   edm::Handle<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit>>> recHitsEE;
   e.getByToken(eeRechitToken_, recHitsEE);
-
+  
   EcalClusterLazyTools       lazyTool    (e, es, ebRechitToken_, eeRechitToken_);
   noZS::EcalClusterLazyTools lazyToolnoZS(e, es, ebRechitToken_, eeRechitToken_);
+
+  //EcalClusterLazyTools::ESGetTokens ecalClusterToolsESGetTokens_(consumesCollector());
+  //EcalClusterLazyTools       lazyTool    (e,ecalClusterToolsESGetTokens_.get(es), ebRechitToken_, eeRechitToken_);
+  //noZS::EcalClusterLazyTools lazyToolnoZS(e,ecalClusterToolsESGetTokens_.get(es), ebRechitToken_, eeRechitToken_);
 
   // loop over photons
   for (auto pho = gedPhotonsHandle->begin(); pho != gedPhotonsHandle->end(); ++pho) {
@@ -1713,7 +1774,7 @@ void BsToMuMuGammaNTuplizer::fillPhotons(const edm::Event& e, const edm::EventSe
       phoSeedEnergy_.push_back(-99.);
       
     }
-    
+ 
     nPho_++;
   } // photons loop
 }
@@ -1741,14 +1802,16 @@ void BsToMuMuGammaNTuplizer::fillPFPhotons(const edm::Event& e, const edm::Event
 void BsToMuMuGammaNTuplizer::fillSC(edm::Event const& e, const edm::EventSetup& es, reco::Vertex& pv) {
   edm::Handle<reco::SuperClusterCollection> barrelSCHandle;
   e.getByToken(MustacheSCBarrelCollection_, barrelSCHandle);
-  
+
   edm::Handle<reco::SuperClusterCollection> endcapSCHandle;
   e.getByToken(MustacheSCEndcapCollection_, endcapSCHandle);
 
   edm::Handle<reco::GsfElectronCollection> gsfElectronHandle;
   e.getByToken(gsfElectronToken_, gsfElectronHandle);
 
+
   edm::Handle<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit>>> recHitsEB;
+  //edm::Handle<EcalRecHitCollection> recHitsEB;
   e.getByToken(ebRechitToken_, recHitsEB);
   if (!recHitsEB.isValid()) {
     std::cerr << "Analyze --> recHitsEB not found" << std::endl; 
@@ -1756,12 +1819,13 @@ void BsToMuMuGammaNTuplizer::fillSC(edm::Event const& e, const edm::EventSetup& 
   }
 
   edm::Handle<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit>>> recHitsEE;
+  //edm::Handle<EcalRecHitCollection> recHitsEE;
   e.getByToken(eeRechitToken_, recHitsEE);
   if (!recHitsEE.isValid()) {
     std::cerr << "Analyze --> recHitsEE not found" << std::endl; 
     return;
-  }
-  
+  } 
+
   edm::Handle<edm::SortedCollection<HBHERecHit,edm::StrictWeakOrdering<HBHERecHit>>> recHitsHBHE;
   e.getByToken(hbheRechitToken_, recHitsHBHE);
   if (!recHitsHBHE.isValid()) {
@@ -1774,6 +1838,7 @@ void BsToMuMuGammaNTuplizer::fillSC(edm::Event const& e, const edm::EventSetup& 
   edm::ESHandle<CaloTowerConstituentsMap> towerMap_;
   es.get<CaloGeometryRecord>().get(towerMap_);
  
+
   locCov_.clear();
   full5x5_locCov_.clear();
   // for(const auto& iSuperCluster : *(superClusterEB.product())){  
@@ -1782,11 +1847,11 @@ void BsToMuMuGammaNTuplizer::fillSC(edm::Event const& e, const edm::EventSetup& 
     for (auto const& sc : scs) {
       //if(abs(sc.eta())>2.4)continue;
       //
-      
+	
       edm::ESHandle<CaloTopology> caloTopology;
       es.get<CaloTopologyRecord>().get(caloTopology);
       const CaloTopology* topology = caloTopology.product();
-      
+	
       scE_.push_back(sc.correctedEnergy());
       scEt_.push_back(sc.correctedEnergy()/cosh(sc.eta()));
       scRawE_.push_back(sc.rawEnergy());
@@ -1803,69 +1868,64 @@ void BsToMuMuGammaNTuplizer::fillSC(edm::Event const& e, const edm::EventSetup& 
       showerShapes_.clear();
       if(abs(sc.eta()) <= 1.442)showerShapes_ = getShowerShapes(&caloBC, &(*(recHitsEB.product())), topology);  
       if(abs(sc.eta()) >= 1.566)showerShapes_ = getShowerShapes(&caloBC, &(*(recHitsEE.product())), topology);  
-      scE5x5_.push_back(reduceFloat(showerShapes_[0],nBits_));
-      scE2x2Ratio_.push_back(reduceFloat(showerShapes_[1],nBits_));
-      scE3x3Ratio_.push_back(reduceFloat(showerShapes_[2],nBits_));
-      scEMaxRatio_.push_back(reduceFloat(showerShapes_[3],nBits_));
-      scE2ndRatio_.push_back(reduceFloat(showerShapes_[4],nBits_));
-      scETopRatio_.push_back(reduceFloat(showerShapes_[5],nBits_));
-      scERightRatio_.push_back(reduceFloat(showerShapes_[6],nBits_));
-      scEBottomRatio_.push_back(reduceFloat(showerShapes_[7],nBits_));
-      scELeftRatio_.push_back(reduceFloat(showerShapes_[8],nBits_));
-      scE2x5MaxRatio_.push_back(reduceFloat(showerShapes_[9],nBits_));
-      scE2x5TopRatio_.push_back(reduceFloat(showerShapes_[10],nBits_));
-      scE2x5RightRatio_.push_back(reduceFloat(showerShapes_[11],nBits_));
-      scE2x5BottomRatio_.push_back(reduceFloat(showerShapes_[12],nBits_));
-      scE2x5LeftRatio_.push_back(reduceFloat(showerShapes_[13],nBits_));
-      scSwissCross_.push_back(reduceFloat(showerShapes_[14],nBits_));
-      scR9_.push_back(reduceFloat(showerShapes_[2]*showerShapes_[0]/sc.rawEnergy(),nBits_));
-      scSigmaIetaIeta_.push_back(reduceFloat(showerShapes_[16],nBits_)); 
-      scSigmaIetaIphi_.push_back(reduceFloat(showerShapes_[17],nBits_)); 
-      scSigmaIphiIphi_.push_back(reduceFloat(showerShapes_[18],nBits_)); 
-      scFull5x5_e5x5_.push_back(reduceFloat(showerShapes_[19],nBits_));
-      scFull5x5_e2x2Ratio_.push_back(reduceFloat(showerShapes_[20],nBits_));
-      scFull5x5_e3x3Ratio_.push_back(reduceFloat(showerShapes_[21],nBits_));
-      scFull5x5_eMaxRatio_.push_back(reduceFloat(showerShapes_[22],nBits_));
-      scFull5x5_e2ndRatio_.push_back(reduceFloat(showerShapes_[23],nBits_));
-      scFull5x5_eTopRatio_.push_back(reduceFloat(showerShapes_[24],nBits_));
-      scFull5x5_eRightRatio_.push_back(reduceFloat(showerShapes_[25],nBits_));
-      scFull5x5_eBottomRatio_.push_back(reduceFloat(showerShapes_[26],nBits_));
-      scFull5x5_eLeftRatio_.push_back(reduceFloat(showerShapes_[27],nBits_));
-      scFull5x5_e2x5MaxRatio_.push_back(reduceFloat(showerShapes_[28],nBits_));
-      scFull5x5_e2x5TopRatio_.push_back(reduceFloat(showerShapes_[29],nBits_));
-      scFull5x5_e2x5RightRatio_.push_back(reduceFloat(showerShapes_[30],nBits_));
-      scFull5x5_e2x5BottomRatio_.push_back(reduceFloat(showerShapes_[31],nBits_));
-      scFull5x5_e2x5LeftRatio_.push_back(reduceFloat(showerShapes_[32],nBits_));
-      scFull5x5_swissCross_.push_back(reduceFloat(showerShapes_[33],nBits_));
-      scFull5x5_r9_.push_back(reduceFloat(showerShapes_[21]*showerShapes_[19]/sc.rawEnergy(),nBits_));
-      scFull5x5_sigmaIetaIeta_.push_back(reduceFloat(showerShapes_[35],nBits_)); 
-      scFull5x5_sigmaIetaIphi_.push_back(reduceFloat(showerShapes_[36],nBits_)); 
-      scFull5x5_sigmaIphiIphi_.push_back(reduceFloat(showerShapes_[37],nBits_)); 
-	
+       scE5x5_.push_back(reduceFloat(showerShapes_[0],nBits_));
+       scE2x2Ratio_.push_back(reduceFloat(showerShapes_[1],nBits_));
+       scE3x3Ratio_.push_back(reduceFloat(showerShapes_[2],nBits_));
+       scEMaxRatio_.push_back(reduceFloat(showerShapes_[3],nBits_));
+       scE2ndRatio_.push_back(reduceFloat(showerShapes_[4],nBits_));
+       scETopRatio_.push_back(reduceFloat(showerShapes_[5],nBits_));
+       scERightRatio_.push_back(reduceFloat(showerShapes_[6],nBits_));
+       scEBottomRatio_.push_back(reduceFloat(showerShapes_[7],nBits_));
+       scELeftRatio_.push_back(reduceFloat(showerShapes_[8],nBits_));
+       scE2x5MaxRatio_.push_back(reduceFloat(showerShapes_[9],nBits_));
+       scE2x5TopRatio_.push_back(reduceFloat(showerShapes_[10],nBits_));
+       scE2x5RightRatio_.push_back(reduceFloat(showerShapes_[11],nBits_));
+       scE2x5BottomRatio_.push_back(reduceFloat(showerShapes_[12],nBits_));
+       scE2x5LeftRatio_.push_back(reduceFloat(showerShapes_[13],nBits_));
+       scSwissCross_.push_back(reduceFloat(showerShapes_[14],nBits_));
+       scR9_.push_back(reduceFloat(showerShapes_[2]*showerShapes_[0]/sc.rawEnergy(),nBits_));
+       scSigmaIetaIeta_.push_back(reduceFloat(showerShapes_[16],nBits_)); 
+       scSigmaIetaIphi_.push_back(reduceFloat(showerShapes_[17],nBits_)); 
+       scSigmaIphiIphi_.push_back(reduceFloat(showerShapes_[18],nBits_)); 
+       scFull5x5_e5x5_.push_back(reduceFloat(showerShapes_[19],nBits_));
+       scFull5x5_e2x2Ratio_.push_back(reduceFloat(showerShapes_[20],nBits_));
+       scFull5x5_e3x3Ratio_.push_back(reduceFloat(showerShapes_[21],nBits_));
+       scFull5x5_eMaxRatio_.push_back(reduceFloat(showerShapes_[22],nBits_));
+       scFull5x5_e2ndRatio_.push_back(reduceFloat(showerShapes_[23],nBits_));
+       scFull5x5_eTopRatio_.push_back(reduceFloat(showerShapes_[24],nBits_));
+       scFull5x5_eRightRatio_.push_back(reduceFloat(showerShapes_[25],nBits_));
+       scFull5x5_eBottomRatio_.push_back(reduceFloat(showerShapes_[26],nBits_));
+       scFull5x5_eLeftRatio_.push_back(reduceFloat(showerShapes_[27],nBits_));
+       scFull5x5_e2x5MaxRatio_.push_back(reduceFloat(showerShapes_[28],nBits_));
+       scFull5x5_e2x5TopRatio_.push_back(reduceFloat(showerShapes_[29],nBits_));
+       scFull5x5_e2x5RightRatio_.push_back(reduceFloat(showerShapes_[30],nBits_));
+       scFull5x5_e2x5BottomRatio_.push_back(reduceFloat(showerShapes_[31],nBits_));
+       scFull5x5_e2x5LeftRatio_.push_back(reduceFloat(showerShapes_[32],nBits_));
+       scFull5x5_swissCross_.push_back(reduceFloat(showerShapes_[33],nBits_));
+       scFull5x5_r9_.push_back(reduceFloat(showerShapes_[21]*showerShapes_[19]/sc.rawEnergy(),nBits_));
+       scFull5x5_sigmaIetaIeta_.push_back(reduceFloat(showerShapes_[35],nBits_)); 
+       scFull5x5_sigmaIetaIphi_.push_back(reduceFloat(showerShapes_[36],nBits_)); 
+       scFull5x5_sigmaIphiIphi_.push_back(reduceFloat(showerShapes_[37],nBits_)); 
+
+
       ++nSC_;
       double dRmin=1e9;
       bool foundGsfEleMatch=false;
-      //std::cout << e.id().event() << " electron size:" << gsfElectronHandle->size() << std::endl;
       for(auto const& ele : *gsfElectronHandle)
 	{
-	  //std::cout << " electron size:" << ele.size() << std::endl;
 	  auto dr=deltaR(*(ele.superCluster()),sc);
 	  dRmin = dr<dRmin ? dr : dRmin;
-	  // std::cout << e.id().event() << "  Ele Eta:" << ele.superCluster()->eta() << "  SC eta:" << sc.eta() << " dr:" << dr << std::endl;
-	  
-	  //if( &( *(ele.superCluster()) ) == &sc) 
-	  /// {
-	  //  foundGsfEleMatch=true;
-	  //  break;
-	  // }
+//	  if( &( *(ele.superCluster()) ) == &sc) 
+//	    {
+//	      foundGsfEleMatch=true;
+//	      break;
+//	    }
 	}
-      //  std::cout << e.id().event() << "  ** drmin:" << dRmin << std::endl;
-      // if(gsfElectronHandle->size()<1)
-      if(dRmin<0.01)
+    if(dRmin<0.01)
 	{
 	  foundGsfEleMatch=true;
 	}
-      
+
       scMinDrWithGsfElectornSC_.push_back(dRmin);
       scFoundGsfMatch_.push_back(foundGsfEleMatch);
       
@@ -1917,6 +1977,7 @@ void BsToMuMuGammaNTuplizer::fillSC(edm::Event const& e, const edm::EventSetup& 
         scPFNeuIso3_          .push_back(pfIso.getPfIso(sc, reco::PFCandidate::h0, 0.3, 0.0, 0.));
         scPFNeuIso4_          .push_back(pfIso.getPfIso(sc, reco::PFCandidate::h0, 0.4, 0.0, 0.));
         scPFNeuIso5_          .push_back(pfIso.getPfIso(sc, reco::PFCandidate::h0, 0.5, 0.0, 0.));
+    	
     } // supercluster loop
   }
 }
@@ -2090,11 +2151,290 @@ std::vector<float> BsToMuMuGammaNTuplizer::getShowerShapes(reco::CaloCluster* ca
   return shapes; 
 }
 
+void BsToMuMuGammaNTuplizer::addGeneralTracksBranches()
+{
+    storageMapInt["nGeneralTracks"]  = 0 ;
+    theTree->Branch("nGeneralTracks",   &storageMapInt["nGeneralTracks"]);
+    storageMapFloatArray["generalTracks_outer_x"] = new Float_t[N_TRK_MAX];
+    theTree->Branch("generalTracks_outer_x",   storageMapFloatArray["generalTracks_outer_x"],"generalTracks_outer_x[nGeneralTracks]/F");
+    storageMapFloatArray["generalTracks_outer_y"] = new Float_t[N_TRK_MAX];
+    theTree->Branch("generalTracks_outer_y",   storageMapFloatArray["generalTracks_outer_y"],"generalTracks_outer_y[nGeneralTracks]/F");
+    storageMapFloatArray["generalTracks_outer_z"] = new Float_t[N_TRK_MAX];
+    theTree->Branch("generalTracks_outer_z",   storageMapFloatArray["generalTracks_outer_z"],"generalTracks_outer_z[nGeneralTracks]/F");
+    storageMapFloatArray["generalTracks_outer_px"] = new Float_t[N_TRK_MAX];
+    theTree->Branch("generalTracks_outer_px",   storageMapFloatArray["generalTracks_outer_px"],"generalTracks_outer_px[nGeneralTracks]/F");
+    storageMapFloatArray["generalTracks_outer_py"] = new Float_t[N_TRK_MAX];
+    theTree->Branch("generalTracks_outer_py",   storageMapFloatArray["generalTracks_outer_py"],"generalTracks_outer_py[nGeneralTracks]/F");
+    storageMapFloatArray["generalTracks_outer_pz"] = new Float_t[N_TRK_MAX];
+    theTree->Branch("generalTracks_outer_pz",   storageMapFloatArray["generalTracks_outer_pz"],"generalTracks_outer_pz[nGeneralTracks]/F");
+    storageMapFloatArray["generalTracks_charge"] = new Float_t[N_TRK_MAX];
+    theTree->Branch("generalTracks_charge",   storageMapFloatArray["generalTracks_charge"],"generalTracks_charge[nGeneralTracks]/F");
+}
+
+void BsToMuMuGammaNTuplizer::fillGeneralTrackCollectionBranches( const edm::Event& iEvent, const edm::EventSetup& iSetup)
+{
+  // Fills tree branches with photons.
+  edm::Handle<reco::TrackCollection>  generalTracksHandle;
+  iEvent.getByToken(generalTracksCollection_, generalTracksHandle);
+  //std::cout<<"Size of trackColection = "<<generalTracksHandle->size()<<"\n";
+  Int_t i=0;
+  for (auto track = generalTracksHandle->begin();track != generalTracksHandle->end(); track++) {
+    storageMapFloatArray["generalTracks_outer_x"][i]  =   track->outerX();
+    storageMapFloatArray["generalTracks_outer_y"][i]  =   track->outerY();
+    storageMapFloatArray["generalTracks_outer_z"][i]  =   track->outerZ();
+    storageMapFloatArray["generalTracks_outer_px"][i] =   track->outerPx();
+    storageMapFloatArray["generalTracks_outer_py"][i] =   track->outerPy();
+    storageMapFloatArray["generalTracks_outer_pz"][i] =   track->outerPz();
+    storageMapFloatArray["generalTracks_charge"][i]   =   track->charge();
+    i++;
+    if(i >= N_TRK_MAX) break;
+  }
+    
+    storageMapInt["nGeneralTracks"]=i;
+}
+
+void BsToMuMuGammaNTuplizer::addParticleFlowBranches()
+{
+      storageMapInt["nPFCandidates"]=0;
+      theTree->Branch("nPFCandidates",   &storageMapInt["nPFCandidates"]);
+      storageMapFloatArray["pf_ecalEnergy"] = new Float_t[N_PF_MAX];
+      theTree->Branch("pf_ecalEnergy",   storageMapFloatArray["pf_ecalEnergy"],"pf_ecalEnergy[nPFCandidates]/F");
+      storageMapFloatArray["pf_ecalRawEnergy"] = new Float_t[N_PF_MAX];
+      theTree->Branch("pf_ecalRawEnergy",   storageMapFloatArray["pf_ecalRawEnergy"],"pf_ecalRawEnergy[nPFCandidates]/F");
+      storageMapFloatArray["pf_hcalEnergy"] = new Float_t[N_PF_MAX];
+      theTree->Branch("pf_hcalEnergy",   storageMapFloatArray["pf_hcalEnergy"],"pf_hcalEnergy[nPFCandidates]/F");
+      storageMapFloatArray["pf_hcalRawEnergy"] = new Float_t[N_PF_MAX];
+      theTree->Branch("pf_hcalRawEnergy",   storageMapFloatArray["pf_hcalRawEnergy"],"pf_hcalRawEnergy[nPFCandidates]/F");
+      storageMapFloatArray["pf_HoE"] = new Float_t[N_PF_MAX];
+      theTree->Branch("pf_HoE",   storageMapFloatArray["pf_HoE"],"pf_HoE[nPFCandidates]/F");
+      storageMapFloatArray["pf_mvaIso"] = new Float_t[N_PF_MAX];
+      theTree->Branch("pf_mvaIso",   storageMapFloatArray["pf_mvaIso"],"pf_mvaIso[nPFCandidates]/F");
+      storageMapFloatArray["pf_mvaPiMu"] = new Float_t[N_PF_MAX];
+     // theTree->Branch("pf_mvaPiMu",   storageMapFloatArray["pf_mvaPiMu"],"pf_mvaPiMu[nPFCandidates]/F");
+     // storageMapFloatArray["pf_mvaEMu"] = new Float_t[N_PF_MAX];
+      // theTree->Branch("pf_mvaEMu",   storageMapFloatArray["pf_mvaEMu"],"pf_mvaEMu[nPFCandidates]/F");
+      // storageMapFloatArray["pf_mvaEPi"] = new Float_t[N_PF_MAX];
+      // theTree->Branch("pf_mvaEPi",   storageMapFloatArray["pf_mvaEPi"],"pf_mvaEPi[nPFCandidates]/F");
+      // storageMapFloatArray["pf_mvaGamma"] = new Float_t[N_PF_MAX];
+      // theTree->Branch("pf_mvaGamma",   storageMapFloatArray["pf_mvaGamma"],"pf_mvaGamma[nPFCandidates]/F");
+      // storageMapFloatArray["pf_mvaNeuH"] = new Float_t[N_PF_MAX];
+      // theTree->Branch("pf_mvaNeuH",   storageMapFloatArray["pf_mvaNeuH"],"pf_mvaNeuH[nPFCandidates]/F");
+      // storageMapFloatArray["pf_mvaNeuHGamma"] = new Float_t[N_PF_MAX];
+      // theTree->Branch("pf_mvaNeuHGamma",   storageMapFloatArray["pf_mvaNeuHGamma"],"pf_mvaNeuHGamma[nPFCandidates]/F");
+     // storageMapFloatArray["pf_dnnGamma"] = new Float_t[N_PF_MAX];
+     // theTree->Branch("pf_dnnGamma",   storageMapFloatArray["pf_dnnGamma"],"pf_dnnGamma[nPFCandidates]/F");
+     // storageMapFloatArray["pf_dnnEeleBkgGamma"] = new Float_t[N_PF_MAX];
+     // theTree->Branch("pf_dnnEeleBkgGamma",   storageMapFloatArray["pf_dnnEeleBkgGamma"],"pf_dnnEeleBkgGamma[nPFCandidates]/F");
+     // storageMapFloatArray["pf_dnnEeleSigIso"] = new Float_t[N_PF_MAX];
+     // theTree->Branch("pf_dnnEeleSigIso",   storageMapFloatArray["pf_dnnEeleSigIso"],"pf_dnnEeleSigIso[nPFCandidates]/F");
+      storageMapFloatArray["pf_vertexX"] = new Float_t[N_PF_MAX];
+      theTree->Branch("pf_vertexX",   storageMapFloatArray["pf_vertexX"],"pf_vertexX[nPFCandidates]/F");
+      storageMapFloatArray["pf_vertexY"] = new Float_t[N_PF_MAX];
+      theTree->Branch("pf_vertexY",   storageMapFloatArray["pf_vertexY"],"pf_vertexY[nPFCandidates]/F");
+      storageMapFloatArray["pf_vertexZ"] = new Float_t[N_PF_MAX];
+      theTree->Branch("pf_vertexZ",   storageMapFloatArray["pf_vertexZ"],"pf_vertexZ[nPFCandidates]/F");
+      storageMapFloatArray["pf_ecalEntryEta"] = new Float_t[N_PF_MAX];
+      theTree->Branch("pf_ecalEntryEta",   storageMapFloatArray["pf_ecalEntryEta"],"pf_ecalEntryEta[nPFCandidates]/F");
+      storageMapFloatArray["pf_ecalEntryPhi"] = new Float_t[N_PF_MAX];
+      theTree->Branch("pf_ecalEntryPhi",   storageMapFloatArray["pf_ecalEntryPhi"],"pf_ecalEntryPhi[nPFCandidates]/F");
+      storageMapFloatArray["pf_ecalEntryX"] = new Float_t[N_PF_MAX];
+      theTree->Branch("pf_ecalEntryX",   storageMapFloatArray["pf_ecalEntryX"],"pf_ecalEntryX[nPFCandidates]/F");
+      storageMapFloatArray["pf_ecalEntryY"] = new Float_t[N_PF_MAX];
+      theTree->Branch("pf_ecalEntryY",   storageMapFloatArray["pf_ecalEntryY"],"pf_ecalEntryY[nPFCandidates]/F");
+      storageMapFloatArray["pf_ecalEntryZ"] = new Float_t[N_PF_MAX];
+      theTree->Branch("pf_ecalEntryZ",   storageMapFloatArray["pf_ecalEntryZ"],"pf_ecalEntryZ[nPFCandidates]/F");
+      storageMapFloatArray["pf_eta"] = new Float_t[N_PF_MAX];
+      theTree->Branch("pf_eta",   storageMapFloatArray["pf_eta"],"pf_eta[nPFCandidates]/F");
+      storageMapFloatArray["pf_phi"] = new Float_t[N_PF_MAX];
+      theTree->Branch("pf_phi",   storageMapFloatArray["pf_phi"],"pf_phi[nPFCandidates]/F");
+      storageMapFloatArray["pf_pt"] = new Float_t[N_PF_MAX];
+      theTree->Branch("pf_pt",   storageMapFloatArray["pf_pt"],"pf_pt[nPFCandidates]/F");
+      storageMapFloatArray["pf_id"] = new Float_t[N_PF_MAX];
+      theTree->Branch("pf_id",   storageMapFloatArray["pf_id"],"pf_id[nPFCandidates]/F");
+      storageMapFloatArray["pf_mass"] = new Float_t[N_PF_MAX];
+      theTree->Branch("pf_mass",   storageMapFloatArray["pf_mass"],"pf_mass[nPFCandidates]/F");
+}
+
+void BsToMuMuGammaNTuplizer::fillPFCandiateCollection( const edm::Event& iEvent, const edm::EventSetup& iSetup)
+{  
+  edm::Handle<reco::PFCandidateCollection>  pfCandidateHandle;
+  iEvent.getByToken(pfCandidateCollection_, pfCandidateHandle);
+  //std::cout<<"Size of pfColection = "<<pfCandidateHandle->size()<<"\n";
+  Int_t i=0;
+  storageMapInt["nPFCandidates"]=0;
+  for (auto pfCd = pfCandidateHandle->begin();pfCd != pfCandidateHandle->end(); pfCd++) 
+  {
+      storageMapFloatArray["pf_ecalEnergy"]     [i]= pfCd->ecalEnergy();   
+      storageMapFloatArray["pf_ecalRawEnergy"]  [i]= pfCd->rawEcalEnergy(); 
+      storageMapFloatArray["pf_hcalEnergy"]     [i]= pfCd->hcalEnergy(); 
+      storageMapFloatArray["pf_hcalRawEnergy"]  [i]= pfCd->rawHcalEnergy(); 
+      storageMapFloatArray["pf_HoE"]            [i]= pfCd->hcalEnergy()/(1e-6 +  pfCd->ecalEnergy() ); 
+      storageMapFloatArray["pf_mvaIso"]         [i]= pfCd->mva_Isolated(); 
+    //  storageMapFloatArray["pf_mvaPiMu"]        [i]= pfCd->mva_pi_mu(); 
+    //  storageMapFloatArray["pf_mvaEMu"]         [i]= pfCd->mva_e_mu(); 
+    //  storageMapFloatArray["pf_mvaEPi"]         [i]= pfCd->mva_e_pi(); 
+    //  storageMapFloatArray["pf_mvaGamma"]       [i]= pfCd->mva_nothing_gamma(); 
+    //  storageMapFloatArray["pf_mvaNeuH"]        [i]= pfCd->mva_nothing_nh(); 
+    //  storageMapFloatArray["pf_mvaNeuHGamma"]   [i]= pfCd->mva_gamma_nh(); 
+    //  storageMapFloatArray["pf_dnnGamma"]       [i]= pfCd->dnn_gamma(); 
+    //  storageMapFloatArray["pf_dnnEeleBkgGamma"][i]= pfCd->dnn_e_bkgPhoton();
+    //  storageMapFloatArray["pf_dnnEeleSigNonIso"]  [i]= pfCd->dnn_e_sigNonIsolated(); 
+      storageMapFloatArray["pf_vertexX"]    [i] = pfCd->vx();  
+      storageMapFloatArray["pf_vertexY"]    [i] = pfCd->vy();
+      storageMapFloatArray["pf_vertexZ"]    [i] = pfCd->vz();
+      storageMapFloatArray["pf_ecalEntryEta"] [i] = (pfCd->positionAtECALEntrance()).Eta();
+      storageMapFloatArray["pf_ecalEntryPhi"] [i] = (pfCd->positionAtECALEntrance()).Phi();
+      storageMapFloatArray["pf_ecalEntryX"] [i] = (pfCd->positionAtECALEntrance()).X();
+      storageMapFloatArray["pf_ecalEntryY"] [i] = (pfCd->positionAtECALEntrance()).Y();
+      storageMapFloatArray["pf_ecalEntryZ"] [i] = (pfCd->positionAtECALEntrance()).Z();
+      storageMapFloatArray["pf_eta"]        [i] = pfCd->eta();
+      storageMapFloatArray["pf_phi"]        [i] = pfCd->phi();
+      storageMapFloatArray["pf_pt"]         [i] = pfCd->pt();
+      storageMapFloatArray["pf_id"]         [i] = pfCd->particleId();
+      storageMapFloatArray["pf_mass"]       [i] = pfCd->mass();
+      i++;
+    if(i >= N_PF_MAX) break;
+  }
+  storageMapInt["nPFCandidates"]=i;
+}
+void BsToMuMuGammaNTuplizer::addECALCluserBranches()
+{
+      storageMapInt["nECALClusters"]=0;
+      theTree->Branch("nECALClusters",   &storageMapInt["nECALClusters"]);
+      storageMapInt["nECALClusterEnergyMatrix"]=0;
+      theTree->Branch("nECALClusterEnergyMatrix",   &storageMapInt["nECALClusterEnergyMatrix"]);
+      
+      storageMapFloatArray["clusterECAL_energy"] = new Float_t[N_ECAL_CLUSTERS];
+      theTree->Branch("clusterECAL_energy",   storageMapFloatArray["clusterECAL_energy"],"clusterECAL_energy[nECALClusters]/F");
+      storageMapFloatArray["clusterECAL_correctedEnergy"] = new Float_t[N_ECAL_CLUSTERS];
+      theTree->Branch("clusterECAL_correctedEnergy",   storageMapFloatArray["clusterECAL_correctedEnergy"],"clusterECAL_correctedEnergy[nECALClusters]/F");
+      storageMapFloatArray["clusterECAL_time"] = new Float_t[N_ECAL_CLUSTERS];
+      theTree->Branch("clusterECAL_time",   storageMapFloatArray["clusterECAL_time"],"clusterECAL_time[nECALClusters]/F");
+      storageMapFloatArray["clusterECAL_eta"] = new Float_t[N_ECAL_CLUSTERS];
+      theTree->Branch("clusterECAL_eta",   storageMapFloatArray["clusterECAL_eta"],"clusterECAL_eta[nECALClusters]/F");
+      storageMapFloatArray["clusterECAL_phi"] = new Float_t[N_ECAL_CLUSTERS];
+      theTree->Branch("clusterECAL_phi",   storageMapFloatArray["clusterECAL_phi"],"clusterECAL_phi[nECALClusters]/F");
+      storageMapFloatArray["clusterECAL_x"] = new Float_t[N_ECAL_CLUSTERS];
+      theTree->Branch("clusterECAL_x",   storageMapFloatArray["clusterECAL_x"],"clusterECAL_x[nECALClusters]/F");
+      storageMapFloatArray["clusterECAL_y"] = new Float_t[N_ECAL_CLUSTERS];
+      theTree->Branch("clusterECAL_y",   storageMapFloatArray["clusterECAL_y"],"clusterECAL_y[nECALClusters]/F");
+      storageMapFloatArray["clusterECAL_z"] = new Float_t[N_ECAL_CLUSTERS];
+      theTree->Branch("clusterECAL_z",   storageMapFloatArray["clusterECAL_z"],"clusterECAL_z[nECALClusters]/F");
+      storageMapFloatArray["clusterECAL_pt"] = new Float_t[N_ECAL_CLUSTERS];
+      theTree->Branch("clusterECAL_pt",   storageMapFloatArray["clusterECAL_pt"],"clusterECAL_pt[nECALClusters]/F");
+      storageMapFloatArray["clusterECAL_size"] = new Float_t[N_ECAL_CLUSTERS];
+      theTree->Branch("clusterECAL_size",   storageMapFloatArray["clusterECAL_size"],"clusterECAL_size[nECALClusters]/F");
+      storageMapFloatArray["clusterECAL_energyMatrix"] = new Float_t[N_ECAL_CLUSTERS*energyMatrixSizeFull_];
+      theTree->Branch("clusterECAL_energyMatrix",   storageMapFloatArray["clusterECAL_energyMatrix"],"clusterECAL_energyMatrix[nECALClusterEnergyMatrix]/F");
+}
+
+
+void BsToMuMuGammaNTuplizer::fillECALClusterCollection( const edm::Event& iEvent, const edm::EventSetup& iSetup)
+{
+  edm::Handle<reco::PFClusterCollection>  ecalClusterHandle;
+  iEvent.getByToken(ecalClusterCollection_, ecalClusterHandle);
+  //std::cout<<"Size of ECAL Cluster Collection  = "<<ecalClusterHandle->size()<<"\n";
+  
+  noZS::EcalClusterLazyTools lazyTool(iEvent,  iSetup, ebRechitToken_, eeRechitToken_);
+  
+  //std::unique_ptr<noZS::EcalClusterLazyTools> lazyTools;
+  //lazyTools = std::make_unique<noZS::EcalClusterLazyTools>(iEvent, ecalClusterToolsESGetTokens_.get(iSetup), ebRechitToken_, eeRechitToken_);
+
+  //EcalClusterLazyTools       lazyTool    (e, es, ebRechitToken_, eeRechitToken_);
+  //noZS::EcalClusterLazyTools lazyToolnoZS(e, es, ebRechitToken_, eeRechitToken_);
+  
+  Int_t i=0,energySize=0;
+  storageMapInt["nECALClusters"]=0;
+  for (auto ecalClus = ecalClusterHandle->begin(); ecalClus != ecalClusterHandle->end(); ecalClus++) 
+  {
+      storageMapFloatArray["clusterECAL_energy"]          [i]  =  ecalClus->energy() ; 
+      storageMapFloatArray["clusterECAL_correctedEnergy"] [i]  =  ecalClus->correctedEnergy() ; 
+      storageMapFloatArray["clusterECAL_time"]            [i]  =  ecalClus->time()   ; 
+      storageMapFloatArray["clusterECAL_x"]               [i]  =  ecalClus->x()      ; 
+      storageMapFloatArray["clusterECAL_y"]               [i]  =  ecalClus->y()      ; 
+      storageMapFloatArray["clusterECAL_z"]               [i]  =  ecalClus->z()      ; 
+      storageMapFloatArray["clusterECAL_pt"]              [i]  =  ecalClus->pt()     ; 
+      storageMapFloatArray["clusterECAL_eta"]              [i]  =  ecalClus->eta()     ; 
+      storageMapFloatArray["clusterECAL_phi"]              [i]  =  ecalClus->phi()     ; 
+      storageMapFloatArray["clusterECAL_size"]            [i]  =  ecalClus->size()   ; 
+      auto energyMatrix_ = lazyTool.energyMatrix(*ecalClus , energyMatrixSize_)  ;
+      for( int j=0; j < energyMatrixSizeFull_; j++)
+      {
+            storageMapFloatArray["clusterECAL_energyMatrix"][ i*energyMatrixSizeFull_+ j] = energyMatrix_[j];
+            energySize++;
+      }
+    i++;
+    if(i >= N_ECAL_CLUSTERS) break;
+  }
+  storageMapInt["nECALClusters"]=i;
+  storageMapInt["nECALClusterEnergyMatrix"]=energySize;
+
+}
+
+void BsToMuMuGammaNTuplizer::addHCALCluserBranches()
+{
+      storageMapInt["nHCALClusters"]=0;
+      theTree->Branch("nHCALClusters",   &storageMapInt["nHCALClusters"]);
+      storageMapInt["nHCALClusterEnergyMatrix"]=0;
+      theTree->Branch("nHCALClusterEnergyMatrix",   &storageMapInt["nHCALClusterEnergyMatrix"]);
+      storageMapFloatArray["clusterHCAL_energy"] = new Float_t[N_HCAL_CLUSTERS];
+      theTree->Branch("clusterHCAL_energy",   storageMapFloatArray["clusterHCAL_energy"],"clusterHCAL_energy[nHCALClusters]/F");
+      storageMapFloatArray["clusterHCAL_correctedEnergy"] = new Float_t[N_HCAL_CLUSTERS];
+      theTree->Branch("clusterHCAL_correctedEnergy",   storageMapFloatArray["clusterHCAL_correctedEnergy"],"clusterHCAL_correctedEnergy[nHCALClusters]/F");
+      storageMapFloatArray["clusterHCAL_time"] = new Float_t[N_HCAL_CLUSTERS];
+      theTree->Branch("clusterHCAL_time",   storageMapFloatArray["clusterHCAL_time"],"clusterHCAL_time[nHCALClusters]/F");
+      storageMapFloatArray["clusterHCAL_x"] = new Float_t[N_HCAL_CLUSTERS];
+      theTree->Branch("clusterHCAL_x",   storageMapFloatArray["clusterHCAL_x"],"clusterHCAL_x[nHCALClusters]/F");
+      storageMapFloatArray["clusterHCAL_y"] = new Float_t[N_HCAL_CLUSTERS];
+      theTree->Branch("clusterHCAL_y",   storageMapFloatArray["clusterHCAL_y"],"clusterHCAL_y[nHCALClusters]/F");
+      storageMapFloatArray["clusterHCAL_z"] = new Float_t[N_HCAL_CLUSTERS];
+      theTree->Branch("clusterHCAL_z",   storageMapFloatArray["clusterHCAL_z"],"clusterHCAL_z[nHCALClusters]/F");
+      storageMapFloatArray["clusterHCAL_pt"] = new Float_t[N_HCAL_CLUSTERS];
+      theTree->Branch("clusterHCAL_pt",   storageMapFloatArray["clusterHCAL_pt"],"clusterHCAL_pt[nHCALClusters]/F");
+      storageMapFloatArray["clusterHCAL_eta"] = new Float_t[N_HCAL_CLUSTERS];
+      theTree->Branch("clusterHCAL_eta",   storageMapFloatArray["clusterHCAL_eta"],"clusterHCAL_eta[nHCALClusters]/F");
+      storageMapFloatArray["clusterHCAL_phi"] = new Float_t[N_HCAL_CLUSTERS];
+      theTree->Branch("clusterHCAL_phi",   storageMapFloatArray["clusterHCAL_phi"],"clusterHCAL_phi[nHCALClusters]/F");
+      storageMapFloatArray["clusterHCAL_size"] = new Float_t[N_HCAL_CLUSTERS];
+      theTree->Branch("clusterHCAL_size",   storageMapFloatArray["clusterHCAL_size"],"clusterHCAL_size[nHCALClusters]/F");
+}
+
+void BsToMuMuGammaNTuplizer::fillHCALClusterCollection( const edm::Event& iEvent, const edm::EventSetup& iSetup)
+{
+     edm::Handle<reco::PFClusterCollection>  hcalClusterHandle;
+     iEvent.getByToken(hcalClusterCollection_, hcalClusterHandle);
+     //std::cout<<"Size of HCAL Cluster Collection  = "<<hcalClusterHandle->size()<<"\n";
+     
+     //std::unique_ptr<noZS::EcalClusterLazyTools> lazyTools;
+     //lazyTools = std::make_unique<noZS::EcalClusterLazyTools>(iEvent, hcalClusterToolsESGetTokens_.get(iSetup), ebRechitToken_, eeRechitToken_);
+   
+     //EcalClusterLazyTools       lazyTool    (e, es, ebRechitToken_, eeRechitToken_);
+     //noZS::EcalClusterLazyTools lazyToolnoZS(e, es, ebRechitToken_, eeRechitToken_);
+     Int_t i=0;
+     for (auto hcalClus = hcalClusterHandle->begin(); hcalClus != hcalClusterHandle->end(); hcalClus++) 
+     {
+         storageMapFloatArray["clusterHCAL_energy"]          [i]  =  hcalClus->energy() ; 
+         storageMapFloatArray["clusterHCAL_correctedEnergy"] [i]  =  hcalClus->correctedEnergy() ; 
+         storageMapFloatArray["clusterHCAL_time"]            [i]  =  hcalClus->time()   ; 
+         storageMapFloatArray["clusterHCAL_x"]               [i]  =  hcalClus->x()      ; 
+         storageMapFloatArray["clusterHCAL_y"]               [i]  =  hcalClus->y()      ; 
+         storageMapFloatArray["clusterHCAL_z"]               [i]  =  hcalClus->z()      ; 
+         storageMapFloatArray["clusterHCAL_pt"]              [i]  =  hcalClus->pt()     ; 
+         storageMapFloatArray["clusterHCAL_eta"]              [i]  =  hcalClus->eta()     ; 
+         storageMapFloatArray["clusterHCAL_phi"]              [i]  =  hcalClus->phi()     ; 
+         storageMapFloatArray["clusterHCAL_size"]            [i]  =  hcalClus->size()   ; 
+         i++;
+       if(i >= N_HCAL_CLUSTERS) break;
+     }
+     storageMapInt["nHCALClusters"]=i;
+}
+
 float BsToMuMuGammaNTuplizer::reduceFloat(float val, int bits)
 {
   if(!doCompression_) return val;
   else return MiniFloatConverter::reduceMantissaToNbitsRounding(val,bits);
 }
+
 
 int BsToMuMuGammaNTuplizer::calDIPhi(int iPhi1, int iPhi2) {
   int dPhi = iPhi1 - iPhi2;
@@ -2140,5 +2480,7 @@ float BsToMuMuGammaNTuplizer::getMinEnergyHCAL_(HcalDetId id) const {
   } else
     return 9999.0;
 }
+
+
 //define this as a plug-in
 DEFINE_FWK_MODULE(BsToMuMuGammaNTuplizer);

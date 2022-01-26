@@ -1,5 +1,4 @@
 #include "BmmGNtuple.h"
-R__LOAD_LIBRARY(BmmGNtuple_C.so)
 
 Double_t getDETA(Double_t eta1, Double_t eta2);
 Double_t getDPHI( Double_t phi1, Double_t phi2);
