@@ -111,7 +111,9 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
   doParticleFlow(iConfig.getParameter<bool>("doParticleFlow")),
   doGeneralTracks(iConfig.getParameter<bool>("doGeneralTracks")),
   doECALClusters(iConfig.getParameter<bool>("doECALClusters")),
-  doHCALClusters(iConfig.getParameter<bool>("doECALClusters")),
+  doHCALClusters(iConfig.getParameter<bool>("doHCALClusters")),
+  doPrimaryVetrices(iConfig.getParameter<bool>("doPrimaryVetrices")),
+  doBeamSpot(iConfig.getParameter<bool>("doBeamSpot")),
   doFlatPt_(iConfig.getParameter<bool>("doFlatPt")),
   Run2_2018_(iConfig.getParameter<bool>("Run2_2018")),
   doHLT(iConfig.getParameter<bool>("doHLT")),
@@ -198,50 +200,32 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
   theTree->Branch("lumis",  &lumis_);
   theTree->Branch("isData", &isData_);
  
-  theTree->Branch("beamspot_x",         		 &beamspot_x_);
-  theTree->Branch("beamspot_y",       	    	 &beamspot_y_);
-  theTree->Branch("beamspot_z",       		     &beamspot_z_);
-  theTree->Branch("beamspot_x_error",       	 &beamspot_x_error_);
-  theTree->Branch("beamspot_y_error",       	 &beamspot_y_error_);
-  theTree->Branch("beamspot_z_error",        	 &beamspot_z_error_);
-  theTree->Branch("beamspot_covXX",         	 &beamspot_covXX);
-  theTree->Branch("beamspot_covXY",         	 &beamspot_covXY);
-  theTree->Branch("beamspot_covXZ",         	 &beamspot_covXZ);
-  theTree->Branch("beamspot_covYY",         	 &beamspot_covYY);
-  theTree->Branch("beamspot_covYZ",         	 &beamspot_covYZ);
-  theTree->Branch("beamspot_covZZ",         	 &beamspot_covZZ);
+  if(doBeamSpot)
+  {
+    theTree->Branch("beamspot_x",         		 &beamspot_x_);
+    theTree->Branch("beamspot_y",       	    	 &beamspot_y_);
+    theTree->Branch("beamspot_z",       		     &beamspot_z_);
+    theTree->Branch("beamspot_x_error",       	 &beamspot_x_error_);
+    theTree->Branch("beamspot_y_error",       	 &beamspot_y_error_);
+    theTree->Branch("beamspot_z_error",        	 &beamspot_z_error_);
+    theTree->Branch("beamspot_covXX",         	 &beamspot_covXX);
+    theTree->Branch("beamspot_covXY",         	 &beamspot_covXY);
+    theTree->Branch("beamspot_covXZ",         	 &beamspot_covXZ);
+    theTree->Branch("beamspot_covYY",         	 &beamspot_covYY);
+    theTree->Branch("beamspot_covYZ",         	 &beamspot_covYZ);
+    theTree->Branch("beamspot_covZZ",         	 &beamspot_covZZ);
 
-  theTree->Branch("beamspot_dxdz",               &beamspot_dxdz_);
-  theTree->Branch("beamspot_dydz",               &beamspot_dydz_);
-  theTree->Branch("beamspot_sigmaZ",             &beamspot_sigmaZ_);
-  theTree->Branch("beamspot_dxdz_error",         &beamspot_dxdz_error_);
-  theTree->Branch("beamspot_dydz_error",         &beamspot_dydz_error_);
-  theTree->Branch("beamspot_sigmaZError",        &beamspot_sigmaZError_);
-  theTree->Branch("beamspot_beamWidthX",         &beamspot_beamWidthX_);
-  theTree->Branch("beamspot_beamWidthY",         &beamspot_beamWidthY_);
-  theTree->Branch("beamspot_beamWidthX_error",   &beamspot_beamWidthX_error_);
-  theTree->Branch("beamspot_beamWidthY_error",   &beamspot_beamWidthY_error_);
-
-  theTree->Branch("nPrimaryVertex",            &nPrimaryVertex_);
-  theTree->Branch("primaryVertex_isFake",      &primaryVertex_isFake_);
-  theTree->Branch("primaryVertex_x",           &primaryVertex_x_);
-  theTree->Branch("primaryVertex_y",           &primaryVertex_y_);
-  theTree->Branch("primaryVertex_z",           &primaryVertex_z_);
-  theTree->Branch("primaryVertex_t",           &primaryVertex_t_);
-  theTree->Branch("primaryVertex_covXX",       &primaryVertex_covXX);
-  theTree->Branch("primaryVertex_covXY",       &primaryVertex_covXY);
-  theTree->Branch("primaryVertex_covXZ",       &primaryVertex_covXZ);
-  theTree->Branch("primaryVertex_covYY",       &primaryVertex_covYY);
-  theTree->Branch("primaryVertex_covYZ",       &primaryVertex_covYZ);
-  theTree->Branch("primaryVertex_covZZ",       &primaryVertex_covZZ);
-  theTree->Branch("primaryVertex_x_error",     &primaryVertex_x_error_);
-  theTree->Branch("primaryVertex_y_error",     &primaryVertex_y_error_);
-  theTree->Branch("primaryVertex_z_error",     &primaryVertex_z_error_);
-  theTree->Branch("primaryVertex_t_error",     &primaryVertex_t_error_);
-  theTree->Branch("primaryVertex_ntracks",     &primaryVertex_ntracks_);
-  theTree->Branch("primaryVertex_ndof",        &primaryVertex_ndof_);
-  theTree->Branch("primaryVertex_chi2",        &primaryVertex_chi2_); 
-  theTree->Branch("primaryVertex_normalizedChi2", &primaryVertex_normalizedChi2_);
+    theTree->Branch("beamspot_dxdz",               &beamspot_dxdz_);
+    theTree->Branch("beamspot_dydz",               &beamspot_dydz_);
+    theTree->Branch("beamspot_sigmaZ",             &beamspot_sigmaZ_);
+    theTree->Branch("beamspot_dxdz_error",         &beamspot_dxdz_error_);
+    theTree->Branch("beamspot_dydz_error",         &beamspot_dydz_error_);
+    theTree->Branch("beamspot_sigmaZError",        &beamspot_sigmaZError_);
+    theTree->Branch("beamspot_beamWidthX",         &beamspot_beamWidthX_);
+    theTree->Branch("beamspot_beamWidthY",         &beamspot_beamWidthY_);
+    theTree->Branch("beamspot_beamWidthX_error",   &beamspot_beamWidthX_error_);
+    theTree->Branch("beamspot_beamWidthY_error",   &beamspot_beamWidthY_error_);
+  }
 
   if (doHLT) {
     // ### Trigger ###
@@ -561,7 +545,6 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
     theTree->Branch("scRawEt",    &scRawEt_);
     theTree->Branch("scMinDrWithGsfElectornSC_",  &scMinDrWithGsfElectornSC_);
     theTree->Branch("scFoundGsfMatch_" ,        &scFoundGsfMatch_);
-
     theTree->Branch("scE5x5",   &scE5x5_);
     theTree->Branch("scE2x2Ratio",   &scE2x2Ratio_);
     theTree->Branch("scE3x3Ratio",   &scE3x3Ratio_);
@@ -601,10 +584,15 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
     theTree->Branch("scFull5x5_sigmaIetaIphi",   &scFull5x5_sigmaIetaIphi_);
     theTree->Branch("scFull5x5_sigmaIphiIphi",   &scFull5x5_sigmaIphiIphi_);
   
-    theTree->Branch("nhcalRechit",      &nhcalRechit_);
-    theTree->Branch("hcalRechitIEta",   &hcalRechitIEta_);
-    theTree->Branch("hcalRechitIPhi",   &hcalRechitIPhi_);
-    theTree->Branch("hcalRechitEnergy", &hcalRechitEnergy_);
+    //theTree->Branch("nhcalRechit",      &nhcalRechit_);
+    //theTree->Branch("hcalRechitIEta",   &hcalRechitIEta_);
+    //theTree->Branch("hcalRechitIPhi",   &hcalRechitIPhi_);
+    //theTree->Branch("hcalRechitEnergy", &hcalRechitEnergy_);
+
+    theTree->Branch("scNHcalRecHitInDIEta5IPhi5",              &scNHcalRecHitInDIEta5IPhi5);
+    theTree->Branch("scEFromHcalRecHitInDIEta5IPhi5",              &scEFromHcalRecHitInDIEta5IPhi5);
+    theTree->Branch("scNHcalRecHitInDIEta2IPhi2",              &scNHcalRecHitInDIEta2IPhi2);
+    theTree->Branch("scEFromHcalRecHitInDIEta2IPhi2",              &scEFromHcalRecHitInDIEta2IPhi2);
 
     theTree->Branch("scPFChIso1",              &scPFChIso1_);
     theTree->Branch("scPFChIso2",              &scPFChIso2_);
@@ -623,10 +611,6 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
     theTree->Branch("scPFNeuIso3",             &scPFNeuIso3_);
     theTree->Branch("scPFNeuIso4",             &scPFNeuIso4_);
     theTree->Branch("scPFNeuIso5",             &scPFNeuIso5_);
-
-
-
-   
   }
   if(doParticleFlow)
   {
@@ -643,6 +627,10 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
   if(doGeneralTracks)
   {
      addGeneralTracksBranches();
+  }
+  if(doPrimaryVetrices)
+  {
+     addPrimaryVertexBranches();
   }
 
 }
@@ -674,27 +662,6 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
   beamspot_beamWidthX_error_  = 0.0   ;
   beamspot_beamWidthY_error_  = 0.0   ;
 
-  // # offlinePrimaryVertices # //
-  nPrimaryVertex_ = 0;
-  primaryVertex_isFake_.clear();
-  primaryVertex_x_.clear();
-  primaryVertex_y_.clear();
-  primaryVertex_z_.clear();
-  primaryVertex_t_.clear();
-  primaryVertex_covXX.clear();
-  primaryVertex_covXY.clear();
-  primaryVertex_covXZ.clear();
-  primaryVertex_covYY.clear();
-  primaryVertex_covYZ.clear();
-  primaryVertex_covZZ.clear();
-  primaryVertex_x_error_.clear();
-  primaryVertex_y_error_.clear();
-  primaryVertex_z_error_.clear();
-  primaryVertex_t_error_.clear();
-  primaryVertex_ntracks_.clear();
-  primaryVertex_ndof_.clear();
-  primaryVertex_chi2_.clear();
-  primaryVertex_normalizedChi2_.clear();
 
   if (doHLT) {
 
@@ -1055,6 +1022,12 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
     hcalRechitIPhi_.clear();
     hcalRechitEnergy_.clear();
 
+    scNHcalRecHitInDIEta2IPhi2 .clear();
+    scEFromHcalRecHitInDIEta2IPhi2             .clear();
+
+    scNHcalRecHitInDIEta5IPhi5 .clear();
+    scEFromHcalRecHitInDIEta5IPhi5             .clear();
+
     scPFChIso1_             .clear();
     scPFChIso2_             .clear();
     scPFChIso3_             .clear();
@@ -1084,13 +1057,13 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
   // Get magnetic field
     
   //  Get BeamSpot
+  if(doBeamSpot)
+  {
   edm::Handle<reco::BeamSpot> beamSpotH;
   iEvent.getByToken(beamSpotToken_, beamSpotH);
   reco::BeamSpot beamSpot = *beamSpotH;
 
  
-  edm::Handle<std::vector<reco::Vertex>> primaryVertexCollection;
-  iEvent.getByToken(primaryVtxToken_, primaryVertexCollection);
  
   // adding  BEAMSOPT 
   beamspot_x_			= beamSpot.x0();  ;
@@ -1116,38 +1089,12 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
   beamspot_beamWidthY_		= beamSpot.BeamWidthY();  ;
   beamspot_beamWidthX_error_	= beamSpot.BeamWidthXError();  ;
   beamspot_beamWidthY_error_	= beamSpot.BeamWidthXError();  ;
- 
-  reco::Vertex pv(math::XYZPoint(0, 0, -999), math::Error<3>::type()); 
-  for(auto&  aVertex : *primaryVertexCollection){
+  }
 
-    if( not aVertex.isValid() ) continue;
-    
-    // # offlinePrimaryVertices # //
-    primaryVertex_isFake_ .push_back(   aVertex.isFake() );
-    primaryVertex_x_ .push_back(   aVertex.x() );
-    primaryVertex_y_ .push_back(   aVertex.y()  );
-    primaryVertex_z_ .push_back(   aVertex.z()  );
-    primaryVertex_t_ .push_back(   aVertex.t()  );
-    primaryVertex_covXX.push_back( aVertex.covariance(0,0) );
-    primaryVertex_covXY.push_back( aVertex.covariance(0,1) );
-    primaryVertex_covXZ.push_back( aVertex.covariance(0,2) );
-    primaryVertex_covYY.push_back( aVertex.covariance(1,1) );
-    primaryVertex_covYZ.push_back( aVertex.covariance(1,2) );
-    primaryVertex_covZZ.push_back( aVertex.covariance(2,2) );
-    primaryVertex_x_error_ .push_back(   aVertex.xError()  );
-    primaryVertex_y_error_ .push_back(   aVertex.yError() );
-    primaryVertex_z_error_ .push_back(   aVertex.zError()  );
-    primaryVertex_t_error_ .push_back(   aVertex.tError()  );
-    primaryVertex_ntracks_ .push_back(   aVertex.nTracks() );
-    primaryVertex_ndof_ .push_back(   aVertex.ndof() 	 	  );
-    primaryVertex_chi2_ .push_back(   aVertex.chi2()  );
-    primaryVertex_normalizedChi2_ .push_back(   aVertex.normalizedChi2()  );
-
-
-    pv = aVertex;
-    nPrimaryVertex_++;
-  } // loop over primary vertex collection
-
+  if(doPrimaryVetrices)
+  {
+        fillPrimaryVertexBranches(iEvent,iSetup);
+  }
   // MC truth
   if (isMC and doGenParticles_) {
     fillGenParticles(iEvent);
@@ -1157,7 +1104,10 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
   if (doMuons_)     	fillMuons(iEvent, iSetup);
   if (doPhotons_)    	fillPhotons(iEvent, iSetup);
   if (doPFPhotons_) 	fillPFPhotons(iEvent, iSetup);
-  if (doSuperClusters_) fillSC(iEvent, iSetup,pv);
+  if (doSuperClusters_) {
+        reco::Vertex pv(math::XYZPoint(0, 0, -999), math::Error<3>::type()); 
+        fillSC(iEvent, iSetup,pv);
+  }
   if (doHCALClusters) {
         fillHCALClusterCollection(iEvent,iSetup);
   }
@@ -1939,24 +1889,29 @@ void BsToMuMuGammaNTuplizer::fillSC(edm::Event const& e, const edm::EventSetup& 
       int seedHcalIPhi = towerId.iphi();
     //  std::cout << e.id().event() << " Seed ID" << seedHcalIEta << std::endl;
 
-
-
-      for (auto& hcalrh : e.get(hbheRechitToken_) ) {
+    
+     Float_t hcal2Energy(0.0);
+     Int_t nhcal2Rechit_=0;
+     Float_t hcalEnergy(0.0);
+     nhcalRechit_=0;
+     for (auto& hcalrh : e.get(hbheRechitToken_) ) {
 	int dIEtaAbs = std::abs(calDIEta(seedHcalIEta, hcalrh.id().ieta()));
 	int dIPhiAbs = std::abs(calDIPhi(seedHcalIPhi, hcalrh.id().iphi()));
-
-//        std::cout << e.id().event() << " Seed IEta" << seedHcalIEta << "  SeedIPhi" << seedHcalIPhi << " dEta:" << dIEtaAbs << " dPhi:" << dIPhiAbs << std::endl;
-//        std::cout << e.id().event() << " HCAL energy" << hcalrh.energy() << std::endl;
-
 	if ( (dIEtaAbs <= maxDIEta_) && (dIPhiAbs <= maxDIPhi_) &&  (hcalrh.energy()>getMinEnergyHCAL_(hcalrh.id()) ) ) {
-	  hcalRechitIEta_.push_back(hcalrh.id().ieta());
-	  hcalRechitIPhi_.push_back(hcalrh.id().iphi());
-	  hcalRechitEnergy_.push_back(hcalrh.energy());
-    
-          nhcalRechit_++;
-
-         }
+      hcalEnergy+=hcalrh.energy();
+      nhcalRechit_++;
+      }
+	if ( (dIEtaAbs <= 2) && (dIPhiAbs <= 2) &&  (hcalrh.energy()>getMinEnergyHCAL_(hcalrh.id()) ) ) {
+      hcal2Energy+=hcalrh.energy();
+      nhcal2Rechit_++;
+      }
 	} // HCAL rec hits
+        
+        scEFromHcalRecHitInDIEta5IPhi5.push_back(hcalEnergy);
+        scNHcalRecHitInDIEta5IPhi5.push_back(float(nhcalRechit_));
+        scEFromHcalRecHitInDIEta2IPhi2.push_back(hcal2Energy);
+        scNHcalRecHitInDIEta2IPhi2.push_back(float(nhcal2Rechit_));
+        
 
         pfIsoCalculator pfIso(e, pfPhotonsCollection_, pv.position());
  
@@ -2151,6 +2106,86 @@ std::vector<float> BsToMuMuGammaNTuplizer::getShowerShapes(reco::CaloCluster* ca
   return shapes; 
 }
 
+void BsToMuMuGammaNTuplizer::addPrimaryVertexBranches()
+{
+    storageMapInt["nPrimaryVertex"]  = 0 ;
+    theTree->Branch("nPrimaryVertex",   &storageMapInt["nPrimaryVertex"]);
+    
+    storageMapFloatArray["primaryVertex_isFake"        ] = new Float_t[N_PV_MAX];
+    storageMapFloatArray["primaryVertex_x"             ] = new Float_t[N_PV_MAX];
+    storageMapFloatArray["primaryVertex_y"             ] = new Float_t[N_PV_MAX];
+    storageMapFloatArray["primaryVertex_z"             ] = new Float_t[N_PV_MAX];
+    storageMapFloatArray["primaryVertex_t"             ] = new Float_t[N_PV_MAX];
+    storageMapFloatArray["primaryVertex_covXX"         ] = new Float_t[N_PV_MAX];
+    storageMapFloatArray["primaryVertex_covXY"         ] = new Float_t[N_PV_MAX];
+    storageMapFloatArray["primaryVertex_covXZ"         ] = new Float_t[N_PV_MAX];
+    storageMapFloatArray["primaryVertex_covYY"         ] = new Float_t[N_PV_MAX];
+    storageMapFloatArray["primaryVertex_covYZ"         ] = new Float_t[N_PV_MAX];
+    storageMapFloatArray["primaryVertex_covZZ"         ] = new Float_t[N_PV_MAX];
+    storageMapFloatArray["primaryVertex_x_error"       ] = new Float_t[N_PV_MAX];
+    storageMapFloatArray["primaryVertex_y_error"       ] = new Float_t[N_PV_MAX];
+    storageMapFloatArray["primaryVertex_z_error"       ] = new Float_t[N_PV_MAX];
+    storageMapFloatArray["primaryVertex_t_error"       ] = new Float_t[N_PV_MAX];
+    storageMapFloatArray["primaryVertex_ntracks"       ] = new Float_t[N_PV_MAX];
+    storageMapFloatArray["primaryVertex_ndof"          ] = new Float_t[N_PV_MAX];
+    storageMapFloatArray["primaryVertex_chi2"          ] = new Float_t[N_PV_MAX];
+    storageMapFloatArray["primaryVertex_normalizedChi2" ]= new Float_t[N_PV_MAX];
+    
+    theTree->Branch("primaryVertex_isFake",         storageMapFloatArray["primaryVertex_isFake"        ] , "primaryVertex_isFake[nPrimaryVertex]"        );
+    theTree->Branch("primaryVertex_x",              storageMapFloatArray["primaryVertex_x"             ] , "primaryVertex_x[nPrimaryVertex]"             ); 
+    theTree->Branch("primaryVertex_y",              storageMapFloatArray["primaryVertex_y"             ] , "primaryVertex_y[nPrimaryVertex]"             ); 
+    theTree->Branch("primaryVertex_z",              storageMapFloatArray["primaryVertex_z"             ] , "primaryVertex_z[nPrimaryVertex]"             ); 
+    theTree->Branch("primaryVertex_t",              storageMapFloatArray["primaryVertex_t"             ] , "primaryVertex_t[nPrimaryVertex]"             ); 
+    theTree->Branch("primaryVertex_covXX",          storageMapFloatArray["primaryVertex_covXX"         ] , "primaryVertex_covXX[nPrimaryVertex]"         ); 
+    theTree->Branch("primaryVertex_covXY",          storageMapFloatArray["primaryVertex_covXY"         ] , "primaryVertex_covXY[nPrimaryVertex]"         ); 
+    theTree->Branch("primaryVertex_covXZ",          storageMapFloatArray["primaryVertex_covXZ"         ] , "primaryVertex_covXZ[nPrimaryVertex]"         ); 
+    theTree->Branch("primaryVertex_covYY",          storageMapFloatArray["primaryVertex_covYY"         ] , "primaryVertex_covYY[nPrimaryVertex]"         ); 
+    theTree->Branch("primaryVertex_covYZ",          storageMapFloatArray["primaryVertex_covYZ"         ] , "primaryVertex_covYZ[nPrimaryVertex]"         ); 
+    theTree->Branch("primaryVertex_covZZ",          storageMapFloatArray["primaryVertex_covZZ"         ] , "primaryVertex_covZZ[nPrimaryVertex]"         ); 
+    theTree->Branch("primaryVertex_x_error",        storageMapFloatArray["primaryVertex_x_error"       ] , "primaryVertex_x_error[nPrimaryVertex]"       ); 
+    theTree->Branch("primaryVertex_y_error",        storageMapFloatArray["primaryVertex_y_error"       ] , "primaryVertex_y_error[nPrimaryVertex]"       ); 
+    theTree->Branch("primaryVertex_z_error",        storageMapFloatArray["primaryVertex_z_error"       ] , "primaryVertex_z_error[nPrimaryVertex]"       ); 
+    theTree->Branch("primaryVertex_t_error",        storageMapFloatArray["primaryVertex_t_error"       ] , "primaryVertex_t_error[nPrimaryVertex]"       ); 
+    theTree->Branch("primaryVertex_ntracks",        storageMapFloatArray["primaryVertex_ntracks"       ] , "primaryVertex_ntracks[nPrimaryVertex]"       ); 
+    theTree->Branch("primaryVertex_ndof",           storageMapFloatArray["primaryVertex_ndof"          ] , "primaryVertex_ndof[nPrimaryVertex]"          ); 
+    theTree->Branch("primaryVertex_chi2",           storageMapFloatArray["primaryVertex_chi2"          ] , "primaryVertex_chi2[nPrimaryVertex]"          ); 
+    theTree->Branch("primaryVertex_normalizedChi2", storageMapFloatArray["primaryVertex_normalizedChi2" ], "primaryVertex_normalizedChi2[nPrimaryVertex]");
+}
+
+void BsToMuMuGammaNTuplizer::fillPrimaryVertexBranches(const edm::Event& iEvent,  const edm::EventSetup& iSetup)
+{
+
+    edm::Handle<std::vector<reco::Vertex>> primaryVertexCollection;
+    iEvent.getByToken(primaryVtxToken_, primaryVertexCollection);
+    int i=0;
+    storageMapInt["nPrimaryVertex"]=0;
+    for(auto&  aVertex : *primaryVertexCollection){
+    if( not aVertex.isValid() ) continue;
+    
+    // # offlinePrimaryVertices # //
+    storageMapFloatArray["primaryVertex_isFake"         ][i] =   aVertex.isFake()           ;
+    storageMapFloatArray["primaryVertex_x"              ][i] =   aVertex.x()                ;
+    storageMapFloatArray["primaryVertex_y"              ][i] =   aVertex.y()                ;
+    storageMapFloatArray["primaryVertex_z"              ][i] =   aVertex.z()                ;
+    storageMapFloatArray["primaryVertex_t"              ][i] =   aVertex.t()                ;
+    storageMapFloatArray["primaryVertex_covXX"          ][i] =   aVertex.covariance(0,0) ;
+    storageMapFloatArray["primaryVertex_covXY"          ][i] =   aVertex.covariance(0,1) ;
+    storageMapFloatArray["primaryVertex_covXZ"          ][i] =   aVertex.covariance(0,2) ;
+    storageMapFloatArray["primaryVertex_covYY"          ][i] =   aVertex.covariance(1,1) ;
+    storageMapFloatArray["primaryVertex_covYZ"          ][i] =   aVertex.covariance(1,2) ;
+    storageMapFloatArray["primaryVertex_covZZ"          ][i] =   aVertex.covariance(2,2) ;
+    storageMapFloatArray["primaryVertex_x_error"        ][i] =   aVertex.xError()        ;
+    storageMapFloatArray["primaryVertex_y_error"        ][i] =   aVertex.yError()        ;
+    storageMapFloatArray["primaryVertex_z_error"        ][i] =   aVertex.zError()        ;
+    storageMapFloatArray["primaryVertex_t_error"        ][i] =   aVertex.tError()        ;
+    storageMapFloatArray["primaryVertex_ntracks"        ][i] =   aVertex.nTracks()       ;
+    storageMapFloatArray["primaryVertex_ndof"           ][i] =   aVertex.ndof() 	 	  ;
+    storageMapFloatArray["primaryVertex_chi2"           ][i] =   aVertex.chi2()             ;
+    storageMapFloatArray["primaryVertex_normalizedChi2" ][i] =   aVertex.normalizedChi2()  ;
+    storageMapInt["nPrimaryVertex"]++;
+    i++;
+  } // loop over primary vertex collection
+}
 void BsToMuMuGammaNTuplizer::addGeneralTracksBranches()
 {
     storageMapInt["nGeneralTracks"]  = 0 ;
@@ -2170,6 +2205,8 @@ void BsToMuMuGammaNTuplizer::addGeneralTracksBranches()
     storageMapFloatArray["generalTracks_charge"] = new Float_t[N_TRK_MAX];
     theTree->Branch("generalTracks_charge",   storageMapFloatArray["generalTracks_charge"],"generalTracks_charge[nGeneralTracks]/F");
 }
+
+
 
 void BsToMuMuGammaNTuplizer::fillGeneralTrackCollectionBranches( const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
