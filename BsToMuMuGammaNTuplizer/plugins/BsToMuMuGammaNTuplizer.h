@@ -171,6 +171,7 @@
 #include <TTree.h>
 #include "TMath.h"
 
+#define N_PV_MAX 500
 #define N_TRK_MAX 5000
 #define N_PF_MAX 10000
 #define N_ECAL_CLUSTERS 1000
@@ -202,6 +203,8 @@ private:
   void addHCALCluserBranches();
   void fillECALClusterCollection( const edm::Event&, const edm::EventSetup& );
   void addECALCluserBranches();
+  void  addPrimaryVertexBranches();
+  void fillPrimaryVertexBranches(const edm::Event&, const edm::EventSetup&);
   float reduceFloat(float val, int bits);
   static int calDIEta(int iEta1, int iEta2);
   static int calDIPhi(int iPhi1, int iPhi2);
@@ -220,11 +223,13 @@ private:
   bool doGeneralTracks;
   bool doECALClusters;
   bool doHCALClusters;
+  bool doPrimaryVetrices;
+  bool doBeamSpot;
   bool doFlatPt_;
   bool Run2_2018_;
   bool doHLT;
   int maxDIEta_=5;
-   int maxDIPhi_=5;
+  int maxDIPhi_=5;
   
   
   // ----------member data ---------------------------
@@ -709,6 +714,12 @@ private:
    std::vector<float> hcalRechitIPhi_;
    std::vector<float> hcalRechitEnergy_;
  
+   std::vector<float>  scNHcalRecHitInDIEta2IPhi2;
+   std::vector<float>  scEFromHcalRecHitInDIEta2IPhi2;
+   
+   std::vector<float>  scNHcalRecHitInDIEta5IPhi5;
+   std::vector<float>  scEFromHcalRecHitInDIEta5IPhi5;
+   
    std::vector<float>  scPFChIso1_;
    std::vector<float>  scPFChIso2_;
    std::vector<float>  scPFChIso3_;

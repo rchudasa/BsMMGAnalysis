@@ -26,7 +26,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 50
 
 #process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(20) )
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(200) )
-#process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 #process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10000) )
 
 process.options = cms.untracked.PSet( numberOfConcurrentLuminosityBlocks = cms.untracked.uint32(1),
@@ -43,7 +43,7 @@ process.options = cms.untracked.PSet( numberOfConcurrentLuminosityBlocks = cms.u
 process.source = cms.Source("PoolSource",
      duplicateCheckMode=cms.untracked.string("noDuplicateCheck"),
     fileNames = cms.untracked.vstring(
-   '/store/mc/RunIISummer19UL18RECO/QCD_Pt_30to50_TuneCP5_13TeV_pythia8/AODSIM/106X_upgrade2018_realistic_v11_L1v1_ext1-v2/10000/5FE97F9B-083C-9241-A7F0-6CFF243A6956.root'
+   'file:59B967C8-4A74-ED4F-9A8D-15A05983A34A.root',
    )
 )
 process.TFileService = cms.Service("TFileService",
@@ -67,9 +67,20 @@ process.decayfilter = cms.EDFilter("GenDecayKineFilter",
     verbose = cms.untracked.int32(20)
 )
 
+
+process.dimuonFilter = cms.EDFilter("DimuonMassFilter",
+    muons = cms.InputTag("muons"),
+    MinPt = cms.untracked.double(3.5),
+    MaxAbsEta = cms.untracked.double(2.5),
+    MinDimuonMass = cms.untracked.double(0.5),
+    MaxDimuonMass = cms.untracked.double(8.5)
+)
+
 process.Ntuples = cms.EDAnalyzer("BsToMuMuGammaNTuplizer",
 	muons   =cms.InputTag("muons"),
 	beamSpot = cms.InputTag("offlineBeamSpot"),
+    doBeamSpot = cms.bool(False),
+    doPrimaryVetrices = cms.bool(True),
 	vertices = cms.InputTag("offlinePrimaryVertices"),
     	MustacheSCBarrelSrc= cms.InputTag("particleFlowSuperClusterECAL:particleFlowSuperClusterECALBarrel"),
     	MustacheSCEndcapSrc= cms.InputTag("particleFlowSuperClusterECAL:particleFlowSuperClusterECALEndcapWithPreshower"),
@@ -87,10 +98,10 @@ process.Ntuples = cms.EDAnalyzer("BsToMuMuGammaNTuplizer",
 	dimuon_maxLStoBS  	= cms.untracked.double(1e5),	
 	dimuon_maxDCAMuMu 	= cms.untracked.double(1e5),	
 	dimuon_maxCosAlphaToBS 	= cms.untracked.double(1e5),	
-	isMC = cms.bool(True),
+	isMC = cms.bool(False),
     doGenParticles     = cms.bool(False),
 	doBsToMuMuGamma = cms.bool(False),
-    doFlatPt           = cms.bool(True),
+    doFlatPt           = cms.bool(False),
     genParticles       = cms.InputTag("genParticles"),
    	doMuons            = cms.bool(False),
 	PFPhoton_minPt     = cms.untracked.double(0.0),	
@@ -121,4 +132,4 @@ process.Ntuples = cms.EDAnalyzer("BsToMuMuGammaNTuplizer",
 
 
 #process.p = cms.Path(process.decayfilter*process.Ntuples)
-process.p = cms.Path(process.Ntuples)
+process.p = cms.Path(process.dimuonFilter+process.Ntuples)
