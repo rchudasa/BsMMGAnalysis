@@ -3,7 +3,7 @@ import os
 import sys
 
 UsageStr = "\
-\n./jogFileMakerBMMG.py <FileSource> <destination> <filesPerJob> <tag> \
+\n./jogFileMakerBMMG.py <FileSource> <destination> <filesPerJob> <njobs> <tag> \
 "
 NJOBS=20000
 NEVENTS_PER_JOB = -1
@@ -58,7 +58,8 @@ error = $Fp(filename)run.$(Cluster).stderr\n\
 log = $Fp(filename)run.$(Cluster).log\n\
 +JobFlavour = \"longlunch\"\n\
 "
-condorScript=open('subCondorBMMG'+tag+'.sub','w')
+condorScriptName='subCondorBMMG'+tag+'.sub'
+condorScript=open(condorScriptName,'w')
 condorScript.write(condorScriptString)
 
 
@@ -140,7 +141,8 @@ for ii in range(NJOBS):
     os.system('chmod +x '+runScriptName)
     condorScript.write("queue filename matching ("+runScriptName+")\n")
     njobs+=1
+condorScript.close()
 print()
 print(" Number of jobs made : ", njobs)
+print(" condor submit file  : ",condorScriptName  )
 print(" Number of files left : ", len(sourceFileList) )
-condorScript.close()
