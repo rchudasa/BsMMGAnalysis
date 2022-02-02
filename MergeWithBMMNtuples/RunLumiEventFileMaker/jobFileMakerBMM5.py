@@ -3,14 +3,13 @@ import os
 import sys
 
 UsageStr = "\
-\n./jogFileMakerBMM5.py <FileSource> <destination> <filesPerJob> <tag> \
+\n./jogFileMakerBMM5.py <FileSource> <destination> <filesPerJob> <Njobs> <tag> \
 "
 NJOBS=20000
 NEVENTS_PER_JOB = -1
 ZERO_OFFSET=0
 FILES_PER_JOB=20
 destination='/grid_mnt/t3storage3/athachay/bs2mumug/run2studies/ntuplizer/data/CMSSW_10_6_4_patch1/src/BsMM5Analysis/MergeWithBMMNtuples/RunLumiEventFileMaker/RunLumiFiles_charmoniumD'
-
 FileSource ="bmmgFileList.txt"
 tag=""
 if len(sys.argv) > 1:
@@ -60,7 +59,8 @@ error = $Fp(filename)run.$(Cluster).stderr\n\
 log = $Fp(filename)run.$(Cluster).log\n\
 +JobFlavour = \"longlunch\"\n\
 "
-condorScript=open('subCondorBMM5'+tag+'.sub','w')
+condorScriptName='subCondorBMMG'+tag+'.sub'
+condorScript=open(condorScriptName,'w')
 condorScript.write(condorScriptString)
 
 
@@ -145,4 +145,5 @@ for ii in range(NJOBS):
 print()
 print(" Number of jobs made : ", njobs)
 print(" Number of files left : ", len(sourceFileList) )
+print(" condor submit file  : ",condorScriptName  )
 condorScript.close()

@@ -113,8 +113,6 @@ void getEventListFromBMM5(string fname)
 	    treeChain->Add(fList.at(i).c_str());
    }
 
-  cout << "Total Number of Events Available : " << treeChain->GetEntriesFast()  << endl;
-  
   Bmm5Ntuple ntupleRawTree(treeChain);
 
   if (ntupleRawTree.fChain == 0) return;
@@ -147,53 +145,33 @@ void getEventListFromBMM5(string fname)
   Long64_t nb = 0,nbytes=0 ;
  
   UInt_t mu1_Idx,mu2_Idx;
+
+  auto t_start = std::chrono::high_resolution_clock::now();
+  auto t_end = std::chrono::high_resolution_clock::now();
+
   for (; jentry<nentries;jentry++) 
     {
 
       if (jentry%2500==0) 
-      { 
-	    cout << "--> " << jentry << "/" << nentries<<endl;
+      {
+         t_end = std::chrono::high_resolution_clock::now();
+         cout<<"Processing Entry in event loop : "<<jentry<<" / "<<nentries<<"  [ "<<100.0*jentry/nentries<<"  % ]  "
+             << " Elapsed time : "<< std::chrono::duration<double, std::milli>(t_end-t_start).count()/1000.0
+             <<"  Estimated time left : "<< std::chrono::duration<double, std::milli>(t_end-t_start).count()*( nentries - jentry)/jentry* 0.001
+             <<"\n";
+        
       }
       
       Long64_t ientry_evt = ntupleRawTree.LoadTree(jentry);
       if (ientry_evt < 0) break;
       evt++;
       nb = ntupleRawTree.fChain->GetEntry(jentry);   nbytes += nb;
-	  
-     if(doSelection)
-     {
-         // TriggerSelection
-         bool triggerSelection = false;
-         triggerSelection = triggerSelection or ntupleRawTree.HLT_DoubleMu4_3_Bs ;
-         if(not triggerSelection) continue;
-         
-         // Event Selection criterias : TODO
-         bool dimuonSelection=false; 
-         for(int i=0;i<ntupleRawTree.nmm;i++)
-         {
-            mu1_Idx=ntupleRawTree.mm_mu1_index[i];
-            mu2_Idx=ntupleRawTree.mm_mu2_index[i];
-            
-            // Low Pt Mva ID from miniAOD selector (1=LowPtMvaLoose, 2=LowPtMvaMedium)
-            // if( ntupleRawTree.Muon_mvaLowPtId[mu1_Idx] >= 1 ) continue;
-            // if( ntupleRawTree.Muon_mvaLowPtId[mu2_Idx] >= 1 ) continue;
 
-            // soft MVA ID
-            if(not ntupleRawTree.Muon_softMvaId[mu1_Idx] ) continue;
-            if(not ntupleRawTree.Muon_softMvaId[mu2_Idx] ) continue;
-
-            dimuonSelection = true;
-            break;
-         }
-
-        if(not dimuonSelection) continue;
-    }
      run=ntupleRawTree.run;
      lumi=ntupleRawTree.luminosityBlock;
      event=ntupleRawTree.event;
      filename=(treeChain->GetFile())->GetName();
      
-     // std::cout<<run<<" , "<<lumi<<" , "<<event<<" : "<<filename<<"\n";
      eventCount++;
      runLumiTree->Fill();
      if(run_o != run or lumi_o != lumi) {
@@ -205,7 +183,7 @@ void getEventListFromBMM5(string fname)
         lumi_o=lumi;
      }
      else{
-        runLumiTxt<<","<<event;
+        //runLumiTxt<<","<<event;
     }
   }
 
