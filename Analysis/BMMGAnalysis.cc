@@ -235,6 +235,7 @@ void BMMGAnalysis::Analyze()
 
 }
 
+#ifdef __MCANALYSIS__
 void BMMGAnalysis::GenAnalyze()
 {
 
@@ -617,6 +618,9 @@ void BMMGAnalysis::GenAnalyze()
 
 
 }
+
+#endif
+
 void BMMGAnalysis::setUpPhotonMVA()
 {
     if(not hasWeightFiles)
@@ -756,8 +760,6 @@ void BMMGAnalysis::setupReducedAnalysisTreeBranches()
 	outTree->Branch("b5_MuonId_match2_pullX",	( ntupleRawTree.b5_MuonId_match2_pullX ),"b5_MuonId_match2_pullX[b5_nMuonId]/F");
 	outTree->Branch("b5_MuonId_match2_pullY",	( ntupleRawTree.b5_MuonId_match2_pullY ),"b5_MuonId_match2_pullY[b5_nMuonId]/F");
 	outTree->Branch("b5_MuonId_newSoftMuonMva",	( ntupleRawTree.b5_MuonId_newSoftMuonMva ),"b5_MuonId_newSoftMuonMva[b5_nMuonId]/F");
-	outTree->Branch("b5_MuonId_simProdRho",	( ntupleRawTree.b5_MuonId_simProdRho ),"b5_MuonId_simProdRho[b5_nMuonId]/F");
-	outTree->Branch("b5_MuonId_simProdZ",	( ntupleRawTree.b5_MuonId_simProdZ ),"b5_MuonId_simProdZ[b5_nMuonId]/F");
 	outTree->Branch("b5_MuonId_trkKink",	( ntupleRawTree.b5_MuonId_trkKink ),"b5_MuonId_trkKink[b5_nMuonId]/F");
 	outTree->Branch("b5_MuonId_trkValidFrac",	( ntupleRawTree.b5_MuonId_trkValidFrac ),"b5_MuonId_trkValidFrac[b5_nMuonId]/F");
 	outTree->Branch("b5_MuonId_highPurity",	( ntupleRawTree.b5_MuonId_highPurity ),"b5_MuonId_highPurity[b5_nMuonId]/I");
@@ -766,10 +768,6 @@ void BMMGAnalysis::setupReducedAnalysisTreeBranches()
 	outTree->Branch("b5_MuonId_nLostHitsOuter",	( ntupleRawTree.b5_MuonId_nLostHitsOuter ),"b5_MuonId_nLostHitsOuter[b5_nMuonId]/I");
 	outTree->Branch("b5_MuonId_nPixels",	( ntupleRawTree.b5_MuonId_nPixels ),"b5_MuonId_nPixels[b5_nMuonId]/I");
 	outTree->Branch("b5_MuonId_nValidHits",	( ntupleRawTree.b5_MuonId_nValidHits ),"b5_MuonId_nValidHits[b5_nMuonId]/I");
-	outTree->Branch("b5_MuonId_simExtType",	( ntupleRawTree.b5_MuonId_simExtType ),"b5_MuonId_simExtType[b5_nMuonId]/I");
-	outTree->Branch("b5_MuonId_simMotherPdgId",	( ntupleRawTree.b5_MuonId_simMotherPdgId ),"b5_MuonId_simMotherPdgId[b5_nMuonId]/I");
-	outTree->Branch("b5_MuonId_simPdgId",	( ntupleRawTree.b5_MuonId_simPdgId ),"b5_MuonId_simPdgId[b5_nMuonId]/I");
-	outTree->Branch("b5_MuonId_simType",	( ntupleRawTree.b5_MuonId_simType ),"b5_MuonId_simType[b5_nMuonId]/I");
 	outTree->Branch("b5_MuonId_trkLayers",	( ntupleRawTree.b5_MuonId_trkLayers ),"b5_MuonId_trkLayers[b5_nMuonId]/I");
 	outTree->Branch("b5_MuonId_trkLostLayersInner",	( ntupleRawTree.b5_MuonId_trkLostLayersInner ),"b5_MuonId_trkLostLayersInner[b5_nMuonId]/I");
 	outTree->Branch("b5_MuonId_trkLostLayersOn",	( ntupleRawTree.b5_MuonId_trkLostLayersOn ),"b5_MuonId_trkLostLayersOn[b5_nMuonId]/I");
@@ -778,22 +776,6 @@ void BMMGAnalysis::setupReducedAnalysisTreeBranches()
 	outTree->Branch("b5_mm_bdt",	( ntupleRawTree.b5_mm_bdt ),"b5_mm_bdt[b5_nmm]/F");
 	outTree->Branch("b5_mm_doca",	( ntupleRawTree.b5_mm_doca ),"b5_mm_doca[b5_nmm]/F");
 	outTree->Branch("b5_mm_docatrk",	( ntupleRawTree.b5_mm_docatrk ),"b5_mm_docatrk[b5_nmm]/F");
-	outTree->Branch("b5_mm_gen_alpha_ip",	( ntupleRawTree.b5_mm_gen_alpha_ip ),"b5_mm_gen_alpha_ip[b5_nmm]/F");
-	outTree->Branch("b5_mm_gen_alpha_p_phi",	( ntupleRawTree.b5_mm_gen_alpha_p_phi ),"b5_mm_gen_alpha_p_phi[b5_nmm]/F");
-	outTree->Branch("b5_mm_gen_alpha_p_theta",	( ntupleRawTree.b5_mm_gen_alpha_p_theta ),"b5_mm_gen_alpha_p_theta[b5_nmm]/F");
-	outTree->Branch("b5_mm_gen_alpha_vtx",	( ntupleRawTree.b5_mm_gen_alpha_vtx ),"b5_mm_gen_alpha_vtx[b5_nmm]/F");
-	outTree->Branch("b5_mm_gen_doca",	( ntupleRawTree.b5_mm_gen_doca ),"b5_mm_gen_doca[b5_nmm]/F");
-	outTree->Branch("b5_mm_gen_l3d",	( ntupleRawTree.b5_mm_gen_l3d ),"b5_mm_gen_l3d[b5_nmm]/F");
-	outTree->Branch("b5_mm_gen_lxy",	( ntupleRawTree.b5_mm_gen_lxy ),"b5_mm_gen_lxy[b5_nmm]/F");
-	outTree->Branch("b5_mm_gen_mass",	( ntupleRawTree.b5_mm_gen_mass ),"b5_mm_gen_mass[b5_nmm]/F");
-	outTree->Branch("b5_mm_gen_mu1_pt",	( ntupleRawTree.b5_mm_gen_mu1_pt ),"b5_mm_gen_mu1_pt[b5_nmm]/F");
-	outTree->Branch("b5_mm_gen_mu2_pt",	( ntupleRawTree.b5_mm_gen_mu2_pt ),"b5_mm_gen_mu2_pt[b5_nmm]/F");
-	outTree->Branch("b5_mm_gen_prod_z",	( ntupleRawTree.b5_mm_gen_prod_z ),"b5_mm_gen_prod_z[b5_nmm]/F");
-	outTree->Branch("b5_mm_gen_pt",	( ntupleRawTree.b5_mm_gen_pt ),"b5_mm_gen_pt[b5_nmm]/F");
-	outTree->Branch("b5_mm_gen_tau",	( ntupleRawTree.b5_mm_gen_tau ),"b5_mm_gen_tau[b5_nmm]/F");
-	outTree->Branch("b5_mm_gen_vtx_x",	( ntupleRawTree.b5_mm_gen_vtx_x ),"b5_mm_gen_vtx_x[b5_nmm]/F");
-	outTree->Branch("b5_mm_gen_vtx_y",	( ntupleRawTree.b5_mm_gen_vtx_y ),"b5_mm_gen_vtx_y[b5_nmm]/F");
-	outTree->Branch("b5_mm_gen_vtx_z",	( ntupleRawTree.b5_mm_gen_vtx_z ),"b5_mm_gen_vtx_z[b5_nmm]/F");
 	outTree->Branch("b5_mm_iso",	( ntupleRawTree.b5_mm_iso ),"b5_mm_iso[b5_nmm]/F");
 	outTree->Branch("b5_mm_kal_lxy",	( ntupleRawTree.b5_mm_kal_lxy ),"b5_mm_kal_lxy[b5_nmm]/F");
 	outTree->Branch("b5_mm_kal_mass",	( ntupleRawTree.b5_mm_kal_mass ),"b5_mm_kal_mass[b5_nmm]/F");
@@ -920,15 +902,6 @@ void BMMGAnalysis::setupReducedAnalysisTreeBranches()
 	//outTree->Branch("b5_genbmm_mu2_pdgId",	( ntupleRawTree.b5_genbmm_mu2_pdgId ),"b5_genbmm_mu2_pdgId[b5_ngenbmm]/I");
 	//outTree->Branch("b5_genbmm_pdgId",	( ntupleRawTree.b5_genbmm_pdgId ),"b5_genbmm_pdgId[b5_ngenbmm]/I");
 	//outTree->Branch("b5_genbmm_signature",	( ntupleRawTree.b5_genbmm_signature ),"b5_genbmm_signature[b5_ngenbmm]/I");
-	outTree->Branch("b5_nGenPart",&	( ntupleRawTree.b5_nGenPart ));
-	outTree->Branch("b5_GenPart_eta",	( ntupleRawTree.b5_GenPart_eta ),"b5_GenPart_eta[b5_nGenPart]/F");
-	outTree->Branch("b5_GenPart_mass",	( ntupleRawTree.b5_GenPart_mass ),"b5_GenPart_mass[b5_nGenPart]/F");
-	outTree->Branch("b5_GenPart_phi",	( ntupleRawTree.b5_GenPart_phi ),"b5_GenPart_phi[b5_nGenPart]/F");
-	outTree->Branch("b5_GenPart_pt",	( ntupleRawTree.b5_GenPart_pt ),"b5_GenPart_pt[b5_nGenPart]/F");
-	outTree->Branch("b5_GenPart_genPartIdxMother",	( ntupleRawTree.b5_GenPart_genPartIdxMother ),"b5_GenPart_genPartIdxMother[b5_nGenPart]/I");
-	outTree->Branch("b5_GenPart_pdgId",	( ntupleRawTree.b5_GenPart_pdgId ),"b5_GenPart_pdgId[b5_nGenPart]/I");
-	outTree->Branch("b5_GenPart_status",	( ntupleRawTree.b5_GenPart_status ),"b5_GenPart_status[b5_nGenPart]/I");
-	outTree->Branch("b5_GenPart_statusFlags",	( ntupleRawTree.b5_GenPart_statusFlags ),"b5_GenPart_statusFlags[b5_nGenPart]/I");
 	outTree->Branch("b5_nMuon",&	( ntupleRawTree.b5_nMuon ));
 	outTree->Branch("b5_Muon_dxy",	( ntupleRawTree.b5_Muon_dxy ),"b5_Muon_dxy[b5_nMuon]/F");
 	outTree->Branch("b5_Muon_dxyErr",	( ntupleRawTree.b5_Muon_dxyErr ),"b5_Muon_dxyErr[b5_nMuon]/F");
@@ -994,7 +967,6 @@ void BMMGAnalysis::setupReducedAnalysisTreeBranches()
 	outTree->Branch("b5_TrigObj_l1iso",	( ntupleRawTree.b5_TrigObj_l1iso ),"b5_TrigObj_l1iso[b5_nTrigObj]/I");
 	outTree->Branch("b5_TrigObj_l1charge",	( ntupleRawTree.b5_TrigObj_l1charge ),"b5_TrigObj_l1charge[b5_nTrigObj]/I");
 	outTree->Branch("b5_TrigObj_filterBits",	( ntupleRawTree.b5_TrigObj_filterBits ),"b5_TrigObj_filterBits[b5_nTrigObj]/I");
-	outTree->Branch("b5_genTtbarId",&	( ntupleRawTree.b5_genTtbarId ));
 	outTree->Branch("b5_nOtherPV",&	( ntupleRawTree.b5_nOtherPV ));
 	outTree->Branch("b5_OtherPV_z",	( ntupleRawTree.b5_OtherPV_z ),"b5_OtherPV_z[b5_nOtherPV]/F");
 	outTree->Branch("b5_PV_ndof",&	( ntupleRawTree.b5_PV_ndof ));
@@ -1167,7 +1139,41 @@ void BMMGAnalysis::setupReducedAnalysisTreeBranches()
 	//outTree->Branch("bG_nhcalRechit",&	( ntupleRawTree.bG_nhcalRechit ));
 	//outTree->Branch("bG_hcalRechitIEta",	( ntupleRawTree.bG_hcalRechitIEta ),"bG_hcalRechitIEta[bG_nhcalRechit]/F");
 	//outTree->Branch("bG_hcalRechitIPhi",	( ntupleRawTree.bG_hcalRechitIPhi ),"bG_hcalRechitIPhi[bG_nhcalRechit]/F");
-	//outTree->Branch("bG_hcalRechitEnergy",	( ntupleRawTree.bG_hcalRechitEnergy ),"bG_hcalRechitEnergy[bG_nhcalRechit]/F");
+    //outTree->Branch("bG_hcalRechitEnergy",	( ntupleRawTree.bG_hcalRechitEnergy ),"bG_hcalRechitEnergy[bG_nhcalRechit]/F");
+	#ifdef __MCANALYSIS__
+	outTree->Branch("b5_mm_gen_alpha_ip",	( ntupleRawTree.b5_mm_gen_alpha_ip ),"b5_mm_gen_alpha_ip[b5_nmm]/F");
+	outTree->Branch("b5_mm_gen_alpha_p_phi",	( ntupleRawTree.b5_mm_gen_alpha_p_phi ),"b5_mm_gen_alpha_p_phi[b5_nmm]/F");
+	outTree->Branch("b5_mm_gen_alpha_p_theta",	( ntupleRawTree.b5_mm_gen_alpha_p_theta ),"b5_mm_gen_alpha_p_theta[b5_nmm]/F");
+	outTree->Branch("b5_mm_gen_alpha_vtx",	( ntupleRawTree.b5_mm_gen_alpha_vtx ),"b5_mm_gen_alpha_vtx[b5_nmm]/F");
+	outTree->Branch("b5_mm_gen_doca",	( ntupleRawTree.b5_mm_gen_doca ),"b5_mm_gen_doca[b5_nmm]/F");
+	outTree->Branch("b5_mm_gen_l3d",	( ntupleRawTree.b5_mm_gen_l3d ),"b5_mm_gen_l3d[b5_nmm]/F");
+	outTree->Branch("b5_mm_gen_lxy",	( ntupleRawTree.b5_mm_gen_lxy ),"b5_mm_gen_lxy[b5_nmm]/F");
+	outTree->Branch("b5_mm_gen_mass",	( ntupleRawTree.b5_mm_gen_mass ),"b5_mm_gen_mass[b5_nmm]/F");
+	outTree->Branch("b5_mm_gen_mu1_pt",	( ntupleRawTree.b5_mm_gen_mu1_pt ),"b5_mm_gen_mu1_pt[b5_nmm]/F");
+	outTree->Branch("b5_mm_gen_mu2_pt",	( ntupleRawTree.b5_mm_gen_mu2_pt ),"b5_mm_gen_mu2_pt[b5_nmm]/F");
+	outTree->Branch("b5_mm_gen_prod_z",	( ntupleRawTree.b5_mm_gen_prod_z ),"b5_mm_gen_prod_z[b5_nmm]/F");
+	outTree->Branch("b5_mm_gen_pt",	( ntupleRawTree.b5_mm_gen_pt ),"b5_mm_gen_pt[b5_nmm]/F");
+	outTree->Branch("b5_mm_gen_tau",	( ntupleRawTree.b5_mm_gen_tau ),"b5_mm_gen_tau[b5_nmm]/F");
+	outTree->Branch("b5_mm_gen_vtx_x",	( ntupleRawTree.b5_mm_gen_vtx_x ),"b5_mm_gen_vtx_x[b5_nmm]/F");
+	outTree->Branch("b5_mm_gen_vtx_y",	( ntupleRawTree.b5_mm_gen_vtx_y ),"b5_mm_gen_vtx_y[b5_nmm]/F");
+	outTree->Branch("b5_mm_gen_vtx_z",	( ntupleRawTree.b5_mm_gen_vtx_z ),"b5_mm_gen_vtx_z[b5_nmm]/F");
+    outTree->Branch("b5_MuonId_simProdRho",	( ntupleRawTree.b5_MuonId_simProdRho ),"b5_MuonId_simProdRho[b5_nMuonId]/F");
+	outTree->Branch("b5_MuonId_simProdZ",	( ntupleRawTree.b5_MuonId_simProdZ ),"b5_MuonId_simProdZ[b5_nMuonId]/F");
+	outTree->Branch("b5_MuonId_simExtType",	( ntupleRawTree.b5_MuonId_simExtType ),"b5_MuonId_simExtType[b5_nMuonId]/I");
+	outTree->Branch("b5_MuonId_simMotherPdgId",	( ntupleRawTree.b5_MuonId_simMotherPdgId ),"b5_MuonId_simMotherPdgId[b5_nMuonId]/I");
+	outTree->Branch("b5_MuonId_simPdgId",	( ntupleRawTree.b5_MuonId_simPdgId ),"b5_MuonId_simPdgId[b5_nMuonId]/I");
+	outTree->Branch("b5_MuonId_simType",	( ntupleRawTree.b5_MuonId_simType ),"b5_MuonId_simType[b5_nMuonId]/I");
+	outTree->Branch("b5_nGenPart",&	( ntupleRawTree.b5_nGenPart ));
+	outTree->Branch("b5_GenPart_eta",	( ntupleRawTree.b5_GenPart_eta ),"b5_GenPart_eta[b5_nGenPart]/F");
+	outTree->Branch("b5_GenPart_mass",	( ntupleRawTree.b5_GenPart_mass ),"b5_GenPart_mass[b5_nGenPart]/F");
+	outTree->Branch("b5_GenPart_phi",	( ntupleRawTree.b5_GenPart_phi ),"b5_GenPart_phi[b5_nGenPart]/F");
+	outTree->Branch("b5_GenPart_pt",	( ntupleRawTree.b5_GenPart_pt ),"b5_GenPart_pt[b5_nGenPart]/F");
+	outTree->Branch("b5_GenPart_genPartIdxMother",	( ntupleRawTree.b5_GenPart_genPartIdxMother ),"b5_GenPart_genPartIdxMother[b5_nGenPart]/I");
+	outTree->Branch("b5_GenPart_pdgId",	( ntupleRawTree.b5_GenPart_pdgId ),"b5_GenPart_pdgId[b5_nGenPart]/I");
+	outTree->Branch("b5_GenPart_status",	( ntupleRawTree.b5_GenPart_status ),"b5_GenPart_status[b5_nGenPart]/I");
+	outTree->Branch("b5_GenPart_statusFlags",	( ntupleRawTree.b5_GenPart_statusFlags ),"b5_GenPart_statusFlags[b5_nGenPart]/I");
+	outTree->Branch("b5_genTtbarId",&	( ntupleRawTree.b5_genTtbarId ));
+    #endif
 
 
 }
