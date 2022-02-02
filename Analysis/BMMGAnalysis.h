@@ -29,6 +29,8 @@
 
 
 #define MergedBMMX2018Data_cxx
+//#define __MCANALYSIS__
+
 #include "MergedBMMX2018Data.h"
 typedef MergedBMMX2018Data MergedBMMX ;
 
@@ -172,8 +174,9 @@ class BMMGAnalysis
     Int_t getPVMatch(Int_t mumuIdx);
     void setupReducedAnalysisTreeBranches();
     void Analyze();
+    #ifdef __MCANALYSIS__
     void GenAnalyze();
-    
+    #endif
 
     // Temporary vars with class scope
     TLorentzVector bmmgLV,diMuLV,photonLV;
