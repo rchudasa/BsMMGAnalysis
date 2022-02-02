@@ -211,7 +211,7 @@ void getRunDetails(   std::vector<string> fList,
         lumi_o=lumi;
      }
      else{
-        runLumiTxt<<","<<event;
+      //  runLumiTxt<<","<<event;
     }
   }
 
