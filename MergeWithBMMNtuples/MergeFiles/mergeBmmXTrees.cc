@@ -31,6 +31,14 @@ void doMerging (std::vector<string> fMotherList,
 void mergeBmmXTrees(string fname)
 {
 	fstream cfgFile(fname,ios::in);
+    if(not cfgFile)
+    {
+          cfgFile.open(fname+"sucess");
+          if( cfgFile)
+          {
+                return 555;
+          }
+    }
 	string line;
 	bool cfgModeFlag=false;
 	
@@ -175,12 +183,23 @@ void doMerging(   std::vector<string> fMotherList,
 
   Long64_t jentry=0,eventCount=0,evt=0;
   Long64_t nb = 0,nbytes=0 ;
+  Long64_t lostEventCount=0;
+  Long64_t foundEventCount=0;
   
+  auto t_start = std::chrono::high_resolution_clock::now();
+  auto t_end = std::chrono::high_resolution_clock::now();
+
   for ( ; jentry<nentries-1;jentry++) 
     {
-      //if (jentry%2500==0) 
+        eventCount++;
+      if (jentry%2500==0) 
         { 
-	        cout << "--> " << jentry << "/" << nentries<<endl;
+         t_end = std::chrono::high_resolution_clock::now();
+         cout<<"Processing Entry in event loop : "<<jentry<<" / "<<nentries<<"  [ "<<100.0*jentry/nentries<<"  % ]  "
+             << " Elapsed time : "<< std::chrono::duration<double, std::milli>(t_end-t_start).count()/1000.0
+             <<"  Estimated time left : "<< std::chrono::duration<double, std::milli>(t_end-t_start).count()*( nentries - jentry)/jentry* 0.001
+             <<"\n";
+	        cout << "\t--> " << jentry << "/" << nentries<<"  LostEvents "<<lostEventCount<<" ,  Found Events : "<<foundEventCount<<endl;
         }
       Long64_t ientry_evt = treeBranchSelector.bG.LoadTree(jentry);
       if (ientry_evt < 0) break;
@@ -196,8 +215,16 @@ void doMerging(   std::vector<string> fMotherList,
       s_lumi = treeBranchSelector.b5.luminosityBlock;
       s_event = treeBranchSelector.b5.event;
       
-      std::cout<<jentry<<"  FLG : "<< bool(nb>0) <<" :  nb : "<<nb<<"  BMMG {  "<<run<<","<<lumi<<","<<event<<" }  ,{ "<<s_run<<"."<<s_lumi<<","<<s_event<<"}\n";
-      if ( nb < 0 ) continue;
+    //  std::cout<<jentry<<"  FLG : "<< bool(nb>0) <<" :  nb : "<<nb<<"  BMMG {  "<<run<<","<<lumi<<","<<event<<" }  ,{ "<<s_run<<"."<<s_lumi<<","<<s_event<<"}\n";
+      if ( nb < 0 ) 
+      {
+        lostEventCount++;
+        continue;
+      }
+      else
+      {
+          foundEventCount++;
+      }
 
       treeBranchSelector.Fill();
         
@@ -205,6 +232,9 @@ void doMerging(   std::vector<string> fMotherList,
   mergedTreeFile->cd();
   treeBranchSelector.Write();
   mergedTreeFile->Close();
+  std::cout<<"Total Events Processed : "<<eventCount<<"\n";
+  std::cout<<"Total Found Events     : "<<foundEventCount<<"\n";
+  std::cout<<"Total Lost  Events     : "<<lostEventCount<<"\n";
   return;
 
 
