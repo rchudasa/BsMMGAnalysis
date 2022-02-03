@@ -30,12 +30,14 @@ public :
    UInt_t          run;
    ULong64_t       event;
    UInt_t          lumis;
+   UInt_t          lumis2;
    Bool_t          isData;
 
    // List of branches
    TBranch        *b_run;   //!
    TBranch        *b_event;   //!
    TBranch        *b_lumis;   //!
+   TBranch        *b_lumis2;   //!
    TBranch        *b_isData;   //!
 
    BmmGNtuple(TTree *tree=0);
@@ -113,6 +115,7 @@ void BmmGNtuple::Init(TTree *tree)
    fChain->SetBranchAddress("run", &run, &b_run);
    fChain->SetBranchAddress("event", &event, &b_event);
    fChain->SetBranchAddress("lumis", &lumis, &b_lumis);
+   fChain->SetBranchAddress("lumis", &lumis2,&b_lumis2);
    fChain->SetBranchAddress("isData", &isData, &b_isData);
    Notify();
 }

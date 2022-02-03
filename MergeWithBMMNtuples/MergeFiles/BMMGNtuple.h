@@ -1,20 +1,19 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
-// Wed Oct 27 17:00:50 2021 by ROOT version 6.14/09
+// Wed Feb  2 13:24:07 2022 by ROOT version 6.14/09
 // from TTree EventTree/Event data
-// found on file: Charmonium_Run2018A12Nov2019_UL2018_rsbv1_1.root
+// found on file: ../RunLumiEventFileMaker/BParking_data_ntuples_66.root
 //////////////////////////////////////////////////////////
 
 #ifndef BMMGNtuple_h
 #define BMMGNtuple_h
+#define BMMGNtuple_cxx
 
 #include <TROOT.h>
 #include <TChain.h>
 #include <TFile.h>
 
 // Header file for the classes stored in the TTree if any.
-#include "vector"
-#include "vector"
 #include "vector"
 #include "vector"
 
@@ -32,96 +31,6 @@ public :
    ULong64_t       event;
    UInt_t          lumis;
    Bool_t          isData;
-   Double_t        beamspot_x;
-   Double_t        beamspot_y;
-   Double_t        beamspot_z;
-   Double_t        beamspot_x_error;
-   Double_t        beamspot_y_error;
-   Double_t        beamspot_z_error;
-   Double_t        beamspot_covXX;
-   Double_t        beamspot_covXY;
-   Double_t        beamspot_covXZ;
-   Double_t        beamspot_covYY;
-   Double_t        beamspot_covYZ;
-   Double_t        beamspot_covZZ;
-   Double_t        beamspot_dxdz;
-   Double_t        beamspot_dydz;
-   Double_t        beamspot_sigmaZ;
-   Double_t        beamspot_dxdz_error;
-   Double_t        beamspot_dydz_error;
-   Double_t        beamspot_sigmaZError;
-   Double_t        beamspot_beamWidthX;
-   Double_t        beamspot_beamWidthY;
-   Double_t        beamspot_beamWidthX_error;
-   Double_t        beamspot_beamWidthY_error;
-   Int_t           nPrimaryVertex;
-   vector<bool>    *primaryVertex_isFake;
-   vector<double>  *primaryVertex_x;
-   vector<double>  *primaryVertex_y;
-   vector<double>  *primaryVertex_z;
-   vector<double>  *primaryVertex_t;
-   vector<double>  *primaryVertex_covXX;
-   vector<double>  *primaryVertex_covXY;
-   vector<double>  *primaryVertex_covXZ;
-   vector<double>  *primaryVertex_covYY;
-   vector<double>  *primaryVertex_covYZ;
-   vector<double>  *primaryVertex_covZZ;
-   vector<double>  *primaryVertex_x_error;
-   vector<double>  *primaryVertex_y_error;
-   vector<double>  *primaryVertex_z_error;
-   vector<double>  *primaryVertex_t_error;
-   vector<double>  *primaryVertex_ntracks;
-   vector<double>  *primaryVertex_ndof;
-   vector<double>  *primaryVertex_chi2;
-   vector<double>  *primaryVertex_normalizedChi2;
-   Int_t           nPho;
-   vector<float>   *phoE;
-   vector<float>   *phoEt;
-   vector<float>   *phoEta;
-   vector<float>   *phoPhi;
-   vector<float>   *phoSigmaE;
-   vector<float>   *phoCalibE;
-   vector<float>   *phoCalibEt;
-   vector<float>   *phoSCE;
-   vector<float>   *phoSCEt;
-   vector<float>   *phoSCRawE;
-   vector<float>   *phoESEnP1;
-   vector<float>   *phoESEnP2;
-   vector<float>   *phoSCEta;
-   vector<float>   *phoSCPhi;
-   vector<float>   *phoSCEtaWidth;
-   vector<float>   *phoSCPhiWidth;
-   vector<float>   *phoSCBrem;
-   vector<int>     *phohasPixelSeed;
-   vector<int>     *phoEleVeto;
-   vector<float>   *phoR9;
-   vector<float>   *phoHoverE;
-   vector<float>   *phoESEffSigmaRR;
-   vector<float>   *phoSigmaIEtaIEtaFull5x5;
-   vector<float>   *phoSigmaIEtaIPhiFull5x5;
-   vector<float>   *phoSigmaIPhiIPhiFull5x5;
-   vector<float>   *phoE2x2Full5x5;
-   vector<float>   *phoE5x5Full5x5;
-   vector<float>   *phoR9Full5x5;
-   vector<float>   *phoPFChIso;
-   vector<float>   *phoPFPhoIso;
-   vector<float>   *phoPFNeuIso;
-   vector<float>   *phoEcalPFClusterIso;
-   vector<float>   *phoHcalPFClusterIso;
-   vector<float>   *phoIDMVA;
-   vector<float>   *phoSeedTime;
-   vector<float>   *phoSeedEnergy;
-   vector<float>   *phoMIPTotEnergy;
-   vector<float>   *phoMIPChi2;
-   vector<float>   *phoMIPSlope;
-   vector<float>   *phoMIPIntercept;
-   vector<float>   *phoMIPNhitCone;
-   vector<float>   *phoMIPIsHalo;
-   Int_t           nPFPho;
-   vector<float>   *phoPFE;
-   vector<float>   *phoPFEt;
-   vector<float>   *phoPFEta;
-   vector<float>   *phoPFPhi;
    Int_t           nSC;
    vector<float>   *scE;
    vector<float>   *scEt;
@@ -174,10 +83,10 @@ public :
    vector<float>   *scFull5x5_sigmaIetaIeta;
    vector<float>   *scFull5x5_sigmaIetaIphi;
    vector<float>   *scFull5x5_sigmaIphiIphi;
-   Int_t           nhcalRechit;
-   vector<float>   *hcalRechitIEta;
-   vector<float>   *hcalRechitIPhi;
-   vector<float>   *hcalRechitEnergy;
+   vector<float>   *scNHcalRecHitInDIEta5IPhi5;
+   vector<float>   *scEFromHcalRecHitInDIEta5IPhi5;
+   vector<float>   *scNHcalRecHitInDIEta2IPhi2;
+   vector<float>   *scEFromHcalRecHitInDIEta2IPhi2;
    vector<float>   *scPFChIso1;
    vector<float>   *scPFChIso2;
    vector<float>   *scPFChIso3;
@@ -193,102 +102,32 @@ public :
    vector<float>   *scPFNeuIso3;
    vector<float>   *scPFNeuIso4;
    vector<float>   *scPFNeuIso5;
+   Int_t           nPrimaryVertex;
+   Float_t         primaryVertex_isFake[94];   //[nPrimaryVertex]
+   Float_t         primaryVertex_x[94];   //[nPrimaryVertex]
+   Float_t         primaryVertex_y[94];   //[nPrimaryVertex]
+   Float_t         primaryVertex_z[94];   //[nPrimaryVertex]
+   Float_t         primaryVertex_t[94];   //[nPrimaryVertex]
+   Float_t         primaryVertex_covXX[94];   //[nPrimaryVertex]
+   Float_t         primaryVertex_covXY[94];   //[nPrimaryVertex]
+   Float_t         primaryVertex_covXZ[94];   //[nPrimaryVertex]
+   Float_t         primaryVertex_covYY[94];   //[nPrimaryVertex]
+   Float_t         primaryVertex_covYZ[94];   //[nPrimaryVertex]
+   Float_t         primaryVertex_covZZ[94];   //[nPrimaryVertex]
+   Float_t         primaryVertex_x_error[94];   //[nPrimaryVertex]
+   Float_t         primaryVertex_y_error[94];   //[nPrimaryVertex]
+   Float_t         primaryVertex_z_error[94];   //[nPrimaryVertex]
+   Float_t         primaryVertex_t_error[94];   //[nPrimaryVertex]
+   Float_t         primaryVertex_ntracks[94];   //[nPrimaryVertex]
+   Float_t         primaryVertex_ndof[94];   //[nPrimaryVertex]
+   Float_t         primaryVertex_chi2[94];   //[nPrimaryVertex]
+   Float_t         primaryVertex_normalizedChi2[94];   //[nPrimaryVertex]
 
    // List of branches
    TBranch        *b_run;   //!
    TBranch        *b_event;   //!
    TBranch        *b_lumis;   //!
    TBranch        *b_isData;   //!
-   TBranch        *b_beamspot_x;   //!
-   TBranch        *b_beamspot_y;   //!
-   TBranch        *b_beamspot_z;   //!
-   TBranch        *b_beamspot_x_error;   //!
-   TBranch        *b_beamspot_y_error;   //!
-   TBranch        *b_beamspot_z_error;   //!
-   TBranch        *b_beamspot_covXX;   //!
-   TBranch        *b_beamspot_covXY;   //!
-   TBranch        *b_beamspot_covXZ;   //!
-   TBranch        *b_beamspot_covYY;   //!
-   TBranch        *b_beamspot_covYZ;   //!
-   TBranch        *b_beamspot_covZZ;   //!
-   TBranch        *b_beamspot_dxdz;   //!
-   TBranch        *b_beamspot_dydz;   //!
-   TBranch        *b_beamspot_sigmaZ;   //!
-   TBranch        *b_beamspot_dxdz_error;   //!
-   TBranch        *b_beamspot_dydz_error;   //!
-   TBranch        *b_beamspot_sigmaZError;   //!
-   TBranch        *b_beamspot_beamWidthX;   //!
-   TBranch        *b_beamspot_beamWidthY;   //!
-   TBranch        *b_beamspot_beamWidthX_error;   //!
-   TBranch        *b_beamspot_beamWidthY_error;   //!
-   TBranch        *b_nPrimaryVertex;   //!
-   TBranch        *b_primaryVertex_isFake;   //!
-   TBranch        *b_primaryVertex_x;   //!
-   TBranch        *b_primaryVertex_y;   //!
-   TBranch        *b_primaryVertex_z;   //!
-   TBranch        *b_primaryVertex_t;   //!
-   TBranch        *b_primaryVertex_covXX;   //!
-   TBranch        *b_primaryVertex_covXY;   //!
-   TBranch        *b_primaryVertex_covXZ;   //!
-   TBranch        *b_primaryVertex_covYY;   //!
-   TBranch        *b_primaryVertex_covYZ;   //!
-   TBranch        *b_primaryVertex_covZZ;   //!
-   TBranch        *b_primaryVertex_x_error;   //!
-   TBranch        *b_primaryVertex_y_error;   //!
-   TBranch        *b_primaryVertex_z_error;   //!
-   TBranch        *b_primaryVertex_t_error;   //!
-   TBranch        *b_primaryVertex_ntracks;   //!
-   TBranch        *b_primaryVertex_ndof;   //!
-   TBranch        *b_primaryVertex_chi2;   //!
-   TBranch        *b_primaryVertex_normalizedChi2;   //!
-   TBranch        *b_nPho;   //!
-   TBranch        *b_phoE;   //!
-   TBranch        *b_phoEt;   //!
-   TBranch        *b_phoEta;   //!
-   TBranch        *b_phoPhi;   //!
-   TBranch        *b_phoSigmaE;   //!
-   TBranch        *b_phoCalibE;   //!
-   TBranch        *b_phoCalibEt;   //!
-   TBranch        *b_phoSCE;   //!
-   TBranch        *b_phoSCEt;   //!
-   TBranch        *b_phoSCRawE;   //!
-   TBranch        *b_phoESEnP1;   //!
-   TBranch        *b_phoESEnP2;   //!
-   TBranch        *b_phoSCEta;   //!
-   TBranch        *b_phoSCPhi;   //!
-   TBranch        *b_phoSCEtaWidth;   //!
-   TBranch        *b_phoSCPhiWidth;   //!
-   TBranch        *b_phoSCBrem;   //!
-   TBranch        *b_phohasPixelSeed;   //!
-   TBranch        *b_phoEleVeto;   //!
-   TBranch        *b_phoR9;   //!
-   TBranch        *b_phoHoverE;   //!
-   TBranch        *b_phoESEffSigmaRR;   //!
-   TBranch        *b_phoSigmaIEtaIEtaFull5x5;   //!
-   TBranch        *b_phoSigmaIEtaIPhiFull5x5;   //!
-   TBranch        *b_phoSigmaIPhiIPhiFull5x5;   //!
-   TBranch        *b_phoE2x2Full5x5;   //!
-   TBranch        *b_phoE5x5Full5x5;   //!
-   TBranch        *b_phoR9Full5x5;   //!
-   TBranch        *b_phoPFChIso;   //!
-   TBranch        *b_phoPFPhoIso;   //!
-   TBranch        *b_phoPFNeuIso;   //!
-   TBranch        *b_phoEcalPFClusterIso;   //!
-   TBranch        *b_phoHcalPFClusterIso;   //!
-   TBranch        *b_phoIDMVA;   //!
-   TBranch        *b_phoSeedTime;   //!
-   TBranch        *b_phoSeedEnergy;   //!
-   TBranch        *b_phoMIPTotEnergy;   //!
-   TBranch        *b_phoMIPChi2;   //!
-   TBranch        *b_phoMIPSlope;   //!
-   TBranch        *b_phoMIPIntercept;   //!
-   TBranch        *b_phoMIPNhitCone;   //!
-   TBranch        *b_phoMIPIsHalo;   //!
-   TBranch        *b_nPFPho;   //!
-   TBranch        *b_phoPFE;   //!
-   TBranch        *b_phoPFEt;   //!
-   TBranch        *b_phoPFEta;   //!
-   TBranch        *b_phoPFPhi;   //!
    TBranch        *b_nSC;   //!
    TBranch        *b_scE;   //!
    TBranch        *b_scEt;   //!
@@ -341,10 +180,10 @@ public :
    TBranch        *b_scFull5x5_sigmaIetaIeta;   //!
    TBranch        *b_scFull5x5_sigmaIetaIphi;   //!
    TBranch        *b_scFull5x5_sigmaIphiIphi;   //!
-   TBranch        *b_nhcalRechit;   //!
-   TBranch        *b_hcalRechitIEta;   //!
-   TBranch        *b_hcalRechitIPhi;   //!
-   TBranch        *b_hcalRechitEnergy;   //!
+   TBranch        *b_scNHcalRecHitInDIEta5IPhi5;   //!
+   TBranch        *b_scEFromHcalRecHitInDIEta5IPhi5;   //!
+   TBranch        *b_scNHcalRecHitInDIEta2IPhi2;   //!
+   TBranch        *b_scEFromHcalRecHitInDIEta2IPhi2;   //!
    TBranch        *b_scPFChIso1;   //!
    TBranch        *b_scPFChIso2;   //!
    TBranch        *b_scPFChIso3;   //!
@@ -360,6 +199,26 @@ public :
    TBranch        *b_scPFNeuIso3;   //!
    TBranch        *b_scPFNeuIso4;   //!
    TBranch        *b_scPFNeuIso5;   //!
+   TBranch        *b_nPrimaryVertex;   //!
+   TBranch        *b_primaryVertex_isFake;   //!
+   TBranch        *b_primaryVertex_x;   //!
+   TBranch        *b_primaryVertex_y;   //!
+   TBranch        *b_primaryVertex_z;   //!
+   TBranch        *b_primaryVertex_t;   //!
+   TBranch        *b_primaryVertex_covXX;   //!
+   TBranch        *b_primaryVertex_covXY;   //!
+   TBranch        *b_primaryVertex_covXZ;   //!
+   TBranch        *b_primaryVertex_covYY;   //!
+   TBranch        *b_primaryVertex_covYZ;   //!
+   TBranch        *b_primaryVertex_covZZ;   //!
+   TBranch        *b_primaryVertex_x_error;   //!
+   TBranch        *b_primaryVertex_y_error;   //!
+   TBranch        *b_primaryVertex_z_error;   //!
+   TBranch        *b_primaryVertex_t_error;   //!
+   TBranch        *b_primaryVertex_ntracks;   //!
+   TBranch        *b_primaryVertex_ndof;   //!
+   TBranch        *b_primaryVertex_chi2;   //!
+   TBranch        *b_primaryVertex_normalizedChi2;   //!
 
    BMMGNtuple(TTree *tree=0);
    virtual ~BMMGNtuple();
@@ -380,11 +239,11 @@ BMMGNtuple::BMMGNtuple(TTree *tree) : fChain(0)
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("Charmonium_Run2018A12Nov2019_UL2018_rsbv1_1.root");
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("../RunLumiEventFileMaker/BParking_data_ntuples_66.root");
       if (!f || !f->IsOpen()) {
-         f = new TFile("Charmonium_Run2018A12Nov2019_UL2018_rsbv1_1.root");
+         f = new TFile("../RunLumiEventFileMaker/BParking_data_ntuples_66.root");
       }
-      TDirectory * dir = (TDirectory*)f->Get("Charmonium_Run2018A12Nov2019_UL2018_rsbv1_1.root:/Ntuples");
+      TDirectory * dir = (TDirectory*)f->Get("../RunLumiEventFileMaker/BParking_data_ntuples_66.root:/Ntuples");
       dir->GetObject("EventTree",tree);
 
    }
@@ -427,71 +286,6 @@ void BMMGNtuple::Init(TTree *tree)
    // (once per file to be processed).
 
    // Set object pointer
-   primaryVertex_isFake = 0;
-   primaryVertex_x = 0;
-   primaryVertex_y = 0;
-   primaryVertex_z = 0;
-   primaryVertex_t = 0;
-   primaryVertex_covXX = 0;
-   primaryVertex_covXY = 0;
-   primaryVertex_covXZ = 0;
-   primaryVertex_covYY = 0;
-   primaryVertex_covYZ = 0;
-   primaryVertex_covZZ = 0;
-   primaryVertex_x_error = 0;
-   primaryVertex_y_error = 0;
-   primaryVertex_z_error = 0;
-   primaryVertex_t_error = 0;
-   primaryVertex_ntracks = 0;
-   primaryVertex_ndof = 0;
-   primaryVertex_chi2 = 0;
-   primaryVertex_normalizedChi2 = 0;
-   phoE = 0;
-   phoEt = 0;
-   phoEta = 0;
-   phoPhi = 0;
-   phoSigmaE = 0;
-   phoCalibE = 0;
-   phoCalibEt = 0;
-   phoSCE = 0;
-   phoSCEt = 0;
-   phoSCRawE = 0;
-   phoESEnP1 = 0;
-   phoESEnP2 = 0;
-   phoSCEta = 0;
-   phoSCPhi = 0;
-   phoSCEtaWidth = 0;
-   phoSCPhiWidth = 0;
-   phoSCBrem = 0;
-   phohasPixelSeed = 0;
-   phoEleVeto = 0;
-   phoR9 = 0;
-   phoHoverE = 0;
-   phoESEffSigmaRR = 0;
-   phoSigmaIEtaIEtaFull5x5 = 0;
-   phoSigmaIEtaIPhiFull5x5 = 0;
-   phoSigmaIPhiIPhiFull5x5 = 0;
-   phoE2x2Full5x5 = 0;
-   phoE5x5Full5x5 = 0;
-   phoR9Full5x5 = 0;
-   phoPFChIso = 0;
-   phoPFPhoIso = 0;
-   phoPFNeuIso = 0;
-   phoEcalPFClusterIso = 0;
-   phoHcalPFClusterIso = 0;
-   phoIDMVA = 0;
-   phoSeedTime = 0;
-   phoSeedEnergy = 0;
-   phoMIPTotEnergy = 0;
-   phoMIPChi2 = 0;
-   phoMIPSlope = 0;
-   phoMIPIntercept = 0;
-   phoMIPNhitCone = 0;
-   phoMIPIsHalo = 0;
-   phoPFE = 0;
-   phoPFEt = 0;
-   phoPFEta = 0;
-   phoPFPhi = 0;
    scE = 0;
    scEt = 0;
    scRawE = 0;
@@ -543,9 +337,10 @@ void BMMGNtuple::Init(TTree *tree)
    scFull5x5_sigmaIetaIeta = 0;
    scFull5x5_sigmaIetaIphi = 0;
    scFull5x5_sigmaIphiIphi = 0;
-   hcalRechitIEta = 0;
-   hcalRechitIPhi = 0;
-   hcalRechitEnergy = 0;
+   scNHcalRecHitInDIEta5IPhi5 = 0;
+   scEFromHcalRecHitInDIEta5IPhi5 = 0;
+   scNHcalRecHitInDIEta2IPhi2 = 0;
+   scEFromHcalRecHitInDIEta2IPhi2 = 0;
    scPFChIso1 = 0;
    scPFChIso2 = 0;
    scPFChIso3 = 0;
@@ -571,96 +366,6 @@ void BMMGNtuple::Init(TTree *tree)
    fChain->SetBranchAddress("event", &event, &b_event);
    fChain->SetBranchAddress("lumis", &lumis, &b_lumis);
    fChain->SetBranchAddress("isData", &isData, &b_isData);
-   fChain->SetBranchAddress("beamspot_x", &beamspot_x, &b_beamspot_x);
-   fChain->SetBranchAddress("beamspot_y", &beamspot_y, &b_beamspot_y);
-   fChain->SetBranchAddress("beamspot_z", &beamspot_z, &b_beamspot_z);
-   fChain->SetBranchAddress("beamspot_x_error", &beamspot_x_error, &b_beamspot_x_error);
-   fChain->SetBranchAddress("beamspot_y_error", &beamspot_y_error, &b_beamspot_y_error);
-   fChain->SetBranchAddress("beamspot_z_error", &beamspot_z_error, &b_beamspot_z_error);
-   fChain->SetBranchAddress("beamspot_covXX", &beamspot_covXX, &b_beamspot_covXX);
-   fChain->SetBranchAddress("beamspot_covXY", &beamspot_covXY, &b_beamspot_covXY);
-   fChain->SetBranchAddress("beamspot_covXZ", &beamspot_covXZ, &b_beamspot_covXZ);
-   fChain->SetBranchAddress("beamspot_covYY", &beamspot_covYY, &b_beamspot_covYY);
-   fChain->SetBranchAddress("beamspot_covYZ", &beamspot_covYZ, &b_beamspot_covYZ);
-   fChain->SetBranchAddress("beamspot_covZZ", &beamspot_covZZ, &b_beamspot_covZZ);
-   fChain->SetBranchAddress("beamspot_dxdz", &beamspot_dxdz, &b_beamspot_dxdz);
-   fChain->SetBranchAddress("beamspot_dydz", &beamspot_dydz, &b_beamspot_dydz);
-   fChain->SetBranchAddress("beamspot_sigmaZ", &beamspot_sigmaZ, &b_beamspot_sigmaZ);
-   fChain->SetBranchAddress("beamspot_dxdz_error", &beamspot_dxdz_error, &b_beamspot_dxdz_error);
-   fChain->SetBranchAddress("beamspot_dydz_error", &beamspot_dydz_error, &b_beamspot_dydz_error);
-   fChain->SetBranchAddress("beamspot_sigmaZError", &beamspot_sigmaZError, &b_beamspot_sigmaZError);
-   fChain->SetBranchAddress("beamspot_beamWidthX", &beamspot_beamWidthX, &b_beamspot_beamWidthX);
-   fChain->SetBranchAddress("beamspot_beamWidthY", &beamspot_beamWidthY, &b_beamspot_beamWidthY);
-   fChain->SetBranchAddress("beamspot_beamWidthX_error", &beamspot_beamWidthX_error, &b_beamspot_beamWidthX_error);
-   fChain->SetBranchAddress("beamspot_beamWidthY_error", &beamspot_beamWidthY_error, &b_beamspot_beamWidthY_error);
-   fChain->SetBranchAddress("nPrimaryVertex", &nPrimaryVertex, &b_nPrimaryVertex);
-   fChain->SetBranchAddress("primaryVertex_isFake", &primaryVertex_isFake, &b_primaryVertex_isFake);
-   fChain->SetBranchAddress("primaryVertex_x", &primaryVertex_x, &b_primaryVertex_x);
-   fChain->SetBranchAddress("primaryVertex_y", &primaryVertex_y, &b_primaryVertex_y);
-   fChain->SetBranchAddress("primaryVertex_z", &primaryVertex_z, &b_primaryVertex_z);
-   fChain->SetBranchAddress("primaryVertex_t", &primaryVertex_t, &b_primaryVertex_t);
-   fChain->SetBranchAddress("primaryVertex_covXX", &primaryVertex_covXX, &b_primaryVertex_covXX);
-   fChain->SetBranchAddress("primaryVertex_covXY", &primaryVertex_covXY, &b_primaryVertex_covXY);
-   fChain->SetBranchAddress("primaryVertex_covXZ", &primaryVertex_covXZ, &b_primaryVertex_covXZ);
-   fChain->SetBranchAddress("primaryVertex_covYY", &primaryVertex_covYY, &b_primaryVertex_covYY);
-   fChain->SetBranchAddress("primaryVertex_covYZ", &primaryVertex_covYZ, &b_primaryVertex_covYZ);
-   fChain->SetBranchAddress("primaryVertex_covZZ", &primaryVertex_covZZ, &b_primaryVertex_covZZ);
-   fChain->SetBranchAddress("primaryVertex_x_error", &primaryVertex_x_error, &b_primaryVertex_x_error);
-   fChain->SetBranchAddress("primaryVertex_y_error", &primaryVertex_y_error, &b_primaryVertex_y_error);
-   fChain->SetBranchAddress("primaryVertex_z_error", &primaryVertex_z_error, &b_primaryVertex_z_error);
-   fChain->SetBranchAddress("primaryVertex_t_error", &primaryVertex_t_error, &b_primaryVertex_t_error);
-   fChain->SetBranchAddress("primaryVertex_ntracks", &primaryVertex_ntracks, &b_primaryVertex_ntracks);
-   fChain->SetBranchAddress("primaryVertex_ndof", &primaryVertex_ndof, &b_primaryVertex_ndof);
-   fChain->SetBranchAddress("primaryVertex_chi2", &primaryVertex_chi2, &b_primaryVertex_chi2);
-   fChain->SetBranchAddress("primaryVertex_normalizedChi2", &primaryVertex_normalizedChi2, &b_primaryVertex_normalizedChi2);
-   fChain->SetBranchAddress("nPho", &nPho, &b_nPho);
-   fChain->SetBranchAddress("phoE", &phoE, &b_phoE);
-   fChain->SetBranchAddress("phoEt", &phoEt, &b_phoEt);
-   fChain->SetBranchAddress("phoEta", &phoEta, &b_phoEta);
-   fChain->SetBranchAddress("phoPhi", &phoPhi, &b_phoPhi);
-   fChain->SetBranchAddress("phoSigmaE", &phoSigmaE, &b_phoSigmaE);
-   fChain->SetBranchAddress("phoCalibE", &phoCalibE, &b_phoCalibE);
-   fChain->SetBranchAddress("phoCalibEt", &phoCalibEt, &b_phoCalibEt);
-   fChain->SetBranchAddress("phoSCE", &phoSCE, &b_phoSCE);
-   fChain->SetBranchAddress("phoSCEt", &phoSCEt, &b_phoSCEt);
-   fChain->SetBranchAddress("phoSCRawE", &phoSCRawE, &b_phoSCRawE);
-   fChain->SetBranchAddress("phoESEnP1", &phoESEnP1, &b_phoESEnP1);
-   fChain->SetBranchAddress("phoESEnP2", &phoESEnP2, &b_phoESEnP2);
-   fChain->SetBranchAddress("phoSCEta", &phoSCEta, &b_phoSCEta);
-   fChain->SetBranchAddress("phoSCPhi", &phoSCPhi, &b_phoSCPhi);
-   fChain->SetBranchAddress("phoSCEtaWidth", &phoSCEtaWidth, &b_phoSCEtaWidth);
-   fChain->SetBranchAddress("phoSCPhiWidth", &phoSCPhiWidth, &b_phoSCPhiWidth);
-   fChain->SetBranchAddress("phoSCBrem", &phoSCBrem, &b_phoSCBrem);
-   fChain->SetBranchAddress("phohasPixelSeed", &phohasPixelSeed, &b_phohasPixelSeed);
-   fChain->SetBranchAddress("phoEleVeto", &phoEleVeto, &b_phoEleVeto);
-   fChain->SetBranchAddress("phoR9", &phoR9, &b_phoR9);
-   fChain->SetBranchAddress("phoHoverE", &phoHoverE, &b_phoHoverE);
-   fChain->SetBranchAddress("phoESEffSigmaRR", &phoESEffSigmaRR, &b_phoESEffSigmaRR);
-   fChain->SetBranchAddress("phoSigmaIEtaIEtaFull5x5", &phoSigmaIEtaIEtaFull5x5, &b_phoSigmaIEtaIEtaFull5x5);
-   fChain->SetBranchAddress("phoSigmaIEtaIPhiFull5x5", &phoSigmaIEtaIPhiFull5x5, &b_phoSigmaIEtaIPhiFull5x5);
-   fChain->SetBranchAddress("phoSigmaIPhiIPhiFull5x5", &phoSigmaIPhiIPhiFull5x5, &b_phoSigmaIPhiIPhiFull5x5);
-   fChain->SetBranchAddress("phoE2x2Full5x5", &phoE2x2Full5x5, &b_phoE2x2Full5x5);
-   fChain->SetBranchAddress("phoE5x5Full5x5", &phoE5x5Full5x5, &b_phoE5x5Full5x5);
-   fChain->SetBranchAddress("phoR9Full5x5", &phoR9Full5x5, &b_phoR9Full5x5);
-   fChain->SetBranchAddress("phoPFChIso", &phoPFChIso, &b_phoPFChIso);
-   fChain->SetBranchAddress("phoPFPhoIso", &phoPFPhoIso, &b_phoPFPhoIso);
-   fChain->SetBranchAddress("phoPFNeuIso", &phoPFNeuIso, &b_phoPFNeuIso);
-   fChain->SetBranchAddress("phoEcalPFClusterIso", &phoEcalPFClusterIso, &b_phoEcalPFClusterIso);
-   fChain->SetBranchAddress("phoHcalPFClusterIso", &phoHcalPFClusterIso, &b_phoHcalPFClusterIso);
-   fChain->SetBranchAddress("phoIDMVA", &phoIDMVA, &b_phoIDMVA);
-   fChain->SetBranchAddress("phoSeedTime", &phoSeedTime, &b_phoSeedTime);
-   fChain->SetBranchAddress("phoSeedEnergy", &phoSeedEnergy, &b_phoSeedEnergy);
-   fChain->SetBranchAddress("phoMIPTotEnergy", &phoMIPTotEnergy, &b_phoMIPTotEnergy);
-   fChain->SetBranchAddress("phoMIPChi2", &phoMIPChi2, &b_phoMIPChi2);
-   fChain->SetBranchAddress("phoMIPSlope", &phoMIPSlope, &b_phoMIPSlope);
-   fChain->SetBranchAddress("phoMIPIntercept", &phoMIPIntercept, &b_phoMIPIntercept);
-   fChain->SetBranchAddress("phoMIPNhitCone", &phoMIPNhitCone, &b_phoMIPNhitCone);
-   fChain->SetBranchAddress("phoMIPIsHalo", &phoMIPIsHalo, &b_phoMIPIsHalo);
-   fChain->SetBranchAddress("nPFPho", &nPFPho, &b_nPFPho);
-   fChain->SetBranchAddress("phoPFE", &phoPFE, &b_phoPFE);
-   fChain->SetBranchAddress("phoPFEt", &phoPFEt, &b_phoPFEt);
-   fChain->SetBranchAddress("phoPFEta", &phoPFEta, &b_phoPFEta);
-   fChain->SetBranchAddress("phoPFPhi", &phoPFPhi, &b_phoPFPhi);
    fChain->SetBranchAddress("nSC", &nSC, &b_nSC);
    fChain->SetBranchAddress("scE", &scE, &b_scE);
    fChain->SetBranchAddress("scEt", &scEt, &b_scEt);
@@ -713,10 +418,10 @@ void BMMGNtuple::Init(TTree *tree)
    fChain->SetBranchAddress("scFull5x5_sigmaIetaIeta", &scFull5x5_sigmaIetaIeta, &b_scFull5x5_sigmaIetaIeta);
    fChain->SetBranchAddress("scFull5x5_sigmaIetaIphi", &scFull5x5_sigmaIetaIphi, &b_scFull5x5_sigmaIetaIphi);
    fChain->SetBranchAddress("scFull5x5_sigmaIphiIphi", &scFull5x5_sigmaIphiIphi, &b_scFull5x5_sigmaIphiIphi);
-   fChain->SetBranchAddress("nhcalRechit", &nhcalRechit, &b_nhcalRechit);
-   fChain->SetBranchAddress("hcalRechitIEta", &hcalRechitIEta, &b_hcalRechitIEta);
-   fChain->SetBranchAddress("hcalRechitIPhi", &hcalRechitIPhi, &b_hcalRechitIPhi);
-   fChain->SetBranchAddress("hcalRechitEnergy", &hcalRechitEnergy, &b_hcalRechitEnergy);
+   fChain->SetBranchAddress("scNHcalRecHitInDIEta5IPhi5", &scNHcalRecHitInDIEta5IPhi5, &b_scNHcalRecHitInDIEta5IPhi5);
+   fChain->SetBranchAddress("scEFromHcalRecHitInDIEta5IPhi5", &scEFromHcalRecHitInDIEta5IPhi5, &b_scEFromHcalRecHitInDIEta5IPhi5);
+   fChain->SetBranchAddress("scNHcalRecHitInDIEta2IPhi2", &scNHcalRecHitInDIEta2IPhi2, &b_scNHcalRecHitInDIEta2IPhi2);
+   fChain->SetBranchAddress("scEFromHcalRecHitInDIEta2IPhi2", &scEFromHcalRecHitInDIEta2IPhi2, &b_scEFromHcalRecHitInDIEta2IPhi2);
    fChain->SetBranchAddress("scPFChIso1", &scPFChIso1, &b_scPFChIso1);
    fChain->SetBranchAddress("scPFChIso2", &scPFChIso2, &b_scPFChIso2);
    fChain->SetBranchAddress("scPFChIso3", &scPFChIso3, &b_scPFChIso3);
@@ -732,6 +437,26 @@ void BMMGNtuple::Init(TTree *tree)
    fChain->SetBranchAddress("scPFNeuIso3", &scPFNeuIso3, &b_scPFNeuIso3);
    fChain->SetBranchAddress("scPFNeuIso4", &scPFNeuIso4, &b_scPFNeuIso4);
    fChain->SetBranchAddress("scPFNeuIso5", &scPFNeuIso5, &b_scPFNeuIso5);
+   fChain->SetBranchAddress("nPrimaryVertex", &nPrimaryVertex, &b_nPrimaryVertex);
+   fChain->SetBranchAddress("primaryVertex_isFake", primaryVertex_isFake, &b_primaryVertex_isFake);
+   fChain->SetBranchAddress("primaryVertex_x", primaryVertex_x, &b_primaryVertex_x);
+   fChain->SetBranchAddress("primaryVertex_y", primaryVertex_y, &b_primaryVertex_y);
+   fChain->SetBranchAddress("primaryVertex_z", primaryVertex_z, &b_primaryVertex_z);
+   fChain->SetBranchAddress("primaryVertex_t", primaryVertex_t, &b_primaryVertex_t);
+   fChain->SetBranchAddress("primaryVertex_covXX", primaryVertex_covXX, &b_primaryVertex_covXX);
+   fChain->SetBranchAddress("primaryVertex_covXY", primaryVertex_covXY, &b_primaryVertex_covXY);
+   fChain->SetBranchAddress("primaryVertex_covXZ", primaryVertex_covXZ, &b_primaryVertex_covXZ);
+   fChain->SetBranchAddress("primaryVertex_covYY", primaryVertex_covYY, &b_primaryVertex_covYY);
+   fChain->SetBranchAddress("primaryVertex_covYZ", primaryVertex_covYZ, &b_primaryVertex_covYZ);
+   fChain->SetBranchAddress("primaryVertex_covZZ", primaryVertex_covZZ, &b_primaryVertex_covZZ);
+   fChain->SetBranchAddress("primaryVertex_x_error", primaryVertex_x_error, &b_primaryVertex_x_error);
+   fChain->SetBranchAddress("primaryVertex_y_error", primaryVertex_y_error, &b_primaryVertex_y_error);
+   fChain->SetBranchAddress("primaryVertex_z_error", primaryVertex_z_error, &b_primaryVertex_z_error);
+   fChain->SetBranchAddress("primaryVertex_t_error", primaryVertex_t_error, &b_primaryVertex_t_error);
+   fChain->SetBranchAddress("primaryVertex_ntracks", primaryVertex_ntracks, &b_primaryVertex_ntracks);
+   fChain->SetBranchAddress("primaryVertex_ndof", primaryVertex_ndof, &b_primaryVertex_ndof);
+   fChain->SetBranchAddress("primaryVertex_chi2", primaryVertex_chi2, &b_primaryVertex_chi2);
+   fChain->SetBranchAddress("primaryVertex_normalizedChi2", primaryVertex_normalizedChi2, &b_primaryVertex_normalizedChi2);
    Notify();
 }
 

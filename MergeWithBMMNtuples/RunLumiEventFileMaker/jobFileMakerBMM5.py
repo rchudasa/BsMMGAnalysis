@@ -59,7 +59,7 @@ error = $Fp(filename)run.$(Cluster).stderr\n\
 log = $Fp(filename)run.$(Cluster).log\n\
 +JobFlavour = \"longlunch\"\n\
 "
-condorScriptName='subCondorBMMG'+tag+'.sub'
+condorScriptName='subCondorBMM5'+tag+'.sub'
 condorScript=open(condorScriptName,'w')
 condorScript.write(condorScriptString)
 

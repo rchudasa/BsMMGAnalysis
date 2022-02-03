@@ -1,158 +1,564 @@
 void genericTreeBranchSelector::FillTheArraysFromVectors()
 {
+	bG_nscE = bG.scE->size() ;
+	bG_nscE = bG_nscE > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscE ;
+	bG_nscEt = bG.scEt->size() ;
+	bG_nscEt = bG_nscEt > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscEt ;
+	bG_nscRawE = bG.scRawE->size() ;
+	bG_nscRawE = bG_nscRawE > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscRawE ;
+	bG_nscEta = bG.scEta->size() ;
+	bG_nscEta = bG_nscEta > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscEta ;
+	bG_nscPhi = bG.scPhi->size() ;
+	bG_nscPhi = bG_nscPhi > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscPhi ;
+	bG_nscX = bG.scX->size() ;
+	bG_nscX = bG_nscX > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscX ;
+	bG_nscY = bG.scY->size() ;
+	bG_nscY = bG_nscY > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscY ;
+	bG_nscZ = bG.scZ->size() ;
+	bG_nscZ = bG_nscZ > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscZ ;
+	bG_nscEtaWidth = bG.scEtaWidth->size() ;
+	bG_nscEtaWidth = bG_nscEtaWidth > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscEtaWidth ;
+	bG_nscPhiWidth = bG.scPhiWidth->size() ;
+	bG_nscPhiWidth = bG_nscPhiWidth > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscPhiWidth ;
+	bG_nscRawEt = bG.scRawEt->size() ;
+	bG_nscRawEt = bG_nscRawEt > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscRawEt ;
+	bG_nscMinDrWithGsfElectornSC_ = bG.scMinDrWithGsfElectornSC_->size() ;
+	bG_nscMinDrWithGsfElectornSC_ = bG_nscMinDrWithGsfElectornSC_ > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscMinDrWithGsfElectornSC_ ;
+	bG_nscFoundGsfMatch_ = bG.scFoundGsfMatch_->size() ;
+	bG_nscFoundGsfMatch_ = bG_nscFoundGsfMatch_ > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscFoundGsfMatch_ ;
+	bG_nscE5x5 = bG.scE5x5->size() ;
+	bG_nscE5x5 = bG_nscE5x5 > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscE5x5 ;
+	bG_nscE2x2Ratio = bG.scE2x2Ratio->size() ;
+	bG_nscE2x2Ratio = bG_nscE2x2Ratio > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscE2x2Ratio ;
+	bG_nscE3x3Ratio = bG.scE3x3Ratio->size() ;
+	bG_nscE3x3Ratio = bG_nscE3x3Ratio > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscE3x3Ratio ;
+	bG_nscEMaxRatio = bG.scEMaxRatio->size() ;
+	bG_nscEMaxRatio = bG_nscEMaxRatio > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscEMaxRatio ;
+	bG_nscE2ndRatio = bG.scE2ndRatio->size() ;
+	bG_nscE2ndRatio = bG_nscE2ndRatio > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscE2ndRatio ;
+	bG_nscETopRatio = bG.scETopRatio->size() ;
+	bG_nscETopRatio = bG_nscETopRatio > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscETopRatio ;
+	bG_nscERightRatio = bG.scERightRatio->size() ;
+	bG_nscERightRatio = bG_nscERightRatio > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscERightRatio ;
+	bG_nscEBottomRatio = bG.scEBottomRatio->size() ;
+	bG_nscEBottomRatio = bG_nscEBottomRatio > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscEBottomRatio ;
+	bG_nscELeftRatio = bG.scELeftRatio->size() ;
+	bG_nscELeftRatio = bG_nscELeftRatio > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscELeftRatio ;
+	bG_nscE2x5MaxRatio = bG.scE2x5MaxRatio->size() ;
+	bG_nscE2x5MaxRatio = bG_nscE2x5MaxRatio > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscE2x5MaxRatio ;
+	bG_nscE2x5TopRatio = bG.scE2x5TopRatio->size() ;
+	bG_nscE2x5TopRatio = bG_nscE2x5TopRatio > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscE2x5TopRatio ;
+	bG_nscE2x5RightRatio = bG.scE2x5RightRatio->size() ;
+	bG_nscE2x5RightRatio = bG_nscE2x5RightRatio > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscE2x5RightRatio ;
+	bG_nscE2x5BottomRatio = bG.scE2x5BottomRatio->size() ;
+	bG_nscE2x5BottomRatio = bG_nscE2x5BottomRatio > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscE2x5BottomRatio ;
+	bG_nscE2x5LeftRatio = bG.scE2x5LeftRatio->size() ;
+	bG_nscE2x5LeftRatio = bG_nscE2x5LeftRatio > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscE2x5LeftRatio ;
+	bG_nscSwissCross = bG.scSwissCross->size() ;
+	bG_nscSwissCross = bG_nscSwissCross > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscSwissCross ;
+	bG_nscR9 = bG.scR9->size() ;
+	bG_nscR9 = bG_nscR9 > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscR9 ;
+	bG_nscSigmaIetaIeta = bG.scSigmaIetaIeta->size() ;
+	bG_nscSigmaIetaIeta = bG_nscSigmaIetaIeta > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscSigmaIetaIeta ;
+	bG_nscSigmaIetaIphi = bG.scSigmaIetaIphi->size() ;
+	bG_nscSigmaIetaIphi = bG_nscSigmaIetaIphi > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscSigmaIetaIphi ;
+	bG_nscSigmaIphiIphi = bG.scSigmaIphiIphi->size() ;
+	bG_nscSigmaIphiIphi = bG_nscSigmaIphiIphi > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscSigmaIphiIphi ;
+	bG_nscFull5x5_e5x5 = bG.scFull5x5_e5x5->size() ;
+	bG_nscFull5x5_e5x5 = bG_nscFull5x5_e5x5 > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscFull5x5_e5x5 ;
+	bG_nscFull5x5_e2x2Ratio = bG.scFull5x5_e2x2Ratio->size() ;
+	bG_nscFull5x5_e2x2Ratio = bG_nscFull5x5_e2x2Ratio > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscFull5x5_e2x2Ratio ;
+	bG_nscFull5x5_e3x3Ratio = bG.scFull5x5_e3x3Ratio->size() ;
+	bG_nscFull5x5_e3x3Ratio = bG_nscFull5x5_e3x3Ratio > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscFull5x5_e3x3Ratio ;
+	bG_nscFull5x5_eMaxRatio = bG.scFull5x5_eMaxRatio->size() ;
+	bG_nscFull5x5_eMaxRatio = bG_nscFull5x5_eMaxRatio > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscFull5x5_eMaxRatio ;
+	bG_nscFull5x5_e2ndRatio = bG.scFull5x5_e2ndRatio->size() ;
+	bG_nscFull5x5_e2ndRatio = bG_nscFull5x5_e2ndRatio > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscFull5x5_e2ndRatio ;
+	bG_nscFull5x5_eTopRatio = bG.scFull5x5_eTopRatio->size() ;
+	bG_nscFull5x5_eTopRatio = bG_nscFull5x5_eTopRatio > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscFull5x5_eTopRatio ;
+	bG_nscFull5x5_eRightRatio = bG.scFull5x5_eRightRatio->size() ;
+	bG_nscFull5x5_eRightRatio = bG_nscFull5x5_eRightRatio > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscFull5x5_eRightRatio ;
+	bG_nscFull5x5_eBottomRatio = bG.scFull5x5_eBottomRatio->size() ;
+	bG_nscFull5x5_eBottomRatio = bG_nscFull5x5_eBottomRatio > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscFull5x5_eBottomRatio ;
+	bG_nscFull5x5_eLeftRatio = bG.scFull5x5_eLeftRatio->size() ;
+	bG_nscFull5x5_eLeftRatio = bG_nscFull5x5_eLeftRatio > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscFull5x5_eLeftRatio ;
+	bG_nscFull5x5_e2x5MaxRatio = bG.scFull5x5_e2x5MaxRatio->size() ;
+	bG_nscFull5x5_e2x5MaxRatio = bG_nscFull5x5_e2x5MaxRatio > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscFull5x5_e2x5MaxRatio ;
+	bG_nscFull5x5_e2x5TopRatio = bG.scFull5x5_e2x5TopRatio->size() ;
+	bG_nscFull5x5_e2x5TopRatio = bG_nscFull5x5_e2x5TopRatio > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscFull5x5_e2x5TopRatio ;
+	bG_nscFull5x5_e2x5RightRatio = bG.scFull5x5_e2x5RightRatio->size() ;
+	bG_nscFull5x5_e2x5RightRatio = bG_nscFull5x5_e2x5RightRatio > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscFull5x5_e2x5RightRatio ;
+	bG_nscFull5x5_e2x5BottomRatio = bG.scFull5x5_e2x5BottomRatio->size() ;
+	bG_nscFull5x5_e2x5BottomRatio = bG_nscFull5x5_e2x5BottomRatio > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscFull5x5_e2x5BottomRatio ;
+	bG_nscFull5x5_e2x5LeftRatio = bG.scFull5x5_e2x5LeftRatio->size() ;
+	bG_nscFull5x5_e2x5LeftRatio = bG_nscFull5x5_e2x5LeftRatio > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscFull5x5_e2x5LeftRatio ;
+	bG_nscFull5x5_swissCross = bG.scFull5x5_swissCross->size() ;
+	bG_nscFull5x5_swissCross = bG_nscFull5x5_swissCross > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscFull5x5_swissCross ;
+	bG_nscFull5x5_r9 = bG.scFull5x5_r9->size() ;
+	bG_nscFull5x5_r9 = bG_nscFull5x5_r9 > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscFull5x5_r9 ;
+	bG_nscFull5x5_sigmaIetaIeta = bG.scFull5x5_sigmaIetaIeta->size() ;
+	bG_nscFull5x5_sigmaIetaIeta = bG_nscFull5x5_sigmaIetaIeta > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscFull5x5_sigmaIetaIeta ;
+	bG_nscFull5x5_sigmaIetaIphi = bG.scFull5x5_sigmaIetaIphi->size() ;
+	bG_nscFull5x5_sigmaIetaIphi = bG_nscFull5x5_sigmaIetaIphi > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscFull5x5_sigmaIetaIphi ;
+	bG_nscFull5x5_sigmaIphiIphi = bG.scFull5x5_sigmaIphiIphi->size() ;
+	bG_nscFull5x5_sigmaIphiIphi = bG_nscFull5x5_sigmaIphiIphi > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscFull5x5_sigmaIphiIphi ;
+	bG_nscNHcalRecHitInDIEta5IPhi5 = bG.scNHcalRecHitInDIEta5IPhi5->size() ;
+	bG_nscNHcalRecHitInDIEta5IPhi5 = bG_nscNHcalRecHitInDIEta5IPhi5 > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscNHcalRecHitInDIEta5IPhi5 ;
+	bG_nscEFromHcalRecHitInDIEta5IPhi5 = bG.scEFromHcalRecHitInDIEta5IPhi5->size() ;
+	bG_nscEFromHcalRecHitInDIEta5IPhi5 = bG_nscEFromHcalRecHitInDIEta5IPhi5 > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscEFromHcalRecHitInDIEta5IPhi5 ;
+	bG_nscNHcalRecHitInDIEta2IPhi2 = bG.scNHcalRecHitInDIEta2IPhi2->size() ;
+	bG_nscNHcalRecHitInDIEta2IPhi2 = bG_nscNHcalRecHitInDIEta2IPhi2 > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscNHcalRecHitInDIEta2IPhi2 ;
+	bG_nscEFromHcalRecHitInDIEta2IPhi2 = bG.scEFromHcalRecHitInDIEta2IPhi2->size() ;
+	bG_nscEFromHcalRecHitInDIEta2IPhi2 = bG_nscEFromHcalRecHitInDIEta2IPhi2 > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscEFromHcalRecHitInDIEta2IPhi2 ;
+	bG_nscPFChIso1 = bG.scPFChIso1->size() ;
+	bG_nscPFChIso1 = bG_nscPFChIso1 > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscPFChIso1 ;
+	bG_nscPFChIso2 = bG.scPFChIso2->size() ;
+	bG_nscPFChIso2 = bG_nscPFChIso2 > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscPFChIso2 ;
+	bG_nscPFChIso3 = bG.scPFChIso3->size() ;
+	bG_nscPFChIso3 = bG_nscPFChIso3 > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscPFChIso3 ;
+	bG_nscPFChIso4 = bG.scPFChIso4->size() ;
+	bG_nscPFChIso4 = bG_nscPFChIso4 > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscPFChIso4 ;
+	bG_nscPFChIso5 = bG.scPFChIso5->size() ;
+	bG_nscPFChIso5 = bG_nscPFChIso5 > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscPFChIso5 ;
+	bG_nscPFPhoIso1 = bG.scPFPhoIso1->size() ;
+	bG_nscPFPhoIso1 = bG_nscPFPhoIso1 > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscPFPhoIso1 ;
+	bG_nscPFPhoIso2 = bG.scPFPhoIso2->size() ;
+	bG_nscPFPhoIso2 = bG_nscPFPhoIso2 > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscPFPhoIso2 ;
+	bG_nscPFPhoIso3 = bG.scPFPhoIso3->size() ;
+	bG_nscPFPhoIso3 = bG_nscPFPhoIso3 > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscPFPhoIso3 ;
+	bG_nscPFPhoIso4 = bG.scPFPhoIso4->size() ;
+	bG_nscPFPhoIso4 = bG_nscPFPhoIso4 > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscPFPhoIso4 ;
+	bG_nscPFPhoIso5 = bG.scPFPhoIso5->size() ;
+	bG_nscPFPhoIso5 = bG_nscPFPhoIso5 > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscPFPhoIso5 ;
+	bG_nscPFNeuIso1 = bG.scPFNeuIso1->size() ;
+	bG_nscPFNeuIso1 = bG_nscPFNeuIso1 > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscPFNeuIso1 ;
+	bG_nscPFNeuIso2 = bG.scPFNeuIso2->size() ;
+	bG_nscPFNeuIso2 = bG_nscPFNeuIso2 > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscPFNeuIso2 ;
+	bG_nscPFNeuIso3 = bG.scPFNeuIso3->size() ;
+	bG_nscPFNeuIso3 = bG_nscPFNeuIso3 > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscPFNeuIso3 ;
+	bG_nscPFNeuIso4 = bG.scPFNeuIso4->size() ;
+	bG_nscPFNeuIso4 = bG_nscPFNeuIso4 > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscPFNeuIso4 ;
+	bG_nscPFNeuIso5 = bG.scPFNeuIso5->size() ;
+	bG_nscPFNeuIso5 = bG_nscPFNeuIso5 > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : bG_nscPFNeuIso5 ;
 
 
-	for( UInt_t i=0; i< UInt_t ( bG.nPrimaryVertex) ; i++ ) { 
-		 if( i>= MAX_ARRAY_SIZE ) {    break;}
- 		bG_primaryVertex_isFake[i] = bG.primaryVertex_isFake->at(i);
-		bG_primaryVertex_x[i] = bG.primaryVertex_x->at(i);
-		bG_primaryVertex_y[i] = bG.primaryVertex_y->at(i);
-		bG_primaryVertex_z[i] = bG.primaryVertex_z->at(i);
-		bG_primaryVertex_t[i] = bG.primaryVertex_t->at(i);
-		bG_primaryVertex_covXX[i] = bG.primaryVertex_covXX->at(i);
-		bG_primaryVertex_covXY[i] = bG.primaryVertex_covXY->at(i);
-		bG_primaryVertex_covXZ[i] = bG.primaryVertex_covXZ->at(i);
-		bG_primaryVertex_covYY[i] = bG.primaryVertex_covYY->at(i);
-		bG_primaryVertex_covYZ[i] = bG.primaryVertex_covYZ->at(i);
-		bG_primaryVertex_covZZ[i] = bG.primaryVertex_covZZ->at(i);
-		bG_primaryVertex_x_error[i] = bG.primaryVertex_x_error->at(i);
-		bG_primaryVertex_y_error[i] = bG.primaryVertex_y_error->at(i);
-		bG_primaryVertex_z_error[i] = bG.primaryVertex_z_error->at(i);
-		bG_primaryVertex_t_error[i] = bG.primaryVertex_t_error->at(i);
-		bG_primaryVertex_ntracks[i] = bG.primaryVertex_ntracks->at(i);
-		bG_primaryVertex_ndof[i] = bG.primaryVertex_ndof->at(i);
-		bG_primaryVertex_chi2[i] = bG.primaryVertex_chi2->at(i);
-		bG_primaryVertex_normalizedChi2[i] = bG.primaryVertex_normalizedChi2->at(i);
-
-	}
-
-	for( UInt_t i=0; i< UInt_t ( bG.nPho) ; i++ ) { 
-		 if( i>= MAX_ARRAY_SIZE ) {    break;}
- 		bG_phoE[i] = bG.phoE->at(i);
-		bG_phoEt[i] = bG.phoEt->at(i);
-		bG_phoEta[i] = bG.phoEta->at(i);
-		bG_phoPhi[i] = bG.phoPhi->at(i);
-		bG_phoSCE[i] = bG.phoSCE->at(i);
-		bG_phoSCEt[i] = bG.phoSCEt->at(i);
-		bG_phoSCRawE[i] = bG.phoSCRawE->at(i);
-		bG_phoESEnP1[i] = bG.phoESEnP1->at(i);
-		bG_phoESEnP2[i] = bG.phoESEnP2->at(i);
-		bG_phoSCEta[i] = bG.phoSCEta->at(i);
-		bG_phoSCPhi[i] = bG.phoSCPhi->at(i);
-		bG_phoSCEtaWidth[i] = bG.phoSCEtaWidth->at(i);
-		bG_phoSCPhiWidth[i] = bG.phoSCPhiWidth->at(i);
-		bG_phoSCBrem[i] = bG.phoSCBrem->at(i);
-		bG_phohasPixelSeed[i] = bG.phohasPixelSeed->at(i);
-		bG_phoR9[i] = bG.phoR9->at(i);
-		bG_phoHoverE[i] = bG.phoHoverE->at(i);
-		bG_phoESEffSigmaRR[i] = bG.phoESEffSigmaRR->at(i);
-		bG_phoSigmaIEtaIEtaFull5x5[i] = bG.phoSigmaIEtaIEtaFull5x5->at(i);
-		bG_phoSigmaIEtaIPhiFull5x5[i] = bG.phoSigmaIEtaIPhiFull5x5->at(i);
-		bG_phoSigmaIPhiIPhiFull5x5[i] = bG.phoSigmaIPhiIPhiFull5x5->at(i);
-		bG_phoE2x2Full5x5[i] = bG.phoE2x2Full5x5->at(i);
-		bG_phoE5x5Full5x5[i] = bG.phoE5x5Full5x5->at(i);
-		bG_phoR9Full5x5[i] = bG.phoR9Full5x5->at(i);
-		bG_phoPFChIso[i] = bG.phoPFChIso->at(i);
-		bG_phoPFPhoIso[i] = bG.phoPFPhoIso->at(i);
-		bG_phoPFNeuIso[i] = bG.phoPFNeuIso->at(i);
-		bG_phoEcalPFClusterIso[i] = bG.phoEcalPFClusterIso->at(i);
-		bG_phoHcalPFClusterIso[i] = bG.phoHcalPFClusterIso->at(i);
-		bG_phoSeedTime[i] = bG.phoSeedTime->at(i);
-		bG_phoSeedEnergy[i] = bG.phoSeedEnergy->at(i);
-		bG_phoMIPTotEnergy[i] = bG.phoMIPTotEnergy->at(i);
-		bG_phoMIPChi2[i] = bG.phoMIPChi2->at(i);
-		bG_phoMIPSlope[i] = bG.phoMIPSlope->at(i);
-		bG_phoMIPIntercept[i] = bG.phoMIPIntercept->at(i);
-		bG_phoMIPNhitCone[i] = bG.phoMIPNhitCone->at(i);
-		bG_phoMIPIsHalo[i] = bG.phoMIPIsHalo->at(i);
-
-	}
-
-	for( UInt_t i=0; i< UInt_t ( bG.nPFPho) ; i++ ) { 
-		 if( i>= MAX_ARRAY_SIZE ) {    break;}
- 		bG_phoPFE[i] = bG.phoPFE->at(i);
-		bG_phoPFEt[i] = bG.phoPFEt->at(i);
-		bG_phoPFEta[i] = bG.phoPFEta->at(i);
-		bG_phoPFPhi[i] = bG.phoPFPhi->at(i);
-
-	}
-
-	for( UInt_t i=0; i< UInt_t ( bG.nSC) ; i++ ) { 
+	for( UInt_t i=0; i< UInt_t ( bG_nscE) ; i++ ) { 
 		 if( i>= MAX_ARRAY_SIZE ) {    break;}
  		bG_scE[i] = bG.scE->at(i);
-		bG_scEt[i] = bG.scEt->at(i);
-		bG_scRawE[i] = bG.scRawE->at(i);
-		bG_scEta[i] = bG.scEta->at(i);
-		bG_scPhi[i] = bG.scPhi->at(i);
-		bG_scX[i] = bG.scX->at(i);
-		bG_scY[i] = bG.scY->at(i);
-		bG_scZ[i] = bG.scZ->at(i);
-		bG_scEtaWidth[i] = bG.scEtaWidth->at(i);
-		bG_scPhiWidth[i] = bG.scPhiWidth->at(i);
-		bG_scRawEt[i] = bG.scRawEt->at(i);
-		bG_scMinDrWithGsfElectornSC_[i] = bG.scMinDrWithGsfElectornSC_->at(i);
-		bG_scFoundGsfMatch_[i] = bG.scFoundGsfMatch_->at(i);
-		bG_scE5x5[i] = bG.scE5x5->at(i);
-		bG_scE2x2Ratio[i] = bG.scE2x2Ratio->at(i);
-		bG_scE3x3Ratio[i] = bG.scE3x3Ratio->at(i);
-		bG_scEMaxRatio[i] = bG.scEMaxRatio->at(i);
-		bG_scE2ndRatio[i] = bG.scE2ndRatio->at(i);
-		bG_scETopRatio[i] = bG.scETopRatio->at(i);
-		bG_scERightRatio[i] = bG.scERightRatio->at(i);
-		bG_scEBottomRatio[i] = bG.scEBottomRatio->at(i);
-		bG_scELeftRatio[i] = bG.scELeftRatio->at(i);
-		bG_scE2x5MaxRatio[i] = bG.scE2x5MaxRatio->at(i);
-		bG_scE2x5TopRatio[i] = bG.scE2x5TopRatio->at(i);
-		bG_scE2x5RightRatio[i] = bG.scE2x5RightRatio->at(i);
-		bG_scE2x5BottomRatio[i] = bG.scE2x5BottomRatio->at(i);
-		bG_scE2x5LeftRatio[i] = bG.scE2x5LeftRatio->at(i);
-		bG_scSwissCross[i] = bG.scSwissCross->at(i);
-		bG_scR9[i] = bG.scR9->at(i);
-		bG_scSigmaIetaIeta[i] = bG.scSigmaIetaIeta->at(i);
-		bG_scSigmaIetaIphi[i] = bG.scSigmaIetaIphi->at(i);
-		bG_scSigmaIphiIphi[i] = bG.scSigmaIphiIphi->at(i);
-		bG_scFull5x5_e5x5[i] = bG.scFull5x5_e5x5->at(i);
-		bG_scFull5x5_e2x2Ratio[i] = bG.scFull5x5_e2x2Ratio->at(i);
-		bG_scFull5x5_e3x3Ratio[i] = bG.scFull5x5_e3x3Ratio->at(i);
-		bG_scFull5x5_eMaxRatio[i] = bG.scFull5x5_eMaxRatio->at(i);
-		bG_scFull5x5_e2ndRatio[i] = bG.scFull5x5_e2ndRatio->at(i);
-		bG_scFull5x5_eTopRatio[i] = bG.scFull5x5_eTopRatio->at(i);
-		bG_scFull5x5_eRightRatio[i] = bG.scFull5x5_eRightRatio->at(i);
-		bG_scFull5x5_eBottomRatio[i] = bG.scFull5x5_eBottomRatio->at(i);
-		bG_scFull5x5_eLeftRatio[i] = bG.scFull5x5_eLeftRatio->at(i);
-		bG_scFull5x5_e2x5MaxRatio[i] = bG.scFull5x5_e2x5MaxRatio->at(i);
-		bG_scFull5x5_e2x5TopRatio[i] = bG.scFull5x5_e2x5TopRatio->at(i);
-		bG_scFull5x5_e2x5RightRatio[i] = bG.scFull5x5_e2x5RightRatio->at(i);
-		bG_scFull5x5_e2x5BottomRatio[i] = bG.scFull5x5_e2x5BottomRatio->at(i);
-		bG_scFull5x5_e2x5LeftRatio[i] = bG.scFull5x5_e2x5LeftRatio->at(i);
-		bG_scFull5x5_swissCross[i] = bG.scFull5x5_swissCross->at(i);
-		bG_scFull5x5_r9[i] = bG.scFull5x5_r9->at(i);
-		bG_scFull5x5_sigmaIetaIeta[i] = bG.scFull5x5_sigmaIetaIeta->at(i);
-		bG_scFull5x5_sigmaIetaIphi[i] = bG.scFull5x5_sigmaIetaIphi->at(i);
-		bG_scFull5x5_sigmaIphiIphi[i] = bG.scFull5x5_sigmaIphiIphi->at(i);
-		bG_scPFChIso1[i] = bG.scPFChIso1->at(i);
-		bG_scPFChIso2[i] = bG.scPFChIso2->at(i);
-		bG_scPFChIso3[i] = bG.scPFChIso3->at(i);
-		bG_scPFChIso4[i] = bG.scPFChIso4->at(i);
-		bG_scPFChIso5[i] = bG.scPFChIso5->at(i);
-		bG_scPFPhoIso1[i] = bG.scPFPhoIso1->at(i);
-		bG_scPFPhoIso2[i] = bG.scPFPhoIso2->at(i);
-		bG_scPFPhoIso3[i] = bG.scPFPhoIso3->at(i);
-		bG_scPFPhoIso4[i] = bG.scPFPhoIso4->at(i);
-		bG_scPFPhoIso5[i] = bG.scPFPhoIso5->at(i);
-		bG_scPFNeuIso1[i] = bG.scPFNeuIso1->at(i);
-		bG_scPFNeuIso2[i] = bG.scPFNeuIso2->at(i);
-		bG_scPFNeuIso3[i] = bG.scPFNeuIso3->at(i);
-		bG_scPFNeuIso4[i] = bG.scPFNeuIso4->at(i);
-		bG_scPFNeuIso5[i] = bG.scPFNeuIso5->at(i);
 
 	}
 
-	for( UInt_t i=0; i< UInt_t ( bG.nhcalRechit) ; i++ ) { 
+	for( UInt_t i=0; i< UInt_t ( bG_nscEt) ; i++ ) { 
 		 if( i>= MAX_ARRAY_SIZE ) {    break;}
- 		bG_hcalRechitIEta[i] = bG.hcalRechitIEta->at(i);
-		bG_hcalRechitIPhi[i] = bG.hcalRechitIPhi->at(i);
-		bG_hcalRechitEnergy[i] = bG.hcalRechitEnergy->at(i);
+ 		bG_scEt[i] = bG.scEt->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscRawE) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scRawE[i] = bG.scRawE->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscEta) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scEta[i] = bG.scEta->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscPhi) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scPhi[i] = bG.scPhi->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscX) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scX[i] = bG.scX->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscY) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scY[i] = bG.scY->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscZ) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scZ[i] = bG.scZ->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscEtaWidth) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scEtaWidth[i] = bG.scEtaWidth->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscPhiWidth) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scPhiWidth[i] = bG.scPhiWidth->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscRawEt) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scRawEt[i] = bG.scRawEt->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscMinDrWithGsfElectornSC_) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scMinDrWithGsfElectornSC_[i] = bG.scMinDrWithGsfElectornSC_->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscFoundGsfMatch_) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scFoundGsfMatch_[i] = bG.scFoundGsfMatch_->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscE5x5) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scE5x5[i] = bG.scE5x5->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscE2x2Ratio) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scE2x2Ratio[i] = bG.scE2x2Ratio->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscE3x3Ratio) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scE3x3Ratio[i] = bG.scE3x3Ratio->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscEMaxRatio) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scEMaxRatio[i] = bG.scEMaxRatio->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscE2ndRatio) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scE2ndRatio[i] = bG.scE2ndRatio->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscETopRatio) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scETopRatio[i] = bG.scETopRatio->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscERightRatio) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scERightRatio[i] = bG.scERightRatio->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscEBottomRatio) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scEBottomRatio[i] = bG.scEBottomRatio->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscELeftRatio) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scELeftRatio[i] = bG.scELeftRatio->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscE2x5MaxRatio) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scE2x5MaxRatio[i] = bG.scE2x5MaxRatio->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscE2x5TopRatio) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scE2x5TopRatio[i] = bG.scE2x5TopRatio->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscE2x5RightRatio) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scE2x5RightRatio[i] = bG.scE2x5RightRatio->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscE2x5BottomRatio) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scE2x5BottomRatio[i] = bG.scE2x5BottomRatio->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscE2x5LeftRatio) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scE2x5LeftRatio[i] = bG.scE2x5LeftRatio->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscSwissCross) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scSwissCross[i] = bG.scSwissCross->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscR9) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scR9[i] = bG.scR9->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscSigmaIetaIeta) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scSigmaIetaIeta[i] = bG.scSigmaIetaIeta->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscSigmaIetaIphi) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scSigmaIetaIphi[i] = bG.scSigmaIetaIphi->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscSigmaIphiIphi) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scSigmaIphiIphi[i] = bG.scSigmaIphiIphi->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscFull5x5_e5x5) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scFull5x5_e5x5[i] = bG.scFull5x5_e5x5->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscFull5x5_e2x2Ratio) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scFull5x5_e2x2Ratio[i] = bG.scFull5x5_e2x2Ratio->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscFull5x5_e3x3Ratio) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scFull5x5_e3x3Ratio[i] = bG.scFull5x5_e3x3Ratio->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscFull5x5_eMaxRatio) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scFull5x5_eMaxRatio[i] = bG.scFull5x5_eMaxRatio->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscFull5x5_e2ndRatio) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scFull5x5_e2ndRatio[i] = bG.scFull5x5_e2ndRatio->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscFull5x5_eTopRatio) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scFull5x5_eTopRatio[i] = bG.scFull5x5_eTopRatio->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscFull5x5_eRightRatio) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scFull5x5_eRightRatio[i] = bG.scFull5x5_eRightRatio->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscFull5x5_eBottomRatio) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scFull5x5_eBottomRatio[i] = bG.scFull5x5_eBottomRatio->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscFull5x5_eLeftRatio) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scFull5x5_eLeftRatio[i] = bG.scFull5x5_eLeftRatio->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscFull5x5_e2x5MaxRatio) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scFull5x5_e2x5MaxRatio[i] = bG.scFull5x5_e2x5MaxRatio->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscFull5x5_e2x5TopRatio) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scFull5x5_e2x5TopRatio[i] = bG.scFull5x5_e2x5TopRatio->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscFull5x5_e2x5RightRatio) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scFull5x5_e2x5RightRatio[i] = bG.scFull5x5_e2x5RightRatio->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscFull5x5_e2x5BottomRatio) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scFull5x5_e2x5BottomRatio[i] = bG.scFull5x5_e2x5BottomRatio->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscFull5x5_e2x5LeftRatio) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scFull5x5_e2x5LeftRatio[i] = bG.scFull5x5_e2x5LeftRatio->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscFull5x5_swissCross) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scFull5x5_swissCross[i] = bG.scFull5x5_swissCross->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscFull5x5_r9) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scFull5x5_r9[i] = bG.scFull5x5_r9->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscFull5x5_sigmaIetaIeta) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scFull5x5_sigmaIetaIeta[i] = bG.scFull5x5_sigmaIetaIeta->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscFull5x5_sigmaIetaIphi) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scFull5x5_sigmaIetaIphi[i] = bG.scFull5x5_sigmaIetaIphi->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscFull5x5_sigmaIphiIphi) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scFull5x5_sigmaIphiIphi[i] = bG.scFull5x5_sigmaIphiIphi->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscNHcalRecHitInDIEta5IPhi5) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scNHcalRecHitInDIEta5IPhi5[i] = bG.scNHcalRecHitInDIEta5IPhi5->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscEFromHcalRecHitInDIEta5IPhi5) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scEFromHcalRecHitInDIEta5IPhi5[i] = bG.scEFromHcalRecHitInDIEta5IPhi5->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscNHcalRecHitInDIEta2IPhi2) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scNHcalRecHitInDIEta2IPhi2[i] = bG.scNHcalRecHitInDIEta2IPhi2->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscEFromHcalRecHitInDIEta2IPhi2) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scEFromHcalRecHitInDIEta2IPhi2[i] = bG.scEFromHcalRecHitInDIEta2IPhi2->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscPFChIso1) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scPFChIso1[i] = bG.scPFChIso1->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscPFChIso2) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scPFChIso2[i] = bG.scPFChIso2->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscPFChIso3) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scPFChIso3[i] = bG.scPFChIso3->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscPFChIso4) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scPFChIso4[i] = bG.scPFChIso4->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscPFChIso5) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scPFChIso5[i] = bG.scPFChIso5->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscPFPhoIso1) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scPFPhoIso1[i] = bG.scPFPhoIso1->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscPFPhoIso2) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scPFPhoIso2[i] = bG.scPFPhoIso2->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscPFPhoIso3) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scPFPhoIso3[i] = bG.scPFPhoIso3->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscPFPhoIso4) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scPFPhoIso4[i] = bG.scPFPhoIso4->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscPFPhoIso5) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scPFPhoIso5[i] = bG.scPFPhoIso5->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscPFNeuIso1) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scPFNeuIso1[i] = bG.scPFNeuIso1->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscPFNeuIso2) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scPFNeuIso2[i] = bG.scPFNeuIso2->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscPFNeuIso3) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scPFNeuIso3[i] = bG.scPFNeuIso3->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscPFNeuIso4) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scPFNeuIso4[i] = bG.scPFNeuIso4->at(i);
+
+	}
+
+	for( UInt_t i=0; i< UInt_t ( bG_nscPFNeuIso5) ; i++ ) { 
+		 if( i>= MAX_ARRAY_SIZE ) {    break;}
+ 		bG_scPFNeuIso5[i] = bG.scPFNeuIso5->at(i);
 
 	}
 
@@ -194,180 +600,6 @@ void genericTreeBranchSelector::setCompiledTreeBranches()
 	_compiledTree->Branch("b5_MuonId_trkLostLayersInner",	( b5.MuonId_trkLostLayersInner ),"b5_MuonId_trkLostLayersInner[b5_nMuonId]/I");
 	_compiledTree->Branch("b5_MuonId_trkLostLayersOn",	( b5.MuonId_trkLostLayersOn ),"b5_MuonId_trkLostLayersOn[b5_nMuonId]/I");
 	_compiledTree->Branch("b5_MuonId_trkLostLayersOuter",	( b5.MuonId_trkLostLayersOuter ),"b5_MuonId_trkLostLayersOuter[b5_nMuonId]/I");
-	_compiledTree->Branch("b5_nbkkmm",&	( b5.nbkkmm ));
-	_compiledTree->Branch("b5_bkkmm_jpsikk_alpha",	( b5.bkkmm_jpsikk_alpha ),"b5_bkkmm_jpsikk_alpha[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_jpsikk_alphaBS",	( b5.bkkmm_jpsikk_alphaBS ),"b5_bkkmm_jpsikk_alphaBS[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_jpsikk_alphaBSErr",	( b5.bkkmm_jpsikk_alphaBSErr ),"b5_bkkmm_jpsikk_alphaBSErr[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_jpsikk_alphaErr",	( b5.bkkmm_jpsikk_alphaErr ),"b5_bkkmm_jpsikk_alphaErr[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_jpsikk_eta",	( b5.bkkmm_jpsikk_eta ),"b5_bkkmm_jpsikk_eta[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_jpsikk_kaon1eta",	( b5.bkkmm_jpsikk_kaon1eta ),"b5_bkkmm_jpsikk_kaon1eta[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_jpsikk_kaon1phi",	( b5.bkkmm_jpsikk_kaon1phi ),"b5_bkkmm_jpsikk_kaon1phi[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_jpsikk_kaon1pt",	( b5.bkkmm_jpsikk_kaon1pt ),"b5_bkkmm_jpsikk_kaon1pt[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_jpsikk_kaon2eta",	( b5.bkkmm_jpsikk_kaon2eta ),"b5_bkkmm_jpsikk_kaon2eta[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_jpsikk_kaon2phi",	( b5.bkkmm_jpsikk_kaon2phi ),"b5_bkkmm_jpsikk_kaon2phi[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_jpsikk_kaon2pt",	( b5.bkkmm_jpsikk_kaon2pt ),"b5_bkkmm_jpsikk_kaon2pt[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_jpsikk_kk_mass",	( b5.bkkmm_jpsikk_kk_mass ),"b5_bkkmm_jpsikk_kk_mass[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_jpsikk_l3d",	( b5.bkkmm_jpsikk_l3d ),"b5_bkkmm_jpsikk_l3d[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_jpsikk_lxy",	( b5.bkkmm_jpsikk_lxy ),"b5_bkkmm_jpsikk_lxy[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_jpsikk_mass",	( b5.bkkmm_jpsikk_mass ),"b5_bkkmm_jpsikk_mass[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_jpsikk_massErr",	( b5.bkkmm_jpsikk_massErr ),"b5_bkkmm_jpsikk_massErr[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_jpsikk_phi",	( b5.bkkmm_jpsikk_phi ),"b5_bkkmm_jpsikk_phi[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_jpsikk_pt",	( b5.bkkmm_jpsikk_pt ),"b5_bkkmm_jpsikk_pt[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_jpsikk_pv2ip",	( b5.bkkmm_jpsikk_pv2ip ),"b5_bkkmm_jpsikk_pv2ip[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_jpsikk_pv2ipErr",	( b5.bkkmm_jpsikk_pv2ipErr ),"b5_bkkmm_jpsikk_pv2ipErr[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_jpsikk_pv2lip",	( b5.bkkmm_jpsikk_pv2lip ),"b5_bkkmm_jpsikk_pv2lip[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_jpsikk_pv2lipErr",	( b5.bkkmm_jpsikk_pv2lipErr ),"b5_bkkmm_jpsikk_pv2lipErr[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_jpsikk_pv2lipSig",	( b5.bkkmm_jpsikk_pv2lipSig ),"b5_bkkmm_jpsikk_pv2lipSig[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_jpsikk_pv_z",	( b5.bkkmm_jpsikk_pv_z ),"b5_bkkmm_jpsikk_pv_z[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_jpsikk_pv_zErr",	( b5.bkkmm_jpsikk_pv_zErr ),"b5_bkkmm_jpsikk_pv_zErr[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_jpsikk_pvip",	( b5.bkkmm_jpsikk_pvip ),"b5_bkkmm_jpsikk_pvip[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_jpsikk_pvipErr",	( b5.bkkmm_jpsikk_pvipErr ),"b5_bkkmm_jpsikk_pvipErr[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_jpsikk_pvlip",	( b5.bkkmm_jpsikk_pvlip ),"b5_bkkmm_jpsikk_pvlip[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_jpsikk_pvlipErr",	( b5.bkkmm_jpsikk_pvlipErr ),"b5_bkkmm_jpsikk_pvlipErr[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_jpsikk_pvlipSig",	( b5.bkkmm_jpsikk_pvlipSig ),"b5_bkkmm_jpsikk_pvlipSig[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_jpsikk_sl3d",	( b5.bkkmm_jpsikk_sl3d ),"b5_bkkmm_jpsikk_sl3d[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_jpsikk_slxy",	( b5.bkkmm_jpsikk_slxy ),"b5_bkkmm_jpsikk_slxy[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_jpsikk_spv2ip",	( b5.bkkmm_jpsikk_spv2ip ),"b5_bkkmm_jpsikk_spv2ip[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_jpsikk_spvip",	( b5.bkkmm_jpsikk_spvip ),"b5_bkkmm_jpsikk_spvip[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_jpsikk_tau",	( b5.bkkmm_jpsikk_tau ),"b5_bkkmm_jpsikk_tau[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_jpsikk_taue",	( b5.bkkmm_jpsikk_taue ),"b5_bkkmm_jpsikk_taue[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_jpsikk_tauxy",	( b5.bkkmm_jpsikk_tauxy ),"b5_bkkmm_jpsikk_tauxy[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_jpsikk_tauxye",	( b5.bkkmm_jpsikk_tauxye ),"b5_bkkmm_jpsikk_tauxye[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_jpsikk_vtx_chi2dof",	( b5.bkkmm_jpsikk_vtx_chi2dof ),"b5_bkkmm_jpsikk_vtx_chi2dof[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_jpsikk_vtx_prob",	( b5.bkkmm_jpsikk_vtx_prob ),"b5_bkkmm_jpsikk_vtx_prob[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_jpsikk_vtx_x",	( b5.bkkmm_jpsikk_vtx_x ),"b5_bkkmm_jpsikk_vtx_x[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_jpsikk_vtx_xErr",	( b5.bkkmm_jpsikk_vtx_xErr ),"b5_bkkmm_jpsikk_vtx_xErr[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_jpsikk_vtx_y",	( b5.bkkmm_jpsikk_vtx_y ),"b5_bkkmm_jpsikk_vtx_y[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_jpsikk_vtx_yErr",	( b5.bkkmm_jpsikk_vtx_yErr ),"b5_bkkmm_jpsikk_vtx_yErr[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_jpsikk_vtx_z",	( b5.bkkmm_jpsikk_vtx_z ),"b5_bkkmm_jpsikk_vtx_z[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_jpsikk_vtx_zErr",	( b5.bkkmm_jpsikk_vtx_zErr ),"b5_bkkmm_jpsikk_vtx_zErr[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_kaon1_dxy_bs",	( b5.bkkmm_kaon1_dxy_bs ),"b5_bkkmm_kaon1_dxy_bs[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_kaon1_eta",	( b5.bkkmm_kaon1_eta ),"b5_bkkmm_kaon1_eta[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_kaon1_phi",	( b5.bkkmm_kaon1_phi ),"b5_bkkmm_kaon1_phi[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_kaon1_pt",	( b5.bkkmm_kaon1_pt ),"b5_bkkmm_kaon1_pt[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_kaon1_sdxy_bs",	( b5.bkkmm_kaon1_sdxy_bs ),"b5_bkkmm_kaon1_sdxy_bs[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_kaon2_dxy_bs",	( b5.bkkmm_kaon2_dxy_bs ),"b5_bkkmm_kaon2_dxy_bs[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_kaon2_eta",	( b5.bkkmm_kaon2_eta ),"b5_bkkmm_kaon2_eta[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_kaon2_phi",	( b5.bkkmm_kaon2_phi ),"b5_bkkmm_kaon2_phi[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_kaon2_pt",	( b5.bkkmm_kaon2_pt ),"b5_bkkmm_kaon2_pt[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_kaon2_sdxy_bs",	( b5.bkkmm_kaon2_sdxy_bs ),"b5_bkkmm_kaon2_sdxy_bs[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_kk_mass",	( b5.bkkmm_kk_mass ),"b5_bkkmm_kk_mass[b5_nbkkmm]/F");
-	_compiledTree->Branch("b5_bkkmm_jpsikk_valid",	( b5.bkkmm_jpsikk_valid ),"b5_bkkmm_jpsikk_valid[b5_nbkkmm]/I");
-	_compiledTree->Branch("b5_bkkmm_kaon1_charge",	( b5.bkkmm_kaon1_charge ),"b5_bkkmm_kaon1_charge[b5_nbkkmm]/I");
-	_compiledTree->Branch("b5_bkkmm_kaon2_charge",	( b5.bkkmm_kaon2_charge ),"b5_bkkmm_kaon2_charge[b5_nbkkmm]/I");
-	_compiledTree->Branch("b5_bkkmm_mm_index",	( b5.bkkmm_mm_index ),"b5_bkkmm_mm_index[b5_nbkkmm]/I");
-	_compiledTree->Branch("b5_nbkmm",&	( b5.nbkmm ));
-	_compiledTree->Branch("b5_bkmm_bmm_bdt",	( b5.bkmm_bmm_bdt ),"b5_bkmm_bmm_bdt[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_bmm_docatrk",	( b5.bkmm_bmm_docatrk ),"b5_bkmm_bmm_docatrk[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_bmm_iso",	( b5.bkmm_bmm_iso ),"b5_bkmm_bmm_iso[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_bmm_m1iso",	( b5.bkmm_bmm_m1iso ),"b5_bkmm_bmm_m1iso[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_bmm_m2iso",	( b5.bkmm_bmm_m2iso ),"b5_bkmm_bmm_m2iso[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_bmm_mva",	( b5.bkmm_bmm_mva ),"b5_bkmm_bmm_mva[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_bmm_otherVtxMaxProb",	( b5.bkmm_bmm_otherVtxMaxProb ),"b5_bkmm_bmm_otherVtxMaxProb[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_bmm_otherVtxMaxProb1",	( b5.bkmm_bmm_otherVtxMaxProb1 ),"b5_bkmm_bmm_otherVtxMaxProb1[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_bmm_otherVtxMaxProb2",	( b5.bkmm_bmm_otherVtxMaxProb2 ),"b5_bkmm_bmm_otherVtxMaxProb2[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_jpsimc_alpha",	( b5.bkmm_jpsimc_alpha ),"b5_bkmm_jpsimc_alpha[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_jpsimc_alphaBS",	( b5.bkmm_jpsimc_alphaBS ),"b5_bkmm_jpsimc_alphaBS[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_jpsimc_alphaBSErr",	( b5.bkmm_jpsimc_alphaBSErr ),"b5_bkmm_jpsimc_alphaBSErr[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_jpsimc_alphaErr",	( b5.bkmm_jpsimc_alphaErr ),"b5_bkmm_jpsimc_alphaErr[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_jpsimc_eta",	( b5.bkmm_jpsimc_eta ),"b5_bkmm_jpsimc_eta[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_jpsimc_kaon1eta",	( b5.bkmm_jpsimc_kaon1eta ),"b5_bkmm_jpsimc_kaon1eta[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_jpsimc_kaon1phi",	( b5.bkmm_jpsimc_kaon1phi ),"b5_bkmm_jpsimc_kaon1phi[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_jpsimc_kaon1pt",	( b5.bkmm_jpsimc_kaon1pt ),"b5_bkmm_jpsimc_kaon1pt[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_jpsimc_l3d",	( b5.bkmm_jpsimc_l3d ),"b5_bkmm_jpsimc_l3d[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_jpsimc_lxy",	( b5.bkmm_jpsimc_lxy ),"b5_bkmm_jpsimc_lxy[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_jpsimc_mass",	( b5.bkmm_jpsimc_mass ),"b5_bkmm_jpsimc_mass[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_jpsimc_massErr",	( b5.bkmm_jpsimc_massErr ),"b5_bkmm_jpsimc_massErr[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_jpsimc_phi",	( b5.bkmm_jpsimc_phi ),"b5_bkmm_jpsimc_phi[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_jpsimc_pt",	( b5.bkmm_jpsimc_pt ),"b5_bkmm_jpsimc_pt[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_jpsimc_pv2ip",	( b5.bkmm_jpsimc_pv2ip ),"b5_bkmm_jpsimc_pv2ip[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_jpsimc_pv2ipErr",	( b5.bkmm_jpsimc_pv2ipErr ),"b5_bkmm_jpsimc_pv2ipErr[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_jpsimc_pv2lip",	( b5.bkmm_jpsimc_pv2lip ),"b5_bkmm_jpsimc_pv2lip[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_jpsimc_pv2lipErr",	( b5.bkmm_jpsimc_pv2lipErr ),"b5_bkmm_jpsimc_pv2lipErr[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_jpsimc_pv2lipSig",	( b5.bkmm_jpsimc_pv2lipSig ),"b5_bkmm_jpsimc_pv2lipSig[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_jpsimc_pv_z",	( b5.bkmm_jpsimc_pv_z ),"b5_bkmm_jpsimc_pv_z[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_jpsimc_pv_zErr",	( b5.bkmm_jpsimc_pv_zErr ),"b5_bkmm_jpsimc_pv_zErr[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_jpsimc_pvip",	( b5.bkmm_jpsimc_pvip ),"b5_bkmm_jpsimc_pvip[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_jpsimc_pvipErr",	( b5.bkmm_jpsimc_pvipErr ),"b5_bkmm_jpsimc_pvipErr[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_jpsimc_pvlip",	( b5.bkmm_jpsimc_pvlip ),"b5_bkmm_jpsimc_pvlip[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_jpsimc_pvlipErr",	( b5.bkmm_jpsimc_pvlipErr ),"b5_bkmm_jpsimc_pvlipErr[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_jpsimc_pvlipSig",	( b5.bkmm_jpsimc_pvlipSig ),"b5_bkmm_jpsimc_pvlipSig[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_jpsimc_sl3d",	( b5.bkmm_jpsimc_sl3d ),"b5_bkmm_jpsimc_sl3d[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_jpsimc_slxy",	( b5.bkmm_jpsimc_slxy ),"b5_bkmm_jpsimc_slxy[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_jpsimc_spv2ip",	( b5.bkmm_jpsimc_spv2ip ),"b5_bkmm_jpsimc_spv2ip[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_jpsimc_spvip",	( b5.bkmm_jpsimc_spvip ),"b5_bkmm_jpsimc_spvip[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_jpsimc_tau",	( b5.bkmm_jpsimc_tau ),"b5_bkmm_jpsimc_tau[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_jpsimc_taue",	( b5.bkmm_jpsimc_taue ),"b5_bkmm_jpsimc_taue[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_jpsimc_tauxy",	( b5.bkmm_jpsimc_tauxy ),"b5_bkmm_jpsimc_tauxy[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_jpsimc_tauxye",	( b5.bkmm_jpsimc_tauxye ),"b5_bkmm_jpsimc_tauxye[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_jpsimc_vtx_chi2dof",	( b5.bkmm_jpsimc_vtx_chi2dof ),"b5_bkmm_jpsimc_vtx_chi2dof[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_jpsimc_vtx_prob",	( b5.bkmm_jpsimc_vtx_prob ),"b5_bkmm_jpsimc_vtx_prob[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_jpsimc_vtx_x",	( b5.bkmm_jpsimc_vtx_x ),"b5_bkmm_jpsimc_vtx_x[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_jpsimc_vtx_xErr",	( b5.bkmm_jpsimc_vtx_xErr ),"b5_bkmm_jpsimc_vtx_xErr[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_jpsimc_vtx_y",	( b5.bkmm_jpsimc_vtx_y ),"b5_bkmm_jpsimc_vtx_y[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_jpsimc_vtx_yErr",	( b5.bkmm_jpsimc_vtx_yErr ),"b5_bkmm_jpsimc_vtx_yErr[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_jpsimc_vtx_z",	( b5.bkmm_jpsimc_vtx_z ),"b5_bkmm_jpsimc_vtx_z[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_jpsimc_vtx_zErr",	( b5.bkmm_jpsimc_vtx_zErr ),"b5_bkmm_jpsimc_vtx_zErr[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_kaon_dxy_bs",	( b5.bkmm_kaon_dxy_bs ),"b5_bkmm_kaon_dxy_bs[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_kaon_eta",	( b5.bkmm_kaon_eta ),"b5_bkmm_kaon_eta[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_kaon_mu1_doca",	( b5.bkmm_kaon_mu1_doca ),"b5_bkmm_kaon_mu1_doca[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_kaon_mu2_doca",	( b5.bkmm_kaon_mu2_doca ),"b5_bkmm_kaon_mu2_doca[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_kaon_phi",	( b5.bkmm_kaon_phi ),"b5_bkmm_kaon_phi[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_kaon_pt",	( b5.bkmm_kaon_pt ),"b5_bkmm_kaon_pt[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_kaon_sdxy_bs",	( b5.bkmm_kaon_sdxy_bs ),"b5_bkmm_kaon_sdxy_bs[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_nomc_alpha",	( b5.bkmm_nomc_alpha ),"b5_bkmm_nomc_alpha[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_nomc_alphaBS",	( b5.bkmm_nomc_alphaBS ),"b5_bkmm_nomc_alphaBS[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_nomc_alphaBSErr",	( b5.bkmm_nomc_alphaBSErr ),"b5_bkmm_nomc_alphaBSErr[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_nomc_alphaErr",	( b5.bkmm_nomc_alphaErr ),"b5_bkmm_nomc_alphaErr[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_nomc_eta",	( b5.bkmm_nomc_eta ),"b5_bkmm_nomc_eta[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_nomc_kaon1eta",	( b5.bkmm_nomc_kaon1eta ),"b5_bkmm_nomc_kaon1eta[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_nomc_kaon1phi",	( b5.bkmm_nomc_kaon1phi ),"b5_bkmm_nomc_kaon1phi[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_nomc_kaon1pt",	( b5.bkmm_nomc_kaon1pt ),"b5_bkmm_nomc_kaon1pt[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_nomc_l3d",	( b5.bkmm_nomc_l3d ),"b5_bkmm_nomc_l3d[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_nomc_lxy",	( b5.bkmm_nomc_lxy ),"b5_bkmm_nomc_lxy[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_nomc_mass",	( b5.bkmm_nomc_mass ),"b5_bkmm_nomc_mass[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_nomc_massErr",	( b5.bkmm_nomc_massErr ),"b5_bkmm_nomc_massErr[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_nomc_phi",	( b5.bkmm_nomc_phi ),"b5_bkmm_nomc_phi[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_nomc_pt",	( b5.bkmm_nomc_pt ),"b5_bkmm_nomc_pt[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_nomc_pv2ip",	( b5.bkmm_nomc_pv2ip ),"b5_bkmm_nomc_pv2ip[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_nomc_pv2ipErr",	( b5.bkmm_nomc_pv2ipErr ),"b5_bkmm_nomc_pv2ipErr[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_nomc_pv2lip",	( b5.bkmm_nomc_pv2lip ),"b5_bkmm_nomc_pv2lip[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_nomc_pv2lipErr",	( b5.bkmm_nomc_pv2lipErr ),"b5_bkmm_nomc_pv2lipErr[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_nomc_pv2lipSig",	( b5.bkmm_nomc_pv2lipSig ),"b5_bkmm_nomc_pv2lipSig[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_nomc_pv_z",	( b5.bkmm_nomc_pv_z ),"b5_bkmm_nomc_pv_z[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_nomc_pv_zErr",	( b5.bkmm_nomc_pv_zErr ),"b5_bkmm_nomc_pv_zErr[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_nomc_pvip",	( b5.bkmm_nomc_pvip ),"b5_bkmm_nomc_pvip[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_nomc_pvipErr",	( b5.bkmm_nomc_pvipErr ),"b5_bkmm_nomc_pvipErr[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_nomc_pvlip",	( b5.bkmm_nomc_pvlip ),"b5_bkmm_nomc_pvlip[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_nomc_pvlipErr",	( b5.bkmm_nomc_pvlipErr ),"b5_bkmm_nomc_pvlipErr[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_nomc_pvlipSig",	( b5.bkmm_nomc_pvlipSig ),"b5_bkmm_nomc_pvlipSig[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_nomc_sl3d",	( b5.bkmm_nomc_sl3d ),"b5_bkmm_nomc_sl3d[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_nomc_slxy",	( b5.bkmm_nomc_slxy ),"b5_bkmm_nomc_slxy[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_nomc_spv2ip",	( b5.bkmm_nomc_spv2ip ),"b5_bkmm_nomc_spv2ip[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_nomc_spvip",	( b5.bkmm_nomc_spvip ),"b5_bkmm_nomc_spvip[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_nomc_tau",	( b5.bkmm_nomc_tau ),"b5_bkmm_nomc_tau[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_nomc_taue",	( b5.bkmm_nomc_taue ),"b5_bkmm_nomc_taue[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_nomc_tauxy",	( b5.bkmm_nomc_tauxy ),"b5_bkmm_nomc_tauxy[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_nomc_tauxye",	( b5.bkmm_nomc_tauxye ),"b5_bkmm_nomc_tauxye[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_nomc_vtx_chi2dof",	( b5.bkmm_nomc_vtx_chi2dof ),"b5_bkmm_nomc_vtx_chi2dof[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_nomc_vtx_prob",	( b5.bkmm_nomc_vtx_prob ),"b5_bkmm_nomc_vtx_prob[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_nomc_vtx_x",	( b5.bkmm_nomc_vtx_x ),"b5_bkmm_nomc_vtx_x[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_nomc_vtx_xErr",	( b5.bkmm_nomc_vtx_xErr ),"b5_bkmm_nomc_vtx_xErr[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_nomc_vtx_y",	( b5.bkmm_nomc_vtx_y ),"b5_bkmm_nomc_vtx_y[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_nomc_vtx_yErr",	( b5.bkmm_nomc_vtx_yErr ),"b5_bkmm_nomc_vtx_yErr[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_nomc_vtx_z",	( b5.bkmm_nomc_vtx_z ),"b5_bkmm_nomc_vtx_z[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_nomc_vtx_zErr",	( b5.bkmm_nomc_vtx_zErr ),"b5_bkmm_nomc_vtx_zErr[b5_nbkmm]/F");
-	_compiledTree->Branch("b5_bkmm_bmm_closetrk",	( b5.bkmm_bmm_closetrk ),"b5_bkmm_bmm_closetrk[b5_nbkmm]/I");
-	_compiledTree->Branch("b5_bkmm_bmm_closetrks1",	( b5.bkmm_bmm_closetrks1 ),"b5_bkmm_bmm_closetrks1[b5_nbkmm]/I");
-	_compiledTree->Branch("b5_bkmm_bmm_closetrks2",	( b5.bkmm_bmm_closetrks2 ),"b5_bkmm_bmm_closetrks2[b5_nbkmm]/I");
-	_compiledTree->Branch("b5_bkmm_bmm_closetrks3",	( b5.bkmm_bmm_closetrks3 ),"b5_bkmm_bmm_closetrks3[b5_nbkmm]/I");
-	_compiledTree->Branch("b5_bkmm_bmm_nBMTrks",	( b5.bkmm_bmm_nBMTrks ),"b5_bkmm_bmm_nBMTrks[b5_nbkmm]/I");
-	_compiledTree->Branch("b5_bkmm_bmm_nDisTrks",	( b5.bkmm_bmm_nDisTrks ),"b5_bkmm_bmm_nDisTrks[b5_nbkmm]/I");
-	_compiledTree->Branch("b5_bkmm_bmm_nTrks",	( b5.bkmm_bmm_nTrks ),"b5_bkmm_bmm_nTrks[b5_nbkmm]/I");
-	_compiledTree->Branch("b5_bkmm_jpsimc_valid",	( b5.bkmm_jpsimc_valid ),"b5_bkmm_jpsimc_valid[b5_nbkmm]/I");
-	_compiledTree->Branch("b5_bkmm_kaon_charge",	( b5.bkmm_kaon_charge ),"b5_bkmm_kaon_charge[b5_nbkmm]/I");
-	_compiledTree->Branch("b5_bkmm_mm_index",	( b5.bkmm_mm_index ),"b5_bkmm_mm_index[b5_nbkmm]/I");
-	_compiledTree->Branch("b5_bkmm_nomc_valid",	( b5.bkmm_nomc_valid ),"b5_bkmm_nomc_valid[b5_nbkmm]/I");
 	_compiledTree->Branch("b5_nmm",&	( b5.nmm ));
 	_compiledTree->Branch("b5_mm_bdt",	( b5.mm_bdt ),"b5_mm_bdt[b5_nmm]/F");
 	_compiledTree->Branch("b5_mm_doca",	( b5.mm_doca ),"b5_mm_doca[b5_nmm]/F");
@@ -685,7 +917,6 @@ void genericTreeBranchSelector::setCompiledTreeBranches()
 	_compiledTree->Branch("b5_Electron_mvaFall17V2noIso_WP90",	( b5.Electron_mvaFall17V2noIso_WP90 ),"b5_Electron_mvaFall17V2noIso_WP90[b5_nElectron]/O");
 	_compiledTree->Branch("b5_Electron_mvaFall17V2noIso_WPL",	( b5.Electron_mvaFall17V2noIso_WPL ),"b5_Electron_mvaFall17V2noIso_WPL[b5_nElectron]/O");
 	_compiledTree->Branch("b5_Electron_seedGain",	( b5.Electron_seedGain ),"b5_Electron_seedGain[b5_nElectron]/b");
-	_compiledTree->Branch("b5_Flag_ecalBadCalibFilterV2",&	( b5.Flag_ecalBadCalibFilterV2 ));
 	_compiledTree->Branch("b5_nFatJet",&	( b5.nFatJet ));
 	_compiledTree->Branch("b5_FatJet_area",	( b5.FatJet_area ),"b5_FatJet_area[b5_nFatJet]/F");
 	_compiledTree->Branch("b5_FatJet_btagCMVA",	( b5.FatJet_btagCMVA ),"b5_FatJet_btagCMVA[b5_nFatJet]/F");
@@ -811,10 +1042,13 @@ void genericTreeBranchSelector::setCompiledTreeBranches()
 	_compiledTree->Branch("b5_Jet_jetId",	( b5.Jet_jetId ),"b5_Jet_jetId[b5_nJet]/I");
 	_compiledTree->Branch("b5_Jet_muonIdx1",	( b5.Jet_muonIdx1 ),"b5_Jet_muonIdx1[b5_nJet]/I");
 	_compiledTree->Branch("b5_Jet_muonIdx2",	( b5.Jet_muonIdx2 ),"b5_Jet_muonIdx2[b5_nJet]/I");
-	_compiledTree->Branch("b5_Jet_nConstituents",	( b5.Jet_nConstituents ),"b5_Jet_nConstituents[b5_nJet]/I");
 	_compiledTree->Branch("b5_Jet_nElectrons",	( b5.Jet_nElectrons ),"b5_Jet_nElectrons[b5_nJet]/I");
 	_compiledTree->Branch("b5_Jet_nMuons",	( b5.Jet_nMuons ),"b5_Jet_nMuons[b5_nJet]/I");
 	_compiledTree->Branch("b5_Jet_puId",	( b5.Jet_puId ),"b5_Jet_puId[b5_nJet]/I");
+	_compiledTree->Branch("b5_Jet_nConstituents",	( b5.Jet_nConstituents ),"b5_Jet_nConstituents[b5_nJet]/b");
+	_compiledTree->Branch("b5_L1PreFiringWeight_Dn",&	( b5.L1PreFiringWeight_Dn ));
+	_compiledTree->Branch("b5_L1PreFiringWeight_Nom",&	( b5.L1PreFiringWeight_Nom ));
+	_compiledTree->Branch("b5_L1PreFiringWeight_Up",&	( b5.L1PreFiringWeight_Up ));
 	_compiledTree->Branch("b5_MET_MetUnclustEnUpDeltaX",&	( b5.MET_MetUnclustEnUpDeltaX ));
 	_compiledTree->Branch("b5_MET_MetUnclustEnUpDeltaY",&	( b5.MET_MetUnclustEnUpDeltaY ));
 	_compiledTree->Branch("b5_MET_covXX",&	( b5.MET_covXX ));
@@ -873,6 +1107,7 @@ void genericTreeBranchSelector::setCompiledTreeBranches()
 	_compiledTree->Branch("b5_Muon_mvaId",	( b5.Muon_mvaId ),"b5_Muon_mvaId[b5_nMuon]/b");
 	_compiledTree->Branch("b5_Muon_mvaLowPtId",	( b5.Muon_mvaLowPtId ),"b5_Muon_mvaLowPtId[b5_nMuon]/b");
 	_compiledTree->Branch("b5_Muon_pfIsoId",	( b5.Muon_pfIsoId ),"b5_Muon_pfIsoId[b5_nMuon]/b");
+	_compiledTree->Branch("b5_Muon_puppiIsoId",	( b5.Muon_puppiIsoId ),"b5_Muon_puppiIsoId[b5_nMuon]/b");
 	_compiledTree->Branch("b5_Muon_softId",	( b5.Muon_softId ),"b5_Muon_softId[b5_nMuon]/O");
 	_compiledTree->Branch("b5_Muon_softMvaId",	( b5.Muon_softMvaId ),"b5_Muon_softMvaId[b5_nMuon]/O");
 	_compiledTree->Branch("b5_Muon_tightId",	( b5.Muon_tightId ),"b5_Muon_tightId[b5_nMuon]/O");
@@ -906,11 +1141,6 @@ void genericTreeBranchSelector::setCompiledTreeBranches()
 	_compiledTree->Branch("b5_Photon_mvaID_WP90",	( b5.Photon_mvaID_WP90 ),"b5_Photon_mvaID_WP90[b5_nPhoton]/O");
 	_compiledTree->Branch("b5_Photon_pixelSeed",	( b5.Photon_pixelSeed ),"b5_Photon_pixelSeed[b5_nPhoton]/O");
 	_compiledTree->Branch("b5_Photon_seedGain",	( b5.Photon_seedGain ),"b5_Photon_seedGain[b5_nPhoton]/b");
-	_compiledTree->Branch("b5_prescale_HLT_DoubleMu4_3_Bs",&	( b5.prescale_HLT_DoubleMu4_3_Bs ));
-	_compiledTree->Branch("b5_prescale_HLT_DoubleMu4_3_Jpsi",&	( b5.prescale_HLT_DoubleMu4_3_Jpsi ));
-	_compiledTree->Branch("b5_prescale_HLT_DoubleMu4_Jpsi_Displaced",&	( b5.prescale_HLT_DoubleMu4_Jpsi_Displaced ));
-	_compiledTree->Branch("b5_prescale_HLT_DoubleMu4_Jpsi_NoVertexing",&	( b5.prescale_HLT_DoubleMu4_Jpsi_NoVertexing ));
-	_compiledTree->Branch("b5_prescale_HLT_DoubleMu4_3_Jpsi_Displaced",&	( b5.prescale_HLT_DoubleMu4_3_Jpsi_Displaced ));
 	_compiledTree->Branch("b5_PuppiMET_phi",&	( b5.PuppiMET_phi ));
 	_compiledTree->Branch("b5_PuppiMET_phiJERDown",&	( b5.PuppiMET_phiJERDown ));
 	_compiledTree->Branch("b5_PuppiMET_phiJERUp",&	( b5.PuppiMET_phiJERUp ));
@@ -1070,153 +1300,109 @@ void genericTreeBranchSelector::setCompiledTreeBranches()
 	_compiledTree->Branch("b5_L1_BptxPlus",&	( b5.L1_BptxPlus ));
 	_compiledTree->Branch("b5_L1_BptxXOR",&	( b5.L1_BptxXOR ));
 	_compiledTree->Branch("b5_L1_CDC_SingleMu_3_er1p2_TOP120_DPHI2p618_3p142",&	( b5.L1_CDC_SingleMu_3_er1p2_TOP120_DPHI2p618_3p142 ));
-	_compiledTree->Branch("b5_L1_DoubleEG6_HTT240er",&	( b5.L1_DoubleEG6_HTT240er ));
-	_compiledTree->Branch("b5_L1_DoubleEG6_HTT250er",&	( b5.L1_DoubleEG6_HTT250er ));
-	_compiledTree->Branch("b5_L1_DoubleEG6_HTT255er",&	( b5.L1_DoubleEG6_HTT255er ));
-	_compiledTree->Branch("b5_L1_DoubleEG6_HTT270er",&	( b5.L1_DoubleEG6_HTT270er ));
-	_compiledTree->Branch("b5_L1_DoubleEG6_HTT300er",&	( b5.L1_DoubleEG6_HTT300er ));
-	_compiledTree->Branch("b5_L1_DoubleEG8er2p6_HTT255er",&	( b5.L1_DoubleEG8er2p6_HTT255er ));
-	_compiledTree->Branch("b5_L1_DoubleEG8er2p6_HTT270er",&	( b5.L1_DoubleEG8er2p6_HTT270er ));
-	_compiledTree->Branch("b5_L1_DoubleEG8er2p6_HTT300er",&	( b5.L1_DoubleEG8er2p6_HTT300er ));
-	_compiledTree->Branch("b5_L1_DoubleEG_22_10",&	( b5.L1_DoubleEG_22_10 ));
-	_compiledTree->Branch("b5_L1_DoubleEG_25_12",&	( b5.L1_DoubleEG_25_12 ));
-	_compiledTree->Branch("b5_L1_DoubleEG_25_14",&	( b5.L1_DoubleEG_25_14 ));
-	_compiledTree->Branch("b5_L1_DoubleEG_LooseIso23_10",&	( b5.L1_DoubleEG_LooseIso23_10 ));
-	_compiledTree->Branch("b5_L1_DoubleEG_LooseIso24_10",&	( b5.L1_DoubleEG_LooseIso24_10 ));
+	_compiledTree->Branch("b5_L1_DoubleEG8er2p5_HTT260er",&	( b5.L1_DoubleEG8er2p5_HTT260er ));
+	_compiledTree->Branch("b5_L1_DoubleEG8er2p5_HTT280er",&	( b5.L1_DoubleEG8er2p5_HTT280er ));
+	_compiledTree->Branch("b5_L1_DoubleEG8er2p5_HTT300er",&	( b5.L1_DoubleEG8er2p5_HTT300er ));
+	_compiledTree->Branch("b5_L1_DoubleEG8er2p5_HTT320er",&	( b5.L1_DoubleEG8er2p5_HTT320er ));
+	_compiledTree->Branch("b5_L1_DoubleEG8er2p5_HTT340er",&	( b5.L1_DoubleEG8er2p5_HTT340er ));
+	_compiledTree->Branch("b5_L1_DoubleEG_15_10_er2p5",&	( b5.L1_DoubleEG_15_10_er2p5 ));
+	_compiledTree->Branch("b5_L1_DoubleEG_20_10_er2p5",&	( b5.L1_DoubleEG_20_10_er2p5 ));
+	_compiledTree->Branch("b5_L1_DoubleEG_22_10_er2p5",&	( b5.L1_DoubleEG_22_10_er2p5 ));
+	_compiledTree->Branch("b5_L1_DoubleEG_25_12_er2p5",&	( b5.L1_DoubleEG_25_12_er2p5 ));
+	_compiledTree->Branch("b5_L1_DoubleEG_25_14_er2p5",&	( b5.L1_DoubleEG_25_14_er2p5 ));
+	_compiledTree->Branch("b5_L1_DoubleEG_27_14_er2p5",&	( b5.L1_DoubleEG_27_14_er2p5 ));
+	_compiledTree->Branch("b5_L1_DoubleEG_LooseIso20_10_er2p5",&	( b5.L1_DoubleEG_LooseIso20_10_er2p5 ));
+	_compiledTree->Branch("b5_L1_DoubleEG_LooseIso22_10_er2p5",&	( b5.L1_DoubleEG_LooseIso22_10_er2p5 ));
+	_compiledTree->Branch("b5_L1_DoubleEG_LooseIso22_12_er2p5",&	( b5.L1_DoubleEG_LooseIso22_12_er2p5 ));
+	_compiledTree->Branch("b5_L1_DoubleEG_LooseIso25_12_er2p5",&	( b5.L1_DoubleEG_LooseIso25_12_er2p5 ));
 	_compiledTree->Branch("b5_L1_DoubleIsoTau32er2p1",&	( b5.L1_DoubleIsoTau32er2p1 ));
 	_compiledTree->Branch("b5_L1_DoubleIsoTau34er2p1",&	( b5.L1_DoubleIsoTau34er2p1 ));
 	_compiledTree->Branch("b5_L1_DoubleIsoTau36er2p1",&	( b5.L1_DoubleIsoTau36er2p1 ));
 	_compiledTree->Branch("b5_L1_DoubleJet100er2p3_dEta_Max1p6",&	( b5.L1_DoubleJet100er2p3_dEta_Max1p6 ));
-	_compiledTree->Branch("b5_L1_DoubleJet100er2p7",&	( b5.L1_DoubleJet100er2p7 ));
+	_compiledTree->Branch("b5_L1_DoubleJet100er2p5",&	( b5.L1_DoubleJet100er2p5 ));
 	_compiledTree->Branch("b5_L1_DoubleJet112er2p3_dEta_Max1p6",&	( b5.L1_DoubleJet112er2p3_dEta_Max1p6 ));
-	_compiledTree->Branch("b5_L1_DoubleJet112er2p7",&	( b5.L1_DoubleJet112er2p7 ));
-	_compiledTree->Branch("b5_L1_DoubleJet120er2p7",&	( b5.L1_DoubleJet120er2p7 ));
-	_compiledTree->Branch("b5_L1_DoubleJet150er2p7",&	( b5.L1_DoubleJet150er2p7 ));
-	_compiledTree->Branch("b5_L1_DoubleJet30_Mass_Min300_dEta_Max1p5",&	( b5.L1_DoubleJet30_Mass_Min300_dEta_Max1p5 ));
-	_compiledTree->Branch("b5_L1_DoubleJet30_Mass_Min320_dEta_Max1p5",&	( b5.L1_DoubleJet30_Mass_Min320_dEta_Max1p5 ));
-	_compiledTree->Branch("b5_L1_DoubleJet30_Mass_Min340_dEta_Max1p5",&	( b5.L1_DoubleJet30_Mass_Min340_dEta_Max1p5 ));
-	_compiledTree->Branch("b5_L1_DoubleJet30_Mass_Min360_dEta_Max1p5",&	( b5.L1_DoubleJet30_Mass_Min360_dEta_Max1p5 ));
-	_compiledTree->Branch("b5_L1_DoubleJet30_Mass_Min380_dEta_Max1p5",&	( b5.L1_DoubleJet30_Mass_Min380_dEta_Max1p5 ));
-	_compiledTree->Branch("b5_L1_DoubleJet30_Mass_Min400_dEta_Max1p5",&	( b5.L1_DoubleJet30_Mass_Min400_dEta_Max1p5 ));
-	_compiledTree->Branch("b5_L1_DoubleJet35_rmovlp_IsoTau45_Mass_Min450",&	( b5.L1_DoubleJet35_rmovlp_IsoTau45_Mass_Min450 ));
-	_compiledTree->Branch("b5_L1_DoubleJet40er2p7",&	( b5.L1_DoubleJet40er2p7 ));
-	_compiledTree->Branch("b5_L1_DoubleJet50er2p7",&	( b5.L1_DoubleJet50er2p7 ));
-	_compiledTree->Branch("b5_L1_DoubleJet60er2p7",&	( b5.L1_DoubleJet60er2p7 ));
-	_compiledTree->Branch("b5_L1_DoubleJet60er2p7_ETM100",&	( b5.L1_DoubleJet60er2p7_ETM100 ));
-	_compiledTree->Branch("b5_L1_DoubleJet60er2p7_ETM60",&	( b5.L1_DoubleJet60er2p7_ETM60 ));
-	_compiledTree->Branch("b5_L1_DoubleJet60er2p7_ETM70",&	( b5.L1_DoubleJet60er2p7_ETM70 ));
-	_compiledTree->Branch("b5_L1_DoubleJet60er2p7_ETM80",&	( b5.L1_DoubleJet60er2p7_ETM80 ));
-	_compiledTree->Branch("b5_L1_DoubleJet60er2p7_ETM90",&	( b5.L1_DoubleJet60er2p7_ETM90 ));
-	_compiledTree->Branch("b5_L1_DoubleJet80er2p7",&	( b5.L1_DoubleJet80er2p7 ));
+	_compiledTree->Branch("b5_L1_DoubleJet120er2p5",&	( b5.L1_DoubleJet120er2p5 ));
+	_compiledTree->Branch("b5_L1_DoubleJet150er2p5",&	( b5.L1_DoubleJet150er2p5 ));
+	_compiledTree->Branch("b5_L1_DoubleJet30er2p5_Mass_Min150_dEta_Max1p5",&	( b5.L1_DoubleJet30er2p5_Mass_Min150_dEta_Max1p5 ));
+	_compiledTree->Branch("b5_L1_DoubleJet30er2p5_Mass_Min200_dEta_Max1p5",&	( b5.L1_DoubleJet30er2p5_Mass_Min200_dEta_Max1p5 ));
+	_compiledTree->Branch("b5_L1_DoubleJet30er2p5_Mass_Min250_dEta_Max1p5",&	( b5.L1_DoubleJet30er2p5_Mass_Min250_dEta_Max1p5 ));
+	_compiledTree->Branch("b5_L1_DoubleJet30er2p5_Mass_Min300_dEta_Max1p5",&	( b5.L1_DoubleJet30er2p5_Mass_Min300_dEta_Max1p5 ));
+	_compiledTree->Branch("b5_L1_DoubleJet30er2p5_Mass_Min330_dEta_Max1p5",&	( b5.L1_DoubleJet30er2p5_Mass_Min330_dEta_Max1p5 ));
+	_compiledTree->Branch("b5_L1_DoubleJet30er2p5_Mass_Min360_dEta_Max1p5",&	( b5.L1_DoubleJet30er2p5_Mass_Min360_dEta_Max1p5 ));
+	_compiledTree->Branch("b5_L1_DoubleJet35_Mass_Min450_IsoTau45_RmOvlp",&	( b5.L1_DoubleJet35_Mass_Min450_IsoTau45_RmOvlp ));
+	_compiledTree->Branch("b5_L1_DoubleJet40er2p5",&	( b5.L1_DoubleJet40er2p5 ));
 	_compiledTree->Branch("b5_L1_DoubleJet_100_30_DoubleJet30_Mass_Min620",&	( b5.L1_DoubleJet_100_30_DoubleJet30_Mass_Min620 ));
-	_compiledTree->Branch("b5_L1_DoubleJet_100_35_DoubleJet35_Mass_Min620",&	( b5.L1_DoubleJet_100_35_DoubleJet35_Mass_Min620 ));
 	_compiledTree->Branch("b5_L1_DoubleJet_110_35_DoubleJet35_Mass_Min620",&	( b5.L1_DoubleJet_110_35_DoubleJet35_Mass_Min620 ));
-	_compiledTree->Branch("b5_L1_DoubleJet_110_40_DoubleJet40_Mass_Min620",&	( b5.L1_DoubleJet_110_40_DoubleJet40_Mass_Min620 ));
-	_compiledTree->Branch("b5_L1_DoubleJet_115_35_DoubleJet35_Mass_Min620",&	( b5.L1_DoubleJet_115_35_DoubleJet35_Mass_Min620 ));
 	_compiledTree->Branch("b5_L1_DoubleJet_115_40_DoubleJet40_Mass_Min620",&	( b5.L1_DoubleJet_115_40_DoubleJet40_Mass_Min620 ));
+	_compiledTree->Branch("b5_L1_DoubleJet_115_40_DoubleJet40_Mass_Min620_Jet60TT28",&	( b5.L1_DoubleJet_115_40_DoubleJet40_Mass_Min620_Jet60TT28 ));
+	_compiledTree->Branch("b5_L1_DoubleJet_120_45_DoubleJet45_Mass_Min620",&	( b5.L1_DoubleJet_120_45_DoubleJet45_Mass_Min620 ));
+	_compiledTree->Branch("b5_L1_DoubleJet_120_45_DoubleJet45_Mass_Min620_Jet60TT28",&	( b5.L1_DoubleJet_120_45_DoubleJet45_Mass_Min620_Jet60TT28 ));
+	_compiledTree->Branch("b5_L1_DoubleJet_80_30_Mass_Min420_DoubleMu0_SQ",&	( b5.L1_DoubleJet_80_30_Mass_Min420_DoubleMu0_SQ ));
+	_compiledTree->Branch("b5_L1_DoubleJet_80_30_Mass_Min420_IsoTau40_RmOvlp",&	( b5.L1_DoubleJet_80_30_Mass_Min420_IsoTau40_RmOvlp ));
+	_compiledTree->Branch("b5_L1_DoubleJet_80_30_Mass_Min420_Mu8",&	( b5.L1_DoubleJet_80_30_Mass_Min420_Mu8 ));
 	_compiledTree->Branch("b5_L1_DoubleJet_90_30_DoubleJet30_Mass_Min620",&	( b5.L1_DoubleJet_90_30_DoubleJet30_Mass_Min620 ));
 	_compiledTree->Branch("b5_L1_DoubleLooseIsoEG22er2p1",&	( b5.L1_DoubleLooseIsoEG22er2p1 ));
 	_compiledTree->Branch("b5_L1_DoubleLooseIsoEG24er2p1",&	( b5.L1_DoubleLooseIsoEG24er2p1 ));
 	_compiledTree->Branch("b5_L1_DoubleMu0",&	( b5.L1_DoubleMu0 ));
+	_compiledTree->Branch("b5_L1_DoubleMu0_Mass_Min1",&	( b5.L1_DoubleMu0_Mass_Min1 ));
+	_compiledTree->Branch("b5_L1_DoubleMu0_OQ",&	( b5.L1_DoubleMu0_OQ ));
 	_compiledTree->Branch("b5_L1_DoubleMu0_SQ",&	( b5.L1_DoubleMu0_SQ ));
 	_compiledTree->Branch("b5_L1_DoubleMu0_SQ_OS",&	( b5.L1_DoubleMu0_SQ_OS ));
+	_compiledTree->Branch("b5_L1_DoubleMu0_dR_Max1p6_Jet90er2p5_dR_Max0p8",&	( b5.L1_DoubleMu0_dR_Max1p6_Jet90er2p5_dR_Max0p8 ));
 	_compiledTree->Branch("b5_L1_DoubleMu0er1p4_SQ_OS_dR_Max1p4",&	( b5.L1_DoubleMu0er1p4_SQ_OS_dR_Max1p4 ));
-	_compiledTree->Branch("b5_L1_DoubleMu0er1p4_dEta_Max1p8_OS",&	( b5.L1_DoubleMu0er1p4_dEta_Max1p8_OS ));
+	_compiledTree->Branch("b5_L1_DoubleMu0er1p5_SQ",&	( b5.L1_DoubleMu0er1p5_SQ ));
 	_compiledTree->Branch("b5_L1_DoubleMu0er1p5_SQ_OS",&	( b5.L1_DoubleMu0er1p5_SQ_OS ));
 	_compiledTree->Branch("b5_L1_DoubleMu0er1p5_SQ_OS_dR_Max1p4",&	( b5.L1_DoubleMu0er1p5_SQ_OS_dR_Max1p4 ));
 	_compiledTree->Branch("b5_L1_DoubleMu0er1p5_SQ_dR_Max1p4",&	( b5.L1_DoubleMu0er1p5_SQ_dR_Max1p4 ));
-	_compiledTree->Branch("b5_L1_DoubleMu0er2_SQ_dR_Max1p4",&	( b5.L1_DoubleMu0er2_SQ_dR_Max1p4 ));
+	_compiledTree->Branch("b5_L1_DoubleMu0er2p0_SQ_OS_dR_Max1p4",&	( b5.L1_DoubleMu0er2p0_SQ_OS_dR_Max1p4 ));
+	_compiledTree->Branch("b5_L1_DoubleMu0er2p0_SQ_dR_Max1p4",&	( b5.L1_DoubleMu0er2p0_SQ_dR_Max1p4 ));
+	_compiledTree->Branch("b5_L1_DoubleMu10_SQ",&	( b5.L1_DoubleMu10_SQ ));
 	_compiledTree->Branch("b5_L1_DoubleMu18er2p1",&	( b5.L1_DoubleMu18er2p1 ));
-	_compiledTree->Branch("b5_L1_DoubleMu22er2p1",&	( b5.L1_DoubleMu22er2p1 ));
 	_compiledTree->Branch("b5_L1_DoubleMu3_OS_DoubleEG7p5Upsilon",&	( b5.L1_DoubleMu3_OS_DoubleEG7p5Upsilon ));
-	_compiledTree->Branch("b5_L1_DoubleMu3_SQ_ETMHF40_Jet60_OR_DoubleJet30",&	( b5.L1_DoubleMu3_SQ_ETMHF40_Jet60_OR_DoubleJet30 ));
-	_compiledTree->Branch("b5_L1_DoubleMu3_SQ_ETMHF50_Jet60_OR_DoubleJet30",&	( b5.L1_DoubleMu3_SQ_ETMHF50_Jet60_OR_DoubleJet30 ));
-	_compiledTree->Branch("b5_L1_DoubleMu3_SQ_ETMHF60_Jet60_OR_DoubleJet30",&	( b5.L1_DoubleMu3_SQ_ETMHF60_Jet60_OR_DoubleJet30 ));
-	_compiledTree->Branch("b5_L1_DoubleMu3_SQ_ETMHF70_Jet60_OR_DoubleJet30",&	( b5.L1_DoubleMu3_SQ_ETMHF70_Jet60_OR_DoubleJet30 ));
-	_compiledTree->Branch("b5_L1_DoubleMu3_SQ_ETMHF80_Jet60_OR_DoubleJet30",&	( b5.L1_DoubleMu3_SQ_ETMHF80_Jet60_OR_DoubleJet30 ));
-	_compiledTree->Branch("b5_L1_DoubleMu3_SQ_HTT100er",&	( b5.L1_DoubleMu3_SQ_HTT100er ));
-	_compiledTree->Branch("b5_L1_DoubleMu3_SQ_HTT200er",&	( b5.L1_DoubleMu3_SQ_HTT200er ));
+	_compiledTree->Branch("b5_L1_DoubleMu3_SQ_ETMHF50_HTT60er",&	( b5.L1_DoubleMu3_SQ_ETMHF50_HTT60er ));
+	_compiledTree->Branch("b5_L1_DoubleMu3_SQ_ETMHF50_Jet60er2p5",&	( b5.L1_DoubleMu3_SQ_ETMHF50_Jet60er2p5 ));
+	_compiledTree->Branch("b5_L1_DoubleMu3_SQ_ETMHF50_Jet60er2p5_OR_DoubleJet40er2p5",&	( b5.L1_DoubleMu3_SQ_ETMHF50_Jet60er2p5_OR_DoubleJet40er2p5 ));
+	_compiledTree->Branch("b5_L1_DoubleMu3_SQ_ETMHF60_Jet60er2p5",&	( b5.L1_DoubleMu3_SQ_ETMHF60_Jet60er2p5 ));
 	_compiledTree->Branch("b5_L1_DoubleMu3_SQ_HTT220er",&	( b5.L1_DoubleMu3_SQ_HTT220er ));
 	_compiledTree->Branch("b5_L1_DoubleMu3_SQ_HTT240er",&	( b5.L1_DoubleMu3_SQ_HTT240er ));
-	_compiledTree->Branch("b5_L1_DoubleMu4_OS_EG12",&	( b5.L1_DoubleMu4_OS_EG12 ));
+	_compiledTree->Branch("b5_L1_DoubleMu3_SQ_HTT260er",&	( b5.L1_DoubleMu3_SQ_HTT260er ));
+	_compiledTree->Branch("b5_L1_DoubleMu3_dR_Max1p6_Jet90er2p5_dR_Max0p8",&	( b5.L1_DoubleMu3_dR_Max1p6_Jet90er2p5_dR_Max0p8 ));
+	_compiledTree->Branch("b5_L1_DoubleMu4_SQ_EG9er2p5",&	( b5.L1_DoubleMu4_SQ_EG9er2p5 ));
 	_compiledTree->Branch("b5_L1_DoubleMu4_SQ_OS",&	( b5.L1_DoubleMu4_SQ_OS ));
 	_compiledTree->Branch("b5_L1_DoubleMu4_SQ_OS_dR_Max1p2",&	( b5.L1_DoubleMu4_SQ_OS_dR_Max1p2 ));
-	_compiledTree->Branch("b5_L1_DoubleMu4p5_SQ",&	( b5.L1_DoubleMu4p5_SQ ));
 	_compiledTree->Branch("b5_L1_DoubleMu4p5_SQ_OS",&	( b5.L1_DoubleMu4p5_SQ_OS ));
 	_compiledTree->Branch("b5_L1_DoubleMu4p5_SQ_OS_dR_Max1p2",&	( b5.L1_DoubleMu4p5_SQ_OS_dR_Max1p2 ));
 	_compiledTree->Branch("b5_L1_DoubleMu4p5er2p0_SQ_OS",&	( b5.L1_DoubleMu4p5er2p0_SQ_OS ));
 	_compiledTree->Branch("b5_L1_DoubleMu4p5er2p0_SQ_OS_Mass7to18",&	( b5.L1_DoubleMu4p5er2p0_SQ_OS_Mass7to18 ));
 	_compiledTree->Branch("b5_L1_DoubleMu5Upsilon_OS_DoubleEG3",&	( b5.L1_DoubleMu5Upsilon_OS_DoubleEG3 ));
-	_compiledTree->Branch("b5_L1_DoubleMu5_OS_EG12",&	( b5.L1_DoubleMu5_OS_EG12 ));
-	_compiledTree->Branch("b5_L1_DoubleMu5_SQ_OS",&	( b5.L1_DoubleMu5_SQ_OS ));
-	_compiledTree->Branch("b5_L1_DoubleMu5_SQ_OS_Mass7to18",&	( b5.L1_DoubleMu5_SQ_OS_Mass7to18 ));
-	_compiledTree->Branch("b5_L1_DoubleMu6_SQ_OS",&	( b5.L1_DoubleMu6_SQ_OS ));
-	_compiledTree->Branch("b5_L1_DoubleMu7_EG7",&	( b5.L1_DoubleMu7_EG7 ));
-	_compiledTree->Branch("b5_L1_DoubleMu7_SQ_EG7",&	( b5.L1_DoubleMu7_SQ_EG7 ));
-	_compiledTree->Branch("b5_L1_DoubleMu8_SQ",&	( b5.L1_DoubleMu8_SQ ));
-	_compiledTree->Branch("b5_L1_DoubleMu_10_0_dEta_Max1p8",&	( b5.L1_DoubleMu_10_0_dEta_Max1p8 ));
+	_compiledTree->Branch("b5_L1_DoubleMu5_SQ_EG9er2p5",&	( b5.L1_DoubleMu5_SQ_EG9er2p5 ));
+	_compiledTree->Branch("b5_L1_DoubleMu9_SQ",&	( b5.L1_DoubleMu9_SQ ));
 	_compiledTree->Branch("b5_L1_DoubleMu_12_5",&	( b5.L1_DoubleMu_12_5 ));
 	_compiledTree->Branch("b5_L1_DoubleMu_15_5_SQ",&	( b5.L1_DoubleMu_15_5_SQ ));
 	_compiledTree->Branch("b5_L1_DoubleMu_15_7",&	( b5.L1_DoubleMu_15_7 ));
-	_compiledTree->Branch("b5_L1_DoubleMu_20_2_SQ_Mass_Max20",&	( b5.L1_DoubleMu_20_2_SQ_Mass_Max20 ));
+	_compiledTree->Branch("b5_L1_DoubleMu_15_7_Mass_Min1",&	( b5.L1_DoubleMu_15_7_Mass_Min1 ));
+	_compiledTree->Branch("b5_L1_DoubleMu_15_7_SQ",&	( b5.L1_DoubleMu_15_7_SQ ));
 	_compiledTree->Branch("b5_L1_DoubleTau70er2p1",&	( b5.L1_DoubleTau70er2p1 ));
-	_compiledTree->Branch("b5_L1_EG25er2p1_HTT125er",&	( b5.L1_EG25er2p1_HTT125er ));
-	_compiledTree->Branch("b5_L1_EG27er2p1_HTT200er",&	( b5.L1_EG27er2p1_HTT200er ));
-	_compiledTree->Branch("b5_L1_EG40er2p1_Tau20er2p1_dR_Min0p3",&	( b5.L1_EG40er2p1_Tau20er2p1_dR_Min0p3 ));
-	_compiledTree->Branch("b5_L1_ETM100",&	( b5.L1_ETM100 ));
-	_compiledTree->Branch("b5_L1_ETM100_Jet60_dPhi_Min0p4",&	( b5.L1_ETM100_Jet60_dPhi_Min0p4 ));
-	_compiledTree->Branch("b5_L1_ETM105",&	( b5.L1_ETM105 ));
-	_compiledTree->Branch("b5_L1_ETM110",&	( b5.L1_ETM110 ));
-	_compiledTree->Branch("b5_L1_ETM110_Jet60_dPhi_Min0p4",&	( b5.L1_ETM110_Jet60_dPhi_Min0p4 ));
-	_compiledTree->Branch("b5_L1_ETM115",&	( b5.L1_ETM115 ));
 	_compiledTree->Branch("b5_L1_ETM120",&	( b5.L1_ETM120 ));
 	_compiledTree->Branch("b5_L1_ETM150",&	( b5.L1_ETM150 ));
-	_compiledTree->Branch("b5_L1_ETM30",&	( b5.L1_ETM30 ));
-	_compiledTree->Branch("b5_L1_ETM40",&	( b5.L1_ETM40 ));
-	_compiledTree->Branch("b5_L1_ETM50",&	( b5.L1_ETM50 ));
-	_compiledTree->Branch("b5_L1_ETM60",&	( b5.L1_ETM60 ));
-	_compiledTree->Branch("b5_L1_ETM70",&	( b5.L1_ETM70 ));
-	_compiledTree->Branch("b5_L1_ETM75",&	( b5.L1_ETM75 ));
-	_compiledTree->Branch("b5_L1_ETM75_Jet60_dPhi_Min0p4",&	( b5.L1_ETM75_Jet60_dPhi_Min0p4 ));
-	_compiledTree->Branch("b5_L1_ETM80",&	( b5.L1_ETM80 ));
-	_compiledTree->Branch("b5_L1_ETM80_Jet60_dPhi_Min0p4",&	( b5.L1_ETM80_Jet60_dPhi_Min0p4 ));
-	_compiledTree->Branch("b5_L1_ETM85",&	( b5.L1_ETM85 ));
-	_compiledTree->Branch("b5_L1_ETM90",&	( b5.L1_ETM90 ));
-	_compiledTree->Branch("b5_L1_ETM90_Jet60_dPhi_Min0p4",&	( b5.L1_ETM90_Jet60_dPhi_Min0p4 ));
-	_compiledTree->Branch("b5_L1_ETM95",&	( b5.L1_ETM95 ));
 	_compiledTree->Branch("b5_L1_ETMHF100",&	( b5.L1_ETMHF100 ));
 	_compiledTree->Branch("b5_L1_ETMHF100_HTT60er",&	( b5.L1_ETMHF100_HTT60er ));
-	_compiledTree->Branch("b5_L1_ETMHF100_Jet60_OR_DiJet30woTT28",&	( b5.L1_ETMHF100_Jet60_OR_DiJet30woTT28 ));
-	_compiledTree->Branch("b5_L1_ETMHF100_Jet60_OR_DoubleJet30",&	( b5.L1_ETMHF100_Jet60_OR_DoubleJet30 ));
-	_compiledTree->Branch("b5_L1_ETMHF100_Jet90_OR_DoubleJet45_OR_TripleJet30",&	( b5.L1_ETMHF100_Jet90_OR_DoubleJet45_OR_TripleJet30 ));
 	_compiledTree->Branch("b5_L1_ETMHF110",&	( b5.L1_ETMHF110 ));
 	_compiledTree->Branch("b5_L1_ETMHF110_HTT60er",&	( b5.L1_ETMHF110_HTT60er ));
-	_compiledTree->Branch("b5_L1_ETMHF110_Jet60_OR_DiJet30woTT28",&	( b5.L1_ETMHF110_Jet60_OR_DiJet30woTT28 ));
-	_compiledTree->Branch("b5_L1_ETMHF110_Jet90_OR_DoubleJet45_OR_TripleJet30",&	( b5.L1_ETMHF110_Jet90_OR_DoubleJet45_OR_TripleJet30 ));
+	_compiledTree->Branch("b5_L1_ETMHF110_HTT60er_NotSecondBunchInTrain",&	( b5.L1_ETMHF110_HTT60er_NotSecondBunchInTrain ));
 	_compiledTree->Branch("b5_L1_ETMHF120",&	( b5.L1_ETMHF120 ));
 	_compiledTree->Branch("b5_L1_ETMHF120_HTT60er",&	( b5.L1_ETMHF120_HTT60er ));
-	_compiledTree->Branch("b5_L1_ETMHF120_Jet60_OR_DiJet30woTT28",&	( b5.L1_ETMHF120_Jet60_OR_DiJet30woTT28 ));
+	_compiledTree->Branch("b5_L1_ETMHF120_NotSecondBunchInTrain",&	( b5.L1_ETMHF120_NotSecondBunchInTrain ));
+	_compiledTree->Branch("b5_L1_ETMHF130",&	( b5.L1_ETMHF130 ));
+	_compiledTree->Branch("b5_L1_ETMHF130_HTT60er",&	( b5.L1_ETMHF130_HTT60er ));
+	_compiledTree->Branch("b5_L1_ETMHF140",&	( b5.L1_ETMHF140 ));
 	_compiledTree->Branch("b5_L1_ETMHF150",&	( b5.L1_ETMHF150 ));
-	_compiledTree->Branch("b5_L1_ETMHF70",&	( b5.L1_ETMHF70 ));
-	_compiledTree->Branch("b5_L1_ETMHF70_Jet90_OR_DoubleJet45_OR_TripleJet30",&	( b5.L1_ETMHF70_Jet90_OR_DoubleJet45_OR_TripleJet30 ));
-	_compiledTree->Branch("b5_L1_ETMHF80",&	( b5.L1_ETMHF80 ));
-	_compiledTree->Branch("b5_L1_ETMHF80_HTT60er",&	( b5.L1_ETMHF80_HTT60er ));
-	_compiledTree->Branch("b5_L1_ETMHF80_Jet90_OR_DoubleJet45_OR_TripleJet30",&	( b5.L1_ETMHF80_Jet90_OR_DoubleJet45_OR_TripleJet30 ));
-	_compiledTree->Branch("b5_L1_ETMHF90",&	( b5.L1_ETMHF90 ));
 	_compiledTree->Branch("b5_L1_ETMHF90_HTT60er",&	( b5.L1_ETMHF90_HTT60er ));
-	_compiledTree->Branch("b5_L1_ETMHF90_Jet90_OR_DoubleJet45_OR_TripleJet30",&	( b5.L1_ETMHF90_Jet90_OR_DoubleJet45_OR_TripleJet30 ));
-	_compiledTree->Branch("b5_L1_ETT100_BptxAND",&	( b5.L1_ETT100_BptxAND ));
-	_compiledTree->Branch("b5_L1_ETT110_BptxAND",&	( b5.L1_ETT110_BptxAND ));
-	_compiledTree->Branch("b5_L1_ETT40_BptxAND",&	( b5.L1_ETT40_BptxAND ));
-	_compiledTree->Branch("b5_L1_ETT50_BptxAND",&	( b5.L1_ETT50_BptxAND ));
-	_compiledTree->Branch("b5_L1_ETT60_BptxAND",&	( b5.L1_ETT60_BptxAND ));
-	_compiledTree->Branch("b5_L1_ETT70_BptxAND",&	( b5.L1_ETT70_BptxAND ));
-	_compiledTree->Branch("b5_L1_ETT75_BptxAND",&	( b5.L1_ETT75_BptxAND ));
-	_compiledTree->Branch("b5_L1_ETT80_BptxAND",&	( b5.L1_ETT80_BptxAND ));
-	_compiledTree->Branch("b5_L1_ETT85_BptxAND",&	( b5.L1_ETT85_BptxAND ));
-	_compiledTree->Branch("b5_L1_ETT90_BptxAND",&	( b5.L1_ETT90_BptxAND ));
-	_compiledTree->Branch("b5_L1_ETT95_BptxAND",&	( b5.L1_ETT95_BptxAND ));
+	_compiledTree->Branch("b5_L1_ETT1200",&	( b5.L1_ETT1200 ));
+	_compiledTree->Branch("b5_L1_ETT1600",&	( b5.L1_ETT1600 ));
+	_compiledTree->Branch("b5_L1_ETT2000",&	( b5.L1_ETT2000 ));
 	_compiledTree->Branch("b5_L1_FirstBunchAfterTrain",&	( b5.L1_FirstBunchAfterTrain ));
+	_compiledTree->Branch("b5_L1_FirstBunchBeforeTrain",&	( b5.L1_FirstBunchBeforeTrain ));
 	_compiledTree->Branch("b5_L1_FirstBunchInTrain",&	( b5.L1_FirstBunchInTrain ));
 	_compiledTree->Branch("b5_L1_FirstCollisionInOrbit",&	( b5.L1_FirstCollisionInOrbit ));
 	_compiledTree->Branch("b5_L1_FirstCollisionInTrain",&	( b5.L1_FirstCollisionInTrain ));
@@ -1225,153 +1411,144 @@ void genericTreeBranchSelector::setCompiledTreeBranches()
 	_compiledTree->Branch("b5_L1_HTT120er",&	( b5.L1_HTT120er ));
 	_compiledTree->Branch("b5_L1_HTT160er",&	( b5.L1_HTT160er ));
 	_compiledTree->Branch("b5_L1_HTT200er",&	( b5.L1_HTT200er ));
-	_compiledTree->Branch("b5_L1_HTT220er",&	( b5.L1_HTT220er ));
-	_compiledTree->Branch("b5_L1_HTT240er",&	( b5.L1_HTT240er ));
 	_compiledTree->Branch("b5_L1_HTT255er",&	( b5.L1_HTT255er ));
-	_compiledTree->Branch("b5_L1_HTT270er",&	( b5.L1_HTT270er ));
 	_compiledTree->Branch("b5_L1_HTT280er",&	( b5.L1_HTT280er ));
-	_compiledTree->Branch("b5_L1_HTT280er_QuadJet_70_55_40_35_er2p5",&	( b5.L1_HTT280er_QuadJet_70_55_40_35_er2p5 ));
-	_compiledTree->Branch("b5_L1_HTT300er",&	( b5.L1_HTT300er ));
-	_compiledTree->Branch("b5_L1_HTT300er_QuadJet_70_55_40_35_er2p5",&	( b5.L1_HTT300er_QuadJet_70_55_40_35_er2p5 ));
+	_compiledTree->Branch("b5_L1_HTT280er_QuadJet_70_55_40_35_er2p4",&	( b5.L1_HTT280er_QuadJet_70_55_40_35_er2p4 ));
 	_compiledTree->Branch("b5_L1_HTT320er",&	( b5.L1_HTT320er ));
 	_compiledTree->Branch("b5_L1_HTT320er_QuadJet_70_55_40_40_er2p4",&	( b5.L1_HTT320er_QuadJet_70_55_40_40_er2p4 ));
-	_compiledTree->Branch("b5_L1_HTT320er_QuadJet_70_55_40_40_er2p5",&	( b5.L1_HTT320er_QuadJet_70_55_40_40_er2p5 ));
-	_compiledTree->Branch("b5_L1_HTT320er_QuadJet_70_55_45_45_er2p5",&	( b5.L1_HTT320er_QuadJet_70_55_45_45_er2p5 ));
-	_compiledTree->Branch("b5_L1_HTT340er",&	( b5.L1_HTT340er ));
-	_compiledTree->Branch("b5_L1_HTT340er_QuadJet_70_55_40_40_er2p5",&	( b5.L1_HTT340er_QuadJet_70_55_40_40_er2p5 ));
-	_compiledTree->Branch("b5_L1_HTT340er_QuadJet_70_55_45_45_er2p5",&	( b5.L1_HTT340er_QuadJet_70_55_45_45_er2p5 ));
-	_compiledTree->Branch("b5_L1_HTT380er",&	( b5.L1_HTT380er ));
+	_compiledTree->Branch("b5_L1_HTT320er_QuadJet_80_60_er2p1_45_40_er2p3",&	( b5.L1_HTT320er_QuadJet_80_60_er2p1_45_40_er2p3 ));
+	_compiledTree->Branch("b5_L1_HTT320er_QuadJet_80_60_er2p1_50_45_er2p3",&	( b5.L1_HTT320er_QuadJet_80_60_er2p1_50_45_er2p3 ));
+	_compiledTree->Branch("b5_L1_HTT360er",&	( b5.L1_HTT360er ));
 	_compiledTree->Branch("b5_L1_HTT400er",&	( b5.L1_HTT400er ));
 	_compiledTree->Branch("b5_L1_HTT450er",&	( b5.L1_HTT450er ));
-	_compiledTree->Branch("b5_L1_HTT500er",&	( b5.L1_HTT500er ));
-	_compiledTree->Branch("b5_L1_IsoEG33_Mt40",&	( b5.L1_IsoEG33_Mt40 ));
-	_compiledTree->Branch("b5_L1_IsoEG33_Mt44",&	( b5.L1_IsoEG33_Mt44 ));
-	_compiledTree->Branch("b5_L1_IsoEG33_Mt48",&	( b5.L1_IsoEG33_Mt48 ));
-	_compiledTree->Branch("b5_L1_IsoTau40er_ETMHF100",&	( b5.L1_IsoTau40er_ETMHF100 ));
-	_compiledTree->Branch("b5_L1_IsoTau40er_ETMHF110",&	( b5.L1_IsoTau40er_ETMHF110 ));
-	_compiledTree->Branch("b5_L1_IsoTau40er_ETMHF120",&	( b5.L1_IsoTau40er_ETMHF120 ));
-	_compiledTree->Branch("b5_L1_IsoTau40er_ETMHF90",&	( b5.L1_IsoTau40er_ETMHF90 ));
+	_compiledTree->Branch("b5_L1_IsoEG32er2p5_Mt40",&	( b5.L1_IsoEG32er2p5_Mt40 ));
+	_compiledTree->Branch("b5_L1_IsoEG32er2p5_Mt44",&	( b5.L1_IsoEG32er2p5_Mt44 ));
+	_compiledTree->Branch("b5_L1_IsoEG32er2p5_Mt48",&	( b5.L1_IsoEG32er2p5_Mt48 ));
+	_compiledTree->Branch("b5_L1_IsoTau40er2p1_ETMHF100",&	( b5.L1_IsoTau40er2p1_ETMHF100 ));
+	_compiledTree->Branch("b5_L1_IsoTau40er2p1_ETMHF110",&	( b5.L1_IsoTau40er2p1_ETMHF110 ));
+	_compiledTree->Branch("b5_L1_IsoTau40er2p1_ETMHF120",&	( b5.L1_IsoTau40er2p1_ETMHF120 ));
+	_compiledTree->Branch("b5_L1_IsoTau40er2p1_ETMHF90",&	( b5.L1_IsoTau40er2p1_ETMHF90 ));
 	_compiledTree->Branch("b5_L1_IsolatedBunch",&	( b5.L1_IsolatedBunch ));
+	_compiledTree->Branch("b5_L1_LastBunchInTrain",&	( b5.L1_LastBunchInTrain ));
 	_compiledTree->Branch("b5_L1_LastCollisionInTrain",&	( b5.L1_LastCollisionInTrain ));
 	_compiledTree->Branch("b5_L1_LooseIsoEG22er2p1_IsoTau26er2p1_dR_Min0p3",&	( b5.L1_LooseIsoEG22er2p1_IsoTau26er2p1_dR_Min0p3 ));
+	_compiledTree->Branch("b5_L1_LooseIsoEG22er2p1_Tau70er2p1_dR_Min0p3",&	( b5.L1_LooseIsoEG22er2p1_Tau70er2p1_dR_Min0p3 ));
 	_compiledTree->Branch("b5_L1_LooseIsoEG24er2p1_HTT100er",&	( b5.L1_LooseIsoEG24er2p1_HTT100er ));
 	_compiledTree->Branch("b5_L1_LooseIsoEG24er2p1_IsoTau27er2p1_dR_Min0p3",&	( b5.L1_LooseIsoEG24er2p1_IsoTau27er2p1_dR_Min0p3 ));
-	_compiledTree->Branch("b5_L1_LooseIsoEG24er2p1_Jet26er2p7_dR_Min0p3",&	( b5.L1_LooseIsoEG24er2p1_Jet26er2p7_dR_Min0p3 ));
-	_compiledTree->Branch("b5_L1_LooseIsoEG24er2p1_TripleJet_26er2p7_26_26er2p7",&	( b5.L1_LooseIsoEG24er2p1_TripleJet_26er2p7_26_26er2p7 ));
 	_compiledTree->Branch("b5_L1_LooseIsoEG26er2p1_HTT100er",&	( b5.L1_LooseIsoEG26er2p1_HTT100er ));
-	_compiledTree->Branch("b5_L1_LooseIsoEG26er2p1_Jet34er2p7_dR_Min0p3",&	( b5.L1_LooseIsoEG26er2p1_Jet34er2p7_dR_Min0p3 ));
+	_compiledTree->Branch("b5_L1_LooseIsoEG26er2p1_Jet34er2p5_dR_Min0p3",&	( b5.L1_LooseIsoEG26er2p1_Jet34er2p5_dR_Min0p3 ));
 	_compiledTree->Branch("b5_L1_LooseIsoEG28er2p1_HTT100er",&	( b5.L1_LooseIsoEG28er2p1_HTT100er ));
-	_compiledTree->Branch("b5_L1_LooseIsoEG28er2p1_Jet34er2p7_dR_Min0p3",&	( b5.L1_LooseIsoEG28er2p1_Jet34er2p7_dR_Min0p3 ));
-	_compiledTree->Branch("b5_L1_LooseIsoEG30er2p1_Jet34er2p7_dR_Min0p3",&	( b5.L1_LooseIsoEG30er2p1_Jet34er2p7_dR_Min0p3 ));
-	_compiledTree->Branch("b5_L1_MU20_EG15",&	( b5.L1_MU20_EG15 ));
+	_compiledTree->Branch("b5_L1_LooseIsoEG28er2p1_Jet34er2p5_dR_Min0p3",&	( b5.L1_LooseIsoEG28er2p1_Jet34er2p5_dR_Min0p3 ));
+	_compiledTree->Branch("b5_L1_LooseIsoEG30er2p1_HTT100er",&	( b5.L1_LooseIsoEG30er2p1_HTT100er ));
+	_compiledTree->Branch("b5_L1_LooseIsoEG30er2p1_Jet34er2p5_dR_Min0p3",&	( b5.L1_LooseIsoEG30er2p1_Jet34er2p5_dR_Min0p3 ));
 	_compiledTree->Branch("b5_L1_MinimumBiasHF0_AND_BptxAND",&	( b5.L1_MinimumBiasHF0_AND_BptxAND ));
-	_compiledTree->Branch("b5_L1_MinimumBiasHF0_OR_BptxAND",&	( b5.L1_MinimumBiasHF0_OR_BptxAND ));
 	_compiledTree->Branch("b5_L1_Mu10er2p3_Jet32er2p3_dR_Max0p4_DoubleJet32er2p3_dEta_Max1p6",&	( b5.L1_Mu10er2p3_Jet32er2p3_dR_Max0p4_DoubleJet32er2p3_dEta_Max1p6 ));
-	_compiledTree->Branch("b5_L1_Mu12_EG10",&	( b5.L1_Mu12_EG10 ));
+	_compiledTree->Branch("b5_L1_Mu12er2p3_Jet40er2p1_dR_Max0p4_DoubleJet40er2p1_dEta_Max1p6",&	( b5.L1_Mu12er2p3_Jet40er2p1_dR_Max0p4_DoubleJet40er2p1_dEta_Max1p6 ));
 	_compiledTree->Branch("b5_L1_Mu12er2p3_Jet40er2p3_dR_Max0p4_DoubleJet40er2p3_dEta_Max1p6",&	( b5.L1_Mu12er2p3_Jet40er2p3_dR_Max0p4_DoubleJet40er2p3_dEta_Max1p6 ));
 	_compiledTree->Branch("b5_L1_Mu18er2p1_Tau24er2p1",&	( b5.L1_Mu18er2p1_Tau24er2p1 ));
-	_compiledTree->Branch("b5_L1_Mu20_EG10",&	( b5.L1_Mu20_EG10 ));
-	_compiledTree->Branch("b5_L1_Mu20_EG17",&	( b5.L1_Mu20_EG17 ));
-	_compiledTree->Branch("b5_L1_Mu20_LooseIsoEG6",&	( b5.L1_Mu20_LooseIsoEG6 ));
+	_compiledTree->Branch("b5_L1_Mu18er2p1_Tau26er2p1",&	( b5.L1_Mu18er2p1_Tau26er2p1 ));
+	_compiledTree->Branch("b5_L1_Mu20_EG10er2p5",&	( b5.L1_Mu20_EG10er2p5 ));
 	_compiledTree->Branch("b5_L1_Mu22er2p1_IsoTau32er2p1",&	( b5.L1_Mu22er2p1_IsoTau32er2p1 ));
 	_compiledTree->Branch("b5_L1_Mu22er2p1_IsoTau34er2p1",&	( b5.L1_Mu22er2p1_IsoTau34er2p1 ));
 	_compiledTree->Branch("b5_L1_Mu22er2p1_IsoTau36er2p1",&	( b5.L1_Mu22er2p1_IsoTau36er2p1 ));
 	_compiledTree->Branch("b5_L1_Mu22er2p1_IsoTau40er2p1",&	( b5.L1_Mu22er2p1_IsoTau40er2p1 ));
 	_compiledTree->Branch("b5_L1_Mu22er2p1_Tau70er2p1",&	( b5.L1_Mu22er2p1_Tau70er2p1 ));
-	_compiledTree->Branch("b5_L1_Mu23_EG10",&	( b5.L1_Mu23_EG10 ));
-	_compiledTree->Branch("b5_L1_Mu23_LooseIsoEG10",&	( b5.L1_Mu23_LooseIsoEG10 ));
-	_compiledTree->Branch("b5_L1_Mu3_Jet120er2p7_dEta_Max0p4_dPhi_Max0p4",&	( b5.L1_Mu3_Jet120er2p7_dEta_Max0p4_dPhi_Max0p4 ));
-	_compiledTree->Branch("b5_L1_Mu3_Jet16er2p7_dEta_Max0p4_dPhi_Max0p4",&	( b5.L1_Mu3_Jet16er2p7_dEta_Max0p4_dPhi_Max0p4 ));
+	_compiledTree->Branch("b5_L1_Mu3_Jet120er2p5_dR_Max0p4",&	( b5.L1_Mu3_Jet120er2p5_dR_Max0p4 ));
+	_compiledTree->Branch("b5_L1_Mu3_Jet120er2p5_dR_Max0p8",&	( b5.L1_Mu3_Jet120er2p5_dR_Max0p8 ));
+	_compiledTree->Branch("b5_L1_Mu3_Jet16er2p5_dR_Max0p4",&	( b5.L1_Mu3_Jet16er2p5_dR_Max0p4 ));
 	_compiledTree->Branch("b5_L1_Mu3_Jet30er2p5",&	( b5.L1_Mu3_Jet30er2p5 ));
-	_compiledTree->Branch("b5_L1_Mu3_Jet60er2p7_dEta_Max0p4_dPhi_Max0p4",&	( b5.L1_Mu3_Jet60er2p7_dEta_Max0p4_dPhi_Max0p4 ));
-	_compiledTree->Branch("b5_L1_Mu5_EG15",&	( b5.L1_Mu5_EG15 ));
-	_compiledTree->Branch("b5_L1_Mu5_EG20",&	( b5.L1_Mu5_EG20 ));
-	_compiledTree->Branch("b5_L1_Mu5_EG23",&	( b5.L1_Mu5_EG23 ));
-	_compiledTree->Branch("b5_L1_Mu5_LooseIsoEG18",&	( b5.L1_Mu5_LooseIsoEG18 ));
-	_compiledTree->Branch("b5_L1_Mu5_LooseIsoEG20",&	( b5.L1_Mu5_LooseIsoEG20 ));
-	_compiledTree->Branch("b5_L1_Mu6_DoubleEG10",&	( b5.L1_Mu6_DoubleEG10 ));
-	_compiledTree->Branch("b5_L1_Mu6_DoubleEG17",&	( b5.L1_Mu6_DoubleEG17 ));
+	_compiledTree->Branch("b5_L1_Mu3_Jet35er2p5_dR_Max0p4",&	( b5.L1_Mu3_Jet35er2p5_dR_Max0p4 ));
+	_compiledTree->Branch("b5_L1_Mu3_Jet60er2p5_dR_Max0p4",&	( b5.L1_Mu3_Jet60er2p5_dR_Max0p4 ));
+	_compiledTree->Branch("b5_L1_Mu3_Jet80er2p5_dR_Max0p4",&	( b5.L1_Mu3_Jet80er2p5_dR_Max0p4 ));
+	_compiledTree->Branch("b5_L1_Mu3er1p5_Jet100er2p5_ETMHF40",&	( b5.L1_Mu3er1p5_Jet100er2p5_ETMHF40 ));
+	_compiledTree->Branch("b5_L1_Mu3er1p5_Jet100er2p5_ETMHF50",&	( b5.L1_Mu3er1p5_Jet100er2p5_ETMHF50 ));
+	_compiledTree->Branch("b5_L1_Mu5_EG23er2p5",&	( b5.L1_Mu5_EG23er2p5 ));
+	_compiledTree->Branch("b5_L1_Mu5_LooseIsoEG20er2p5",&	( b5.L1_Mu5_LooseIsoEG20er2p5 ));
+	_compiledTree->Branch("b5_L1_Mu6_DoubleEG10er2p5",&	( b5.L1_Mu6_DoubleEG10er2p5 ));
+	_compiledTree->Branch("b5_L1_Mu6_DoubleEG12er2p5",&	( b5.L1_Mu6_DoubleEG12er2p5 ));
+	_compiledTree->Branch("b5_L1_Mu6_DoubleEG15er2p5",&	( b5.L1_Mu6_DoubleEG15er2p5 ));
+	_compiledTree->Branch("b5_L1_Mu6_DoubleEG17er2p5",&	( b5.L1_Mu6_DoubleEG17er2p5 ));
 	_compiledTree->Branch("b5_L1_Mu6_HTT240er",&	( b5.L1_Mu6_HTT240er ));
 	_compiledTree->Branch("b5_L1_Mu6_HTT250er",&	( b5.L1_Mu6_HTT250er ));
-	_compiledTree->Branch("b5_L1_Mu7_EG23",&	( b5.L1_Mu7_EG23 ));
-	_compiledTree->Branch("b5_L1_Mu7_LooseIsoEG20",&	( b5.L1_Mu7_LooseIsoEG20 ));
-	_compiledTree->Branch("b5_L1_Mu7_LooseIsoEG23",&	( b5.L1_Mu7_LooseIsoEG23 ));
+	_compiledTree->Branch("b5_L1_Mu7_EG23er2p5",&	( b5.L1_Mu7_EG23er2p5 ));
+	_compiledTree->Branch("b5_L1_Mu7_LooseIsoEG20er2p5",&	( b5.L1_Mu7_LooseIsoEG20er2p5 ));
+	_compiledTree->Branch("b5_L1_Mu7_LooseIsoEG23er2p5",&	( b5.L1_Mu7_LooseIsoEG23er2p5 ));
 	_compiledTree->Branch("b5_L1_NotBptxOR",&	( b5.L1_NotBptxOR ));
-	_compiledTree->Branch("b5_L1_QuadJet36er2p7_IsoTau52er2p1",&	( b5.L1_QuadJet36er2p7_IsoTau52er2p1 ));
-	_compiledTree->Branch("b5_L1_QuadJet40er2p7",&	( b5.L1_QuadJet40er2p7 ));
-	_compiledTree->Branch("b5_L1_QuadJet50er2p7",&	( b5.L1_QuadJet50er2p7 ));
-	_compiledTree->Branch("b5_L1_QuadJet60er2p7",&	( b5.L1_QuadJet60er2p7 ));
+	_compiledTree->Branch("b5_L1_QuadJet36er2p5_IsoTau52er2p1",&	( b5.L1_QuadJet36er2p5_IsoTau52er2p1 ));
+	_compiledTree->Branch("b5_L1_QuadJet60er2p5",&	( b5.L1_QuadJet60er2p5 ));
+	_compiledTree->Branch("b5_L1_QuadJet_95_75_65_20_DoubleJet_75_65_er2p5_Jet20_FWD3p0",&	( b5.L1_QuadJet_95_75_65_20_DoubleJet_75_65_er2p5_Jet20_FWD3p0 ));
 	_compiledTree->Branch("b5_L1_QuadMu0",&	( b5.L1_QuadMu0 ));
-	_compiledTree->Branch("b5_L1_SingleEG10",&	( b5.L1_SingleEG10 ));
-	_compiledTree->Branch("b5_L1_SingleEG15",&	( b5.L1_SingleEG15 ));
-	_compiledTree->Branch("b5_L1_SingleEG26",&	( b5.L1_SingleEG26 ));
-	_compiledTree->Branch("b5_L1_SingleEG34",&	( b5.L1_SingleEG34 ));
-	_compiledTree->Branch("b5_L1_SingleEG34er2p1",&	( b5.L1_SingleEG34er2p1 ));
+	_compiledTree->Branch("b5_L1_QuadMu0_OQ",&	( b5.L1_QuadMu0_OQ ));
+	_compiledTree->Branch("b5_L1_QuadMu0_SQ",&	( b5.L1_QuadMu0_SQ ));
+	_compiledTree->Branch("b5_L1_SecondBunchInTrain",&	( b5.L1_SecondBunchInTrain ));
+	_compiledTree->Branch("b5_L1_SecondLastBunchInTrain",&	( b5.L1_SecondLastBunchInTrain ));
+	_compiledTree->Branch("b5_L1_SingleEG10er2p5",&	( b5.L1_SingleEG10er2p5 ));
+	_compiledTree->Branch("b5_L1_SingleEG15er2p5",&	( b5.L1_SingleEG15er2p5 ));
+	_compiledTree->Branch("b5_L1_SingleEG26er2p5",&	( b5.L1_SingleEG26er2p5 ));
 	_compiledTree->Branch("b5_L1_SingleEG34er2p5",&	( b5.L1_SingleEG34er2p5 ));
-	_compiledTree->Branch("b5_L1_SingleEG36",&	( b5.L1_SingleEG36 ));
-	_compiledTree->Branch("b5_L1_SingleEG36er2p1",&	( b5.L1_SingleEG36er2p1 ));
 	_compiledTree->Branch("b5_L1_SingleEG36er2p5",&	( b5.L1_SingleEG36er2p5 ));
-	_compiledTree->Branch("b5_L1_SingleEG38",&	( b5.L1_SingleEG38 ));
-	_compiledTree->Branch("b5_L1_SingleEG38er2p1",&	( b5.L1_SingleEG38er2p1 ));
 	_compiledTree->Branch("b5_L1_SingleEG38er2p5",&	( b5.L1_SingleEG38er2p5 ));
-	_compiledTree->Branch("b5_L1_SingleEG40",&	( b5.L1_SingleEG40 ));
 	_compiledTree->Branch("b5_L1_SingleEG40er2p5",&	( b5.L1_SingleEG40er2p5 ));
-	_compiledTree->Branch("b5_L1_SingleEG42",&	( b5.L1_SingleEG42 ));
 	_compiledTree->Branch("b5_L1_SingleEG42er2p5",&	( b5.L1_SingleEG42er2p5 ));
-	_compiledTree->Branch("b5_L1_SingleEG45",&	( b5.L1_SingleEG45 ));
-	_compiledTree->Branch("b5_L1_SingleEG5",&	( b5.L1_SingleEG5 ));
+	_compiledTree->Branch("b5_L1_SingleEG45er2p5",&	( b5.L1_SingleEG45er2p5 ));
 	_compiledTree->Branch("b5_L1_SingleEG50",&	( b5.L1_SingleEG50 ));
+	_compiledTree->Branch("b5_L1_SingleEG60",&	( b5.L1_SingleEG60 ));
+	_compiledTree->Branch("b5_L1_SingleEG8er2p5",&	( b5.L1_SingleEG8er2p5 ));
+	_compiledTree->Branch("b5_L1_SingleIsoEG24er1p5",&	( b5.L1_SingleIsoEG24er1p5 ));
 	_compiledTree->Branch("b5_L1_SingleIsoEG24er2p1",&	( b5.L1_SingleIsoEG24er2p1 ));
-	_compiledTree->Branch("b5_L1_SingleIsoEG26",&	( b5.L1_SingleIsoEG26 ));
+	_compiledTree->Branch("b5_L1_SingleIsoEG26er1p5",&	( b5.L1_SingleIsoEG26er1p5 ));
 	_compiledTree->Branch("b5_L1_SingleIsoEG26er2p1",&	( b5.L1_SingleIsoEG26er2p1 ));
 	_compiledTree->Branch("b5_L1_SingleIsoEG26er2p5",&	( b5.L1_SingleIsoEG26er2p5 ));
-	_compiledTree->Branch("b5_L1_SingleIsoEG28",&	( b5.L1_SingleIsoEG28 ));
+	_compiledTree->Branch("b5_L1_SingleIsoEG28er1p5",&	( b5.L1_SingleIsoEG28er1p5 ));
 	_compiledTree->Branch("b5_L1_SingleIsoEG28er2p1",&	( b5.L1_SingleIsoEG28er2p1 ));
 	_compiledTree->Branch("b5_L1_SingleIsoEG28er2p5",&	( b5.L1_SingleIsoEG28er2p5 ));
-	_compiledTree->Branch("b5_L1_SingleIsoEG30",&	( b5.L1_SingleIsoEG30 ));
 	_compiledTree->Branch("b5_L1_SingleIsoEG30er2p1",&	( b5.L1_SingleIsoEG30er2p1 ));
 	_compiledTree->Branch("b5_L1_SingleIsoEG30er2p5",&	( b5.L1_SingleIsoEG30er2p5 ));
-	_compiledTree->Branch("b5_L1_SingleIsoEG32",&	( b5.L1_SingleIsoEG32 ));
 	_compiledTree->Branch("b5_L1_SingleIsoEG32er2p1",&	( b5.L1_SingleIsoEG32er2p1 ));
 	_compiledTree->Branch("b5_L1_SingleIsoEG32er2p5",&	( b5.L1_SingleIsoEG32er2p5 ));
-	_compiledTree->Branch("b5_L1_SingleIsoEG34",&	( b5.L1_SingleIsoEG34 ));
 	_compiledTree->Branch("b5_L1_SingleIsoEG34er2p5",&	( b5.L1_SingleIsoEG34er2p5 ));
 	_compiledTree->Branch("b5_L1_SingleJet10erHE",&	( b5.L1_SingleJet10erHE ));
 	_compiledTree->Branch("b5_L1_SingleJet120",&	( b5.L1_SingleJet120 ));
-	_compiledTree->Branch("b5_L1_SingleJet120_FWD",&	( b5.L1_SingleJet120_FWD ));
-	_compiledTree->Branch("b5_L1_SingleJet12_BptxAND",&	( b5.L1_SingleJet12_BptxAND ));
+	_compiledTree->Branch("b5_L1_SingleJet120_FWD3p0",&	( b5.L1_SingleJet120_FWD3p0 ));
+	_compiledTree->Branch("b5_L1_SingleJet120er2p5",&	( b5.L1_SingleJet120er2p5 ));
 	_compiledTree->Branch("b5_L1_SingleJet12erHE",&	( b5.L1_SingleJet12erHE ));
-	_compiledTree->Branch("b5_L1_SingleJet140",&	( b5.L1_SingleJet140 ));
-	_compiledTree->Branch("b5_L1_SingleJet150",&	( b5.L1_SingleJet150 ));
-	_compiledTree->Branch("b5_L1_SingleJet16",&	( b5.L1_SingleJet16 ));
-	_compiledTree->Branch("b5_L1_SingleJet160",&	( b5.L1_SingleJet160 ));
-	_compiledTree->Branch("b5_L1_SingleJet170",&	( b5.L1_SingleJet170 ));
+	_compiledTree->Branch("b5_L1_SingleJet140er2p5",&	( b5.L1_SingleJet140er2p5 ));
+	_compiledTree->Branch("b5_L1_SingleJet140er2p5_ETMHF80",&	( b5.L1_SingleJet140er2p5_ETMHF80 ));
+	_compiledTree->Branch("b5_L1_SingleJet140er2p5_ETMHF90",&	( b5.L1_SingleJet140er2p5_ETMHF90 ));
+	_compiledTree->Branch("b5_L1_SingleJet160er2p5",&	( b5.L1_SingleJet160er2p5 ));
 	_compiledTree->Branch("b5_L1_SingleJet180",&	( b5.L1_SingleJet180 ));
-	_compiledTree->Branch("b5_L1_SingleJet20",&	( b5.L1_SingleJet20 ));
+	_compiledTree->Branch("b5_L1_SingleJet180er2p5",&	( b5.L1_SingleJet180er2p5 ));
 	_compiledTree->Branch("b5_L1_SingleJet200",&	( b5.L1_SingleJet200 ));
-	_compiledTree->Branch("b5_L1_SingleJet20er2p7_NotBptxOR",&	( b5.L1_SingleJet20er2p7_NotBptxOR ));
-	_compiledTree->Branch("b5_L1_SingleJet20er2p7_NotBptxOR_3BX",&	( b5.L1_SingleJet20er2p7_NotBptxOR_3BX ));
+	_compiledTree->Branch("b5_L1_SingleJet20er2p5_NotBptxOR",&	( b5.L1_SingleJet20er2p5_NotBptxOR ));
+	_compiledTree->Branch("b5_L1_SingleJet20er2p5_NotBptxOR_3BX",&	( b5.L1_SingleJet20er2p5_NotBptxOR_3BX ));
 	_compiledTree->Branch("b5_L1_SingleJet35",&	( b5.L1_SingleJet35 ));
-	_compiledTree->Branch("b5_L1_SingleJet35_FWD",&	( b5.L1_SingleJet35_FWD ));
-	_compiledTree->Branch("b5_L1_SingleJet35_HFm",&	( b5.L1_SingleJet35_HFm ));
-	_compiledTree->Branch("b5_L1_SingleJet35_HFp",&	( b5.L1_SingleJet35_HFp ));
-	_compiledTree->Branch("b5_L1_SingleJet43er2p7_NotBptxOR_3BX",&	( b5.L1_SingleJet43er2p7_NotBptxOR_3BX ));
-	_compiledTree->Branch("b5_L1_SingleJet46er2p7_NotBptxOR_3BX",&	( b5.L1_SingleJet46er2p7_NotBptxOR_3BX ));
+	_compiledTree->Branch("b5_L1_SingleJet35_FWD3p0",&	( b5.L1_SingleJet35_FWD3p0 ));
+	_compiledTree->Branch("b5_L1_SingleJet35er2p5",&	( b5.L1_SingleJet35er2p5 ));
+	_compiledTree->Branch("b5_L1_SingleJet43er2p5_NotBptxOR_3BX",&	( b5.L1_SingleJet43er2p5_NotBptxOR_3BX ));
+	_compiledTree->Branch("b5_L1_SingleJet46er2p5_NotBptxOR_3BX",&	( b5.L1_SingleJet46er2p5_NotBptxOR_3BX ));
 	_compiledTree->Branch("b5_L1_SingleJet60",&	( b5.L1_SingleJet60 ));
-	_compiledTree->Branch("b5_L1_SingleJet60_FWD",&	( b5.L1_SingleJet60_FWD ));
-	_compiledTree->Branch("b5_L1_SingleJet60_HFm",&	( b5.L1_SingleJet60_HFm ));
-	_compiledTree->Branch("b5_L1_SingleJet60_HFp",&	( b5.L1_SingleJet60_HFp ));
+	_compiledTree->Branch("b5_L1_SingleJet60_FWD3p0",&	( b5.L1_SingleJet60_FWD3p0 ));
+	_compiledTree->Branch("b5_L1_SingleJet60er2p5",&	( b5.L1_SingleJet60er2p5 ));
 	_compiledTree->Branch("b5_L1_SingleJet8erHE",&	( b5.L1_SingleJet8erHE ));
 	_compiledTree->Branch("b5_L1_SingleJet90",&	( b5.L1_SingleJet90 ));
-	_compiledTree->Branch("b5_L1_SingleJet90_FWD",&	( b5.L1_SingleJet90_FWD ));
+	_compiledTree->Branch("b5_L1_SingleJet90_FWD3p0",&	( b5.L1_SingleJet90_FWD3p0 ));
+	_compiledTree->Branch("b5_L1_SingleJet90er2p5",&	( b5.L1_SingleJet90er2p5 ));
+	_compiledTree->Branch("b5_L1_SingleLooseIsoEG28er1p5",&	( b5.L1_SingleLooseIsoEG28er1p5 ));
+	_compiledTree->Branch("b5_L1_SingleLooseIsoEG30er1p5",&	( b5.L1_SingleLooseIsoEG30er1p5 ));
 	_compiledTree->Branch("b5_L1_SingleMu0_BMTF",&	( b5.L1_SingleMu0_BMTF ));
+	_compiledTree->Branch("b5_L1_SingleMu0_DQ",&	( b5.L1_SingleMu0_DQ ));
 	_compiledTree->Branch("b5_L1_SingleMu0_EMTF",&	( b5.L1_SingleMu0_EMTF ));
 	_compiledTree->Branch("b5_L1_SingleMu0_OMTF",&	( b5.L1_SingleMu0_OMTF ));
-	_compiledTree->Branch("b5_L1_SingleMu10_LowQ",&	( b5.L1_SingleMu10_LowQ ));
-	_compiledTree->Branch("b5_L1_SingleMu12_LowQ_BMTF",&	( b5.L1_SingleMu12_LowQ_BMTF ));
-	_compiledTree->Branch("b5_L1_SingleMu12_LowQ_EMTF",&	( b5.L1_SingleMu12_LowQ_EMTF ));
-	_compiledTree->Branch("b5_L1_SingleMu12_LowQ_OMTF",&	( b5.L1_SingleMu12_LowQ_OMTF ));
+	_compiledTree->Branch("b5_L1_SingleMu10er1p5",&	( b5.L1_SingleMu10er1p5 ));
+	_compiledTree->Branch("b5_L1_SingleMu12_DQ_BMTF",&	( b5.L1_SingleMu12_DQ_BMTF ));
+	_compiledTree->Branch("b5_L1_SingleMu12_DQ_EMTF",&	( b5.L1_SingleMu12_DQ_EMTF ));
+	_compiledTree->Branch("b5_L1_SingleMu12_DQ_OMTF",&	( b5.L1_SingleMu12_DQ_OMTF ));
+	_compiledTree->Branch("b5_L1_SingleMu12er1p5",&	( b5.L1_SingleMu12er1p5 ));
+	_compiledTree->Branch("b5_L1_SingleMu14er1p5",&	( b5.L1_SingleMu14er1p5 ));
+	_compiledTree->Branch("b5_L1_SingleMu15_DQ",&	( b5.L1_SingleMu15_DQ ));
+	_compiledTree->Branch("b5_L1_SingleMu16er1p5",&	( b5.L1_SingleMu16er1p5 ));
 	_compiledTree->Branch("b5_L1_SingleMu18",&	( b5.L1_SingleMu18 ));
+	_compiledTree->Branch("b5_L1_SingleMu18er1p5",&	( b5.L1_SingleMu18er1p5 ));
 	_compiledTree->Branch("b5_L1_SingleMu20",&	( b5.L1_SingleMu20 ));
 	_compiledTree->Branch("b5_L1_SingleMu22",&	( b5.L1_SingleMu22 ));
 	_compiledTree->Branch("b5_L1_SingleMu22_BMTF",&	( b5.L1_SingleMu22_BMTF ));
@@ -1380,7 +1557,12 @@ void genericTreeBranchSelector::setCompiledTreeBranches()
 	_compiledTree->Branch("b5_L1_SingleMu25",&	( b5.L1_SingleMu25 ));
 	_compiledTree->Branch("b5_L1_SingleMu3",&	( b5.L1_SingleMu3 ));
 	_compiledTree->Branch("b5_L1_SingleMu5",&	( b5.L1_SingleMu5 ));
+	_compiledTree->Branch("b5_L1_SingleMu6er1p5",&	( b5.L1_SingleMu6er1p5 ));
 	_compiledTree->Branch("b5_L1_SingleMu7",&	( b5.L1_SingleMu7 ));
+	_compiledTree->Branch("b5_L1_SingleMu7_DQ",&	( b5.L1_SingleMu7_DQ ));
+	_compiledTree->Branch("b5_L1_SingleMu7er1p5",&	( b5.L1_SingleMu7er1p5 ));
+	_compiledTree->Branch("b5_L1_SingleMu8er1p5",&	( b5.L1_SingleMu8er1p5 ));
+	_compiledTree->Branch("b5_L1_SingleMu9er1p5",&	( b5.L1_SingleMu9er1p5 ));
 	_compiledTree->Branch("b5_L1_SingleMuCosmics",&	( b5.L1_SingleMuCosmics ));
 	_compiledTree->Branch("b5_L1_SingleMuCosmics_BMTF",&	( b5.L1_SingleMuCosmics_BMTF ));
 	_compiledTree->Branch("b5_L1_SingleMuCosmics_EMTF",&	( b5.L1_SingleMuCosmics_EMTF ));
@@ -1395,32 +1577,34 @@ void genericTreeBranchSelector::setCompiledTreeBranches()
 	_compiledTree->Branch("b5_L1_TOTEM_2",&	( b5.L1_TOTEM_2 ));
 	_compiledTree->Branch("b5_L1_TOTEM_3",&	( b5.L1_TOTEM_3 ));
 	_compiledTree->Branch("b5_L1_TOTEM_4",&	( b5.L1_TOTEM_4 ));
-	_compiledTree->Branch("b5_L1_TripleEG_18_17_8",&	( b5.L1_TripleEG_18_17_8 ));
-	_compiledTree->Branch("b5_L1_TripleEG_LooseIso20_10_5",&	( b5.L1_TripleEG_LooseIso20_10_5 ));
-	_compiledTree->Branch("b5_L1_TripleJet_100_85_72_VBF",&	( b5.L1_TripleJet_100_85_72_VBF ));
-	_compiledTree->Branch("b5_L1_TripleJet_105_85_76_VBF",&	( b5.L1_TripleJet_105_85_76_VBF ));
-	_compiledTree->Branch("b5_L1_TripleJet_98_83_71_VBF",&	( b5.L1_TripleJet_98_83_71_VBF ));
+	_compiledTree->Branch("b5_L1_TripleEG16er2p5",&	( b5.L1_TripleEG16er2p5 ));
+	_compiledTree->Branch("b5_L1_TripleEG_16_12_8_er2p5",&	( b5.L1_TripleEG_16_12_8_er2p5 ));
+	_compiledTree->Branch("b5_L1_TripleEG_16_15_8_er2p5",&	( b5.L1_TripleEG_16_15_8_er2p5 ));
+	_compiledTree->Branch("b5_L1_TripleEG_18_17_8_er2p5",&	( b5.L1_TripleEG_18_17_8_er2p5 ));
+	_compiledTree->Branch("b5_L1_TripleEG_18_18_12_er2p5",&	( b5.L1_TripleEG_18_18_12_er2p5 ));
+	_compiledTree->Branch("b5_L1_TripleJet_100_80_70_DoubleJet_80_70_er2p5",&	( b5.L1_TripleJet_100_80_70_DoubleJet_80_70_er2p5 ));
+	_compiledTree->Branch("b5_L1_TripleJet_105_85_75_DoubleJet_85_75_er2p5",&	( b5.L1_TripleJet_105_85_75_DoubleJet_85_75_er2p5 ));
+	_compiledTree->Branch("b5_L1_TripleJet_95_75_65_DoubleJet_75_65_er2p5",&	( b5.L1_TripleJet_95_75_65_DoubleJet_75_65_er2p5 ));
 	_compiledTree->Branch("b5_L1_TripleMu0",&	( b5.L1_TripleMu0 ));
 	_compiledTree->Branch("b5_L1_TripleMu0_OQ",&	( b5.L1_TripleMu0_OQ ));
+	_compiledTree->Branch("b5_L1_TripleMu0_SQ",&	( b5.L1_TripleMu0_SQ ));
 	_compiledTree->Branch("b5_L1_TripleMu3",&	( b5.L1_TripleMu3 ));
 	_compiledTree->Branch("b5_L1_TripleMu3_SQ",&	( b5.L1_TripleMu3_SQ ));
-	_compiledTree->Branch("b5_L1_TripleMu_4_4_4",&	( b5.L1_TripleMu_4_4_4 ));
-	_compiledTree->Branch("b5_L1_TripleMu_5OQ_3p5OQ_2p5OQ_DoubleMu_5_2p5_OQ_OS_Mass_5to17",&	( b5.L1_TripleMu_5OQ_3p5OQ_2p5OQ_DoubleMu_5_2p5_OQ_OS_Mass_5to17 ));
-	_compiledTree->Branch("b5_L1_TripleMu_5OQ_3p5OQ_2p5OQ_DoubleMu_5_2p5_OQ_OS_Mass_8to14",&	( b5.L1_TripleMu_5OQ_3p5OQ_2p5OQ_DoubleMu_5_2p5_OQ_OS_Mass_8to14 ));
 	_compiledTree->Branch("b5_L1_TripleMu_5SQ_3SQ_0OQ",&	( b5.L1_TripleMu_5SQ_3SQ_0OQ ));
 	_compiledTree->Branch("b5_L1_TripleMu_5SQ_3SQ_0OQ_DoubleMu_5_3_SQ_OS_Mass_Max9",&	( b5.L1_TripleMu_5SQ_3SQ_0OQ_DoubleMu_5_3_SQ_OS_Mass_Max9 ));
 	_compiledTree->Branch("b5_L1_TripleMu_5SQ_3SQ_0_DoubleMu_5_3_SQ_OS_Mass_Max9",&	( b5.L1_TripleMu_5SQ_3SQ_0_DoubleMu_5_3_SQ_OS_Mass_Max9 ));
-	_compiledTree->Branch("b5_L1_TripleMu_5_0_0",&	( b5.L1_TripleMu_5_0_0 ));
 	_compiledTree->Branch("b5_L1_TripleMu_5_3_3",&	( b5.L1_TripleMu_5_3_3 ));
+	_compiledTree->Branch("b5_L1_TripleMu_5_3_3_SQ",&	( b5.L1_TripleMu_5_3_3_SQ ));
 	_compiledTree->Branch("b5_L1_TripleMu_5_3p5_2p5",&	( b5.L1_TripleMu_5_3p5_2p5 ));
 	_compiledTree->Branch("b5_L1_TripleMu_5_3p5_2p5_DoubleMu_5_2p5_OS_Mass_5to17",&	( b5.L1_TripleMu_5_3p5_2p5_DoubleMu_5_2p5_OS_Mass_5to17 ));
+	_compiledTree->Branch("b5_L1_TripleMu_5_3p5_2p5_OQ_DoubleMu_5_2p5_OQ_OS_Mass_5to17",&	( b5.L1_TripleMu_5_3p5_2p5_OQ_DoubleMu_5_2p5_OQ_OS_Mass_5to17 ));
 	_compiledTree->Branch("b5_L1_TripleMu_5_4_2p5_DoubleMu_5_2p5_OS_Mass_5to17",&	( b5.L1_TripleMu_5_4_2p5_DoubleMu_5_2p5_OS_Mass_5to17 ));
 	_compiledTree->Branch("b5_L1_TripleMu_5_5_3",&	( b5.L1_TripleMu_5_5_3 ));
 	_compiledTree->Branch("b5_L1_UnpairedBunchBptxMinus",&	( b5.L1_UnpairedBunchBptxMinus ));
 	_compiledTree->Branch("b5_L1_UnpairedBunchBptxPlus",&	( b5.L1_UnpairedBunchBptxPlus ));
 	_compiledTree->Branch("b5_L1_ZeroBias",&	( b5.L1_ZeroBias ));
 	_compiledTree->Branch("b5_L1_ZeroBias_copy",&	( b5.L1_ZeroBias_copy ));
-	_compiledTree->Branch("b5_L1Reco_step",&	( b5.L1Reco_step ));
+	_compiledTree->Branch("b5_L1_UnprefireableEvent",&	( b5.L1_UnprefireableEvent ));
 	_compiledTree->Branch("b5_Flag_HBHENoiseFilter",&	( b5.Flag_HBHENoiseFilter ));
 	_compiledTree->Branch("b5_Flag_HBHENoiseIsoFilter",&	( b5.Flag_HBHENoiseIsoFilter ));
 	_compiledTree->Branch("b5_Flag_CSCTightHaloFilter",&	( b5.Flag_CSCTightHaloFilter ));
@@ -1441,12 +1625,15 @@ void genericTreeBranchSelector::setCompiledTreeBranches()
 	_compiledTree->Branch("b5_Flag_muonBadTrackFilter",&	( b5.Flag_muonBadTrackFilter ));
 	_compiledTree->Branch("b5_Flag_BadChargedCandidateFilter",&	( b5.Flag_BadChargedCandidateFilter ));
 	_compiledTree->Branch("b5_Flag_BadPFMuonFilter",&	( b5.Flag_BadPFMuonFilter ));
+	_compiledTree->Branch("b5_Flag_BadPFMuonDzFilter",&	( b5.Flag_BadPFMuonDzFilter ));
+	_compiledTree->Branch("b5_Flag_hfNoisyHitsFilter",&	( b5.Flag_hfNoisyHitsFilter ));
 	_compiledTree->Branch("b5_Flag_BadChargedCandidateSummer16Filter",&	( b5.Flag_BadChargedCandidateSummer16Filter ));
 	_compiledTree->Branch("b5_Flag_BadPFMuonSummer16Filter",&	( b5.Flag_BadPFMuonSummer16Filter ));
 	_compiledTree->Branch("b5_Flag_trkPOG_manystripclus53X",&	( b5.Flag_trkPOG_manystripclus53X ));
 	_compiledTree->Branch("b5_Flag_trkPOG_toomanystripclus53X",&	( b5.Flag_trkPOG_toomanystripclus53X ));
 	_compiledTree->Branch("b5_Flag_trkPOG_logErrorTooManyClusters",&	( b5.Flag_trkPOG_logErrorTooManyClusters ));
 	_compiledTree->Branch("b5_Flag_METFilters",&	( b5.Flag_METFilters ));
+	_compiledTree->Branch("b5_L1Reco_step",&	( b5.L1Reco_step ));
 	_compiledTree->Branch("b5_HLTriggerFirstPath",&	( b5.HLTriggerFirstPath ));
 	_compiledTree->Branch("b5_HLT_AK8PFJet360_TrimMass30",&	( b5.HLT_AK8PFJet360_TrimMass30 ));
 	_compiledTree->Branch("b5_HLT_AK8PFJet380_TrimMass30",&	( b5.HLT_AK8PFJet380_TrimMass30 ));
@@ -1479,8 +1666,7 @@ void genericTreeBranchSelector::setCompiledTreeBranches()
 	_compiledTree->Branch("b5_HLT_DoubleMu3_Trk_Tau3mu",&	( b5.HLT_DoubleMu3_Trk_Tau3mu ));
 	_compiledTree->Branch("b5_HLT_DoubleMu3_TkMu_DsTau3Mu",&	( b5.HLT_DoubleMu3_TkMu_DsTau3Mu ));
 	_compiledTree->Branch("b5_HLT_DoubleMu4_PsiPrimeTrk_Displaced",&	( b5.HLT_DoubleMu4_PsiPrimeTrk_Displaced ));
-	_compiledTree->Branch("b5_HLT_DoubleMu4_Mass8_DZ_PFHT350",&	( b5.HLT_DoubleMu4_Mass8_DZ_PFHT350 ));
-	_compiledTree->Branch("b5_HLT_DoubleMu8_Mass8_PFHT350",&	( b5.HLT_DoubleMu8_Mass8_PFHT350 ));
+	_compiledTree->Branch("b5_HLT_DoubleMu4_Mass3p8_DZ_PFHT350",&	( b5.HLT_DoubleMu4_Mass3p8_DZ_PFHT350 ));
 	_compiledTree->Branch("b5_HLT_Mu3_PFJet40",&	( b5.HLT_Mu3_PFJet40 ));
 	_compiledTree->Branch("b5_HLT_Mu7p5_L2Mu2_Jpsi",&	( b5.HLT_Mu7p5_L2Mu2_Jpsi ));
 	_compiledTree->Branch("b5_HLT_Mu7p5_L2Mu2_Upsilon",&	( b5.HLT_Mu7p5_L2Mu2_Upsilon ));
@@ -1563,10 +1749,6 @@ void genericTreeBranchSelector::setCompiledTreeBranches()
 	_compiledTree->Branch("b5_HLT_Mu55",&	( b5.HLT_Mu55 ));
 	_compiledTree->Branch("b5_HLT_OldMu100",&	( b5.HLT_OldMu100 ));
 	_compiledTree->Branch("b5_HLT_TkMu100",&	( b5.HLT_TkMu100 ));
-	_compiledTree->Branch("b5_HLT_DiPFJet15_NoCaloMatched",&	( b5.HLT_DiPFJet15_NoCaloMatched ));
-	_compiledTree->Branch("b5_HLT_DiPFJet25_NoCaloMatched",&	( b5.HLT_DiPFJet25_NoCaloMatched ));
-	_compiledTree->Branch("b5_HLT_DiPFJet15_FBEta3_NoCaloMatched",&	( b5.HLT_DiPFJet15_FBEta3_NoCaloMatched ));
-	_compiledTree->Branch("b5_HLT_DiPFJet25_FBEta3_NoCaloMatched",&	( b5.HLT_DiPFJet25_FBEta3_NoCaloMatched ));
 	_compiledTree->Branch("b5_HLT_DiPFJetAve40",&	( b5.HLT_DiPFJetAve40 ));
 	_compiledTree->Branch("b5_HLT_DiPFJetAve60",&	( b5.HLT_DiPFJetAve60 ));
 	_compiledTree->Branch("b5_HLT_DiPFJetAve80",&	( b5.HLT_DiPFJetAve80 ));
@@ -1578,7 +1760,6 @@ void genericTreeBranchSelector::setCompiledTreeBranches()
 	_compiledTree->Branch("b5_HLT_DiPFJetAve500",&	( b5.HLT_DiPFJetAve500 ));
 	_compiledTree->Branch("b5_HLT_DiPFJetAve15_HFJEC",&	( b5.HLT_DiPFJetAve15_HFJEC ));
 	_compiledTree->Branch("b5_HLT_DiPFJetAve25_HFJEC",&	( b5.HLT_DiPFJetAve25_HFJEC ));
-	_compiledTree->Branch("b5_HLT_DiPFJetAve35_HFJEC",&	( b5.HLT_DiPFJetAve35_HFJEC ));
 	_compiledTree->Branch("b5_HLT_DiPFJetAve60_HFJEC",&	( b5.HLT_DiPFJetAve60_HFJEC ));
 	_compiledTree->Branch("b5_HLT_DiPFJetAve80_HFJEC",&	( b5.HLT_DiPFJetAve80_HFJEC ));
 	_compiledTree->Branch("b5_HLT_DiPFJetAve100_HFJEC",&	( b5.HLT_DiPFJetAve100_HFJEC ));
@@ -1655,11 +1836,11 @@ void genericTreeBranchSelector::setCompiledTreeBranches()
 	_compiledTree->Branch("b5_HLT_PFMET120_PFMHT120_IDTight",&	( b5.HLT_PFMET120_PFMHT120_IDTight ));
 	_compiledTree->Branch("b5_HLT_PFMET130_PFMHT130_IDTight",&	( b5.HLT_PFMET130_PFMHT130_IDTight ));
 	_compiledTree->Branch("b5_HLT_PFMET140_PFMHT140_IDTight",&	( b5.HLT_PFMET140_PFMHT140_IDTight ));
-	_compiledTree->Branch("b5_HLT_PFMET100_PFMHT100_IDTight_CaloBTagCSV_3p1",&	( b5.HLT_PFMET100_PFMHT100_IDTight_CaloBTagCSV_3p1 ));
-	_compiledTree->Branch("b5_HLT_PFMET110_PFMHT110_IDTight_CaloBTagCSV_3p1",&	( b5.HLT_PFMET110_PFMHT110_IDTight_CaloBTagCSV_3p1 ));
-	_compiledTree->Branch("b5_HLT_PFMET120_PFMHT120_IDTight_CaloBTagCSV_3p1",&	( b5.HLT_PFMET120_PFMHT120_IDTight_CaloBTagCSV_3p1 ));
-	_compiledTree->Branch("b5_HLT_PFMET130_PFMHT130_IDTight_CaloBTagCSV_3p1",&	( b5.HLT_PFMET130_PFMHT130_IDTight_CaloBTagCSV_3p1 ));
-	_compiledTree->Branch("b5_HLT_PFMET140_PFMHT140_IDTight_CaloBTagCSV_3p1",&	( b5.HLT_PFMET140_PFMHT140_IDTight_CaloBTagCSV_3p1 ));
+	_compiledTree->Branch("b5_HLT_PFMET100_PFMHT100_IDTight_CaloBTagDeepCSV_3p1",&	( b5.HLT_PFMET100_PFMHT100_IDTight_CaloBTagDeepCSV_3p1 ));
+	_compiledTree->Branch("b5_HLT_PFMET110_PFMHT110_IDTight_CaloBTagDeepCSV_3p1",&	( b5.HLT_PFMET110_PFMHT110_IDTight_CaloBTagDeepCSV_3p1 ));
+	_compiledTree->Branch("b5_HLT_PFMET120_PFMHT120_IDTight_CaloBTagDeepCSV_3p1",&	( b5.HLT_PFMET120_PFMHT120_IDTight_CaloBTagDeepCSV_3p1 ));
+	_compiledTree->Branch("b5_HLT_PFMET130_PFMHT130_IDTight_CaloBTagDeepCSV_3p1",&	( b5.HLT_PFMET130_PFMHT130_IDTight_CaloBTagDeepCSV_3p1 ));
+	_compiledTree->Branch("b5_HLT_PFMET140_PFMHT140_IDTight_CaloBTagDeepCSV_3p1",&	( b5.HLT_PFMET140_PFMHT140_IDTight_CaloBTagDeepCSV_3p1 ));
 	_compiledTree->Branch("b5_HLT_PFMET120_PFMHT120_IDTight_PFHT60",&	( b5.HLT_PFMET120_PFMHT120_IDTight_PFHT60 ));
 	_compiledTree->Branch("b5_HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60",&	( b5.HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60 ));
 	_compiledTree->Branch("b5_HLT_PFMETTypeOne120_PFMHT120_IDTight_PFHT60",&	( b5.HLT_PFMETTypeOne120_PFMHT120_IDTight_PFHT60 ));
@@ -1698,19 +1879,19 @@ void genericTreeBranchSelector::setCompiledTreeBranches()
 	_compiledTree->Branch("b5_HLT_MET105_IsoTrk50",&	( b5.HLT_MET105_IsoTrk50 ));
 	_compiledTree->Branch("b5_HLT_MET120_IsoTrk50",&	( b5.HLT_MET120_IsoTrk50 ));
 	_compiledTree->Branch("b5_HLT_SingleJet30_Mu12_SinglePFJet40",&	( b5.HLT_SingleJet30_Mu12_SinglePFJet40 ));
-	_compiledTree->Branch("b5_HLT_Mu12_DoublePFJets40_CaloBTagCSV_p79",&	( b5.HLT_Mu12_DoublePFJets40_CaloBTagCSV_p79 ));
-	_compiledTree->Branch("b5_HLT_Mu12_DoublePFJets100_CaloBTagCSV_p79",&	( b5.HLT_Mu12_DoublePFJets100_CaloBTagCSV_p79 ));
-	_compiledTree->Branch("b5_HLT_Mu12_DoublePFJets200_CaloBTagCSV_p79",&	( b5.HLT_Mu12_DoublePFJets200_CaloBTagCSV_p79 ));
-	_compiledTree->Branch("b5_HLT_Mu12_DoublePFJets350_CaloBTagCSV_p79",&	( b5.HLT_Mu12_DoublePFJets350_CaloBTagCSV_p79 ));
-	_compiledTree->Branch("b5_HLT_Mu12_DoublePFJets40MaxDeta1p6_DoubleCaloBTagCSV_p79",&	( b5.HLT_Mu12_DoublePFJets40MaxDeta1p6_DoubleCaloBTagCSV_p79 ));
-	_compiledTree->Branch("b5_HLT_Mu12_DoublePFJets54MaxDeta1p6_DoubleCaloBTagCSV_p79",&	( b5.HLT_Mu12_DoublePFJets54MaxDeta1p6_DoubleCaloBTagCSV_p79 ));
-	_compiledTree->Branch("b5_HLT_Mu12_DoublePFJets62MaxDeta1p6_DoubleCaloBTagCSV_p79",&	( b5.HLT_Mu12_DoublePFJets62MaxDeta1p6_DoubleCaloBTagCSV_p79 ));
-	_compiledTree->Branch("b5_HLT_DoublePFJets40_CaloBTagCSV_p79",&	( b5.HLT_DoublePFJets40_CaloBTagCSV_p79 ));
-	_compiledTree->Branch("b5_HLT_DoublePFJets100_CaloBTagCSV_p79",&	( b5.HLT_DoublePFJets100_CaloBTagCSV_p79 ));
-	_compiledTree->Branch("b5_HLT_DoublePFJets200_CaloBTagCSV_p79",&	( b5.HLT_DoublePFJets200_CaloBTagCSV_p79 ));
-	_compiledTree->Branch("b5_HLT_DoublePFJets350_CaloBTagCSV_p79",&	( b5.HLT_DoublePFJets350_CaloBTagCSV_p79 ));
-	_compiledTree->Branch("b5_HLT_DoublePFJets116MaxDeta1p6_DoubleCaloBTagCSV_p79",&	( b5.HLT_DoublePFJets116MaxDeta1p6_DoubleCaloBTagCSV_p79 ));
-	_compiledTree->Branch("b5_HLT_DoublePFJets128MaxDeta1p6_DoubleCaloBTagCSV_p79",&	( b5.HLT_DoublePFJets128MaxDeta1p6_DoubleCaloBTagCSV_p79 ));
+	_compiledTree->Branch("b5_HLT_Mu12_DoublePFJets40_CaloBTagDeepCSV_p71",&	( b5.HLT_Mu12_DoublePFJets40_CaloBTagDeepCSV_p71 ));
+	_compiledTree->Branch("b5_HLT_Mu12_DoublePFJets100_CaloBTagDeepCSV_p71",&	( b5.HLT_Mu12_DoublePFJets100_CaloBTagDeepCSV_p71 ));
+	_compiledTree->Branch("b5_HLT_Mu12_DoublePFJets200_CaloBTagDeepCSV_p71",&	( b5.HLT_Mu12_DoublePFJets200_CaloBTagDeepCSV_p71 ));
+	_compiledTree->Branch("b5_HLT_Mu12_DoublePFJets350_CaloBTagDeepCSV_p71",&	( b5.HLT_Mu12_DoublePFJets350_CaloBTagDeepCSV_p71 ));
+	_compiledTree->Branch("b5_HLT_Mu12_DoublePFJets40MaxDeta1p6_DoubleCaloBTagDeepCSV_p71",&	( b5.HLT_Mu12_DoublePFJets40MaxDeta1p6_DoubleCaloBTagDeepCSV_p71 ));
+	_compiledTree->Branch("b5_HLT_Mu12_DoublePFJets54MaxDeta1p6_DoubleCaloBTagDeepCSV_p71",&	( b5.HLT_Mu12_DoublePFJets54MaxDeta1p6_DoubleCaloBTagDeepCSV_p71 ));
+	_compiledTree->Branch("b5_HLT_Mu12_DoublePFJets62MaxDeta1p6_DoubleCaloBTagDeepCSV_p71",&	( b5.HLT_Mu12_DoublePFJets62MaxDeta1p6_DoubleCaloBTagDeepCSV_p71 ));
+	_compiledTree->Branch("b5_HLT_DoublePFJets40_CaloBTagDeepCSV_p71",&	( b5.HLT_DoublePFJets40_CaloBTagDeepCSV_p71 ));
+	_compiledTree->Branch("b5_HLT_DoublePFJets100_CaloBTagDeepCSV_p71",&	( b5.HLT_DoublePFJets100_CaloBTagDeepCSV_p71 ));
+	_compiledTree->Branch("b5_HLT_DoublePFJets200_CaloBTagDeepCSV_p71",&	( b5.HLT_DoublePFJets200_CaloBTagDeepCSV_p71 ));
+	_compiledTree->Branch("b5_HLT_DoublePFJets350_CaloBTagDeepCSV_p71",&	( b5.HLT_DoublePFJets350_CaloBTagDeepCSV_p71 ));
+	_compiledTree->Branch("b5_HLT_DoublePFJets116MaxDeta1p6_DoubleCaloBTagDeepCSV_p71",&	( b5.HLT_DoublePFJets116MaxDeta1p6_DoubleCaloBTagDeepCSV_p71 ));
+	_compiledTree->Branch("b5_HLT_DoublePFJets128MaxDeta1p6_DoubleCaloBTagDeepCSV_p71",&	( b5.HLT_DoublePFJets128MaxDeta1p6_DoubleCaloBTagDeepCSV_p71 ));
 	_compiledTree->Branch("b5_HLT_Photon300_NoHE",&	( b5.HLT_Photon300_NoHE ));
 	_compiledTree->Branch("b5_HLT_Mu8_TrkIsoVVL",&	( b5.HLT_Mu8_TrkIsoVVL ));
 	_compiledTree->Branch("b5_HLT_Mu8_DiEle12_CaloIdL_TrackIdL_DZ",&	( b5.HLT_Mu8_DiEle12_CaloIdL_TrackIdL_DZ ));
@@ -1728,6 +1909,7 @@ void genericTreeBranchSelector::setCompiledTreeBranches()
 	_compiledTree->Branch("b5_HLT_BTagMu_AK4DiJet170_Mu5",&	( b5.HLT_BTagMu_AK4DiJet170_Mu5 ));
 	_compiledTree->Branch("b5_HLT_BTagMu_AK4Jet300_Mu5",&	( b5.HLT_BTagMu_AK4Jet300_Mu5 ));
 	_compiledTree->Branch("b5_HLT_BTagMu_AK8DiJet170_Mu5",&	( b5.HLT_BTagMu_AK8DiJet170_Mu5 ));
+	_compiledTree->Branch("b5_HLT_BTagMu_AK8Jet170_DoubleMu5",&	( b5.HLT_BTagMu_AK8Jet170_DoubleMu5 ));
 	_compiledTree->Branch("b5_HLT_BTagMu_AK8Jet300_Mu5",&	( b5.HLT_BTagMu_AK8Jet300_Mu5 ));
 	_compiledTree->Branch("b5_HLT_Ele15_Ele8_CaloIdL_TrackIdL_IsoVL",&	( b5.HLT_Ele15_Ele8_CaloIdL_TrackIdL_IsoVL ));
 	_compiledTree->Branch("b5_HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ",&	( b5.HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ ));
@@ -1751,6 +1933,12 @@ void genericTreeBranchSelector::setCompiledTreeBranches()
 	_compiledTree->Branch("b5_HLT_Photon150",&	( b5.HLT_Photon150 ));
 	_compiledTree->Branch("b5_HLT_Photon175",&	( b5.HLT_Photon175 ));
 	_compiledTree->Branch("b5_HLT_Photon200",&	( b5.HLT_Photon200 ));
+	_compiledTree->Branch("b5_HLT_Photon100EB_TightID_TightIso",&	( b5.HLT_Photon100EB_TightID_TightIso ));
+	_compiledTree->Branch("b5_HLT_Photon110EB_TightID_TightIso",&	( b5.HLT_Photon110EB_TightID_TightIso ));
+	_compiledTree->Branch("b5_HLT_Photon120EB_TightID_TightIso",&	( b5.HLT_Photon120EB_TightID_TightIso ));
+	_compiledTree->Branch("b5_HLT_Photon100EBHE10",&	( b5.HLT_Photon100EBHE10 ));
+	_compiledTree->Branch("b5_HLT_Photon100EEHE10",&	( b5.HLT_Photon100EEHE10 ));
+	_compiledTree->Branch("b5_HLT_Photon100EE_TightID_TightIso",&	( b5.HLT_Photon100EE_TightID_TightIso ));
 	_compiledTree->Branch("b5_HLT_Photon50_R9Id90_HE10_IsoM",&	( b5.HLT_Photon50_R9Id90_HE10_IsoM ));
 	_compiledTree->Branch("b5_HLT_Photon75_R9Id90_HE10_IsoM",&	( b5.HLT_Photon75_R9Id90_HE10_IsoM ));
 	_compiledTree->Branch("b5_HLT_Photon75_R9Id90_HE10_IsoM_EBOnly_CaloMJJ300_PFJetsMJJ400DEta3",&	( b5.HLT_Photon75_R9Id90_HE10_IsoM_EBOnly_CaloMJJ300_PFJetsMJJ400DEta3 ));
@@ -1762,8 +1950,6 @@ void genericTreeBranchSelector::setCompiledTreeBranches()
 	_compiledTree->Branch("b5_HLT_Diphoton30_22_R9Id_OR_IsoCaloId_AND_HE_R9Id_Mass95",&	( b5.HLT_Diphoton30_22_R9Id_OR_IsoCaloId_AND_HE_R9Id_Mass95 ));
 	_compiledTree->Branch("b5_HLT_Diphoton30PV_18PV_R9Id_AND_IsoCaloId_AND_HE_R9Id_PixelVeto_Mass55",&	( b5.HLT_Diphoton30PV_18PV_R9Id_AND_IsoCaloId_AND_HE_R9Id_PixelVeto_Mass55 ));
 	_compiledTree->Branch("b5_HLT_Diphoton30PV_18PV_R9Id_AND_IsoCaloId_AND_HE_R9Id_NoPixelVeto_Mass55",&	( b5.HLT_Diphoton30PV_18PV_R9Id_AND_IsoCaloId_AND_HE_R9Id_NoPixelVeto_Mass55 ));
-	_compiledTree->Branch("b5_HLT_Diphoton30EB_18EB_R9Id_OR_IsoCaloId_AND_HE_R9Id_NoPixelVeto_Mass55",&	( b5.HLT_Diphoton30EB_18EB_R9Id_OR_IsoCaloId_AND_HE_R9Id_NoPixelVeto_Mass55 ));
-	_compiledTree->Branch("b5_HLT_Diphoton30EB_18EB_R9Id_OR_IsoCaloId_AND_HE_R9Id_PixelVeto_Mass55",&	( b5.HLT_Diphoton30EB_18EB_R9Id_OR_IsoCaloId_AND_HE_R9Id_PixelVeto_Mass55 ));
 	_compiledTree->Branch("b5_HLT_Dimuon0_Jpsi_L1_NoOS",&	( b5.HLT_Dimuon0_Jpsi_L1_NoOS ));
 	_compiledTree->Branch("b5_HLT_Dimuon0_Jpsi_NoVertexing_NoOS",&	( b5.HLT_Dimuon0_Jpsi_NoVertexing_NoOS ));
 	_compiledTree->Branch("b5_HLT_Dimuon0_Jpsi",&	( b5.HLT_Dimuon0_Jpsi ));
@@ -1786,7 +1972,7 @@ void genericTreeBranchSelector::setCompiledTreeBranches()
 	_compiledTree->Branch("b5_HLT_Dimuon0_LowMass_L1_TM530",&	( b5.HLT_Dimuon0_LowMass_L1_TM530 ));
 	_compiledTree->Branch("b5_HLT_Dimuon0_Upsilon_Muon_L1_TM0",&	( b5.HLT_Dimuon0_Upsilon_Muon_L1_TM0 ));
 	_compiledTree->Branch("b5_HLT_Dimuon0_Upsilon_Muon_NoL1Mass",&	( b5.HLT_Dimuon0_Upsilon_Muon_NoL1Mass ));
-	_compiledTree->Branch("b5_HLT_TripleMu_5_3_3_Mass3p8to60_DZ",&	( b5.HLT_TripleMu_5_3_3_Mass3p8to60_DZ ));
+	_compiledTree->Branch("b5_HLT_TripleMu_5_3_3_Mass3p8_DZ",&	( b5.HLT_TripleMu_5_3_3_Mass3p8_DZ ));
 	_compiledTree->Branch("b5_HLT_TripleMu_10_5_5_DZ",&	( b5.HLT_TripleMu_10_5_5_DZ ));
 	_compiledTree->Branch("b5_HLT_TripleMu_12_10_5",&	( b5.HLT_TripleMu_12_10_5 ));
 	_compiledTree->Branch("b5_HLT_Tau3Mu_Mu7_Mu1_TkMu1_Tau15",&	( b5.HLT_Tau3Mu_Mu7_Mu1_TkMu1_Tau15 ));
@@ -1804,6 +1990,10 @@ void genericTreeBranchSelector::setCompiledTreeBranches()
 	_compiledTree->Branch("b5_HLT_DoubleMu48NoFiltersNoVtx",&	( b5.HLT_DoubleMu48NoFiltersNoVtx ));
 	_compiledTree->Branch("b5_HLT_Mu43NoFiltersNoVtx_Photon43_CaloIdL",&	( b5.HLT_Mu43NoFiltersNoVtx_Photon43_CaloIdL ));
 	_compiledTree->Branch("b5_HLT_Mu48NoFiltersNoVtx_Photon48_CaloIdL",&	( b5.HLT_Mu48NoFiltersNoVtx_Photon48_CaloIdL ));
+	_compiledTree->Branch("b5_HLT_Mu38NoFiltersNoVtxDisplaced_Photon38_CaloIdL",&	( b5.HLT_Mu38NoFiltersNoVtxDisplaced_Photon38_CaloIdL ));
+	_compiledTree->Branch("b5_HLT_Mu43NoFiltersNoVtxDisplaced_Photon43_CaloIdL",&	( b5.HLT_Mu43NoFiltersNoVtxDisplaced_Photon43_CaloIdL ));
+	_compiledTree->Branch("b5_HLT_DoubleMu33NoFiltersNoVtxDisplaced",&	( b5.HLT_DoubleMu33NoFiltersNoVtxDisplaced ));
+	_compiledTree->Branch("b5_HLT_DoubleMu40NoFiltersNoVtxDisplaced",&	( b5.HLT_DoubleMu40NoFiltersNoVtxDisplaced ));
 	_compiledTree->Branch("b5_HLT_DoubleMu20_7_Mass0to30_L1_DM4",&	( b5.HLT_DoubleMu20_7_Mass0to30_L1_DM4 ));
 	_compiledTree->Branch("b5_HLT_DoubleMu20_7_Mass0to30_L1_DM4EG",&	( b5.HLT_DoubleMu20_7_Mass0to30_L1_DM4EG ));
 	_compiledTree->Branch("b5_HLT_HT425",&	( b5.HLT_HT425 ));
@@ -1826,22 +2016,30 @@ void genericTreeBranchSelector::setCompiledTreeBranches()
 	_compiledTree->Branch("b5_HLT_Ele28_eta2p1_WPTight_Gsf_HT150",&	( b5.HLT_Ele28_eta2p1_WPTight_Gsf_HT150 ));
 	_compiledTree->Branch("b5_HLT_Ele28_HighEta_SC20_Mass55",&	( b5.HLT_Ele28_HighEta_SC20_Mass55 ));
 	_compiledTree->Branch("b5_HLT_DoubleMu20_7_Mass0to30_Photon23",&	( b5.HLT_DoubleMu20_7_Mass0to30_Photon23 ));
-	_compiledTree->Branch("b5_HLT_Ele15_IsoVVVL_PFHT450_CaloBTagCSV_4p5",&	( b5.HLT_Ele15_IsoVVVL_PFHT450_CaloBTagCSV_4p5 ));
+	_compiledTree->Branch("b5_HLT_Ele15_IsoVVVL_PFHT450_CaloBTagDeepCSV_4p5",&	( b5.HLT_Ele15_IsoVVVL_PFHT450_CaloBTagDeepCSV_4p5 ));
 	_compiledTree->Branch("b5_HLT_Ele15_IsoVVVL_PFHT450_PFMET50",&	( b5.HLT_Ele15_IsoVVVL_PFHT450_PFMET50 ));
 	_compiledTree->Branch("b5_HLT_Ele15_IsoVVVL_PFHT450",&	( b5.HLT_Ele15_IsoVVVL_PFHT450 ));
 	_compiledTree->Branch("b5_HLT_Ele50_IsoVVVL_PFHT450",&	( b5.HLT_Ele50_IsoVVVL_PFHT450 ));
 	_compiledTree->Branch("b5_HLT_Ele15_IsoVVVL_PFHT600",&	( b5.HLT_Ele15_IsoVVVL_PFHT600 ));
+	_compiledTree->Branch("b5_HLT_Mu4_TrkIsoVVL_DiPFJet90_40_DEta3p5_MJJ750_HTT300_PFMETNoMu60",&	( b5.HLT_Mu4_TrkIsoVVL_DiPFJet90_40_DEta3p5_MJJ750_HTT300_PFMETNoMu60 ));
 	_compiledTree->Branch("b5_HLT_Mu8_TrkIsoVVL_DiPFJet40_DEta3p5_MJJ750_HTT300_PFMETNoMu60",&	( b5.HLT_Mu8_TrkIsoVVL_DiPFJet40_DEta3p5_MJJ750_HTT300_PFMETNoMu60 ));
 	_compiledTree->Branch("b5_HLT_Mu10_TrkIsoVVL_DiPFJet40_DEta3p5_MJJ750_HTT350_PFMETNoMu60",&	( b5.HLT_Mu10_TrkIsoVVL_DiPFJet40_DEta3p5_MJJ750_HTT350_PFMETNoMu60 ));
-	_compiledTree->Branch("b5_HLT_Mu15_IsoVVVL_PFHT450_CaloBTagCSV_4p5",&	( b5.HLT_Mu15_IsoVVVL_PFHT450_CaloBTagCSV_4p5 ));
+	_compiledTree->Branch("b5_HLT_Mu15_IsoVVVL_PFHT450_CaloBTagDeepCSV_4p5",&	( b5.HLT_Mu15_IsoVVVL_PFHT450_CaloBTagDeepCSV_4p5 ));
 	_compiledTree->Branch("b5_HLT_Mu15_IsoVVVL_PFHT450_PFMET50",&	( b5.HLT_Mu15_IsoVVVL_PFHT450_PFMET50 ));
 	_compiledTree->Branch("b5_HLT_Mu15_IsoVVVL_PFHT450",&	( b5.HLT_Mu15_IsoVVVL_PFHT450 ));
 	_compiledTree->Branch("b5_HLT_Mu50_IsoVVVL_PFHT450",&	( b5.HLT_Mu50_IsoVVVL_PFHT450 ));
 	_compiledTree->Branch("b5_HLT_Mu15_IsoVVVL_PFHT600",&	( b5.HLT_Mu15_IsoVVVL_PFHT600 ));
+	_compiledTree->Branch("b5_HLT_Mu3er1p5_PFJet100er2p5_PFMET70_PFMHT70_IDTight",&	( b5.HLT_Mu3er1p5_PFJet100er2p5_PFMET70_PFMHT70_IDTight ));
+	_compiledTree->Branch("b5_HLT_Mu3er1p5_PFJet100er2p5_PFMET80_PFMHT80_IDTight",&	( b5.HLT_Mu3er1p5_PFJet100er2p5_PFMET80_PFMHT80_IDTight ));
+	_compiledTree->Branch("b5_HLT_Mu3er1p5_PFJet100er2p5_PFMET90_PFMHT90_IDTight",&	( b5.HLT_Mu3er1p5_PFJet100er2p5_PFMET90_PFMHT90_IDTight ));
+	_compiledTree->Branch("b5_HLT_Mu3er1p5_PFJet100er2p5_PFMET100_PFMHT100_IDTight",&	( b5.HLT_Mu3er1p5_PFJet100er2p5_PFMET100_PFMHT100_IDTight ));
+	_compiledTree->Branch("b5_HLT_Mu3er1p5_PFJet100er2p5_PFMETNoMu70_PFMHTNoMu70_IDTight",&	( b5.HLT_Mu3er1p5_PFJet100er2p5_PFMETNoMu70_PFMHTNoMu70_IDTight ));
+	_compiledTree->Branch("b5_HLT_Mu3er1p5_PFJet100er2p5_PFMETNoMu80_PFMHTNoMu80_IDTight",&	( b5.HLT_Mu3er1p5_PFJet100er2p5_PFMETNoMu80_PFMHTNoMu80_IDTight ));
+	_compiledTree->Branch("b5_HLT_Mu3er1p5_PFJet100er2p5_PFMETNoMu90_PFMHTNoMu90_IDTight",&	( b5.HLT_Mu3er1p5_PFJet100er2p5_PFMETNoMu90_PFMHTNoMu90_IDTight ));
+	_compiledTree->Branch("b5_HLT_Mu3er1p5_PFJet100er2p5_PFMETNoMu100_PFMHTNoMu100_IDTight",&	( b5.HLT_Mu3er1p5_PFJet100er2p5_PFMETNoMu100_PFMHTNoMu100_IDTight ));
 	_compiledTree->Branch("b5_HLT_Dimuon10_PsiPrime_Barrel_Seagulls",&	( b5.HLT_Dimuon10_PsiPrime_Barrel_Seagulls ));
 	_compiledTree->Branch("b5_HLT_Dimuon20_Jpsi_Barrel_Seagulls",&	( b5.HLT_Dimuon20_Jpsi_Barrel_Seagulls ));
-	_compiledTree->Branch("b5_HLT_Dimuon10_Upsilon_Barrel_Seagulls",&	( b5.HLT_Dimuon10_Upsilon_Barrel_Seagulls ));
-	_compiledTree->Branch("b5_HLT_Dimuon12_Upsilon_eta1p5",&	( b5.HLT_Dimuon12_Upsilon_eta1p5 ));
+	_compiledTree->Branch("b5_HLT_Dimuon12_Upsilon_y1p4",&	( b5.HLT_Dimuon12_Upsilon_y1p4 ));
 	_compiledTree->Branch("b5_HLT_Dimuon14_Phi_Barrel_Seagulls",&	( b5.HLT_Dimuon14_Phi_Barrel_Seagulls ));
 	_compiledTree->Branch("b5_HLT_Dimuon18_PsiPrime",&	( b5.HLT_Dimuon18_PsiPrime ));
 	_compiledTree->Branch("b5_HLT_Dimuon25_Jpsi",&	( b5.HLT_Dimuon25_Jpsi ));
@@ -1849,10 +2047,10 @@ void genericTreeBranchSelector::setCompiledTreeBranches()
 	_compiledTree->Branch("b5_HLT_Dimuon24_Upsilon_noCorrL1",&	( b5.HLT_Dimuon24_Upsilon_noCorrL1 ));
 	_compiledTree->Branch("b5_HLT_Dimuon24_Phi_noCorrL1",&	( b5.HLT_Dimuon24_Phi_noCorrL1 ));
 	_compiledTree->Branch("b5_HLT_Dimuon25_Jpsi_noCorrL1",&	( b5.HLT_Dimuon25_Jpsi_noCorrL1 ));
+	_compiledTree->Branch("b5_HLT_DiMu4_Ele9_CaloIdL_TrackIdL_DZ_Mass3p8",&	( b5.HLT_DiMu4_Ele9_CaloIdL_TrackIdL_DZ_Mass3p8 ));
 	_compiledTree->Branch("b5_HLT_DiMu9_Ele9_CaloIdL_TrackIdL_DZ",&	( b5.HLT_DiMu9_Ele9_CaloIdL_TrackIdL_DZ ));
 	_compiledTree->Branch("b5_HLT_DiMu9_Ele9_CaloIdL_TrackIdL",&	( b5.HLT_DiMu9_Ele9_CaloIdL_TrackIdL ));
 	_compiledTree->Branch("b5_HLT_DoubleIsoMu20_eta2p1",&	( b5.HLT_DoubleIsoMu20_eta2p1 ));
-	_compiledTree->Branch("b5_HLT_DoubleIsoMu24_eta2p1",&	( b5.HLT_DoubleIsoMu24_eta2p1 ));
 	_compiledTree->Branch("b5_HLT_TrkMu12_DoubleTrkMu5NoFiltersNoVtx",&	( b5.HLT_TrkMu12_DoubleTrkMu5NoFiltersNoVtx ));
 	_compiledTree->Branch("b5_HLT_TrkMu16_DoubleTrkMu6NoFiltersNoVtx",&	( b5.HLT_TrkMu16_DoubleTrkMu6NoFiltersNoVtx ));
 	_compiledTree->Branch("b5_HLT_TrkMu17_DoubleTrkMu8NoFiltersNoVtx",&	( b5.HLT_TrkMu17_DoubleTrkMu8NoFiltersNoVtx ));
@@ -1876,20 +2074,15 @@ void genericTreeBranchSelector::setCompiledTreeBranches()
 	_compiledTree->Branch("b5_HLT_Ele300_CaloIdVT_GsfTrkIdT",&	( b5.HLT_Ele300_CaloIdVT_GsfTrkIdT ));
 	_compiledTree->Branch("b5_HLT_PFHT330PT30_QuadPFJet_75_60_45_40_TriplePFBTagDeepCSV_4p5",&	( b5.HLT_PFHT330PT30_QuadPFJet_75_60_45_40_TriplePFBTagDeepCSV_4p5 ));
 	_compiledTree->Branch("b5_HLT_PFHT330PT30_QuadPFJet_75_60_45_40",&	( b5.HLT_PFHT330PT30_QuadPFJet_75_60_45_40 ));
-	_compiledTree->Branch("b5_HLT_PFHT380_SixPFJet32_DoublePFBTagCSV_2p2",&	( b5.HLT_PFHT380_SixPFJet32_DoublePFBTagCSV_2p2 ));
 	_compiledTree->Branch("b5_HLT_PFHT380_SixPFJet32_DoublePFBTagDeepCSV_2p2",&	( b5.HLT_PFHT380_SixPFJet32_DoublePFBTagDeepCSV_2p2 ));
 	_compiledTree->Branch("b5_HLT_PFHT380_SixPFJet32",&	( b5.HLT_PFHT380_SixPFJet32 ));
-	_compiledTree->Branch("b5_HLT_PFHT430_SixPFJet40_PFBTagCSV_1p5",&	( b5.HLT_PFHT430_SixPFJet40_PFBTagCSV_1p5 ));
+	_compiledTree->Branch("b5_HLT_PFHT430_SixPFJet40_PFBTagDeepCSV_1p5",&	( b5.HLT_PFHT430_SixPFJet40_PFBTagDeepCSV_1p5 ));
 	_compiledTree->Branch("b5_HLT_PFHT430_SixPFJet40",&	( b5.HLT_PFHT430_SixPFJet40 ));
 	_compiledTree->Branch("b5_HLT_PFHT350",&	( b5.HLT_PFHT350 ));
 	_compiledTree->Branch("b5_HLT_PFHT350MinPFJet15",&	( b5.HLT_PFHT350MinPFJet15 ));
 	_compiledTree->Branch("b5_HLT_Photon60_R9Id90_CaloIdL_IsoL",&	( b5.HLT_Photon60_R9Id90_CaloIdL_IsoL ));
 	_compiledTree->Branch("b5_HLT_Photon60_R9Id90_CaloIdL_IsoL_DisplacedIdL",&	( b5.HLT_Photon60_R9Id90_CaloIdL_IsoL_DisplacedIdL ));
 	_compiledTree->Branch("b5_HLT_Photon60_R9Id90_CaloIdL_IsoL_DisplacedIdL_PFHT350MinPFJet15",&	( b5.HLT_Photon60_R9Id90_CaloIdL_IsoL_DisplacedIdL_PFHT350MinPFJet15 ));
-	_compiledTree->Branch("b5_HLT_FullTrack_Multiplicity85",&	( b5.HLT_FullTrack_Multiplicity85 ));
-	_compiledTree->Branch("b5_HLT_FullTrack_Multiplicity100",&	( b5.HLT_FullTrack_Multiplicity100 ));
-	_compiledTree->Branch("b5_HLT_FullTrack_Multiplicity130",&	( b5.HLT_FullTrack_Multiplicity130 ));
-	_compiledTree->Branch("b5_HLT_FullTrack_Multiplicity155",&	( b5.HLT_FullTrack_Multiplicity155 ));
 	_compiledTree->Branch("b5_HLT_ECALHT800",&	( b5.HLT_ECALHT800 ));
 	_compiledTree->Branch("b5_HLT_DiSC30_18_EIso_AND_HE_Mass70",&	( b5.HLT_DiSC30_18_EIso_AND_HE_Mass70 ));
 	_compiledTree->Branch("b5_HLT_Physics",&	( b5.HLT_Physics ));
@@ -1932,8 +2125,6 @@ void genericTreeBranchSelector::setCompiledTreeBranches()
 	_compiledTree->Branch("b5_HLT_L1UnpairedBunchBptxMinus",&	( b5.HLT_L1UnpairedBunchBptxMinus ));
 	_compiledTree->Branch("b5_HLT_L1UnpairedBunchBptxPlus",&	( b5.HLT_L1UnpairedBunchBptxPlus ));
 	_compiledTree->Branch("b5_HLT_L1NotBptxOR",&	( b5.HLT_L1NotBptxOR ));
-	_compiledTree->Branch("b5_HLT_L1MinimumBiasHF_OR",&	( b5.HLT_L1MinimumBiasHF_OR ));
-	_compiledTree->Branch("b5_HLT_L1MinimumBiasHF0OR",&	( b5.HLT_L1MinimumBiasHF0OR ));
 	_compiledTree->Branch("b5_HLT_L1_CDC_SingleMu_3_er1p2_TOP120_DPHI2p618_3p142",&	( b5.HLT_L1_CDC_SingleMu_3_er1p2_TOP120_DPHI2p618_3p142 ));
 	_compiledTree->Branch("b5_HLT_HcalNZS",&	( b5.HLT_HcalNZS ));
 	_compiledTree->Branch("b5_HLT_HcalPhiSym",&	( b5.HLT_HcalPhiSym ));
@@ -2010,162 +2201,215 @@ void genericTreeBranchSelector::setCompiledTreeBranches()
 	_compiledTree->Branch("b5_HLT_DoubleMu2_Jpsi_DoubleTrk1_Phi1p05",&	( b5.HLT_DoubleMu2_Jpsi_DoubleTrk1_Phi1p05 ));
 	_compiledTree->Branch("b5_HLT_DoubleMu2_Jpsi_DoubleTkMu0_Phi",&	( b5.HLT_DoubleMu2_Jpsi_DoubleTkMu0_Phi ));
 	_compiledTree->Branch("b5_HLT_DoubleMu3_DCA_PFMET50_PFMHT60",&	( b5.HLT_DoubleMu3_DCA_PFMET50_PFMHT60 ));
-	_compiledTree->Branch("b5_HLT_TripleMu_5_3_3_Mass3p8to60_DCA",&	( b5.HLT_TripleMu_5_3_3_Mass3p8to60_DCA ));
-	_compiledTree->Branch("b5_HLT_QuadPFJet98_83_71_15_DoubleBTagCSV_p013_p08_VBF1",&	( b5.HLT_QuadPFJet98_83_71_15_DoubleBTagCSV_p013_p08_VBF1 ));
-	_compiledTree->Branch("b5_HLT_QuadPFJet103_88_75_15_DoubleBTagCSV_p013_p08_VBF1",&	( b5.HLT_QuadPFJet103_88_75_15_DoubleBTagCSV_p013_p08_VBF1 ));
-	_compiledTree->Branch("b5_HLT_QuadPFJet105_90_76_15_DoubleBTagCSV_p013_p08_VBF1",&	( b5.HLT_QuadPFJet105_90_76_15_DoubleBTagCSV_p013_p08_VBF1 ));
-	_compiledTree->Branch("b5_HLT_QuadPFJet111_90_80_15_DoubleBTagCSV_p013_p08_VBF1",&	( b5.HLT_QuadPFJet111_90_80_15_DoubleBTagCSV_p013_p08_VBF1 ));
-	_compiledTree->Branch("b5_HLT_QuadPFJet98_83_71_15_BTagCSV_p013_VBF2",&	( b5.HLT_QuadPFJet98_83_71_15_BTagCSV_p013_VBF2 ));
-	_compiledTree->Branch("b5_HLT_QuadPFJet103_88_75_15_BTagCSV_p013_VBF2",&	( b5.HLT_QuadPFJet103_88_75_15_BTagCSV_p013_VBF2 ));
-	_compiledTree->Branch("b5_HLT_QuadPFJet105_88_76_15_BTagCSV_p013_VBF2",&	( b5.HLT_QuadPFJet105_88_76_15_BTagCSV_p013_VBF2 ));
-	_compiledTree->Branch("b5_HLT_QuadPFJet111_90_80_15_BTagCSV_p013_VBF2",&	( b5.HLT_QuadPFJet111_90_80_15_BTagCSV_p013_VBF2 ));
+	_compiledTree->Branch("b5_HLT_TripleMu_5_3_3_Mass3p8_DCA",&	( b5.HLT_TripleMu_5_3_3_Mass3p8_DCA ));
+	_compiledTree->Branch("b5_HLT_QuadPFJet98_83_71_15_DoublePFBTagDeepCSV_1p3_7p7_VBF1",&	( b5.HLT_QuadPFJet98_83_71_15_DoublePFBTagDeepCSV_1p3_7p7_VBF1 ));
+	_compiledTree->Branch("b5_HLT_QuadPFJet103_88_75_15_DoublePFBTagDeepCSV_1p3_7p7_VBF1",&	( b5.HLT_QuadPFJet103_88_75_15_DoublePFBTagDeepCSV_1p3_7p7_VBF1 ));
+	_compiledTree->Branch("b5_HLT_QuadPFJet105_90_76_15_DoublePFBTagDeepCSV_1p3_7p7_VBF1",&	( b5.HLT_QuadPFJet105_90_76_15_DoublePFBTagDeepCSV_1p3_7p7_VBF1 ));
+	_compiledTree->Branch("b5_HLT_QuadPFJet111_90_80_15_DoublePFBTagDeepCSV_1p3_7p7_VBF1",&	( b5.HLT_QuadPFJet111_90_80_15_DoublePFBTagDeepCSV_1p3_7p7_VBF1 ));
+	_compiledTree->Branch("b5_HLT_QuadPFJet98_83_71_15_PFBTagDeepCSV_1p3_VBF2",&	( b5.HLT_QuadPFJet98_83_71_15_PFBTagDeepCSV_1p3_VBF2 ));
+	_compiledTree->Branch("b5_HLT_QuadPFJet103_88_75_15_PFBTagDeepCSV_1p3_VBF2",&	( b5.HLT_QuadPFJet103_88_75_15_PFBTagDeepCSV_1p3_VBF2 ));
+	_compiledTree->Branch("b5_HLT_QuadPFJet105_88_76_15_PFBTagDeepCSV_1p3_VBF2",&	( b5.HLT_QuadPFJet105_88_76_15_PFBTagDeepCSV_1p3_VBF2 ));
+	_compiledTree->Branch("b5_HLT_QuadPFJet111_90_80_15_PFBTagDeepCSV_1p3_VBF2",&	( b5.HLT_QuadPFJet111_90_80_15_PFBTagDeepCSV_1p3_VBF2 ));
 	_compiledTree->Branch("b5_HLT_QuadPFJet98_83_71_15",&	( b5.HLT_QuadPFJet98_83_71_15 ));
 	_compiledTree->Branch("b5_HLT_QuadPFJet103_88_75_15",&	( b5.HLT_QuadPFJet103_88_75_15 ));
 	_compiledTree->Branch("b5_HLT_QuadPFJet105_88_76_15",&	( b5.HLT_QuadPFJet105_88_76_15 ));
 	_compiledTree->Branch("b5_HLT_QuadPFJet111_90_80_15",&	( b5.HLT_QuadPFJet111_90_80_15 ));
-	_compiledTree->Branch("b5_HLT_AK8PFJet330_TrimMass30_PFAK8BTagCSV_p17",&	( b5.HLT_AK8PFJet330_TrimMass30_PFAK8BTagCSV_p17 ));
-	_compiledTree->Branch("b5_HLT_AK8PFJet330_TrimMass30_PFAK8BTagCSV_p1",&	( b5.HLT_AK8PFJet330_TrimMass30_PFAK8BTagCSV_p1 ));
+	_compiledTree->Branch("b5_HLT_AK8PFJet330_TrimMass30_PFAK8BTagDeepCSV_p17",&	( b5.HLT_AK8PFJet330_TrimMass30_PFAK8BTagDeepCSV_p17 ));
+	_compiledTree->Branch("b5_HLT_AK8PFJet330_TrimMass30_PFAK8BTagDeepCSV_p1",&	( b5.HLT_AK8PFJet330_TrimMass30_PFAK8BTagDeepCSV_p1 ));
 	_compiledTree->Branch("b5_HLT_AK8PFJet330_TrimMass30_PFAK8BoostedDoubleB_p02",&	( b5.HLT_AK8PFJet330_TrimMass30_PFAK8BoostedDoubleB_p02 ));
-	_compiledTree->Branch("b5_HLT_Diphoton30_18_PVrealAND_R9Id_AND_IsoCaloId_AND_HE_R9Id_PixelVeto_Mass55",&	( b5.HLT_Diphoton30_18_PVrealAND_R9Id_AND_IsoCaloId_AND_HE_R9Id_PixelVeto_Mass55 ));
-	_compiledTree->Branch("b5_HLT_Diphoton30_18_PVrealAND_R9Id_AND_IsoCaloId_AND_HE_R9Id_NoPixelVeto_Mass55",&	( b5.HLT_Diphoton30_18_PVrealAND_R9Id_AND_IsoCaloId_AND_HE_R9Id_NoPixelVeto_Mass55 ));
+	_compiledTree->Branch("b5_HLT_AK8PFJet330_TrimMass30_PFAK8BoostedDoubleB_np2",&	( b5.HLT_AK8PFJet330_TrimMass30_PFAK8BoostedDoubleB_np2 ));
+	_compiledTree->Branch("b5_HLT_AK8PFJet330_TrimMass30_PFAK8BoostedDoubleB_np4",&	( b5.HLT_AK8PFJet330_TrimMass30_PFAK8BoostedDoubleB_np4 ));
+	_compiledTree->Branch("b5_HLT_Diphoton30_18_R9IdL_AND_HE_AND_IsoCaloId_NoPixelVeto_Mass55",&	( b5.HLT_Diphoton30_18_R9IdL_AND_HE_AND_IsoCaloId_NoPixelVeto_Mass55 ));
+	_compiledTree->Branch("b5_HLT_Diphoton30_18_R9IdL_AND_HE_AND_IsoCaloId_NoPixelVeto",&	( b5.HLT_Diphoton30_18_R9IdL_AND_HE_AND_IsoCaloId_NoPixelVeto ));
+	_compiledTree->Branch("b5_HLT_Mu8p5_IP3p5_part0",&	( b5.HLT_Mu8p5_IP3p5_part0 ));
+	_compiledTree->Branch("b5_HLT_Mu8p5_IP3p5_part1",&	( b5.HLT_Mu8p5_IP3p5_part1 ));
+	_compiledTree->Branch("b5_HLT_Mu8p5_IP3p5_part2",&	( b5.HLT_Mu8p5_IP3p5_part2 ));
+	_compiledTree->Branch("b5_HLT_Mu8p5_IP3p5_part3",&	( b5.HLT_Mu8p5_IP3p5_part3 ));
+	_compiledTree->Branch("b5_HLT_Mu8p5_IP3p5_part4",&	( b5.HLT_Mu8p5_IP3p5_part4 ));
+	_compiledTree->Branch("b5_HLT_Mu8p5_IP3p5_part5",&	( b5.HLT_Mu8p5_IP3p5_part5 ));
+	_compiledTree->Branch("b5_HLT_Mu10p5_IP3p5_part0",&	( b5.HLT_Mu10p5_IP3p5_part0 ));
+	_compiledTree->Branch("b5_HLT_Mu10p5_IP3p5_part1",&	( b5.HLT_Mu10p5_IP3p5_part1 ));
+	_compiledTree->Branch("b5_HLT_Mu10p5_IP3p5_part2",&	( b5.HLT_Mu10p5_IP3p5_part2 ));
+	_compiledTree->Branch("b5_HLT_Mu10p5_IP3p5_part3",&	( b5.HLT_Mu10p5_IP3p5_part3 ));
+	_compiledTree->Branch("b5_HLT_Mu10p5_IP3p5_part4",&	( b5.HLT_Mu10p5_IP3p5_part4 ));
+	_compiledTree->Branch("b5_HLT_Mu10p5_IP3p5_part5",&	( b5.HLT_Mu10p5_IP3p5_part5 ));
+	_compiledTree->Branch("b5_HLT_Mu9_IP6_part0",&	( b5.HLT_Mu9_IP6_part0 ));
+	_compiledTree->Branch("b5_HLT_Mu9_IP6_part1",&	( b5.HLT_Mu9_IP6_part1 ));
+	_compiledTree->Branch("b5_HLT_Mu9_IP6_part2",&	( b5.HLT_Mu9_IP6_part2 ));
+	_compiledTree->Branch("b5_HLT_Mu9_IP6_part3",&	( b5.HLT_Mu9_IP6_part3 ));
+	_compiledTree->Branch("b5_HLT_Mu9_IP6_part4",&	( b5.HLT_Mu9_IP6_part4 ));
+	_compiledTree->Branch("b5_HLT_Mu9_IP6_part5",&	( b5.HLT_Mu9_IP6_part5 ));
+	_compiledTree->Branch("b5_HLT_Mu8_IP3_part0",&	( b5.HLT_Mu8_IP3_part0 ));
+	_compiledTree->Branch("b5_HLT_Mu8_IP3_part1",&	( b5.HLT_Mu8_IP3_part1 ));
+	_compiledTree->Branch("b5_HLT_Mu8_IP3_part2",&	( b5.HLT_Mu8_IP3_part2 ));
+	_compiledTree->Branch("b5_HLT_Mu8_IP3_part3",&	( b5.HLT_Mu8_IP3_part3 ));
+	_compiledTree->Branch("b5_HLT_Mu8_IP3_part4",&	( b5.HLT_Mu8_IP3_part4 ));
+	_compiledTree->Branch("b5_HLT_Mu8_IP3_part5",&	( b5.HLT_Mu8_IP3_part5 ));
 	_compiledTree->Branch("b5_HLTriggerFinalPath",&	( b5.HLTriggerFinalPath ));
 	_compiledTree->Branch("bG_run",&	( bG.run ));
 	_compiledTree->Branch("bG_event",&	( bG.event ));
 	_compiledTree->Branch("bG_lumis",&	( bG.lumis ));
 	_compiledTree->Branch("bG_isData",&	( bG.isData ));
-	_compiledTree->Branch("bG_nPrimaryVertex",&	( bG.nPrimaryVertex ));
-	_compiledTree->Branch("bG_primaryVertex_isFake",	( bG_primaryVertex_isFake ),"bG_primaryVertex_isFake[bG_nPrimaryVertex]/O");
-	_compiledTree->Branch("bG_primaryVertex_x",	( bG_primaryVertex_x ),"bG_primaryVertex_x[bG_nPrimaryVertex]/D");
-	_compiledTree->Branch("bG_primaryVertex_y",	( bG_primaryVertex_y ),"bG_primaryVertex_y[bG_nPrimaryVertex]/D");
-	_compiledTree->Branch("bG_primaryVertex_z",	( bG_primaryVertex_z ),"bG_primaryVertex_z[bG_nPrimaryVertex]/D");
-	_compiledTree->Branch("bG_primaryVertex_t",	( bG_primaryVertex_t ),"bG_primaryVertex_t[bG_nPrimaryVertex]/D");
-	_compiledTree->Branch("bG_primaryVertex_covXX",	( bG_primaryVertex_covXX ),"bG_primaryVertex_covXX[bG_nPrimaryVertex]/D");
-	_compiledTree->Branch("bG_primaryVertex_covXY",	( bG_primaryVertex_covXY ),"bG_primaryVertex_covXY[bG_nPrimaryVertex]/D");
-	_compiledTree->Branch("bG_primaryVertex_covXZ",	( bG_primaryVertex_covXZ ),"bG_primaryVertex_covXZ[bG_nPrimaryVertex]/D");
-	_compiledTree->Branch("bG_primaryVertex_covYY",	( bG_primaryVertex_covYY ),"bG_primaryVertex_covYY[bG_nPrimaryVertex]/D");
-	_compiledTree->Branch("bG_primaryVertex_covYZ",	( bG_primaryVertex_covYZ ),"bG_primaryVertex_covYZ[bG_nPrimaryVertex]/D");
-	_compiledTree->Branch("bG_primaryVertex_covZZ",	( bG_primaryVertex_covZZ ),"bG_primaryVertex_covZZ[bG_nPrimaryVertex]/D");
-	_compiledTree->Branch("bG_primaryVertex_x_error",	( bG_primaryVertex_x_error ),"bG_primaryVertex_x_error[bG_nPrimaryVertex]/D");
-	_compiledTree->Branch("bG_primaryVertex_y_error",	( bG_primaryVertex_y_error ),"bG_primaryVertex_y_error[bG_nPrimaryVertex]/D");
-	_compiledTree->Branch("bG_primaryVertex_z_error",	( bG_primaryVertex_z_error ),"bG_primaryVertex_z_error[bG_nPrimaryVertex]/D");
-	_compiledTree->Branch("bG_primaryVertex_t_error",	( bG_primaryVertex_t_error ),"bG_primaryVertex_t_error[bG_nPrimaryVertex]/D");
-	_compiledTree->Branch("bG_primaryVertex_ntracks",	( bG_primaryVertex_ntracks ),"bG_primaryVertex_ntracks[bG_nPrimaryVertex]/D");
-	_compiledTree->Branch("bG_primaryVertex_ndof",	( bG_primaryVertex_ndof ),"bG_primaryVertex_ndof[bG_nPrimaryVertex]/D");
-	_compiledTree->Branch("bG_primaryVertex_chi2",	( bG_primaryVertex_chi2 ),"bG_primaryVertex_chi2[bG_nPrimaryVertex]/D");
-	_compiledTree->Branch("bG_primaryVertex_normalizedChi2",	( bG_primaryVertex_normalizedChi2 ),"bG_primaryVertex_normalizedChi2[bG_nPrimaryVertex]/D");
-	_compiledTree->Branch("bG_nPho",&	( bG.nPho ));
-	_compiledTree->Branch("bG_phoE",	( bG_phoE ),"bG_phoE[bG_nPho]/F");
-	_compiledTree->Branch("bG_phoEt",	( bG_phoEt ),"bG_phoEt[bG_nPho]/F");
-	_compiledTree->Branch("bG_phoEta",	( bG_phoEta ),"bG_phoEta[bG_nPho]/F");
-	_compiledTree->Branch("bG_phoPhi",	( bG_phoPhi ),"bG_phoPhi[bG_nPho]/F");
-	_compiledTree->Branch("bG_phoSCE",	( bG_phoSCE ),"bG_phoSCE[bG_nPho]/F");
-	_compiledTree->Branch("bG_phoSCEt",	( bG_phoSCEt ),"bG_phoSCEt[bG_nPho]/F");
-	_compiledTree->Branch("bG_phoSCRawE",	( bG_phoSCRawE ),"bG_phoSCRawE[bG_nPho]/F");
-	_compiledTree->Branch("bG_phoESEnP1",	( bG_phoESEnP1 ),"bG_phoESEnP1[bG_nPho]/F");
-	_compiledTree->Branch("bG_phoESEnP2",	( bG_phoESEnP2 ),"bG_phoESEnP2[bG_nPho]/F");
-	_compiledTree->Branch("bG_phoSCEta",	( bG_phoSCEta ),"bG_phoSCEta[bG_nPho]/F");
-	_compiledTree->Branch("bG_phoSCPhi",	( bG_phoSCPhi ),"bG_phoSCPhi[bG_nPho]/F");
-	_compiledTree->Branch("bG_phoSCEtaWidth",	( bG_phoSCEtaWidth ),"bG_phoSCEtaWidth[bG_nPho]/F");
-	_compiledTree->Branch("bG_phoSCPhiWidth",	( bG_phoSCPhiWidth ),"bG_phoSCPhiWidth[bG_nPho]/F");
-	_compiledTree->Branch("bG_phoSCBrem",	( bG_phoSCBrem ),"bG_phoSCBrem[bG_nPho]/F");
-	_compiledTree->Branch("bG_phohasPixelSeed",	( bG_phohasPixelSeed ),"bG_phohasPixelSeed[bG_nPho]/I");
-	_compiledTree->Branch("bG_phoR9",	( bG_phoR9 ),"bG_phoR9[bG_nPho]/F");
-	_compiledTree->Branch("bG_phoHoverE",	( bG_phoHoverE ),"bG_phoHoverE[bG_nPho]/F");
-	_compiledTree->Branch("bG_phoESEffSigmaRR",	( bG_phoESEffSigmaRR ),"bG_phoESEffSigmaRR[bG_nPho]/F");
-	_compiledTree->Branch("bG_phoSigmaIEtaIEtaFull5x5",	( bG_phoSigmaIEtaIEtaFull5x5 ),"bG_phoSigmaIEtaIEtaFull5x5[bG_nPho]/F");
-	_compiledTree->Branch("bG_phoSigmaIEtaIPhiFull5x5",	( bG_phoSigmaIEtaIPhiFull5x5 ),"bG_phoSigmaIEtaIPhiFull5x5[bG_nPho]/F");
-	_compiledTree->Branch("bG_phoSigmaIPhiIPhiFull5x5",	( bG_phoSigmaIPhiIPhiFull5x5 ),"bG_phoSigmaIPhiIPhiFull5x5[bG_nPho]/F");
-	_compiledTree->Branch("bG_phoE2x2Full5x5",	( bG_phoE2x2Full5x5 ),"bG_phoE2x2Full5x5[bG_nPho]/F");
-	_compiledTree->Branch("bG_phoE5x5Full5x5",	( bG_phoE5x5Full5x5 ),"bG_phoE5x5Full5x5[bG_nPho]/F");
-	_compiledTree->Branch("bG_phoR9Full5x5",	( bG_phoR9Full5x5 ),"bG_phoR9Full5x5[bG_nPho]/F");
-	_compiledTree->Branch("bG_phoPFChIso",	( bG_phoPFChIso ),"bG_phoPFChIso[bG_nPho]/F");
-	_compiledTree->Branch("bG_phoPFPhoIso",	( bG_phoPFPhoIso ),"bG_phoPFPhoIso[bG_nPho]/F");
-	_compiledTree->Branch("bG_phoPFNeuIso",	( bG_phoPFNeuIso ),"bG_phoPFNeuIso[bG_nPho]/F");
-	_compiledTree->Branch("bG_phoEcalPFClusterIso",	( bG_phoEcalPFClusterIso ),"bG_phoEcalPFClusterIso[bG_nPho]/F");
-	_compiledTree->Branch("bG_phoHcalPFClusterIso",	( bG_phoHcalPFClusterIso ),"bG_phoHcalPFClusterIso[bG_nPho]/F");
-	_compiledTree->Branch("bG_phoSeedTime",	( bG_phoSeedTime ),"bG_phoSeedTime[bG_nPho]/F");
-	_compiledTree->Branch("bG_phoSeedEnergy",	( bG_phoSeedEnergy ),"bG_phoSeedEnergy[bG_nPho]/F");
-	_compiledTree->Branch("bG_phoMIPTotEnergy",	( bG_phoMIPTotEnergy ),"bG_phoMIPTotEnergy[bG_nPho]/F");
-	_compiledTree->Branch("bG_phoMIPChi2",	( bG_phoMIPChi2 ),"bG_phoMIPChi2[bG_nPho]/F");
-	_compiledTree->Branch("bG_phoMIPSlope",	( bG_phoMIPSlope ),"bG_phoMIPSlope[bG_nPho]/F");
-	_compiledTree->Branch("bG_phoMIPIntercept",	( bG_phoMIPIntercept ),"bG_phoMIPIntercept[bG_nPho]/F");
-	_compiledTree->Branch("bG_phoMIPNhitCone",	( bG_phoMIPNhitCone ),"bG_phoMIPNhitCone[bG_nPho]/F");
-	_compiledTree->Branch("bG_phoMIPIsHalo",	( bG_phoMIPIsHalo ),"bG_phoMIPIsHalo[bG_nPho]/F");
-	_compiledTree->Branch("bG_nPFPho",&	( bG.nPFPho ));
-	_compiledTree->Branch("bG_phoPFE",	( bG_phoPFE ),"bG_phoPFE[bG_nPFPho]/F");
-	_compiledTree->Branch("bG_phoPFEt",	( bG_phoPFEt ),"bG_phoPFEt[bG_nPFPho]/F");
-	_compiledTree->Branch("bG_phoPFEta",	( bG_phoPFEta ),"bG_phoPFEta[bG_nPFPho]/F");
-	_compiledTree->Branch("bG_phoPFPhi",	( bG_phoPFPhi ),"bG_phoPFPhi[bG_nPFPho]/F");
 	_compiledTree->Branch("bG_nSC",&	( bG.nSC ));
-	_compiledTree->Branch("bG_scE",	( bG_scE ),"bG_scE[bG_nSC]/F");
-	_compiledTree->Branch("bG_scEt",	( bG_scEt ),"bG_scEt[bG_nSC]/F");
-	_compiledTree->Branch("bG_scRawE",	( bG_scRawE ),"bG_scRawE[bG_nSC]/F");
-	_compiledTree->Branch("bG_scEta",	( bG_scEta ),"bG_scEta[bG_nSC]/F");
-	_compiledTree->Branch("bG_scPhi",	( bG_scPhi ),"bG_scPhi[bG_nSC]/F");
-	_compiledTree->Branch("bG_scX",	( bG_scX ),"bG_scX[bG_nSC]/F");
-	_compiledTree->Branch("bG_scY",	( bG_scY ),"bG_scY[bG_nSC]/F");
-	_compiledTree->Branch("bG_scZ",	( bG_scZ ),"bG_scZ[bG_nSC]/F");
-	_compiledTree->Branch("bG_scEtaWidth",	( bG_scEtaWidth ),"bG_scEtaWidth[bG_nSC]/F");
-	_compiledTree->Branch("bG_scPhiWidth",	( bG_scPhiWidth ),"bG_scPhiWidth[bG_nSC]/F");
-	_compiledTree->Branch("bG_scRawEt",	( bG_scRawEt ),"bG_scRawEt[bG_nSC]/F");
-	_compiledTree->Branch("bG_scMinDrWithGsfElectornSC_",	( bG_scMinDrWithGsfElectornSC_ ),"bG_scMinDrWithGsfElectornSC_[bG_nSC]/F");
-	_compiledTree->Branch("bG_scFoundGsfMatch_",	( bG_scFoundGsfMatch_ ),"bG_scFoundGsfMatch_[bG_nSC]/O");
-	_compiledTree->Branch("bG_scE5x5",	( bG_scE5x5 ),"bG_scE5x5[bG_nSC]/F");
-	_compiledTree->Branch("bG_scE2x2Ratio",	( bG_scE2x2Ratio ),"bG_scE2x2Ratio[bG_nSC]/F");
-	_compiledTree->Branch("bG_scE3x3Ratio",	( bG_scE3x3Ratio ),"bG_scE3x3Ratio[bG_nSC]/F");
-	_compiledTree->Branch("bG_scEMaxRatio",	( bG_scEMaxRatio ),"bG_scEMaxRatio[bG_nSC]/F");
-	_compiledTree->Branch("bG_scE2ndRatio",	( bG_scE2ndRatio ),"bG_scE2ndRatio[bG_nSC]/F");
-	_compiledTree->Branch("bG_scETopRatio",	( bG_scETopRatio ),"bG_scETopRatio[bG_nSC]/F");
-	_compiledTree->Branch("bG_scERightRatio",	( bG_scERightRatio ),"bG_scERightRatio[bG_nSC]/F");
-	_compiledTree->Branch("bG_scEBottomRatio",	( bG_scEBottomRatio ),"bG_scEBottomRatio[bG_nSC]/F");
-	_compiledTree->Branch("bG_scELeftRatio",	( bG_scELeftRatio ),"bG_scELeftRatio[bG_nSC]/F");
-	_compiledTree->Branch("bG_scE2x5MaxRatio",	( bG_scE2x5MaxRatio ),"bG_scE2x5MaxRatio[bG_nSC]/F");
-	_compiledTree->Branch("bG_scE2x5TopRatio",	( bG_scE2x5TopRatio ),"bG_scE2x5TopRatio[bG_nSC]/F");
-	_compiledTree->Branch("bG_scE2x5RightRatio",	( bG_scE2x5RightRatio ),"bG_scE2x5RightRatio[bG_nSC]/F");
-	_compiledTree->Branch("bG_scE2x5BottomRatio",	( bG_scE2x5BottomRatio ),"bG_scE2x5BottomRatio[bG_nSC]/F");
-	_compiledTree->Branch("bG_scE2x5LeftRatio",	( bG_scE2x5LeftRatio ),"bG_scE2x5LeftRatio[bG_nSC]/F");
-	_compiledTree->Branch("bG_scSwissCross",	( bG_scSwissCross ),"bG_scSwissCross[bG_nSC]/F");
-	_compiledTree->Branch("bG_scR9",	( bG_scR9 ),"bG_scR9[bG_nSC]/F");
-	_compiledTree->Branch("bG_scSigmaIetaIeta",	( bG_scSigmaIetaIeta ),"bG_scSigmaIetaIeta[bG_nSC]/F");
-	_compiledTree->Branch("bG_scSigmaIetaIphi",	( bG_scSigmaIetaIphi ),"bG_scSigmaIetaIphi[bG_nSC]/F");
-	_compiledTree->Branch("bG_scSigmaIphiIphi",	( bG_scSigmaIphiIphi ),"bG_scSigmaIphiIphi[bG_nSC]/F");
-	_compiledTree->Branch("bG_scFull5x5_e5x5",	( bG_scFull5x5_e5x5 ),"bG_scFull5x5_e5x5[bG_nSC]/F");
-	_compiledTree->Branch("bG_scFull5x5_e2x2Ratio",	( bG_scFull5x5_e2x2Ratio ),"bG_scFull5x5_e2x2Ratio[bG_nSC]/F");
-	_compiledTree->Branch("bG_scFull5x5_e3x3Ratio",	( bG_scFull5x5_e3x3Ratio ),"bG_scFull5x5_e3x3Ratio[bG_nSC]/F");
-	_compiledTree->Branch("bG_scFull5x5_eMaxRatio",	( bG_scFull5x5_eMaxRatio ),"bG_scFull5x5_eMaxRatio[bG_nSC]/F");
-	_compiledTree->Branch("bG_scFull5x5_e2ndRatio",	( bG_scFull5x5_e2ndRatio ),"bG_scFull5x5_e2ndRatio[bG_nSC]/F");
-	_compiledTree->Branch("bG_scFull5x5_eTopRatio",	( bG_scFull5x5_eTopRatio ),"bG_scFull5x5_eTopRatio[bG_nSC]/F");
-	_compiledTree->Branch("bG_scFull5x5_eRightRatio",	( bG_scFull5x5_eRightRatio ),"bG_scFull5x5_eRightRatio[bG_nSC]/F");
-	_compiledTree->Branch("bG_scFull5x5_eBottomRatio",	( bG_scFull5x5_eBottomRatio ),"bG_scFull5x5_eBottomRatio[bG_nSC]/F");
-	_compiledTree->Branch("bG_scFull5x5_eLeftRatio",	( bG_scFull5x5_eLeftRatio ),"bG_scFull5x5_eLeftRatio[bG_nSC]/F");
-	_compiledTree->Branch("bG_scFull5x5_e2x5MaxRatio",	( bG_scFull5x5_e2x5MaxRatio ),"bG_scFull5x5_e2x5MaxRatio[bG_nSC]/F");
-	_compiledTree->Branch("bG_scFull5x5_e2x5TopRatio",	( bG_scFull5x5_e2x5TopRatio ),"bG_scFull5x5_e2x5TopRatio[bG_nSC]/F");
-	_compiledTree->Branch("bG_scFull5x5_e2x5RightRatio",	( bG_scFull5x5_e2x5RightRatio ),"bG_scFull5x5_e2x5RightRatio[bG_nSC]/F");
-	_compiledTree->Branch("bG_scFull5x5_e2x5BottomRatio",	( bG_scFull5x5_e2x5BottomRatio ),"bG_scFull5x5_e2x5BottomRatio[bG_nSC]/F");
-	_compiledTree->Branch("bG_scFull5x5_e2x5LeftRatio",	( bG_scFull5x5_e2x5LeftRatio ),"bG_scFull5x5_e2x5LeftRatio[bG_nSC]/F");
-	_compiledTree->Branch("bG_scFull5x5_swissCross",	( bG_scFull5x5_swissCross ),"bG_scFull5x5_swissCross[bG_nSC]/F");
-	_compiledTree->Branch("bG_scFull5x5_r9",	( bG_scFull5x5_r9 ),"bG_scFull5x5_r9[bG_nSC]/F");
-	_compiledTree->Branch("bG_scFull5x5_sigmaIetaIeta",	( bG_scFull5x5_sigmaIetaIeta ),"bG_scFull5x5_sigmaIetaIeta[bG_nSC]/F");
-	_compiledTree->Branch("bG_scFull5x5_sigmaIetaIphi",	( bG_scFull5x5_sigmaIetaIphi ),"bG_scFull5x5_sigmaIetaIphi[bG_nSC]/F");
-	_compiledTree->Branch("bG_scFull5x5_sigmaIphiIphi",	( bG_scFull5x5_sigmaIphiIphi ),"bG_scFull5x5_sigmaIphiIphi[bG_nSC]/F");
-	_compiledTree->Branch("bG_scPFChIso1",	( bG_scPFChIso1 ),"bG_scPFChIso1[bG_nSC]/F");
-	_compiledTree->Branch("bG_scPFChIso2",	( bG_scPFChIso2 ),"bG_scPFChIso2[bG_nSC]/F");
-	_compiledTree->Branch("bG_scPFChIso3",	( bG_scPFChIso3 ),"bG_scPFChIso3[bG_nSC]/F");
-	_compiledTree->Branch("bG_scPFChIso4",	( bG_scPFChIso4 ),"bG_scPFChIso4[bG_nSC]/F");
-	_compiledTree->Branch("bG_scPFChIso5",	( bG_scPFChIso5 ),"bG_scPFChIso5[bG_nSC]/F");
-	_compiledTree->Branch("bG_scPFPhoIso1",	( bG_scPFPhoIso1 ),"bG_scPFPhoIso1[bG_nSC]/F");
-	_compiledTree->Branch("bG_scPFPhoIso2",	( bG_scPFPhoIso2 ),"bG_scPFPhoIso2[bG_nSC]/F");
-	_compiledTree->Branch("bG_scPFPhoIso3",	( bG_scPFPhoIso3 ),"bG_scPFPhoIso3[bG_nSC]/F");
-	_compiledTree->Branch("bG_scPFPhoIso4",	( bG_scPFPhoIso4 ),"bG_scPFPhoIso4[bG_nSC]/F");
-	_compiledTree->Branch("bG_scPFPhoIso5",	( bG_scPFPhoIso5 ),"bG_scPFPhoIso5[bG_nSC]/F");
-	_compiledTree->Branch("bG_scPFNeuIso1",	( bG_scPFNeuIso1 ),"bG_scPFNeuIso1[bG_nSC]/F");
-	_compiledTree->Branch("bG_scPFNeuIso2",	( bG_scPFNeuIso2 ),"bG_scPFNeuIso2[bG_nSC]/F");
-	_compiledTree->Branch("bG_scPFNeuIso3",	( bG_scPFNeuIso3 ),"bG_scPFNeuIso3[bG_nSC]/F");
-	_compiledTree->Branch("bG_scPFNeuIso4",	( bG_scPFNeuIso4 ),"bG_scPFNeuIso4[bG_nSC]/F");
-	_compiledTree->Branch("bG_scPFNeuIso5",	( bG_scPFNeuIso5 ),"bG_scPFNeuIso5[bG_nSC]/F");
-	_compiledTree->Branch("bG_nhcalRechit",&	( bG.nhcalRechit ));
-	_compiledTree->Branch("bG_hcalRechitIEta",	( bG_hcalRechitIEta ),"bG_hcalRechitIEta[bG_nhcalRechit]/F");
-	_compiledTree->Branch("bG_hcalRechitIPhi",	( bG_hcalRechitIPhi ),"bG_hcalRechitIPhi[bG_nhcalRechit]/F");
-	_compiledTree->Branch("bG_hcalRechitEnergy",	( bG_hcalRechitEnergy ),"bG_hcalRechitEnergy[bG_nhcalRechit]/F");
+	_compiledTree->Branch("bG_nscE", &bG_nscE);
+	_compiledTree->Branch("bG_scE",	( bG_scE ),"bG_scE[bG_nscE]/F");
+	_compiledTree->Branch("bG_nscEt", &bG_nscEt);
+	_compiledTree->Branch("bG_scEt",	( bG_scEt ),"bG_scEt[bG_nscEt]/F");
+	_compiledTree->Branch("bG_nscRawE", &bG_nscRawE);
+	_compiledTree->Branch("bG_scRawE",	( bG_scRawE ),"bG_scRawE[bG_nscRawE]/F");
+	_compiledTree->Branch("bG_nscEta", &bG_nscEta);
+	_compiledTree->Branch("bG_scEta",	( bG_scEta ),"bG_scEta[bG_nscEta]/F");
+	_compiledTree->Branch("bG_nscPhi", &bG_nscPhi);
+	_compiledTree->Branch("bG_scPhi",	( bG_scPhi ),"bG_scPhi[bG_nscPhi]/F");
+	_compiledTree->Branch("bG_nscX", &bG_nscX);
+	_compiledTree->Branch("bG_scX",	( bG_scX ),"bG_scX[bG_nscX]/F");
+	_compiledTree->Branch("bG_nscY", &bG_nscY);
+	_compiledTree->Branch("bG_scY",	( bG_scY ),"bG_scY[bG_nscY]/F");
+	_compiledTree->Branch("bG_nscZ", &bG_nscZ);
+	_compiledTree->Branch("bG_scZ",	( bG_scZ ),"bG_scZ[bG_nscZ]/F");
+	_compiledTree->Branch("bG_nscEtaWidth", &bG_nscEtaWidth);
+	_compiledTree->Branch("bG_scEtaWidth",	( bG_scEtaWidth ),"bG_scEtaWidth[bG_nscEtaWidth]/F");
+	_compiledTree->Branch("bG_nscPhiWidth", &bG_nscPhiWidth);
+	_compiledTree->Branch("bG_scPhiWidth",	( bG_scPhiWidth ),"bG_scPhiWidth[bG_nscPhiWidth]/F");
+	_compiledTree->Branch("bG_nscRawEt", &bG_nscRawEt);
+	_compiledTree->Branch("bG_scRawEt",	( bG_scRawEt ),"bG_scRawEt[bG_nscRawEt]/F");
+	_compiledTree->Branch("bG_nscMinDrWithGsfElectornSC_", &bG_nscMinDrWithGsfElectornSC_);
+	_compiledTree->Branch("bG_scMinDrWithGsfElectornSC_",	( bG_scMinDrWithGsfElectornSC_ ),"bG_scMinDrWithGsfElectornSC_[bG_nscMinDrWithGsfElectornSC_]/F");
+	_compiledTree->Branch("bG_nscFoundGsfMatch_", &bG_nscFoundGsfMatch_);
+	_compiledTree->Branch("bG_scFoundGsfMatch_",	( bG_scFoundGsfMatch_ ),"bG_scFoundGsfMatch_[bG_nscFoundGsfMatch_]/O");
+	_compiledTree->Branch("bG_nscE5x5", &bG_nscE5x5);
+	_compiledTree->Branch("bG_scE5x5",	( bG_scE5x5 ),"bG_scE5x5[bG_nscE5x5]/F");
+	_compiledTree->Branch("bG_nscE2x2Ratio", &bG_nscE2x2Ratio);
+	_compiledTree->Branch("bG_scE2x2Ratio",	( bG_scE2x2Ratio ),"bG_scE2x2Ratio[bG_nscE2x2Ratio]/F");
+	_compiledTree->Branch("bG_nscE3x3Ratio", &bG_nscE3x3Ratio);
+	_compiledTree->Branch("bG_scE3x3Ratio",	( bG_scE3x3Ratio ),"bG_scE3x3Ratio[bG_nscE3x3Ratio]/F");
+	_compiledTree->Branch("bG_nscEMaxRatio", &bG_nscEMaxRatio);
+	_compiledTree->Branch("bG_scEMaxRatio",	( bG_scEMaxRatio ),"bG_scEMaxRatio[bG_nscEMaxRatio]/F");
+	_compiledTree->Branch("bG_nscE2ndRatio", &bG_nscE2ndRatio);
+	_compiledTree->Branch("bG_scE2ndRatio",	( bG_scE2ndRatio ),"bG_scE2ndRatio[bG_nscE2ndRatio]/F");
+	_compiledTree->Branch("bG_nscETopRatio", &bG_nscETopRatio);
+	_compiledTree->Branch("bG_scETopRatio",	( bG_scETopRatio ),"bG_scETopRatio[bG_nscETopRatio]/F");
+	_compiledTree->Branch("bG_nscERightRatio", &bG_nscERightRatio);
+	_compiledTree->Branch("bG_scERightRatio",	( bG_scERightRatio ),"bG_scERightRatio[bG_nscERightRatio]/F");
+	_compiledTree->Branch("bG_nscEBottomRatio", &bG_nscEBottomRatio);
+	_compiledTree->Branch("bG_scEBottomRatio",	( bG_scEBottomRatio ),"bG_scEBottomRatio[bG_nscEBottomRatio]/F");
+	_compiledTree->Branch("bG_nscELeftRatio", &bG_nscELeftRatio);
+	_compiledTree->Branch("bG_scELeftRatio",	( bG_scELeftRatio ),"bG_scELeftRatio[bG_nscELeftRatio]/F");
+	_compiledTree->Branch("bG_nscE2x5MaxRatio", &bG_nscE2x5MaxRatio);
+	_compiledTree->Branch("bG_scE2x5MaxRatio",	( bG_scE2x5MaxRatio ),"bG_scE2x5MaxRatio[bG_nscE2x5MaxRatio]/F");
+	_compiledTree->Branch("bG_nscE2x5TopRatio", &bG_nscE2x5TopRatio);
+	_compiledTree->Branch("bG_scE2x5TopRatio",	( bG_scE2x5TopRatio ),"bG_scE2x5TopRatio[bG_nscE2x5TopRatio]/F");
+	_compiledTree->Branch("bG_nscE2x5RightRatio", &bG_nscE2x5RightRatio);
+	_compiledTree->Branch("bG_scE2x5RightRatio",	( bG_scE2x5RightRatio ),"bG_scE2x5RightRatio[bG_nscE2x5RightRatio]/F");
+	_compiledTree->Branch("bG_nscE2x5BottomRatio", &bG_nscE2x5BottomRatio);
+	_compiledTree->Branch("bG_scE2x5BottomRatio",	( bG_scE2x5BottomRatio ),"bG_scE2x5BottomRatio[bG_nscE2x5BottomRatio]/F");
+	_compiledTree->Branch("bG_nscE2x5LeftRatio", &bG_nscE2x5LeftRatio);
+	_compiledTree->Branch("bG_scE2x5LeftRatio",	( bG_scE2x5LeftRatio ),"bG_scE2x5LeftRatio[bG_nscE2x5LeftRatio]/F");
+	_compiledTree->Branch("bG_nscSwissCross", &bG_nscSwissCross);
+	_compiledTree->Branch("bG_scSwissCross",	( bG_scSwissCross ),"bG_scSwissCross[bG_nscSwissCross]/F");
+	_compiledTree->Branch("bG_nscR9", &bG_nscR9);
+	_compiledTree->Branch("bG_scR9",	( bG_scR9 ),"bG_scR9[bG_nscR9]/F");
+	_compiledTree->Branch("bG_nscSigmaIetaIeta", &bG_nscSigmaIetaIeta);
+	_compiledTree->Branch("bG_scSigmaIetaIeta",	( bG_scSigmaIetaIeta ),"bG_scSigmaIetaIeta[bG_nscSigmaIetaIeta]/F");
+	_compiledTree->Branch("bG_nscSigmaIetaIphi", &bG_nscSigmaIetaIphi);
+	_compiledTree->Branch("bG_scSigmaIetaIphi",	( bG_scSigmaIetaIphi ),"bG_scSigmaIetaIphi[bG_nscSigmaIetaIphi]/F");
+	_compiledTree->Branch("bG_nscSigmaIphiIphi", &bG_nscSigmaIphiIphi);
+	_compiledTree->Branch("bG_scSigmaIphiIphi",	( bG_scSigmaIphiIphi ),"bG_scSigmaIphiIphi[bG_nscSigmaIphiIphi]/F");
+	_compiledTree->Branch("bG_nscFull5x5_e5x5", &bG_nscFull5x5_e5x5);
+	_compiledTree->Branch("bG_scFull5x5_e5x5",	( bG_scFull5x5_e5x5 ),"bG_scFull5x5_e5x5[bG_nscFull5x5_e5x5]/F");
+	_compiledTree->Branch("bG_nscFull5x5_e2x2Ratio", &bG_nscFull5x5_e2x2Ratio);
+	_compiledTree->Branch("bG_scFull5x5_e2x2Ratio",	( bG_scFull5x5_e2x2Ratio ),"bG_scFull5x5_e2x2Ratio[bG_nscFull5x5_e2x2Ratio]/F");
+	_compiledTree->Branch("bG_nscFull5x5_e3x3Ratio", &bG_nscFull5x5_e3x3Ratio);
+	_compiledTree->Branch("bG_scFull5x5_e3x3Ratio",	( bG_scFull5x5_e3x3Ratio ),"bG_scFull5x5_e3x3Ratio[bG_nscFull5x5_e3x3Ratio]/F");
+	_compiledTree->Branch("bG_nscFull5x5_eMaxRatio", &bG_nscFull5x5_eMaxRatio);
+	_compiledTree->Branch("bG_scFull5x5_eMaxRatio",	( bG_scFull5x5_eMaxRatio ),"bG_scFull5x5_eMaxRatio[bG_nscFull5x5_eMaxRatio]/F");
+	_compiledTree->Branch("bG_nscFull5x5_e2ndRatio", &bG_nscFull5x5_e2ndRatio);
+	_compiledTree->Branch("bG_scFull5x5_e2ndRatio",	( bG_scFull5x5_e2ndRatio ),"bG_scFull5x5_e2ndRatio[bG_nscFull5x5_e2ndRatio]/F");
+	_compiledTree->Branch("bG_nscFull5x5_eTopRatio", &bG_nscFull5x5_eTopRatio);
+	_compiledTree->Branch("bG_scFull5x5_eTopRatio",	( bG_scFull5x5_eTopRatio ),"bG_scFull5x5_eTopRatio[bG_nscFull5x5_eTopRatio]/F");
+	_compiledTree->Branch("bG_nscFull5x5_eRightRatio", &bG_nscFull5x5_eRightRatio);
+	_compiledTree->Branch("bG_scFull5x5_eRightRatio",	( bG_scFull5x5_eRightRatio ),"bG_scFull5x5_eRightRatio[bG_nscFull5x5_eRightRatio]/F");
+	_compiledTree->Branch("bG_nscFull5x5_eBottomRatio", &bG_nscFull5x5_eBottomRatio);
+	_compiledTree->Branch("bG_scFull5x5_eBottomRatio",	( bG_scFull5x5_eBottomRatio ),"bG_scFull5x5_eBottomRatio[bG_nscFull5x5_eBottomRatio]/F");
+	_compiledTree->Branch("bG_nscFull5x5_eLeftRatio", &bG_nscFull5x5_eLeftRatio);
+	_compiledTree->Branch("bG_scFull5x5_eLeftRatio",	( bG_scFull5x5_eLeftRatio ),"bG_scFull5x5_eLeftRatio[bG_nscFull5x5_eLeftRatio]/F");
+	_compiledTree->Branch("bG_nscFull5x5_e2x5MaxRatio", &bG_nscFull5x5_e2x5MaxRatio);
+	_compiledTree->Branch("bG_scFull5x5_e2x5MaxRatio",	( bG_scFull5x5_e2x5MaxRatio ),"bG_scFull5x5_e2x5MaxRatio[bG_nscFull5x5_e2x5MaxRatio]/F");
+	_compiledTree->Branch("bG_nscFull5x5_e2x5TopRatio", &bG_nscFull5x5_e2x5TopRatio);
+	_compiledTree->Branch("bG_scFull5x5_e2x5TopRatio",	( bG_scFull5x5_e2x5TopRatio ),"bG_scFull5x5_e2x5TopRatio[bG_nscFull5x5_e2x5TopRatio]/F");
+	_compiledTree->Branch("bG_nscFull5x5_e2x5RightRatio", &bG_nscFull5x5_e2x5RightRatio);
+	_compiledTree->Branch("bG_scFull5x5_e2x5RightRatio",	( bG_scFull5x5_e2x5RightRatio ),"bG_scFull5x5_e2x5RightRatio[bG_nscFull5x5_e2x5RightRatio]/F");
+	_compiledTree->Branch("bG_nscFull5x5_e2x5BottomRatio", &bG_nscFull5x5_e2x5BottomRatio);
+	_compiledTree->Branch("bG_scFull5x5_e2x5BottomRatio",	( bG_scFull5x5_e2x5BottomRatio ),"bG_scFull5x5_e2x5BottomRatio[bG_nscFull5x5_e2x5BottomRatio]/F");
+	_compiledTree->Branch("bG_nscFull5x5_e2x5LeftRatio", &bG_nscFull5x5_e2x5LeftRatio);
+	_compiledTree->Branch("bG_scFull5x5_e2x5LeftRatio",	( bG_scFull5x5_e2x5LeftRatio ),"bG_scFull5x5_e2x5LeftRatio[bG_nscFull5x5_e2x5LeftRatio]/F");
+	_compiledTree->Branch("bG_nscFull5x5_swissCross", &bG_nscFull5x5_swissCross);
+	_compiledTree->Branch("bG_scFull5x5_swissCross",	( bG_scFull5x5_swissCross ),"bG_scFull5x5_swissCross[bG_nscFull5x5_swissCross]/F");
+	_compiledTree->Branch("bG_nscFull5x5_r9", &bG_nscFull5x5_r9);
+	_compiledTree->Branch("bG_scFull5x5_r9",	( bG_scFull5x5_r9 ),"bG_scFull5x5_r9[bG_nscFull5x5_r9]/F");
+	_compiledTree->Branch("bG_nscFull5x5_sigmaIetaIeta", &bG_nscFull5x5_sigmaIetaIeta);
+	_compiledTree->Branch("bG_scFull5x5_sigmaIetaIeta",	( bG_scFull5x5_sigmaIetaIeta ),"bG_scFull5x5_sigmaIetaIeta[bG_nscFull5x5_sigmaIetaIeta]/F");
+	_compiledTree->Branch("bG_nscFull5x5_sigmaIetaIphi", &bG_nscFull5x5_sigmaIetaIphi);
+	_compiledTree->Branch("bG_scFull5x5_sigmaIetaIphi",	( bG_scFull5x5_sigmaIetaIphi ),"bG_scFull5x5_sigmaIetaIphi[bG_nscFull5x5_sigmaIetaIphi]/F");
+	_compiledTree->Branch("bG_nscFull5x5_sigmaIphiIphi", &bG_nscFull5x5_sigmaIphiIphi);
+	_compiledTree->Branch("bG_scFull5x5_sigmaIphiIphi",	( bG_scFull5x5_sigmaIphiIphi ),"bG_scFull5x5_sigmaIphiIphi[bG_nscFull5x5_sigmaIphiIphi]/F");
+	_compiledTree->Branch("bG_nscNHcalRecHitInDIEta5IPhi5", &bG_nscNHcalRecHitInDIEta5IPhi5);
+	_compiledTree->Branch("bG_scNHcalRecHitInDIEta5IPhi5",	( bG_scNHcalRecHitInDIEta5IPhi5 ),"bG_scNHcalRecHitInDIEta5IPhi5[bG_nscNHcalRecHitInDIEta5IPhi5]/F");
+	_compiledTree->Branch("bG_nscEFromHcalRecHitInDIEta5IPhi5", &bG_nscEFromHcalRecHitInDIEta5IPhi5);
+	_compiledTree->Branch("bG_scEFromHcalRecHitInDIEta5IPhi5",	( bG_scEFromHcalRecHitInDIEta5IPhi5 ),"bG_scEFromHcalRecHitInDIEta5IPhi5[bG_nscEFromHcalRecHitInDIEta5IPhi5]/F");
+	_compiledTree->Branch("bG_nscNHcalRecHitInDIEta2IPhi2", &bG_nscNHcalRecHitInDIEta2IPhi2);
+	_compiledTree->Branch("bG_scNHcalRecHitInDIEta2IPhi2",	( bG_scNHcalRecHitInDIEta2IPhi2 ),"bG_scNHcalRecHitInDIEta2IPhi2[bG_nscNHcalRecHitInDIEta2IPhi2]/F");
+	_compiledTree->Branch("bG_nscEFromHcalRecHitInDIEta2IPhi2", &bG_nscEFromHcalRecHitInDIEta2IPhi2);
+	_compiledTree->Branch("bG_scEFromHcalRecHitInDIEta2IPhi2",	( bG_scEFromHcalRecHitInDIEta2IPhi2 ),"bG_scEFromHcalRecHitInDIEta2IPhi2[bG_nscEFromHcalRecHitInDIEta2IPhi2]/F");
+	_compiledTree->Branch("bG_nscPFChIso1", &bG_nscPFChIso1);
+	_compiledTree->Branch("bG_scPFChIso1",	( bG_scPFChIso1 ),"bG_scPFChIso1[bG_nscPFChIso1]/F");
+	_compiledTree->Branch("bG_nscPFChIso2", &bG_nscPFChIso2);
+	_compiledTree->Branch("bG_scPFChIso2",	( bG_scPFChIso2 ),"bG_scPFChIso2[bG_nscPFChIso2]/F");
+	_compiledTree->Branch("bG_nscPFChIso3", &bG_nscPFChIso3);
+	_compiledTree->Branch("bG_scPFChIso3",	( bG_scPFChIso3 ),"bG_scPFChIso3[bG_nscPFChIso3]/F");
+	_compiledTree->Branch("bG_nscPFChIso4", &bG_nscPFChIso4);
+	_compiledTree->Branch("bG_scPFChIso4",	( bG_scPFChIso4 ),"bG_scPFChIso4[bG_nscPFChIso4]/F");
+	_compiledTree->Branch("bG_nscPFChIso5", &bG_nscPFChIso5);
+	_compiledTree->Branch("bG_scPFChIso5",	( bG_scPFChIso5 ),"bG_scPFChIso5[bG_nscPFChIso5]/F");
+	_compiledTree->Branch("bG_nscPFPhoIso1", &bG_nscPFPhoIso1);
+	_compiledTree->Branch("bG_scPFPhoIso1",	( bG_scPFPhoIso1 ),"bG_scPFPhoIso1[bG_nscPFPhoIso1]/F");
+	_compiledTree->Branch("bG_nscPFPhoIso2", &bG_nscPFPhoIso2);
+	_compiledTree->Branch("bG_scPFPhoIso2",	( bG_scPFPhoIso2 ),"bG_scPFPhoIso2[bG_nscPFPhoIso2]/F");
+	_compiledTree->Branch("bG_nscPFPhoIso3", &bG_nscPFPhoIso3);
+	_compiledTree->Branch("bG_scPFPhoIso3",	( bG_scPFPhoIso3 ),"bG_scPFPhoIso3[bG_nscPFPhoIso3]/F");
+	_compiledTree->Branch("bG_nscPFPhoIso4", &bG_nscPFPhoIso4);
+	_compiledTree->Branch("bG_scPFPhoIso4",	( bG_scPFPhoIso4 ),"bG_scPFPhoIso4[bG_nscPFPhoIso4]/F");
+	_compiledTree->Branch("bG_nscPFPhoIso5", &bG_nscPFPhoIso5);
+	_compiledTree->Branch("bG_scPFPhoIso5",	( bG_scPFPhoIso5 ),"bG_scPFPhoIso5[bG_nscPFPhoIso5]/F");
+	_compiledTree->Branch("bG_nscPFNeuIso1", &bG_nscPFNeuIso1);
+	_compiledTree->Branch("bG_scPFNeuIso1",	( bG_scPFNeuIso1 ),"bG_scPFNeuIso1[bG_nscPFNeuIso1]/F");
+	_compiledTree->Branch("bG_nscPFNeuIso2", &bG_nscPFNeuIso2);
+	_compiledTree->Branch("bG_scPFNeuIso2",	( bG_scPFNeuIso2 ),"bG_scPFNeuIso2[bG_nscPFNeuIso2]/F");
+	_compiledTree->Branch("bG_nscPFNeuIso3", &bG_nscPFNeuIso3);
+	_compiledTree->Branch("bG_scPFNeuIso3",	( bG_scPFNeuIso3 ),"bG_scPFNeuIso3[bG_nscPFNeuIso3]/F");
+	_compiledTree->Branch("bG_nscPFNeuIso4", &bG_nscPFNeuIso4);
+	_compiledTree->Branch("bG_scPFNeuIso4",	( bG_scPFNeuIso4 ),"bG_scPFNeuIso4[bG_nscPFNeuIso4]/F");
+	_compiledTree->Branch("bG_nscPFNeuIso5", &bG_nscPFNeuIso5);
+	_compiledTree->Branch("bG_scPFNeuIso5",	( bG_scPFNeuIso5 ),"bG_scPFNeuIso5[bG_nscPFNeuIso5]/F");
+	_compiledTree->Branch("bG_nPrimaryVertex",&	( bG.nPrimaryVertex ));
+	_compiledTree->Branch("bG_primaryVertex_isFake",	( bG.primaryVertex_isFake ),"bG_primaryVertex_isFake[bG_nPrimaryVertex]/F");
+	_compiledTree->Branch("bG_primaryVertex_x",	( bG.primaryVertex_x ),"bG_primaryVertex_x[bG_nPrimaryVertex]/F");
+	_compiledTree->Branch("bG_primaryVertex_y",	( bG.primaryVertex_y ),"bG_primaryVertex_y[bG_nPrimaryVertex]/F");
+	_compiledTree->Branch("bG_primaryVertex_z",	( bG.primaryVertex_z ),"bG_primaryVertex_z[bG_nPrimaryVertex]/F");
+	_compiledTree->Branch("bG_primaryVertex_t",	( bG.primaryVertex_t ),"bG_primaryVertex_t[bG_nPrimaryVertex]/F");
+	_compiledTree->Branch("bG_primaryVertex_covXX",	( bG.primaryVertex_covXX ),"bG_primaryVertex_covXX[bG_nPrimaryVertex]/F");
+	_compiledTree->Branch("bG_primaryVertex_covXY",	( bG.primaryVertex_covXY ),"bG_primaryVertex_covXY[bG_nPrimaryVertex]/F");
+	_compiledTree->Branch("bG_primaryVertex_covXZ",	( bG.primaryVertex_covXZ ),"bG_primaryVertex_covXZ[bG_nPrimaryVertex]/F");
+	_compiledTree->Branch("bG_primaryVertex_covYY",	( bG.primaryVertex_covYY ),"bG_primaryVertex_covYY[bG_nPrimaryVertex]/F");
+	_compiledTree->Branch("bG_primaryVertex_covYZ",	( bG.primaryVertex_covYZ ),"bG_primaryVertex_covYZ[bG_nPrimaryVertex]/F");
+	_compiledTree->Branch("bG_primaryVertex_covZZ",	( bG.primaryVertex_covZZ ),"bG_primaryVertex_covZZ[bG_nPrimaryVertex]/F");
+	_compiledTree->Branch("bG_primaryVertex_x_error",	( bG.primaryVertex_x_error ),"bG_primaryVertex_x_error[bG_nPrimaryVertex]/F");
+	_compiledTree->Branch("bG_primaryVertex_y_error",	( bG.primaryVertex_y_error ),"bG_primaryVertex_y_error[bG_nPrimaryVertex]/F");
+	_compiledTree->Branch("bG_primaryVertex_z_error",	( bG.primaryVertex_z_error ),"bG_primaryVertex_z_error[bG_nPrimaryVertex]/F");
+	_compiledTree->Branch("bG_primaryVertex_t_error",	( bG.primaryVertex_t_error ),"bG_primaryVertex_t_error[bG_nPrimaryVertex]/F");
+	_compiledTree->Branch("bG_primaryVertex_ntracks",	( bG.primaryVertex_ntracks ),"bG_primaryVertex_ntracks[bG_nPrimaryVertex]/F");
+	_compiledTree->Branch("bG_primaryVertex_ndof",	( bG.primaryVertex_ndof ),"bG_primaryVertex_ndof[bG_nPrimaryVertex]/F");
+	_compiledTree->Branch("bG_primaryVertex_chi2",	( bG.primaryVertex_chi2 ),"bG_primaryVertex_chi2[bG_nPrimaryVertex]/F");
+	_compiledTree->Branch("bG_primaryVertex_normalizedChi2",	( bG.primaryVertex_normalizedChi2 ),"bG_primaryVertex_normalizedChi2[bG_nPrimaryVertex]/F");
 
 }
