@@ -528,5 +528,5 @@ void BMMGAnalysis::getVetorFillledFromConfigFile( fstream &cfgFile , std::vector
 }
 
 
-#include "BMMGAnalysis.cc"
+#include "../src/BMMGAnalysis.cc"
 

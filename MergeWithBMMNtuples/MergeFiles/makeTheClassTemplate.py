@@ -57,7 +57,7 @@ while l:
     if len(items)<4 and  isArray:
         print("Sanity Check Fali !! : ",l[:-1])
     if len(items)>3 : 
-        arrayLengthName=className+"_"+items[3].replace('[','').replace(']','')
+        arrayLengthName=className+"_"+items[3].replace('[','').replace(']','').strip()
        
     
     isVector=False

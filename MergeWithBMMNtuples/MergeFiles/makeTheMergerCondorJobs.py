@@ -6,11 +6,11 @@ import json
 ##################
 
 
-NJOBS=1000
+NJOBS=-1
 NEVENTS_PER_JOB = -1
 ZERO_OFFSET=0
-FILES_PER_MERGE=5
-MERGE_PER_JOB=2
+FILES_PER_MERGE=3
+MERGE_PER_JOB=1
 
 destination='/eos/home-a/athachay/workarea/data/BsToMuMuGamma/Run2Studies/MergedNtuples/BsToMuMuGammaNtuples/Charmonium/crab_charmonium2018A_ntuplizer_V2'
 bkpDestination=destination
@@ -39,7 +39,7 @@ if len(sys.argv)>6:
 if len(sys.argv)>7:
     bkpDestination=sys.argv[7]
 
-destination=os.path.abspath(destination)
+#destination=os.path.abspath(destination)
 bkpDestination=os.path.abspath(bkpDestination)
 
 print("File Source : ",FileSource)
@@ -79,6 +79,7 @@ flist=f.readlines()
 f.close()
 print("\t Files to read  : ",len(flist))
 cacheName='.cache/'+mFileNames.split('/')[-1]+'.cache.json'
+motherRunLumiMap={}
 if  True or not os.path.exists(cacheName):
     for mFileName in flist:
         mFileName=mFileName[:-1]
@@ -101,6 +102,14 @@ if  True or not os.path.exists(cacheName):
                     motherFMap[fname]={'run':[],'lumi':[]}
                 motherFMap[fname]['run'].append(run)
                 motherFMap[fname]['lumi'].append(lumi)
+                if run not in motherRunLumiMap:
+                    motherRunLumiMap[run]={lumi:[]}
+                if lumi not in motherRunLumiMap[run]:
+                    motherRunLumiMap[run][lumi]=[]
+                if fname not in motherRunLumiMap[run][lumi]:
+                    motherRunLumiMap[run][lumi].append(fname)
+
+
             l=motherFList.readline()
         motherFList.close()
     print("cache does not exist ! making one : ",cacheName)
@@ -150,13 +159,13 @@ if True or not os.path.exists(cacheName):
                     sonFMap[run]={lumi:[]}
                 if lumi not in sonFMap[run]:
                     sonFMap[run][lumi]=[]
-                fname=fname.replace('AOD/516/Cha','AOD/517/Cha')
-                if( not os.path.exists(fname)):
-                    fname=fname.replace('AOD/517/Cha','AOD/518/Cha')
-                    if fname not in missingFiles:
-                        print("\n\tSon Fname not found in disk : ",fname)
-                        missingFiles.append(fname)
-                        continue
+    #            fname=fname.replace('AOD/516/Cha','AOD/517/Cha')
+    #            if( not os.path.exists(fname)):
+    #                fname=fname.replace('AOD/517/Cha','AOD/518/Cha')
+    #                if fname not in missingFiles:
+    #                    print("\n\tSon Fname not found in disk : ",fname)
+    #                    missingFiles.append(fname)
+    #                    continue
                 if fname not in sonFMap[run][lumi]:
                     sonFMap[run][lumi].append(fname)
             l=sonFList.readline()
@@ -178,16 +187,23 @@ else:
 f=open('testJson.json','w')
 json.dump(sonFMap,f,indent=4)
 f.close()
+print(" ================== Peparatory Summary ================== \n")
+
+print("Mother Map made with ",len(motherRunLumiMap)," runs")
+for ky in motherRunLumiMap:
+    print("\t r = ",ky," has ",len(motherRunLumiMap[ky]), " lumis ")
+print()
+
 print("Son Map made with ",len(sonFMap)," runs")
 for ky in sonFMap:
     print("\t r = ",ky," has ",len(sonFMap[ky]), " lumis ")
-print()
+print("======================================================== \n")
 
 cfgTxt="\
 #PARAMS_BEG\n\
 OutputPrefix=\n\
 OutputFile=bmmXMerged2018data_@@TAG_@@IDX.root\n\
-MaxEvents=-1\n\
+MaxEvents=@@MAXEVENTS\n\
 #PARAMS_END\n\
 #MOTHER_FILELIST_BEG\n\
 @@MOTHERFNAMES\n\
@@ -206,13 +222,14 @@ error = $Fp(filename)cdr.stderr\n\
 log = $Fp(filename)cdr.log\n\
 +JobFlavour = \"microcentury\"\n\
 "
-condorScript=open('subMergerJobs'+tag+'.sub','w')
+condorScriptName='subMergerJobs'+tag+'.sub'
+condorScript=open(condorScriptName,'w')
 condorScript.write(condorScriptString)
 
 
 exitCheckScript="\
 if [ $? -eq 0 ]; then \n\
-    mv *.root "+destination+"\n\
+    xrdcp *.root "+destination+"\n\
     if [ $? -ne 0 ] ; then\n\
         mv *.root "+bkpDestination+"\n\
         if [ $? -ne 0 ] ; then\n\
@@ -220,8 +237,9 @@ if [ $? -eq 0 ]; then \n\
             SUCCESS=0\n\
         fi\n\
     else\n\
+        rm *.root\n\
         mv @@CFGFILENAME @@CFGFILENAME.success\n\
-        cp @@CFGFILENAME.success "+destination+"\n\
+        cp @@CFGFILENAME.success "+bkpDestination+"\n\
         echo OK\n\
    fi\n\
 else\n\
@@ -273,6 +291,15 @@ if not os.path.exists(head):
 
 lostLumis=0
 foundLumi={}
+
+njbs=int(len(sourceFileList)/MERGE_PER_JOB/FILES_PER_MERGE) + 1
+if len(sourceFileList)%(MERGE_PER_JOB*FILES_PER_MERGE):
+    njbs-=1
+if njbs==0:
+    njbs=1
+print("Making ",njbs," Jobs\n")
+jobsMade=0
+jobsSkipped=0
 for ii in range(NJOBS):
     if FILES_PER_MERGE==0:
         break
@@ -288,7 +315,7 @@ for ii in range(NJOBS):
         os.system('mkdir '+dirName)
     rootCMDtemp=""
     runScriptBareName='run'+str(i)+'.sh'
-
+    hasAtleastAMerge=False
     for jj in range(MERGE_PER_JOB):
         if len(sourceFileList)<FILES_PER_MERGE:
             FILES_PER_MERGE=len(sourceFileList)
@@ -314,6 +341,7 @@ for ii in range(NJOBS):
         mF=0
         snF=0
         sF=0
+        hasAMotherWithSon=False
         for src in srcFiles:
             if src not in motherFMap:
  #               print( str(i) + '\t'+"job seed file not found in mother filelist !! -> "+src)
@@ -342,6 +370,10 @@ for ii in range(NJOBS):
                         sF+=1
         for fn in searchFiels:
             tmp+= fn + "\n"
+            hasAMotherWithSon=True
+        
+        if not hasAMotherWithSon : continue
+        hasAtleastAMerge=True
         cfgTxttmp=cfgTxttmp.replace("@@SONFNAMES",tmp)
         cfgTxttmp=cfgTxttmp.replace("@@MAXEVENTS",str(NEVENTS_PER_JOB))
         cfgTxttmp=cfgTxttmp.replace("@@TAG",tag)
@@ -355,7 +387,10 @@ for ii in range(NJOBS):
               " nSons = "+str(sF)+" , nSons Lost =  "+str(snF) +'\n'
         #print(jobStr)
         ferr.write(jobStr)
-
+    if not hasAtleastAMerge :
+        jobsSkipped+=1
+        continue
+    jobsMade+=1
     runScriptName=dirName+'/'+runScriptBareName
     runScript=open(runScriptName,'w')
     tmp=runScriptTxt.replace("@@DIRNAME",dirName)
@@ -367,15 +402,20 @@ for ii in range(NJOBS):
     condorScript.write("queue filename matching ("+runScriptName+")\n")
 print()
 lumiF=0
+print("\n\n================  Merger Preperation Summary ============  \n")
+print("Summary of Matches found ")
 for r in foundLumi:
     print("\t in run : ",r," found ",len(foundLumi[r])," lumis ")
     lumiF+=len(foundLumi[r])
-
+print("\n")
 print("\t Total  found runs : ",len(foundLumi),"  ,  total found lumis : ", lumiF)
+
 print("Lost Lumis : " , lostLumis," Number of files left : ", len(sourceFileList) )
-
 condorScript.close()
-
+ 
+print("Njbs : ",njbs, "Jobs Made : ",jobsMade," Jobs Skipped : " ,jobsSkipped)
+print("Condor script : ",condorScriptName)
+print("========================================================\n")
 print("\nMissing files ")
 for i in missingFiles:
     print(i)
