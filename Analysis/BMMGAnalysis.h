@@ -87,6 +87,11 @@ class BMMGAnalysis
     Int_t storageIdxFilledDouble; 
     Int_t* photonSelectionCheck;
     
+    std::map<string,Double_t> storageDouble;
+    std::map<string,Float_t> storageFloat;
+    std::vector<string> mvaTrainVars;
+    std::vector<string> spectatorVars;
+    
     // Histograms to Store
     
     std::map<TString,TH1F*> th1fStore;
@@ -122,6 +127,7 @@ class BMMGAnalysis
     PhotonMVAvariables photonMVAdata;
     TString photonIdxMVAWeightFile;
     Float_t photonMVAValue;
+    Float_t photonIDcut;
 
     // Muon MVA CUT
     const Double_t BDTWorkingPoint ; 
@@ -161,7 +167,7 @@ class BMMGAnalysis
     void fill_dimuonEnvironmentHists(Int_t mumuIdx);
     void fill_bmmgHists(TLorentzVector &bmmgLV,Int_t mumuIdx, Int_t phoSCIdx);
     void fill_globalEventHists();
-
+    void getVetorFillledFromConfigFile( fstream &cfgFile , std::vector<string> &vecList, string beginTag,string endTag, bool verbose);
     // Analysis Functions
     void doPhotonMVAScores();
     void setUpPhotonMVA();
@@ -198,7 +204,8 @@ void BMMGAnalysis::Init(string cfgFileName)
     InFileList.clear();
     ofileName="output.root";
     maxEvents=1000;
-    
+    photonIDcut=0.0;
+
     outTree=nullptr;
 
     maxMuMuDr          =1.4;
@@ -403,6 +410,11 @@ void BMMGAnalysis::readParameters(string fname)
                  maxMuMuDr=std::atof(field.c_str());
                  cout<<" setting maxMuMuDr  = "<<maxMuMuDr<<"\n";
             }
+            if(field.compare("PhotonIDcut")==0){
+                 getline(strStream, field);
+                 photonIDcut=std::atof(field.c_str());
+                 cout<<" setting photonIDcut  = "<<photonIDcut<<"\n";
+            }
             if(field.compare("MaxDimuPhotonDr")==0){
                  getline(strStream, field);
                  maxDimuPhotonDr=std::atof(field.c_str());
@@ -454,6 +466,10 @@ void BMMGAnalysis::readParameters(string fname)
        }
     }
 
+    getVetorFillledFromConfigFile(cfgFile, mvaTrainVars   , "#MVAVARLIST_BEG", "#MVAVARLIST_END", true);
+    getVetorFillledFromConfigFile(cfgFile, spectatorVars  , "#SPECTATORLIST_BEG", "#SPECTATORLIST_END", true);
+    
+
 	// getting flists
     cfgFile.clear();
 	cfgFile.seekp(ios::beg);
@@ -473,8 +489,44 @@ void BMMGAnalysis::readParameters(string fname)
     {
         std::cout<<"\t"<<name<<"\n";
     }
+}
+
+void BMMGAnalysis::getVetorFillledFromConfigFile( fstream &cfgFile , std::vector<string> &vecList, string beginTag,string endTag, bool verbose)
+{
+	
+    bool cfgModeFlag=false;
+    cfgModeFlag=false;
+    std::istringstream strStream;
+    std::string field;
+	string line;
+    
+    // getting flists
+    cfgFile.clear();
+	cfgFile.seekp(ios::beg);
+    cfgModeFlag=false;
+	int nItems(0);
+    while(std::getline(cfgFile,line))
+	{
+	   if(line==beginTag) {cfgModeFlag=true;continue;}
+	   if(line==endTag) {cfgModeFlag=false;continue;}
+	   if(not cfgModeFlag) continue;
+	   if(line=="") continue;
+	   if(line=="#END") break;
+	   vecList.push_back(line);
+	   nItems++;
+    }
+
+    if(verbose)
+    {
+       std::cout<<" Added "<<nItems<<" between "<<beginTag<<" and "<< endTag<<"\n";
+       for( auto &name : vecList)
+       {
+           std::cout<<"\t"<<name<<"\n";
+       }
+    }
 
 }
+
 
 #include "BMMGAnalysis.cc"
 
