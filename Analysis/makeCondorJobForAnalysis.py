@@ -2,6 +2,7 @@
 import os
 import sys
 version='v1'
+
 """
     Usage
     ./makeCondorJobForAnalysis.py <EXECUTABLE> <InputFileListFname> <CFG_TEMPLATE> <analysisOption> <destination> <NJOBS> <FILES_PER_JOB> <jobPrefix>"
@@ -93,19 +94,19 @@ error = $Fp(filename)run.$(Cluster).stderr\n\
 log = $Fp(filename)run.$(Cluster).log\n\
 +JobFlavour = \"espresso\"\n\
 "
-
-condorScript=open('job'+tag+'.sub','w')
+condorScriptName='job'+tag+'.sub'
+condorScript=open(condorScriptName,'w')
 condorScript.write(condorScriptString)
 
 
 runScriptTxt="\
 #!/bin/bash\n\
-set -x\n\
 source /cvmfs/cms.cern.ch/cmsset_default.sh \n\
 export HOME="+HOME+"\n\
 export X509_USER_PROXY="+proxy_path+"\n\
 cd @@DIRNAME \n\
 eval `scramv1 runtime -sh`\n\
+set -x\n\
 TMPDIR=`mktemp -d`\n\
 cd $TMPDIR\n\
 cp  "+pwd+"/"+executable+" .\n\
@@ -113,7 +114,7 @@ cp @@DIRNAME/@@CFGFILENAME .\n\
 mv @@RUNSCRIPT @@RUNSCRIPT.busy \n\
 ./"+executable+" @@CFGFILENAME "+analysisOption+"\n\
 if [ $? -eq 0 ]; then \n\
-    mv analysisRun2_"+version+"_"+tag+"_@@IDX.root "+destination+"\n\
+    mv *.root "+destination+"\n\
     if [ $? -eq 0 ] ; then \n\
         mv @@CFGFILENAME " + destination + "\n\
         mv @@RUNSCRIPT.busy @@RUNSCRIPT.sucess \n\
@@ -164,6 +165,7 @@ for ii in range(NJOBS):
     for j in range(FILES_PER_JOB):
       tmp+= sourceFileList.pop(0)[:-1]+"\n"
     tmp=configurationTxt.replace("@@FNAMES",tmp[:-1])
+    tmp=tmp.replace("@@TAG",tag)
     tmp=tmp.replace("@@IDX",str(i))
     tmp=tmp.replace("@@MAXEVENTS",str(NEVENTS_PER_JOB))
     cfgFile.write(tmp)
@@ -185,5 +187,6 @@ for ii in range(NJOBS):
 print()
 print(" Number of jobs made : ", njobs)
 print(" Number of files left : ", len(sourceFileList) )
+print(" Condor  submit file name : ", condorScriptName)
 condorScript.close()
 

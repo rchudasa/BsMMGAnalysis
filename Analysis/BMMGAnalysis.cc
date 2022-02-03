@@ -633,23 +633,79 @@ void BMMGAnalysis::setUpPhotonMVA()
              <<"Weight file : "<<photonIdxMVAWeightFile<<"\n";
     reader =  new TMVA::Reader( "!Color:!Silent" );
     
-    //reader->AddVariable("et", &(photonMVAdata.et));
-    //reader->AddVariable("rawE", &(photonMVAdata.rawE));
-    reader->AddVariable("sigmaIetaIeta", &(photonMVAdata.sigmaIetaIeta));
-    reader->AddVariable("sigmaIetaIphi", &(photonMVAdata.sigmaIetaIphi));
-    reader->AddVariable("FoundGsfMatch", &(photonMVAdata.FoundGsfMatch));
-    reader->AddVariable("r9", &(photonMVAdata.r9));
-    reader->AddVariable("etaWidth", &(photonMVAdata.etaWidth));
-    reader->AddVariable("PFPhoIso", &(photonMVAdata.PFPhoIso));
-    reader->AddVariable("PFNeuIso", &(photonMVAdata.PFNeuIso)); 
-    reader->AddVariable("PFChIso", &(photonMVAdata.PFChIso)); 
-    reader->AddVariable("full5x5_e5x5", &(photonMVAdata.full5x5_e5x5));
-    reader->AddVariable("full5x5_r9", &(photonMVAdata.full5x5_r9));
-    reader->AddVariable("e2x5_MaxRatio", &(photonMVAdata.e2x5_MaxRatio));
+    for(Int_t i=0;i<mvaTrainVars.size();i++)
+    {
+        std::cout<<"Adding mva vars "<<mvaTrainVars[i]<<" to "<<" reader  \n";
+        storageDouble[mvaTrainVars[i]]=0.0;
+        storageFloat[mvaTrainVars[i]] = storageDouble[mvaTrainVars[i]];
+        reader->AddVariable(mvaTrainVars[i].c_str(), &(storageFloat[mvaTrainVars[i]]));
+    }
+    
+  for(int i =0;i<spectatorVars.size();i++)
+  {
+        std::cout<<"Adding spectator "<<spectatorVars[i]<<" to "<<" reader \n";
+        storageDouble[spectatorVars[i]]=0.0;
+        storageFloat[spectatorVars[i]] = storageDouble[spectatorVars[i]];
+        reader->AddSpectator(spectatorVars[i].c_str(),  &(storageFloat[spectatorVars[i]]));
+  }
     reader->BookMVA("LowPtPhotonIdMVA_MLP", photonIdxMVAWeightFile );
-
     hasSetupPhotonMVA=true;
+
 }
+
+/*
+void MVATester::setUpTestTree( Int_t treeIdx )
+{
+    std::cout<<"Setting Current Tree to : "<<treeNames[treeIdx]<<" from "<<InFileList[treeIdx]<<"\n";
+    auto currentTree = ntupleRawTree.fChain ;
+
+    if(not currentTree ) {
+        std::cout<<"Empty tree given for MVA test Setup !! exiting .. "; std::cout<<"\n";
+    }
+    else {
+        std::cout<<"Sucessfully set  Current Tree to the ntuple tree ! \n";
+    }
+
+    for(Int_t i=0;i<spectatorVars.size();i++)
+    {
+        storageDouble[spectatorVars[i]]=0.0;
+ //       std::cout<<" Setting spec var : "<<spectatorVars[i]<<"\n"; 
+        currentTree->SetBranchAddress( spectatorVars[i].c_str(), storageDoubleArray[ spectatorVars[i] ]  ) ;
+    }
+
+    for(Int_t i=0;i<mvaTrainVars.size();i++)
+    {
+        storageDouble[mvaTrainVars[i]]=0.0;
+//       std::cout<<" Setting mva var : "<<mvaTrainVars[i]<<"\n"; 
+        currentTree->SetBranchAddress( mvaTrainVars[i].c_str(), storageDoubleArray[ mvaTrainVars[i] ] )  ;
+    }
+
+}
+
+
+scR9
+scSigmaIetaIeta
+scFull5x5_E2x5MaxRatio
+scPFPhoIso3
+scSigmaIetaIphi
+scFull5x5_SwissCross
+scEtaWidth
+scE2ndRatio
+scEMaxRatio
+scPFChIso1
+scPFChIso2
+scPFChIso3
+scPFChIso4
+scPFChIso5
+
+scRawE
+scE
+scRawE
+scPhi
+scX
+scY
+scZ
+*/
 
 void BMMGAnalysis::doPhotonMVAScores()
 {   
@@ -659,24 +715,29 @@ void BMMGAnalysis::doPhotonMVAScores()
     }
     for(int  i=0  ; i < ntupleRawTree.bG_nSC ; i++)
     {
-      photonMVAdata.energy        = ntupleRawTree.bG_scE[i] ;
-      photonMVAdata.et            = ntupleRawTree.bG_scEt[i] ;
-      photonMVAdata.eta           = ntupleRawTree.bG_scEta[i] ;
-      photonMVAdata.rawE          = ntupleRawTree.bG_scRawE[i] ;
-      photonMVAdata.full5x5_e5x5  = ntupleRawTree.bG_scFull5x5_e5x5[i] ;
-      photonMVAdata.full5x5_r9    = ntupleRawTree.bG_scFull5x5_r9[i] ;
-      photonMVAdata.sigmaIetaIeta = ntupleRawTree.bG_scSigmaIetaIeta[i] ;
-   //   photonMVAdata.sigmaIetaIphi = ntupleRawTree.bG_scSigmaIetaIphi[i] ;
-      photonMVAdata.etaWidth      = ntupleRawTree.bG_scEtaWidth[i] ;
-      photonMVAdata.phiWidth      = ntupleRawTree.bG_scPhiWidth[i] ;
-      photonMVAdata.r9            = ntupleRawTree.bG_scR9[i] ;
-      photonMVAdata.swisross      = ntupleRawTree.bG_scSwissCross[i] ;
-      photonMVAdata.PFPhoIso      = ntupleRawTree.bG_scPFPhoIso3[i] ;
-      photonMVAdata.PFNeuIso      = ntupleRawTree.bG_scPFNeuIso3[i] ;
-      photonMVAdata.PFChIso       = ntupleRawTree.bG_scPFChIso3[i] ;
-      photonMVAdata.FoundGsfMatch = ntupleRawTree.bG_scFoundGsfMatch_[i] ;
-  //    photonMVAdata.e2x5_MaxRatio = ntupleRawTree.bG_sc ; 
+      storageFloat["scR9"                  ]  = ntupleRawTree.bG_scR9[i] ;
+      storageFloat["scSigmaIetaIeta"       ]  = ntupleRawTree.bG_scSigmaIetaIeta[i] ;
+      storageFloat["scFull5x5_E2x5MaxRatio"]  = ntupleRawTree.bG_scFull5x5_e2x5MaxRatio[i] ;
+      storageFloat["scPFPhoIso3"           ]  = ntupleRawTree.bG_scPFPhoIso3[i] ;
+      storageFloat["scSigmaIetaIphi"       ]  = ntupleRawTree.bG_scSigmaIetaIphi[i] ;
+      storageFloat["scFull5x5_SwissCross"  ]  = ntupleRawTree.bG_scFull5x5_swissCross[i] ;
+      storageFloat["scEtaWidth"            ]  = ntupleRawTree.bG_scEtaWidth[i] ;
+      storageFloat["scE2ndRatio"           ]  = ntupleRawTree.bG_scE2ndRatio[i] ;
+      storageFloat["scEMaxRatio"           ]  = ntupleRawTree.bG_scEMaxRatio[i] ;
+      storageFloat["scPFChIso1"            ]  = ntupleRawTree.bG_scPFChIso1[i] ;
+      storageFloat["scPFChIso2"            ]  = ntupleRawTree.bG_scPFChIso2[i] ;
+      storageFloat["scPFChIso3"            ]  = ntupleRawTree.bG_scPFChIso3[i] ;
+      storageFloat["scPFChIso4"            ]  = ntupleRawTree.bG_scPFChIso4[i] ;
+      storageFloat["scPFChIso5"            ]  = ntupleRawTree.bG_scPFChIso5[i] ;
      
+      storageFloat["scRawE"            ]  = ntupleRawTree.bG_scRawE[i];
+      storageFloat["scE"               ]  = ntupleRawTree.bG_scE[i];
+      storageFloat["scRawE"            ]  = ntupleRawTree.bG_scRawE[i];
+      storageFloat["scPhi"             ]  = ntupleRawTree.bG_scPhi[i];
+      storageFloat["scX"               ]  = ntupleRawTree.bG_scX[i];
+      storageFloat["scY"               ]  = ntupleRawTree.bG_scY[i];
+      storageFloat["scZ"               ]  = ntupleRawTree.bG_scZ[i];
+      
       photonMVAValue = reader->EvaluateMVA("LowPtPhotonIdMVA_MLP");
       storageArrayDouble[ i + candidateMapInt["scPhotonMVAScore"]  ]   = photonMVAValue ;
    }
@@ -1679,7 +1740,7 @@ Int_t BMMGAnalysis::doPhotonSelection(Int_t scIdx)
 {
     if( ntupleRawTree.bG_scEt[scIdx] < 4.0 )  return 2;
 
-    if( storageArrayDouble[ scIdx + candidateMapInt["scPhotonMVAScore"]  ] < 0.43 ) return 1;
+    if( storageArrayDouble[ scIdx + candidateMapInt["scPhotonMVAScore"]  ] < photonIDcut  ) return 1;
     
     return 0;
 }
