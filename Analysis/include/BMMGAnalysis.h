@@ -29,6 +29,8 @@
 
 
 #define MergedBMMX2018Data_cxx
+//#define __MCANALYSIS__
+
 #include "MergedBMMX2018Data.h"
 typedef MergedBMMX2018Data MergedBMMX ;
 
@@ -85,6 +87,11 @@ class BMMGAnalysis
     Int_t storageIdxFilledDouble; 
     Int_t* photonSelectionCheck;
     
+    std::map<string,Double_t> storageDouble;
+    std::map<string,Float_t> storageFloat;
+    std::vector<string> mvaTrainVars;
+    std::vector<string> spectatorVars;
+    
     // Histograms to Store
     
     std::map<TString,TH1F*> th1fStore;
@@ -95,7 +102,11 @@ class BMMGAnalysis
     Int_t nBMMGCandidatesPerDimu;
     bool isTriggerd;
      
-
+    // isMC
+    bool isMC;
+    bool doGenMatching;
+    bool doReducedTree;
+    bool doTriggerFiltering;
     // RunLumiMask
     bool doRunLumiMask;
     TString runLumiMaskFname;
@@ -105,6 +116,7 @@ class BMMGAnalysis
     bool initDone;
     std::map<string,string> string_parameters;
     std::map<string,Double_t> double_parameters;
+    std::vector<TTree*> treesToStore;
     Long64_t nentries, maxEvents ;
  
     // Photon MVA vars 
@@ -115,6 +127,7 @@ class BMMGAnalysis
     PhotonMVAvariables photonMVAdata;
     TString photonIdxMVAWeightFile;
     Float_t photonMVAValue;
+    Float_t photonIDcut;
 
     // Muon MVA CUT
     const Double_t BDTWorkingPoint ; 
@@ -142,18 +155,19 @@ class BMMGAnalysis
     void SaveFile();
     void SetupAnalysis(bool makeTreeCopy=false);
     void setupOutPuts(bool makeTreeCopy=false);
-    
+    Int_t getMuonMatch(Double_t muEta,Double_t muPhi);
     // Histogram Related Functions
     void bookHistograms();
-    void fill_muonHists();
-    void fill_scHists();
-    void fill_photonHists();
-    void fill_dimuonHists();
-    void fill_dimuonHists(Int_t mumuIdx);
+    Double_t getDCAGammaToDimuVertex(Int_t mumuIdx,Int_t phoId);
+    void fill_muonHists(Int_t idx=-1);
+    void fill_scHists(Int_t idx =-1);
+    void fill_photonHists(Int_t idx  = -1);
+    void fill_dimuonPassHists(Int_t idx=-1);
+    void fill_dimuonHists(Int_t mumuIdx=-1);
     void fill_dimuonEnvironmentHists(Int_t mumuIdx);
     void fill_bmmgHists(TLorentzVector &bmmgLV,Int_t mumuIdx, Int_t phoSCIdx);
     void fill_globalEventHists();
-
+    void getVetorFillledFromConfigFile( fstream &cfgFile , std::vector<string> &vecList, string beginTag,string endTag, bool verbose);
     // Analysis Functions
     void doPhotonMVAScores();
     void setUpPhotonMVA();
@@ -164,8 +178,11 @@ class BMMGAnalysis
     Int_t doBMMGSelection(Int_t mumuIdx , Int_t phoSCIdx);
     Int_t doPhotonSelection(Int_t scIdx);
     Int_t getPVMatch(Int_t mumuIdx);
+    void setupReducedAnalysisTreeBranches();
     void Analyze();
-    
+    #ifdef __MCANALYSIS__
+    void GenAnalyze();
+    #endif
 
     // Temporary vars with class scope
     TLorentzVector bmmgLV,diMuLV,photonLV;
@@ -187,7 +204,8 @@ void BMMGAnalysis::Init(string cfgFileName)
     InFileList.clear();
     ofileName="output.root";
     maxEvents=1000;
-    
+    photonIDcut=0.0;
+
     outTree=nullptr;
 
     maxMuMuDr          =1.4;
@@ -195,8 +213,12 @@ void BMMGAnalysis::Init(string cfgFileName)
     maxMMGMass         =6.2;
     minMMGMass         =4.4;
     doPhotonMVA        =false;
+    doTriggerFiltering=false;
     photonIdxMVAWeightFile="";
     hasWeightFiles=false;
+    
+    doRunLumiMask=false;
+    doReducedTree=true;
     minDimuMass.clear(); minDimuMass.push_back(0.0);
     maxDimuMass.clear(); maxDimuMass.push_back(6.0);
 
@@ -272,7 +294,15 @@ void BMMGAnalysis::setupOutPuts(bool makeTreeCopy)
    AllocateMemory();
    if(makeTreeCopy)
    {
+    if(doReducedTree)
+     {
+     outTree   = new TTree("mergedTree","Reduced Merged tree");
+     setupReducedAnalysisTreeBranches();
+    }
+    else {
     outTree   = treeChain->CloneTree(0);
+    }
+    
     AllocateBMMGBranches();
    }
 
@@ -353,10 +383,21 @@ void BMMGAnalysis::readParameters(string fname)
                  prefix=field;
                  cout<<" setting prefix = "<<prefix<<"\n";
             }
+            if(field.compare("DoTriggerFiltering")==0){
+                 getline(strStream, field);
+                 tmpI=std::atoi(field.c_str());
+                 doTriggerFiltering= tmpI >0 ? 1 : 0;
+                 cout<<" setting doTriggerFiltering  = "<<doTriggerFiltering<<"\n";
+            }
+            if(field.compare("DoRunLumiMask")==0){
+                 getline(strStream, field);
+                 tmpI=std::atoi(field.c_str());
+                 doRunLumiMask= tmpI >0 ? 1 : 0;
+                 cout<<" setting doRunLumiMask  = "<<doRunLumiMask<<"\n";
+            }
             if(field.compare("RunLumiMask")==0){
                  getline(strStream, field);
                  runLumiMaskFname=field;
-                 doRunLumiMask=true;
                  cout<<" setting runLumiMaskFname = "<<runLumiMaskFname<<"\n";
             }
             if(field.compare("MaxEvents")==0){
@@ -368,6 +409,11 @@ void BMMGAnalysis::readParameters(string fname)
                  getline(strStream, field);
                  maxMuMuDr=std::atof(field.c_str());
                  cout<<" setting maxMuMuDr  = "<<maxMuMuDr<<"\n";
+            }
+            if(field.compare("PhotonIDcut")==0){
+                 getline(strStream, field);
+                 photonIDcut=std::atof(field.c_str());
+                 cout<<" setting photonIDcut  = "<<photonIDcut<<"\n";
             }
             if(field.compare("MaxDimuPhotonDr")==0){
                  getline(strStream, field);
@@ -420,6 +466,10 @@ void BMMGAnalysis::readParameters(string fname)
        }
     }
 
+    getVetorFillledFromConfigFile(cfgFile, mvaTrainVars   , "#MVAVARLIST_BEG", "#MVAVARLIST_END", true);
+    getVetorFillledFromConfigFile(cfgFile, spectatorVars  , "#SPECTATORLIST_BEG", "#SPECTATORLIST_END", true);
+    
+
 	// getting flists
     cfgFile.clear();
 	cfgFile.seekp(ios::beg);
@@ -439,8 +489,44 @@ void BMMGAnalysis::readParameters(string fname)
     {
         std::cout<<"\t"<<name<<"\n";
     }
+}
+
+void BMMGAnalysis::getVetorFillledFromConfigFile( fstream &cfgFile , std::vector<string> &vecList, string beginTag,string endTag, bool verbose)
+{
+	
+    bool cfgModeFlag=false;
+    cfgModeFlag=false;
+    std::istringstream strStream;
+    std::string field;
+	string line;
+    
+    // getting flists
+    cfgFile.clear();
+	cfgFile.seekp(ios::beg);
+    cfgModeFlag=false;
+	int nItems(0);
+    while(std::getline(cfgFile,line))
+	{
+	   if(line==beginTag) {cfgModeFlag=true;continue;}
+	   if(line==endTag) {cfgModeFlag=false;continue;}
+	   if(not cfgModeFlag) continue;
+	   if(line=="") continue;
+	   if(line=="#END") break;
+	   vecList.push_back(line);
+	   nItems++;
+    }
+
+    if(verbose)
+    {
+       std::cout<<" Added "<<nItems<<" between "<<beginTag<<" and "<< endTag<<"\n";
+       for( auto &name : vecList)
+       {
+           std::cout<<"\t"<<name<<"\n";
+       }
+    }
 
 }
 
-#include "BMMGAnalysis.cc"
+
+#include "../src/BMMGAnalysis.cc"
 

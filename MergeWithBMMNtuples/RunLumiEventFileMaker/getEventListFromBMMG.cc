@@ -167,7 +167,7 @@ void getRunDetails(   std::vector<string> fList,
       if (ientry_evt < 0) break;
       evt++;
       nb = ntupleRawTree.fChain->GetEntry(jentry);   nbytes += nb;
-	  
+	    std::cout<<"\t "<<ntupleRawTree.lumis<<", "<<ntupleRawTree.lumis2<<"\n"; 
      // TriggerSelection
      // bool triggerSelection = false;
      // triggerSelection = triggerSelection or ntupleRawTree.HLT_DoubleMu4_3_Bs ;
@@ -211,7 +211,7 @@ void getRunDetails(   std::vector<string> fList,
         lumi_o=lumi;
      }
      else{
-        runLumiTxt<<","<<event;
+      //  runLumiTxt<<","<<event;
     }
   }
 

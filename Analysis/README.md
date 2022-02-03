@@ -55,14 +55,14 @@
   ```
   
   
- ## Analysis Workflow
+## Analysis Workflow
   The major part of the analysis work is defined in BMMGAnalysis::Analyze() , see analysis.cc as the staring point. To compile analysis.cc, one can do :
   ```
   make analysis
   ```
   for testing one can use the default configuration file availabele as
   ```
-  ./analysis.exe analysis2018.cfg
+  ./analysis.exe config/analysis2018.cfg
   ```
   One can use makeCondorJobForAnalysis.py to make jobs for anlysing lot of files. Please dont forget to change `executable` inside the `makeCondorJobForAnalysis.py` script and also the configuration parameters defined inside teh same (see configurationTxt in `makeCondorJobForAnalysis.py`).
   

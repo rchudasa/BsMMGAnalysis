@@ -3,21 +3,21 @@ CXX 		=g++
 LIBS		=`root-config --libs` -lTMVA 
 
 CXXFLAGS 	=-g3 -std=c++11  `root-config --cflags` 
-INCPATH     =.
+INCPATH     = include
 
 TARGET		= analysis
 all:	$(TARGET) 
 
-main : main.cc Util.h BMMGAnalysis.h BMMGAnalysis.cc 
+main : src/main.cc  src/BMMGAnalysis.cc 
 	$(CXX) $(CXXFLAGS) -I$(INCPATH) -o $@.exe $<  $(LIBS)
 
-analysisNtupleMaker : analysisNtupleMaker.cc Util.h BMMGAnalysis.h BMMGAnalysis.cc 
+analysisNtupleMaker : src/analysisNtupleMaker.cc src/BMMGAnalysis.cc 
 	$(CXX) $(CXXFLAGS) -I$(INCPATH) -o $@.exe $<  $(LIBS)
 
-analysis : analysis.cc Util.h BMMGAnalysis.h BMMGAnalysis.cc RunLumiSelector.h
+analysis : src/analysis.cc src/BMMGAnalysis.cc 
 	$(CXX) $(CXXFLAGS) -I$(INCPATH) -o $@.exe $<  $(LIBS)
 
-runlumi : runLumi.cc RunLumiSelector.h
+runlumi : src/runLumi.cc 
 	$(CXX) $(CXXFLAGS) -I$(INCPATH) -o $@.exe $<  $(LIBS)
 
 clean :

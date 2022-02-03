@@ -26,8 +26,8 @@ int  main(int argc,char *argv[])
     BMMGAnalysis analyzer2018;
     analyzer2018.Init(cfgFile);
     
-    analyzer2018.SetupAnalysis();
+    analyzer2018.SetupAnalysis(true);
     analyzer2018.Analyze();
     analyzer2018.SaveFile();
-    
+
 }
