@@ -115,7 +115,6 @@ void BmmGNtuple::Init(TTree *tree)
    fChain->SetBranchAddress("run", &run, &b_run);
    fChain->SetBranchAddress("event", &event, &b_event);
    fChain->SetBranchAddress("lumis", &lumis, &b_lumis);
-   fChain->SetBranchAddress("lumis", &lumis2,&b_lumis2);
    fChain->SetBranchAddress("isData", &isData, &b_isData);
    Notify();
 }
