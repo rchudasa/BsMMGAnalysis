@@ -14,6 +14,9 @@ main : src/main.cc  src/BMMGAnalysis.cc
 analysisNtupleMaker : src/analysisNtupleMaker.cc src/BMMGAnalysis.cc 
 	$(CXX) $(CXXFLAGS) -I$(INCPATH) -o $@.exe $<  $(LIBS)
 
+mcAnalysis : src/mcAnalysis.cc src/BMMGAnalysis.cc 
+	$(CXX) $(CXXFLAGS) -I$(INCPATH) -o $@.exe $<  $(LIBS)
+
 analysis : src/analysis.cc src/BMMGAnalysis.cc 
 	$(CXX) $(CXXFLAGS) -I$(INCPATH) -o $@.exe $<  $(LIBS)
 

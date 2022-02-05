@@ -28,11 +28,16 @@
 #define NMUONS_MAX  20
 
 
-#define MergedBMMX2018Data_cxx
+
 //#define __MCANALYSIS__
 
-#include "MergedBMMX2018Data.h"
+#ifndef __MCANALYSIS__
+  #include "MergedBMMX2018Data.h"
 typedef MergedBMMX2018Data MergedBMMX ;
+#else
+  # include "MergedBMMXMC.h"  
+typedef MergedBMMXMC MergedBMMX ;
+#endif
 
 struct PhotonMVAvariables
 {
