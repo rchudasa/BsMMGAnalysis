@@ -70,11 +70,9 @@ if(not os.path.exists(destination)):
     os.system("mkdir -p "+destination)
 destination=os.path.abspath(destination)
 
-
 head='condor/Jobs'+tag
 if not os.path.exists(head ):
     os.system('mkdir -p '+head)
-
 
 print("Executable ",executable)
 print("Source file list ",FileSource)
