@@ -28,7 +28,7 @@ void BMMGAnalysis::Analyze()
 
     for (Long64_t jentry=0; jentry<maxEvents; jentry++)
     {   
-      
+
 
        nDiMuCandidates=0;
        isTriggerd=false;
@@ -36,6 +36,7 @@ void BMMGAnalysis::Analyze()
        Long64_t ientry_evt = ntupleRawTree.LoadTree(jentry);
 
        if (ientry_evt < 0) break;
+
        th1fStore["ProcessingSummary"]->Fill("TotalEvents",1);
 
        nb = ntupleRawTree.fChain->GetEntry(jentry);   nbytes += nb;
@@ -67,8 +68,9 @@ void BMMGAnalysis::Analyze()
 
         if(not goodRunLumi) continue;
        }
+
        th1fStore["ProcessingSummary"]->Fill("GoodLumiEvents",1);
-       
+      
     //   std::cout<<"Processing Entry in event loop : "<<jentry<<" / "<<maxEvents<<"  [ "<<100.0*jentry/maxEvents<<"  % ]  "<<"\n";
        
        // Checks if atleast 1 PV is there .. by default there will always be  one pV , the beamspot
@@ -81,8 +83,9 @@ void BMMGAnalysis::Analyze()
        //if( ntupleRawTree.b5_HLT_Dimuon0_Jpsi_NoVertexing_L1_4R_0er1p5R ) isTriggerd=true;
     
        if( (not isTriggerd) and doTriggerFiltering ) continue;
-       
+
        th1fStore["ProcessingSummary"]->Fill("TriggerPassEvents",1);
+
 
        for(Int_t i=0;i<NSTORAGE_ARRAY_MAX;i++)
             storageArrayDouble[i]=0;
@@ -107,7 +110,6 @@ void BMMGAnalysis::Analyze()
     {
             std::cout<<"Muon : "<<idx<<" : "<<ntupleRawTree.b5_Muon_eta[idx]<<" , "<<ntupleRawTree.b5_Muon_phi[idx]<<" \n";
     }*/
-       
 
        for(UInt_t mumuIdx=0; mumuIdx < ntupleRawTree.b5_nmm;mumuIdx++)
        {    
@@ -133,7 +135,7 @@ void BMMGAnalysis::Analyze()
 		   rslt=doMuonSelection( ntupleRawTree.b5_mm_mu2_index[mumuIdx], false);
            // std::cout<<"\tmuon2 rslt : "<<rslt<<"\n";
            if(rslt > 0) continue;
-           
+
            th1fStore["ProcessingSummary"]->Fill("EventCountWith2GoodMuons",1);
 
            // Dimuon Selection
@@ -146,6 +148,7 @@ void BMMGAnalysis::Analyze()
            rslt = doVertexSelection(mumuIdx);
            //std::cout<<"\tDimuon Vertex rslt : "<<rslt<<"\n";
            //if(rslt > 0) { vTXselectedCandiudates};
+
            
 
            auto dr= getDR( ntupleRawTree.b5_mm_kin_mu1eta[mumuIdx], ntupleRawTree.b5_mm_kin_mu1phi[mumuIdx] ,
@@ -175,9 +178,9 @@ void BMMGAnalysis::Analyze()
                if( photonSelectionCheck[phoSCIdx] > 0) continue;
                
 
+
                rslt=doBMMGSelection(mumuIdx,phoSCIdx);
                if(rslt > 0) continue;
-               
 
                auto et= ntupleRawTree.bG_scE[phoSCIdx]/cosh(ntupleRawTree.bG_scEta[phoSCIdx]);
                photonLV.SetPtEtaPhiM( et,ntupleRawTree.bG_scEta[phoSCIdx],ntupleRawTree.bG_scPhi[phoSCIdx], PHO_MASS );
@@ -223,18 +226,21 @@ void BMMGAnalysis::Analyze()
        if(nDiMuNoVertexCandidates > 0)
        {
             th1fStore["ProcessingSummary"]->Fill("EventCountWithDimuCand",1);
+
             EventCountWithDimuCand++;
        }
        if(nDiMuCandidates > 0)
        {
             EventCountWithDimuVertexCand++;
             th1fStore["ProcessingSummary"]->Fill("EventCountWithDimuVertexCand",1);
+
        }
        if(nBMMGCandidates >0)
        {
         // std::cout<<"\t "<<ntupleRawTree.b5_run<<" , "<<ntupleRawTree.b5_event<<" : Number of nBMMGCandidates = "<<nBMMGCandidates<<"\n";
         EventCountWithCand++;
         th1fStore["ProcessingSummary"]->Fill("EventCountWithBMMGCand",1);
+
        }
        
        fill_globalEventHists();
@@ -401,9 +407,6 @@ void BMMGAnalysis::GenAnalyze()
        }
        
        th1fStore["ProcessingSummary"]->Fill("nGenDecay",1);
-
-
-
         TLorentzVector mumLV,mupLV;
 
        if( phoFoundIdx == 0 )
@@ -473,6 +476,7 @@ void BMMGAnalysis::GenAnalyze()
        if(mumRecoMatchDr < 0.1 ) { 
         th1fStore["ProcessingSummary"]->Fill("nGenMatchedMuM",1);
         mumMatchCount++;
+
 		fill_muonHists(mumRecoMatchIdx);
 	 //	std::cout<<"Match Found for : mu-"<<"\n";
 	  }
@@ -483,6 +487,7 @@ void BMMGAnalysis::GenAnalyze()
        if(mupRecoMatchDr < 0.1 ) { 
           mupMatchCount++;
         th1fStore["ProcessingSummary"]->Fill("nGenMatchedMuP",1);
+
 		fill_muonHists(mupRecoMatchIdx);
 	//	std::cout<<"Match Found for : mu+"<<"\n";
 	  }
@@ -494,10 +499,12 @@ void BMMGAnalysis::GenAnalyze()
       if(phoRecoMatchDr < 0.1 ) { 
         
         th1fStore["ProcessingSummary"]->Fill("nGenMatchedSC",1);
+
         scMatchCount++;
 		fill_scHists(phoRecoMatchIdx);
         if(doPhotonSelection(phoRecoMatchIdx) ==0)
         {   
+
             th1fStore["ProcessingSummary"]->Fill("nGenMatchedPho",1);
             phoMatchCount++;
         }
@@ -509,6 +516,7 @@ void BMMGAnalysis::GenAnalyze()
          phoRecoMatchIdx=-1;
       }
      
+
        if(mumRecoMatchDr < 0.1 and mupRecoMatchDr <0.1 )
        {
             th1fStore["ProcessingSummary"]->Fill("nGenMatchedMM",1);
@@ -517,6 +525,7 @@ void BMMGAnalysis::GenAnalyze()
        {
             fullEventMatchesFound++;
             th1fStore["ProcessingSummary"]->Fill("nGenMatchedMMG",1);
+
        }
        nDiMuNoVertexCandidates=0;
       
@@ -539,6 +548,7 @@ void BMMGAnalysis::GenAnalyze()
            rslt=doDimuonSelection(mumuIdx);
            if(rslt > 0) continue;        
            nDiMuNoVertexCandidates++;
+
            //rslt = doVertexSelection(mumuIdx);
            //std::cout<<"\tDimuon Vertex rslt : "<<rslt<<"\n";
            //if(rslt > 0) continue;
@@ -617,6 +627,7 @@ void BMMGAnalysis::GenAnalyze()
        {
             EventCountWithDimuCand++;
             th1fStore["ProcessingSummary"]->Fill("EventCountWithGenMatchedDimu",1);
+
        }
        if(nDiMuCandidates > 0)
        {
@@ -627,6 +638,7 @@ void BMMGAnalysis::GenAnalyze()
        {
         // std::cout<<"\t "<<ntupleRawTree.b5_run<<" , "<<ntupleRawTree.b5_event<<" : Number of nBMMGCandidates = "<<nBMMGCandidates<<"\n";
        th1fStore["ProcessingSummary"]->Fill("EventCountWithGenMatchedMMG",1);
+
         EventCountWithCand++;
        }
        
@@ -1426,6 +1438,7 @@ void BMMGAnalysis::bookHistograms()
    // Processing Summary Hists 
      th1fStore["ProcessingSummary"] = new TH1F("processing_summary","",3,0.0,3.0);
      th1fStore["ProcessingSummary"]->SetCanExtend(TH1::kAllAxes);
+
 }
 
 

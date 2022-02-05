@@ -1,6 +1,14 @@
 #ifndef BsToMuMuGammaNTuplizer_h
 #define BsToMuMuGammaNTuplizer_h
 
+#include "DataFormats/HcalRecHit/interface/HcalRecHitCollections.h"
+#include "Geometry/CaloTopology/interface/CaloTowerConstituentsMap.h"
+#include "Geometry/CaloTopology/interface/CaloTopology.h"
+#include "Geometry/CaloEventSetup/interface/CaloTopologyRecord.h"
+#include "Geometry/Records/interface/CaloTopologyRecord.h"
+#include "Geometry/Records/interface/CaloGeometryRecord.h"
+#include "Geometry/CaloGeometry/interface/CaloSubdetectorGeometry.h"
+#include "Geometry/CaloTopology/interface/CaloSubdetectorTopology.h"
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EDAnalyzer.h"
@@ -31,7 +39,6 @@
 #include "DataFormats/Common/interface/ValueMap.h"
 #include "DataFormats/Common/interface/View.h"
 #include "DataFormats/EcalRecHit/interface/EcalRecHit.h"
-#include "DataFormats/HcalRecHit/interface/HcalRecHitCollections.h"
 #include "DataFormats/EgammaCandidates/interface/Conversion.h"
 #include "DataFormats/EgammaCandidates/interface/GsfElectron.h"
 #include "DataFormats/EgammaCandidates/interface/HIPhotonIsolation.h"
@@ -53,14 +60,8 @@
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 #include "TrackingTools/TransientTrack/interface/TransientTrackBuilder.h"
 #include "FWCore/Common/interface/TriggerNames.h"
-#include "Geometry/CaloTopology/interface/CaloTowerConstituentsMap.h"
-#include "Geometry/CaloTopology/interface/CaloTopology.h"
-#include "Geometry/CaloEventSetup/interface/CaloTopologyRecord.h"
-#include "Geometry/Records/interface/CaloTopologyRecord.h"
-#include "Geometry/Records/interface/CaloGeometryRecord.h"
-#include "Geometry/CaloEventSetup/plugins/CaloTopologyBuilder.h"
-#include "Geometry/CaloGeometry/interface/CaloSubdetectorGeometry.h"
-#include "Geometry/CaloTopology/interface/CaloSubdetectorTopology.h"
+
+
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/one/EDAnalyzer.h"
@@ -156,8 +157,25 @@
 #include "Geometry/EcalAlgo/interface/EcalEndcapGeometry.h"
 #include "RecoEcal/EgammaCoreTools/interface/EcalClusterTools.h"
 #include "DataFormats/Math/interface/libminifloat.h"
+#include "DataFormats/HcalRecHit/interface/HcalRecHitCollections.h"
+#include "Geometry/CaloTopology/interface/CaloTowerConstituentsMap.h"
+#include "Geometry/CaloTopology/interface/CaloTopology.h"
+#include "Geometry/CaloEventSetup/interface/CaloTopologyRecord.h"
+#include "Geometry/Records/interface/CaloTopologyRecord.h"
+#include "Geometry/Records/interface/CaloGeometryRecord.h"
+#include "Geometry/CaloEventSetup/plugins/CaloTopologyBuilder.h"
+#include "Geometry/CaloGeometry/interface/CaloSubdetectorGeometry.h"
+#include "Geometry/CaloTopology/interface/CaloSubdetectorTopology.h"
+#include "DataFormats/ParticleFlowReco/interface/PFCluster.h"
+#include "DataFormats/ParticleFlowReco/interface/PFClusterFwd.h"
 #include <TTree.h>
 #include "TMath.h"
+
+#define N_PV_MAX 500
+#define N_TRK_MAX 5000
+#define N_PF_MAX 10000
+#define N_ECAL_CLUSTERS 1000
+#define N_HCAL_CLUSTERS 1000
 class BsToMuMuGammaNTuplizer : public edm::EDAnalyzer {
 
  public:
@@ -177,27 +195,43 @@ private:
   void fillSC           (const edm::Event&, const edm::EventSetup&, reco::Vertex& pv);
   void fillHLT          (edm::Event const& );
   std::vector<float> getShowerShapes(reco::CaloCluster* caloBC, const EcalRecHitCollection* recHits, const CaloTopology *topology);
+  void fillPFCandiateCollection( const edm::Event&, const edm::EventSetup& );
+  void addParticleFlowBranches();
+  void fillGeneralTrackCollectionBranches( const edm::Event&, const edm::EventSetup& );
+  void addGeneralTracksBranches();
+  void fillHCALClusterCollection( const edm::Event&, const edm::EventSetup& );
+  void addHCALCluserBranches();
+  void fillECALClusterCollection( const edm::Event&, const edm::EventSetup& );
+  void addECALCluserBranches();
+  void  addPrimaryVertexBranches();
+  void fillPrimaryVertexBranches(const edm::Event&, const edm::EventSetup&);
   float reduceFloat(float val, int bits);
   static int calDIEta(int iEta1, int iEta2);
   static int calDIPhi(int iPhi1, int iPhi2);
   float getMinEnergyHCAL_(HcalDetId id) const;
 
-  int maxDIEta_=5;
-  int maxDIPhi_=5;
- 
   // switches
   bool doGenParticles_;
-  bool doFlatPt_;
   bool doMuons_;
   bool doPhotons_;
   bool doPFPhotons_;
   bool doSuperClusters_;
   bool isMC;
-  bool doHLT;
   bool doBsToMuMuGamma;
   bool doCompression_;
-  bool Run2_2018_ ; // Now two options are supported, Run2_2018 and Run3
- 
+  bool doParticleFlow;
+  bool doGeneralTracks;
+  bool doECALClusters;
+  bool doHCALClusters;
+  bool doPrimaryVetrices;
+  bool doBeamSpot;
+  bool doFlatPt_;
+  bool Run2_2018_;
+  bool doHLT;
+  int maxDIEta_=5;
+  int maxDIPhi_=5;
+  
+  
   // ----------member data ---------------------------
   edm::EDGetTokenT<reco::BeamSpot>                  beamSpotToken_;
   edm::EDGetTokenT<reco::GenParticleCollection>    genParticlesCollection_;
@@ -209,13 +243,22 @@ private:
   edm::EDGetTokenT<reco::VertexCollection>          primaryVtxToken_;
   edm::EDGetTokenT<edm::TriggerResults>             triggerBits_;
   edm::EDGetTokenT<std::vector<reco::Muon>>         muonToken_;
-
+  edm::EDGetTokenT<reco::TrackCollection>         generalTracksCollection_;
+  edm::EDGetTokenT<reco::PFClusterCollection>        ecalClusterCollection_;
+  edm::EDGetTokenT<reco::PFClusterCollection>        hcalClusterCollection_;
+  edm::EDGetTokenT<reco::PFCandidateCollection>         pfCandidateCollection_;
   edm::EDGetTokenT<edm::SortedCollection<HBHERecHit,edm::StrictWeakOrdering<HBHERecHit>>> hbheRechitToken_; 
+  
+ // const EcalClusterLazyTools::ESGetTokens ecalClusterToolsESGetTokens_;
+  const Int_t energyMatrixSize_;
+  Int_t energyMatrixSizeFull_;
+  //      edm::EDGetTokenT<std::vector<CaloParticle> > caloPartToken_;
   edm::EDGetTokenT<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit>>> ebRechitToken_; 
   edm::EDGetTokenT<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit>>> eeRechitToken_; 
-
- // edm::ESHandle<CaloGeometry> theCaloGeometry;  
-  //edm::ESHandle<CaloTowerConstituentsMap> towerMap_;
+  //edm::EDGetTokenT<EcalRecHitCollection> ebRechitToken_; 
+  //     edm::EDGetTokenT<EcalRecHitCollection> eeRechitToken_; 
+  //   edm::EDGetTokenT<std::vector<reco::PFRecHit>  > pfRecHitToken_; 
+  //   edm::EDGetTokenT<std::vector<reco::PFCluster> > pfClusterToken_; 
 
   // input tags 
   //edm::InputTag genParticleSrc_;
@@ -305,26 +348,18 @@ private:
   void FillTrggerBranches();
   void ClearTrggerStorages();
 
-  
+  // generic storage dictionary
+
+  std::map<std::string,Int_t > storageMapInt;
+  std::map<std::string,Float_t * > storageMapFloatArray;
+
+
   // reco::GenParticle
   int  gen_nBs_, gen_nBsMuonM_, gen_nBsMuonP_ , gen_nBsPhoton_ ;
   std::vector<double> gen_Bs_pt_,  gen_Bs_energy_,    gen_Bs_eta_,      gen_Bs_phi_,   gen_Bs_pz_,  gen_Bs_pdgId_;
   std::vector<double> gen_BsMuonM_pt_, gen_BsMuonM_eta_, gen_BsMuonM_phi_;
   std::vector<double> gen_BsMuonP_pt_, gen_BsMuonP_eta_, gen_BsMuonP_phi_;
   std::vector<double> gen_BsPhoton_pt_, gen_BsPhoton_energy_, gen_BsPhoton_eta_, gen_BsPhoton_phi_;
-
-   Int_t               nMC_;
-   std::vector<int>    mcPID_;
-   std::vector<int>    mcStatus_;
-   std::vector<float>  mcVtx_x_;
-   std::vector<float>  mcVtx_y_;
-   std::vector<float>  mcVtx_z_;
-   std::vector<float>  mcPt_;
-   std::vector<float>  mcEta_;
-   std::vector<float>  mcPhi_;
-   std::vector<float>  mcE_;
-   std::vector<float>  mcEt_;
-   std::vector<float>  mcMass_;
 
 
   // ### mu+ mu- variables ###
@@ -584,7 +619,6 @@ private:
   /* supercluster info */
   int nSC_;
   std::vector<float> scE_;
-  std::vector<float> scEt_;
   std::vector<float> scEta_;
   std::vector<float> scPhi_;
   std::vector<float>  scX_;
@@ -596,68 +630,129 @@ private:
   std::vector<float>  scRawEt_;
   std::vector<float>  scMinDrWithGsfElectornSC_;
   std::vector< bool>  scFoundGsfMatch_;
-  std::vector<float> scE5x5_;
-  std::vector<float> scE2x2Ratio_;
-  std::vector<float> scE3x3Ratio_;
-  std::vector<float> scEMaxRatio_;
-  std::vector<float> scE2ndRatio_;
-  std::vector<float> scETopRatio_;
-  std::vector<float> scERightRatio_;
-  std::vector<float> scEBottomRatio_;
-  std::vector<float> scELeftRatio_;
-  std::vector<float> scE2x5MaxRatio_;
-  std::vector<float> scE2x5TopRatio_;
-  std::vector<float> scE2x5RightRatio_;
-  std::vector<float> scE2x5BottomRatio_;
-  std::vector<float> scE2x5LeftRatio_;
-  std::vector<float> scSwissCross_;
-  std::vector<float> scR9_;
-  std::vector<float> scSigmaIetaIeta_; 
-  std::vector<float> scSigmaIetaIphi_; 
-  std::vector<float> scSigmaIphiIphi_; 
-  std::vector<float> scFull5x5_e5x5_;
-  std::vector<float> scFull5x5_e2x2Ratio_;
-  std::vector<float> scFull5x5_e3x3Ratio_;
-  std::vector<float> scFull5x5_eMaxRatio_;
-  std::vector<float> scFull5x5_e2ndRatio_;
-  std::vector<float> scFull5x5_eTopRatio_;
-  std::vector<float> scFull5x5_eRightRatio_;
-  std::vector<float> scFull5x5_eBottomRatio_;
-  std::vector<float> scFull5x5_eLeftRatio_;
-  std::vector<float> scFull5x5_e2x5MaxRatio_;
-  std::vector<float> scFull5x5_e2x5TopRatio_;
-  std::vector<float> scFull5x5_e2x5RightRatio_;
-  std::vector<float> scFull5x5_e2x5BottomRatio_;
-  std::vector<float> scFull5x5_e2x5LeftRatio_;
-  std::vector<float> scFull5x5_swissCross_;
-  std::vector<float> scFull5x5_r9_;
-  std::vector<float> scFull5x5_sigmaIetaIeta_; 
-  std::vector<float> scFull5x5_sigmaIetaIphi_; 
-  std::vector<float> scFull5x5_sigmaIphiIphi_;   
+  std::vector<float> superCluster_e5x5_;
+  std::vector<float> superCluster_e2x2Ratio_;
+  std::vector<float> superCluster_e3x3Ratio_;
+  std::vector<float> superCluster_eMaxRatio_;
+  std::vector<float> superCluster_e2ndRatio_;
+  std::vector<float> superCluster_eTopRatio_;
+  std::vector<float> superCluster_eRightRatio_;
+  std::vector<float> superCluster_eBottomRatio_;
+  std::vector<float> superCluster_eLeftRatio_;
+  std::vector<float> superCluster_e2x5MaxRatio_;
+  std::vector<float> superCluster_e2x5TopRatio_;
+  std::vector<float> superCluster_e2x5RightRatio_;
+  std::vector<float> superCluster_e2x5BottomRatio_;
+  std::vector<float> superCluster_e2x5LeftRatio_;
+  std::vector<float> superCluster_swissCross_;
+  std::vector<float> superCluster_r9_;
+  std::vector<float> superCluster_sigmaIetaIeta_; 
+  std::vector<float> superCluster_sigmaIetaIphi_; 
+  std::vector<float> superCluster_sigmaIphiIphi_; 
+  std::vector<float> superCluster_full5x5_e5x5_;
+  std::vector<float> superCluster_full5x5_e2x2Ratio_;
+  std::vector<float> superCluster_full5x5_e3x3Ratio_;
+  std::vector<float> superCluster_full5x5_eMaxRatio_;
+  std::vector<float> superCluster_full5x5_e2ndRatio_;
+  std::vector<float> superCluster_full5x5_eTopRatio_;
+  std::vector<float> superCluster_full5x5_eRightRatio_;
+  std::vector<float> superCluster_full5x5_eBottomRatio_;
+  std::vector<float> superCluster_full5x5_eLeftRatio_;
+  std::vector<float> superCluster_full5x5_e2x5MaxRatio_;
+  std::vector<float> superCluster_full5x5_e2x5TopRatio_;
+  std::vector<float> superCluster_full5x5_e2x5RightRatio_;
+  std::vector<float> superCluster_full5x5_e2x5BottomRatio_;
+  std::vector<float> superCluster_full5x5_e2x5LeftRatio_;
+  std::vector<float> superCluster_full5x5_swissCross_;
+  std::vector<float> superCluster_full5x5_r9_;
+  std::vector<float> superCluster_full5x5_sigmaIetaIeta_; 
+  std::vector<float> superCluster_full5x5_sigmaIetaIphi_; 
+  std::vector<float> superCluster_full5x5_sigmaIphiIphi_;   
+
+   std::vector<float> scE5x5_;
+   std::vector<float> scE2x2Ratio_;
+   std::vector<float> scE3x3Ratio_;
+   std::vector<float> scEMaxRatio_;
+   std::vector<float> scE2ndRatio_;
+   std::vector<float> scETopRatio_;
+   std::vector<float> scERightRatio_;
+   std::vector<float> scEBottomRatio_;
+   std::vector<float> scELeftRatio_;
+   std::vector<float> scE2x5MaxRatio_;
+   std::vector<float> scE2x5TopRatio_;
+   std::vector<float> scE2x5RightRatio_;
+   std::vector<float> scE2x5BottomRatio_;
+   std::vector<float> scE2x5LeftRatio_;
+   std::vector<float> scSwissCross_;
+   std::vector<float> scR9_;
+   std::vector<float> scSigmaIetaIeta_; 
+   std::vector<float> scSigmaIetaIphi_; 
+   std::vector<float> scSigmaIphiIphi_; 
+   std::vector<float> scFull5x5_e5x5_;
+   std::vector<float> scFull5x5_e2x2Ratio_;
+   std::vector<float> scFull5x5_e3x3Ratio_;
+   std::vector<float> scFull5x5_eMaxRatio_;
+   std::vector<float> scFull5x5_e2ndRatio_;
+   std::vector<float> scFull5x5_eTopRatio_;
+   std::vector<float> scFull5x5_eRightRatio_;
+   std::vector<float> scFull5x5_eBottomRatio_;
+   std::vector<float> scFull5x5_eLeftRatio_;
+   std::vector<float> scFull5x5_e2x5MaxRatio_;
+   std::vector<float> scFull5x5_e2x5TopRatio_;
+   std::vector<float> scFull5x5_e2x5RightRatio_;
+   std::vector<float> scFull5x5_e2x5BottomRatio_;
+   std::vector<float> scFull5x5_e2x5LeftRatio_;
+   std::vector<float> scFull5x5_swissCross_;
+   std::vector<float> scFull5x5_r9_;
+   std::vector<float> scFull5x5_sigmaIetaIeta_; 
+   std::vector<float> scFull5x5_sigmaIetaIphi_; 
+   std::vector<float> scFull5x5_sigmaIphiIphi_;   
+ 
+ 
+   int nhcalRechit_;
+   std::vector<float> hcalRechitIEta_;
+   std::vector<float> hcalRechitIPhi_;
+   std::vector<float> hcalRechitEnergy_;
+ 
+   std::vector<float>  scNHcalRecHitInDIEta2IPhi2;
+   std::vector<float>  scEFromHcalRecHitInDIEta2IPhi2;
+   
+   std::vector<float>  scNHcalRecHitInDIEta5IPhi5;
+   std::vector<float>  scEFromHcalRecHitInDIEta5IPhi5;
+   
+   std::vector<float>  scPFChIso1_;
+   std::vector<float>  scPFChIso2_;
+   std::vector<float>  scPFChIso3_;
+   std::vector<float>  scPFChIso4_;
+   std::vector<float>  scPFChIso5_;
+   
+   std::vector<float>  scPFPhoIso1_;
+   std::vector<float>  scPFPhoIso2_;
+   std::vector<float>  scPFPhoIso3_;
+   std::vector<float>  scPFPhoIso4_;
+   std::vector<float>  scPFPhoIso5_;
+   
+   std::vector<float>  scPFNeuIso1_;
+   std::vector<float>  scPFNeuIso2_;
+   std::vector<float>  scPFNeuIso3_;
+   std::vector<float>  scPFNeuIso4_;
+   std::vector<float>  scPFNeuIso5_;
 
 
-  int nhcalRechit_;
-  std::vector<float> hcalRechitIEta_;
-  std::vector<float> hcalRechitIPhi_;
-  std::vector<float> hcalRechitEnergy_;
 
-  std::vector<float>  scPFChIso1_;
-  std::vector<float>  scPFChIso2_;
-  std::vector<float>  scPFChIso3_;
-  std::vector<float>  scPFChIso4_;
-  std::vector<float>  scPFChIso5_;
-  
-  std::vector<float>  scPFPhoIso1_;
-  std::vector<float>  scPFPhoIso2_;
-  std::vector<float>  scPFPhoIso3_;
-  std::vector<float>  scPFPhoIso4_;
-  std::vector<float>  scPFPhoIso5_;
-  
-  std::vector<float>  scPFNeuIso1_;
-  std::vector<float>  scPFNeuIso2_;
-  std::vector<float>  scPFNeuIso3_;
-  std::vector<float>  scPFNeuIso4_;
-  std::vector<float>  scPFNeuIso5_;
+    Int_t               nMC_;
+    std::vector<int>    mcPID_;
+    std::vector<int>    mcStatus_;
+    std::vector<float>  mcVtx_x_;
+    std::vector<float>  mcVtx_y_;
+    std::vector<float>  mcVtx_z_;
+    std::vector<float>  mcPt_;
+    std::vector<float>  mcEta_;
+    std::vector<float>  mcPhi_;
+    std::vector<float>  mcE_;
+    std::vector<float>  mcEt_;
+    std::vector<float>  mcMass_;
+    std::vector<float> scEt_;
 
 };
 

@@ -180,10 +180,10 @@ double pfIsoCalculator::getPfIso(const reco::SuperCluster& sc, int pfId,
 
 
     if (pf->particleId() == reco::PFCandidate::h) {
-      float dz = std::abs(pf->vz() - vtx_.z());
-      if (dz > 0.2) continue;
-      double dxy = ((vtx_.x() - pf->vx())*pf->py() + (pf->vy() - vtx_.y())*pf->px()) / pf->pt();
-      if (std::abs(dxy) > 0.1) continue;
+     // float dz = std::abs(pf->vz() - vtx_.z());
+    //  if (dz > 0.2) continue;
+    //  double dxy = ((vtx_.x() - pf->vx())*pf->py() + (pf->vy() - vtx_.y())*pf->px()) / pf->pt();
+   //   if (std::abs(dxy) > 0.1) continue;
     }
 
     // inside the cone size
