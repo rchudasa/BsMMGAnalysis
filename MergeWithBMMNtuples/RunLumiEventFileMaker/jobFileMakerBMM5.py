@@ -26,6 +26,7 @@ if len(sys.argv) > 4:
 if len(sys.argv) > 5:
     tag=sys.argv[5]
 
+
 pwd=os.environ['PWD']
 proxy_path=os.environ['X509_USER_PROXY']
 HOME=os.environ['HOME']
@@ -36,6 +37,14 @@ Fnames.close()
 
 if not os.path.exists(destination):
     os.system('mkdir -p '+destination)    
+
+print("N Fnames    : ",len(sourceFileList))
+print("File source : ",FileSource)
+print("FILES_PER_JOB : ",FILES_PER_JOB)
+print("NJobs : ",NJOBS )
+print("Destination : ",destination)
+
+
 
 configurationTxt="\
 #FLIST_BEG\n\
@@ -59,11 +68,6 @@ error = $Fp(filename)run.$(Cluster).stderr\n\
 log = $Fp(filename)run.$(Cluster).log\n\
 +JobFlavour = \"longlunch\"\n\
 "
-condorScriptName='subCondorBMM5'+tag+'.sub'
-condorScript=open(condorScriptName,'w')
-condorScript.write(condorScriptString)
-
-
 
 runScriptTxt="\
 #!/bin/bash\n\
@@ -92,9 +96,14 @@ fi\n\
 rm  Bmm5Ntuple* \n\
 "
 
-head = "JobsBmm5" + tag
+head = "Condor/JobsBmm5" + tag
 if not os.path.exists(head):
-    os.system('mkdir '+ head)
+    os.system('mkdir -p '+ head)
+condorScriptName=head+'/subCondorBMM5'+tag+'.sub'
+condorScript=open(condorScriptName,'w')
+condorScript.write(condorScriptString)
+
+
 
 n = int( len(sourceFileList)/FILES_PER_JOB ) + 1
 print("Making ",n," Jobs ")
