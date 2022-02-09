@@ -28,7 +28,6 @@
 #define NSC_MAX   50
 #define NMUONS_MAX  20
 
-
 //#define __MCANALYSIS__
 
 #ifndef __MCANALYSIS__

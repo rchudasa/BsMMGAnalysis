@@ -11,4 +11,7 @@ BsToMuMuGammaNTuplizer/test/dump.C
 BsToMuMuGammaNTuplizer/test/aodContent.C
 BsToMuMuGammaNTuplizer/test/config_dump.C
 BsToMuMuGammaNTuplizer/plugins/BsToMuMuGammaNTuplizer.cc_v1
+BsMMGAnalysis/BsToMuMuGammaNTuplizer/test/Run2_MVA/crab_projects
+BsMMGAnalysis/BsToMuMuGammaNTuplizer/test/tifr_ntuples/crab_projects_Run2MVA
+BsMMGAnalysis/BsToMuMuGammaNTuplizer/test/tifr_ntuples/crab_projects
 Test/MiniAnalyzer/python/__init__.py

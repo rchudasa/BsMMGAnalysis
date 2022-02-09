@@ -35,8 +35,8 @@ void BMMGAnalysis::Analyze()
        Long64_t ientry_evt = ntupleRawTree.LoadTree(jentry);
 
        if (ientry_evt < 0) break;
-       th1fStore["ProcessingSummary"]->Fill("TotalEvents",1);
 
+       th1fStore["ProcessingSummary"]->Fill("TotalEvents",1);
        nb = ntupleRawTree.fChain->GetEntry(jentry);   nbytes += nb;
        
        if(jentry%500 == 0 )
@@ -69,8 +69,8 @@ void BMMGAnalysis::Analyze()
 
         if(not goodRunLumi) continue;
        }
+
        th1fStore["ProcessingSummary"]->Fill("GoodLumiEvents",1);
-       
     //   std::cout<<"Processing Entry in event loop : "<<jentry<<" / "<<maxEvents<<"  [ "<<100.0*jentry/maxEvents<<"  % ]  "<<"\n";
        
        // Checks if atleast 1 PV is there .. by default there will always be  one pV , the beamspot
@@ -83,7 +83,8 @@ void BMMGAnalysis::Analyze()
        //if( ntupleRawTree.b5_HLT_Dimuon0_Jpsi_NoVertexing_L1_4R_0er1p5R ) isTriggerd=true;
     
        if( (not isTriggerd) and doTriggerFiltering ) continue;
-       
+
+
        th1fStore["ProcessingSummary"]->Fill("TriggerPassEvents",1);
 
        for(Int_t i=0;i<NSTORAGE_ARRAY_MAX;i++)
@@ -109,7 +110,6 @@ void BMMGAnalysis::Analyze()
     {
             std::cout<<"Muon : "<<idx<<" : "<<ntupleRawTree.b5_Muon_eta[idx]<<" , "<<ntupleRawTree.b5_Muon_phi[idx]<<" \n";
     }*/
-       
 
        for(UInt_t mumuIdx=0; mumuIdx < ntupleRawTree.b5_nmm;mumuIdx++)
        {    
@@ -135,7 +135,6 @@ void BMMGAnalysis::Analyze()
 		   rslt=doMuonSelection( ntupleRawTree.b5_mm_mu2_index[mumuIdx], false);
            // std::cout<<"\tmuon2 rslt : "<<rslt<<"\n";
            if(rslt > 0) continue;
-           
            th1fStore["ProcessingSummary"]->Fill("EventCountWith2GoodMuons",1);
 
            // Dimuon Selection
@@ -148,7 +147,6 @@ void BMMGAnalysis::Analyze()
            rslt = doVertexSelection(mumuIdx);
            //std::cout<<"\tDimuon Vertex rslt : "<<rslt<<"\n";
            if(rslt > 0) { continue ; };
-           
 
            auto dr= getDR( ntupleRawTree.b5_mm_kin_mu1eta[mumuIdx], ntupleRawTree.b5_mm_kin_mu1phi[mumuIdx] ,
                       ntupleRawTree.b5_mm_kin_mu2eta[mumuIdx], ntupleRawTree.b5_mm_kin_mu2phi[mumuIdx] );
@@ -175,11 +173,9 @@ void BMMGAnalysis::Analyze()
                }
 
                if( photonSelectionCheck[phoSCIdx] > 0) continue;
-               
 
                rslt=doBMMGSelection(mumuIdx,phoSCIdx);
                if(rslt > 0) continue;
-               
 
                auto et= ntupleRawTree.bG_scE[phoSCIdx]/cosh(ntupleRawTree.bG_scEta[phoSCIdx]);
                photonLV.SetPtEtaPhiM( et,ntupleRawTree.bG_scEta[phoSCIdx],ntupleRawTree.bG_scPhi[phoSCIdx], PHO_MASS );
@@ -401,11 +397,8 @@ void BMMGAnalysis::GenAnalyze()
             std::cout<<" No Gen Bs Decay found for jentry =  "<<jentry<<" !!\n ";
             continue;
        }
-       
+   
        th1fStore["ProcessingSummary"]->Fill("nGenDecay",1);
-
-
-
         TLorentzVector mumLV,mupLV;
 
        if( phoFoundIdx == 0 )
@@ -484,6 +477,7 @@ void BMMGAnalysis::GenAnalyze()
       }
        if(mupRecoMatchDr < 0.1 ) { 
           mupMatchCount++;
+
         th1fStore["ProcessingSummary"]->Fill("nGenMatchedMuP",1);
 		fill_muonHists(mupRecoMatchIdx);
 	//	std::cout<<"Match Found for : mu+"<<"\n";
@@ -494,7 +488,7 @@ void BMMGAnalysis::GenAnalyze()
       }
 
       if(phoRecoMatchDr < 0.1 ) { 
-        
+
         th1fStore["ProcessingSummary"]->Fill("nGenMatchedSC",1);
         scMatchCount++;
 		fill_scHists(phoRecoMatchIdx);
@@ -511,6 +505,8 @@ void BMMGAnalysis::GenAnalyze()
          phoRecoMatchIdx=-1;
       }
      
+
+
        if(mumRecoMatchDr < 0.1 and mupRecoMatchDr <0.1 )
        {
             th1fStore["ProcessingSummary"]->Fill("nGenMatchedMM",1);
@@ -1424,7 +1420,6 @@ void BMMGAnalysis::bookHistograms()
      th1fStore["gen_mumDeltaR"]   = new TH1F("gen_mumDeltaR","#Delta(#mu^-,#mu_{Gen}^-)", 200 , 0.0  , 2.0  );
      th1fStore["gen_mupDeltaR"]   = new TH1F("gen_mupDeltaR","#Delta(#mu^+,#mu_{Gen}^+)", 200 , 0.0  , 2.0  );
      th1fStore["gen_phoDeltaR"]   = new TH1F("gen_phoDeltaR","#Delta(#gamma,#gamma_{Gen})", 200 , 0.0  , 2.0  );
-
    // Processing Summary Hists 
      th1fStore["ProcessingSummary"] = new TH1F("processing_summary","",3,0.0,3.0);
      th1fStore["ProcessingSummary"]->SetCanExtend(TH1::kAllAxes);
