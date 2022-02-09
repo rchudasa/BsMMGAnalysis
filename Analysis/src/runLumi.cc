@@ -6,15 +6,12 @@
 
 #include "main.h"
 #include "RunLumiSelector.h" 
+#include "RunLumiLogger.h"
 
 int  main(int argc,char *argv[])
 {
 
-   TString fileName("certification/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.root");
-   RunLumiSelector goldenJsonSelctor;
-   goldenJsonSelctor.loadRunLumiMask(fileName,"RunLumiMask");
-   std::cout<<"\n";
-   goldenJsonSelctor.printAllActiveLumis();
+   RunLumiLogger runLogger;
     
   Int_t run,lumi;
 
@@ -42,33 +39,81 @@ int  main(int argc,char *argv[])
 */
 
   run=1; lumi=10;
-  std::cout<<run<< " , "<<lumi <<" truth :  "<<0<<"  :  checkRunLumi  = "<<goldenJsonSelctor.checkRunLumi(run,lumi)<<"\n";
+  std::cout<<run<< " , "<<lumi << "\n";
+  runLogger.addRunLumi(run,lumi);
 
+  run=1; lumi=12;
+  std::cout<<run<< " , "<<lumi << "\n";
+  runLogger.addRunLumi(run,lumi);
+
+  run=1; lumi=10;
+  std::cout<<run<< " , "<<lumi << "\n";
+  runLogger.addRunLumi(run,lumi);
+
+  std::cout<<run<< " , "<<lumi << "\n";
+  runLogger.addRunLumi(run,lumi);
+  
+  runLogger.clear();
   run=315265; lumi=4;
-  std::cout<<run<< " , "<<lumi <<" truth :  "<<1<<"  :  checkRunLumi  = "<<goldenJsonSelctor.checkRunLumi(run,lumi)<<"\n";
+  std::cout<<run<< " , "<<lumi << "\n";
+  runLogger.addRunLumi(run,lumi);
+  run=315265; lumi=5;
+  runLogger.addRunLumi(run,lumi);
+  run=315265; lumi=6;
+  runLogger.addRunLumi(run,lumi);
+  run=315265; lumi=7;
+  runLogger.addRunLumi(run,lumi);
+  run=315265; lumi=8;
+  runLogger.addRunLumi(run,lumi);
+  run=315265; lumi=11;
+  runLogger.addRunLumi(run,lumi);
   
   run=315265; lumi=20;
-  std::cout<<run<< " , "<<lumi <<" truth :  "<<1<<"  :  checkRunLumi  = "<<goldenJsonSelctor.checkRunLumi(run,lumi)<<"\n";
+  std::cout<<run<< " , "<<lumi << "\n";
+  runLogger.addRunLumi(run,lumi);
 
   run=315265; lumi=58;
-  std::cout<<run<< " , "<<lumi <<" truth :  "<<1<<"  :  checkRunLumi  = "<<goldenJsonSelctor.checkRunLumi(run,lumi)<<"\n";
+  std::cout<<run<< " , "<<lumi << "\n";
+  runLogger.addRunLumi(run,lumi);
+
+  run=315265; lumi=59;
+  std::cout<<run<< " , "<<lumi << "\n";
+  runLogger.addRunLumi(run,lumi);
 
   run=315265; lumi=60;
-  std::cout<<run<< " , "<<lumi <<" truth :  "<<0<<"  :  checkRunLumi  = "<<goldenJsonSelctor.checkRunLumi(run,lumi)<<"\n";
-
+  std::cout<<run<< " , "<<lumi << "\n";
+  runLogger.addRunLumi(run,lumi);
+  
   run=315363; lumi=1;
-  std::cout<<run<< " , "<<lumi <<" truth :  "<<1<<"  :  checkRunLumi  = "<<goldenJsonSelctor.checkRunLumi(run,lumi)<<"\n";
+  std::cout<<run<< " , "<<lumi << "\n";
+  runLogger.addRunLumi(run,lumi);
 
   run=315363; lumi=36;
-  std::cout<<run<< " , "<<lumi <<" truth :  "<<0<<"  :  checkRunLumi  = "<<goldenJsonSelctor.checkRunLumi(run,lumi)<<"\n";
+  std::cout<<run<< " , "<<lumi << "\n";
+  runLogger.addRunLumi(run,lumi);
+    
+  runLogger.clear();
+  runLogger.addRunLumi(323775,52);
+  runLogger.addRunLumi(323775,53);
+  runLogger.addRunLumi(323775,54);
+  runLogger.addRunLumi(323775,80);
+  runLogger.addRunLumi(323775,81);
+  runLogger.addRunLumi(323775,150);
+  runLogger.addRunLumi(323775,153);
+  runLogger.addRunLumi(323775,154);
+  runLogger.addRunLumi(323775,171);
+  // "315259": [[1, 172]],
+  runLogger.addRunLumi(315259,1);
+  runLogger.addRunLumi(315259,2);
+  runLogger.addRunLumi(315259,3);
+  runLogger.addRunLumi(315259,4);
+  runLogger.addRunLumi(315259,5);
+  runLogger.addRunLumi(315259,100);
+  runLogger.addRunLumi(315259,170);
+  runLogger.addRunLumi(315259,171);
+  
 
-  run=315363; lumi=48;
-  std::cout<<run<< " , "<<lumi <<" truth :  "<<0<<"  :  checkRunLumi  = "<<goldenJsonSelctor.checkRunLumi(run,lumi)<<"\n";
-
-  run=315363; lumi=70;
-  std::cout<<run<< " , "<<lumi <<" truth :  "<<1<<"  :  checkRunLumi  = "<<goldenJsonSelctor.checkRunLumi(run,lumi)<<"\n";
-
-  run=315363; lumi=90;
-  std::cout<<run<< " , "<<lumi <<" truth :  "<<1<<"  :  checkRunLumi  = "<<goldenJsonSelctor.checkRunLumi(run,lumi)<<"\n";
-
+  runLogger.printAllRunLumis();
+  runLogger.printJson();
+  runLogger.saveAsJson("runLumi.json");
 }

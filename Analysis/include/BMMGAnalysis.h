@@ -15,6 +15,7 @@
 #include "TMVA/MethodCuts.h"
 
 #include "RunLumiSelector.h"
+#include "RunLumiLogger.h"
 
 
 #define PHO_MASS 0.0
@@ -117,6 +118,10 @@ class BMMGAnalysis
     TString runLumiMaskFname;
     RunLumiSelector runLumiMask;
 
+    bool doRunLumiLog;
+    RunLumiLogger runLumiLogger;
+    string runLumiJsonName;
+    
     // book keeping vars
     bool initDone;
     std::map<string,string> string_parameters;
@@ -144,6 +149,11 @@ class BMMGAnalysis
     Double_t minMMGMass         ;
     std::vector<Double_t> minDimuMass;
     std::vector<Double_t> maxDimuMass;
+
+    Float_t muMuVtxProbabilityMin;
+    Float_t muMuMaxDOCA;
+    Float_t muMuMaxNTracksClose1Sigma;
+    Float_t svGammaMaxDCA;
 
                                       // Member functions 
     // Constructor
@@ -173,6 +183,7 @@ class BMMGAnalysis
     void fill_bmmgHists(TLorentzVector &bmmgLV,Int_t mumuIdx, Int_t phoSCIdx);
     void fill_globalEventHists();
     void getVetorFillledFromConfigFile( fstream &cfgFile , std::vector<string> &vecList, string beginTag,string endTag, bool verbose);
+    void getFloatFromTag(string tag,std::istringstream &strStream, string inputStr ,Float_t &var);
     // Analysis Functions
     void doPhotonMVAScores();
     void setUpPhotonMVA();
@@ -205,11 +216,17 @@ void BMMGAnalysis::Init(string cfgFileName)
     treeName="mergedTree";
     prefix="workarea/";
     ofileName="output.root";
+    runLumiJsonName="runLumi.json";
     runLumiMaskFname="";
     InFileList.clear();
     ofileName="output.root";
     maxEvents=1000;
     photonIDcut=0.0;
+    muMuVtxProbabilityMin=0.0;
+    muMuMaxDOCA=1e3;
+    muMuMaxNTracksClose1Sigma=100;
+    svGammaMaxDCA = 1e9;
+
 
     outTree=nullptr;
 
@@ -224,6 +241,7 @@ void BMMGAnalysis::Init(string cfgFileName)
     
     doRunLumiMask=false;
     doReducedTree=true;
+    doRunLumiLog=false;
     minDimuMass.clear(); minDimuMass.push_back(0.0);
     maxDimuMass.clear(); maxDimuMass.push_back(6.0);
 
@@ -345,7 +363,7 @@ void BMMGAnalysis::SaveFile()
         ahist.Write();
     }
 
-
+    if(doRunLumiLog) runLumiLogger.saveAsJson((prefix + runLumiJsonName));
     outputFile->Write();
     outputFile->Purge();
     outputFile->Close();
@@ -378,6 +396,11 @@ void BMMGAnalysis::readParameters(string fname)
        strStream.str(line);
        while (getline(strStream, field,'='))
        {
+           getFloatFromTag("MuMuVtxProbabilityMin",strStream , field , muMuVtxProbabilityMin);
+           getFloatFromTag("MuMuMaxDOCA",strStream , field , muMuMaxDOCA);
+           getFloatFromTag("MuMuMaxNTracksClose1Sigma",strStream , field , muMuMaxNTracksClose1Sigma);
+           getFloatFromTag("SvGammaMaxDCA",strStream , field , svGammaMaxDCA);
+           
            if(field.compare("OutputFile")==0){
                  getline(strStream, field);
                  ofileName=field;
@@ -394,6 +417,18 @@ void BMMGAnalysis::readParameters(string fname)
                  doTriggerFiltering= tmpI >0 ? 1 : 0;
                  cout<<" setting doTriggerFiltering  = "<<doTriggerFiltering<<"\n";
             }
+            if(field.compare("DoRunLumiLog")==0){
+                 getline(strStream, field);
+                 tmpI=std::atoi(field.c_str());
+                 doRunLumiLog= tmpI >0 ? 1 : 0;
+                 cout<<" setting doRunLumiLog  = "<<doRunLumiLog<<"\n";
+            }
+           if(field.compare("RunLumiJsonName")==0){
+                 getline(strStream, field);
+                 runLumiJsonName=field;
+                 std::cout<<" setting runLumiJsonName = "<<runLumiJsonName<<"\n";
+            }
+            
             if(field.compare("DoRunLumiMask")==0){
                  getline(strStream, field);
                  tmpI=std::atoi(field.c_str());
@@ -496,6 +531,15 @@ void BMMGAnalysis::readParameters(string fname)
     }
 }
 
+void BMMGAnalysis::getFloatFromTag(string tag,std::istringstream &strStream, string inputStr  , Float_t &var)
+{   
+    std::string field;
+    if(inputStr.compare(tag)==0){
+             getline(strStream, field);
+             var=std::atof(field.c_str());
+             cout<<" SETTING  "<<tag<<" = "<<var<<"\n";
+       }
+}
 void BMMGAnalysis::getVetorFillledFromConfigFile( fstream &cfgFile , std::vector<string> &vecList, string beginTag,string endTag, bool verbose)
 {
 	

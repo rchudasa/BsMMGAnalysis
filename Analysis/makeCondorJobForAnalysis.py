@@ -101,7 +101,7 @@ error = $Fp(filename)run.$(Cluster).stderr\n\
 log = $Fp(filename)run.$(Cluster).log\n\
 +JobFlavour = \"espresso\"\n\
 "
-condorScriptName='condor/job'+tag+'.sub'
+condorScriptName='Condor/job'+tag+'.sub'
 condorScript=open(condorScriptName,'w')
 condorScript.write(condorScriptString)
 
@@ -123,6 +123,7 @@ mv @@RUNSCRIPT @@RUNSCRIPT.busy \n\
 if [ $? -eq 0 ]; then \n\
     mv *.root "+destination+"\n\
     if [ $? -eq 0 ] ; then \n\
+        mv *.json "+destination+"\n\
         mv @@CFGFILENAME " + destination + "\n\
         mv @@RUNSCRIPT.busy @@RUNSCRIPT.sucess \n\
         echo OK\n\

@@ -18,7 +18,7 @@ void BMMGAnalysis::Analyze()
     Long64_t EventCountWithDimuCand=0;
     Long64_t EventCountWithDimuVertexCand=0;
     Long64_t nb = 0,nbytes=0 ;
-
+    Int_t 
     auto t_start = std::chrono::high_resolution_clock::now();
     auto t_end = std::chrono::high_resolution_clock::now();
     auto nDiMuNoVertexCandidates=0;
@@ -28,7 +28,6 @@ void BMMGAnalysis::Analyze()
 
     for (Long64_t jentry=0; jentry<maxEvents; jentry++)
     {   
-      
 
        nDiMuCandidates=0;
        isTriggerd=false;
@@ -49,6 +48,9 @@ void BMMGAnalysis::Analyze()
                       <<std::endl;
        
        }
+        
+       if(doRunLumiLog) { runLumiLogger.addRunLumi(ntupleRawTree.b5_run,ntupleRawTree.b5_luminosityBlock); }
+
 
        if(doRunLumiMask)
        {
@@ -145,7 +147,7 @@ void BMMGAnalysis::Analyze()
            nDiMuNoVertexCandidates++;
            rslt = doVertexSelection(mumuIdx);
            //std::cout<<"\tDimuon Vertex rslt : "<<rslt<<"\n";
-           //if(rslt > 0) { vTXselectedCandiudates};
+           if(rslt > 0) { continue ; };
            
 
            auto dr= getDR( ntupleRawTree.b5_mm_kin_mu1eta[mumuIdx], ntupleRawTree.b5_mm_kin_mu1phi[mumuIdx] ,
@@ -539,9 +541,9 @@ void BMMGAnalysis::GenAnalyze()
            rslt=doDimuonSelection(mumuIdx);
            if(rslt > 0) continue;        
            nDiMuNoVertexCandidates++;
-           //rslt = doVertexSelection(mumuIdx);
+           rslt = doVertexSelection(mumuIdx);
            //std::cout<<"\tDimuon Vertex rslt : "<<rslt<<"\n";
-           //if(rslt > 0) continue;
+           if(rslt > 0) continue;
            
 
            auto dr= getDR( ntupleRawTree.b5_mm_kin_mu1eta[mumuIdx], ntupleRawTree.b5_mm_kin_mu1phi[mumuIdx] ,
@@ -1758,16 +1760,19 @@ Int_t BMMGAnalysis::doDimuonSelection(Int_t mumuIdx)
 
 Int_t BMMGAnalysis::doVertexSelection(Int_t mumuIdx)
 {
-  //  if( cos(ntupleRawTree.b5_mm_kin_alpha[mumuIdx])  > 0.80 ) return 1;
-    if( ntupleRawTree.b5_mm_kin_vtx_chi2dof[mumuIdx] > 2.20  ) return 2;
-    if( ntupleRawTree.b5_mm_kin_sl3d[mumuIdx]  < 13.0  ) return 3;
-    if( ntupleRawTree.b5_mm_kin_slxy[mumuIdx]  < 3.0   ) return 4;
+ //   if( cos(ntupleRawTree.b5_mm_kin_alpha[mumuIdx])  > 0.80 ) return 1;
+ //   if( ntupleRawTree.b5_mm_kin_vtx_chi2dof[mumuIdx] > 2.20  ) return 2;
+ //   if( ntupleRawTree.b5_mm_kin_sl3d[mumuIdx]  < 13.0  ) return 3;
+ //   if( ntupleRawTree.b5_mm_kin_slxy[mumuIdx]  < 3.0   ) return 4;
  //   if( ntupleRawTree.b5_mm_kin_pvip[mumuIdx]  > 0.008 ) return 5;
  //   if( ntupleRawTree.b5_mm_kin_spvip[mumuIdx] < 2.0   ) return 6;
-    if( ntupleRawTree.b5_mm_doca[mumuIdx]  > 0.100 ) return 7;
-    if( ntupleRawTree.b5_mm_iso[mumuIdx]   < 0.80  ) return 8;
-    if( ntupleRawTree.b5_mm_closetrk[mumuIdx]  >= 2.0 ) return 9;
-    if( ntupleRawTree.b5_mm_docatrk[mumuIdx]  > 0.0150 ) return 10;
+ //   if( ntupleRawTree.b5_mm_doca[mumuIdx]  > 0.100 ) return 7;
+ //   if( ntupleRawTree.b5_mm_iso[mumuIdx]   < 0.80  ) return 8;
+ //   if( ntupleRawTree.b5_mm_closetrk[mumuIdx]  >= 2.0 ) return 9;
+    if( ntupleRawTree.b5_mm_docatrk[mumuIdx]  > muMuMaxDOCA ) return 10;
+    if( ntupleRawTree.b5_mm_kal_vtx_prob[mumuIdx] <  muMuVtxProbabilityMin ) return 11;
+    if( ntupleRawTree.b5_mm_closetrks1[mumuIdx] > muMuMaxNTracksClose1Sigma ) return 12;
+
 
     return 0;
 }
@@ -1785,8 +1790,8 @@ Int_t BMMGAnalysis::doBMMGSelection(Int_t mumuIdx, Int_t phoSCIdx)
 {
    auto dr=getDR(ntupleRawTree.bG_scEta[phoSCIdx],ntupleRawTree.bG_scPhi[phoSCIdx],
                  ntupleRawTree.b5_mm_kin_eta[mumuIdx] , ntupleRawTree.b5_mm_kin_phi[mumuIdx]  );
-   
    if(dr > maxDimuPhotonDr ) return 1;
+   if(getDCAGammaToDimuVertex(mumuIdx,phoSCIdx) > svGammaMaxDCA) return 2;
 
 /*   
 
