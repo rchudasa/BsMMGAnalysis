@@ -18,7 +18,6 @@ void BMMGAnalysis::Analyze()
     Long64_t EventCountWithDimuCand=0;
     Long64_t EventCountWithDimuVertexCand=0;
     Long64_t nb = 0,nbytes=0 ;
-    Int_t 
     auto t_start = std::chrono::high_resolution_clock::now();
     auto t_end = std::chrono::high_resolution_clock::now();
     auto nDiMuNoVertexCandidates=0;
