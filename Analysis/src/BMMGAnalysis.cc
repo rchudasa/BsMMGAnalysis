@@ -18,6 +18,7 @@ void BMMGAnalysis::Analyze()
     Long64_t EventCountWithDimuCand=0;
     Long64_t EventCountWithDimuVertexCand=0;
     Long64_t nb = 0,nbytes=0 ;
+    Int_t eventLostAt(0);
     auto t_start = std::chrono::high_resolution_clock::now();
     auto t_end = std::chrono::high_resolution_clock::now();
     auto nDiMuNoVertexCandidates=0;
@@ -28,6 +29,7 @@ void BMMGAnalysis::Analyze()
     for (Long64_t jentry=0; jentry<maxEvents; jentry++)
     {   
 
+       eventLostAt=0; 
        nDiMuCandidates=0;
        isTriggerd=false;
 	
@@ -38,7 +40,7 @@ void BMMGAnalysis::Analyze()
        th1fStore["ProcessingSummary"]->Fill("TotalEvents",1);
        nb = ntupleRawTree.fChain->GetEntry(jentry);   nbytes += nb;
        
-       if(jentry%500 == 0 )
+       if(jentry%reportEvery == 0 )
        {
              t_end = std::chrono::high_resolution_clock::now();
              std::cout<<"Processing Entry in event loop : "<<jentry<<" / "<<maxEvents<<"  [ "<<100.0*jentry/maxEvents<<"  % ]  "
@@ -103,56 +105,58 @@ void BMMGAnalysis::Analyze()
        fill_scHists();
        fill_photonHists();
        nDiMuNoVertexCandidates=0;
-       /*std::cout<<"nMM = "<<ntupleRawTree.b5_nmm<<" , nmu : "<< ntupleRawTree.b5_nMuon<<"\n";
-      
-    for(UInt_t idx =0; idx < ntupleRawTree.b5_nMuon ; idx++)
-    {
-            std::cout<<"Muon : "<<idx<<" : "<<ntupleRawTree.b5_Muon_eta[idx]<<" , "<<ntupleRawTree.b5_Muon_phi[idx]<<" \n";
-    }*/
-
+       
+       eventLostAt=0;
+       rslt=0;
+       if(ntupleRawTree.b5_nmm <1 ) 
+       { 
+            if(eventLostAt < ( 1 + cutFlowOffsets["basicCuts"]) )   eventLostAt=cutFlowOffsets["basicCuts"]+1;
+       }
        for(UInt_t mumuIdx=0; mumuIdx < ntupleRawTree.b5_nmm;mumuIdx++)
        {    
-           //std::cout<<"\tmumuIdx : "<<mumuIdx<<" : m1,m2 : "<<ntupleRawTree.b5_mm_mu1_index[mumuIdx]<<", "<<ntupleRawTree.b5_mm_mu2_index[mumuIdx]<<"\n";
-           //std::cout<<"\tmumuIdx : "<<mumuIdx<<" : m1pt,m2pt : "<<ntupleRawTree.b5_mm_mu1_pt[mumuIdx]<<", "<<ntupleRawTree.b5_mm_mu2_pt[mumuIdx]<<"\n";
-           //std::cout<<"\tmumuIdx : "<<mumuIdx<<" : m1eta,m1phi : "<<ntupleRawTree.b5_mm_mu1_eta[mumuIdx]<<", "<<ntupleRawTree.b5_mm_mu1_phi[mumuIdx]<<"\n";
-           //std::cout<<"\tmumuIdx : "<<mumuIdx<<" : m2eta,m2eta : "<<ntupleRawTree.b5_mm_mu2_eta[mumuIdx]<<", "<<ntupleRawTree.b5_mm_mu2_phi[mumuIdx]<<"\n";
-           //std::cout<<"\tmumuIdx : "<<mumuIdx<<" : m1,m2 [recal] : \n"
-           //                         <<"\t Idx  : "<<getMuonMatch(ntupleRawTree.b5_mm_mu1_eta[mumuIdx],ntupleRawTree.b5_mm_mu1_phi[mumuIdx])
-           //                         <<"\n"
-           //                         <<"\tIdx : "<<getMuonMatch(ntupleRawTree.b5_mm_mu2_eta[mumuIdx],ntupleRawTree.b5_mm_mu2_phi[mumuIdx])
-           //                         <<"\n";
-           //std::cout<<"\tmumu    : "<<mumuIdx<<" : MASS : "<<ntupleRawTree.b5_mm_mass[mumuIdx]<<"\n";
-           if(ntupleRawTree.b5_mm_mu1_index[mumuIdx] < 0 or ntupleRawTree.b5_mm_mu2_index[mumuIdx] <0 ) continue;  
-           if(ntupleRawTree.b5_mm_mu1_index[mumuIdx] >= ntupleRawTree.b5_nMuon ) continue;
-           if(ntupleRawTree.b5_mm_mu2_index[mumuIdx] >= ntupleRawTree.b5_nMuon ) continue;
 
+                if(ntupleRawTree.b5_mm_mu1_index[mumuIdx] < 0 or ntupleRawTree.b5_mm_mu2_index[mumuIdx] <0 ) 
+	            {
+                    if(eventLostAt < ( 3 + cutFlowOffsets["basicCuts"]) )   eventLostAt=cutFlowOffsets["basicCuts"]+3;
+                    continue;
+                }
+                if(ntupleRawTree.b5_mm_mu1_index[mumuIdx] >= ntupleRawTree.b5_nMuon ) 
+	            {
+                    if(eventLostAt < ( 4 + cutFlowOffsets["basicCuts"]) )   eventLostAt=cutFlowOffsets["basicCuts"]+4;
+                    continue;
+	            }
+                if(ntupleRawTree.b5_mm_mu2_index[mumuIdx] >= ntupleRawTree.b5_nMuon ) 
+	            {
+                    if(eventLostAt < ( 5 + cutFlowOffsets["basicCuts"]) )   eventLostAt=cutFlowOffsets["basicCuts"]+5;
+                    continue;
+	            }
+           
            fill_dimuonHists(mumuIdx);
            // Muon Selection
 		   rslt=doMuonSelection( ntupleRawTree.b5_mm_mu1_index[mumuIdx], true);
-           // std::cout<<"\tmuon1 rslt : "<<rslt<<"\n";
+           if(eventLostAt < rslt) eventLostAt=rslt;
            if(rslt > 0) continue;
 		   rslt=doMuonSelection( ntupleRawTree.b5_mm_mu2_index[mumuIdx], false);
-           // std::cout<<"\tmuon2 rslt : "<<rslt<<"\n";
+           if(eventLostAt < rslt) eventLostAt=rslt;
            if(rslt > 0) continue;
            th1fStore["ProcessingSummary"]->Fill("EventCountWith2GoodMuons",1);
 
            // Dimuon Selection
            rslt=doDimuonSelection(mumuIdx);
-           //std::cout<<"\tDimuon rslt : "<<rslt<<"\n";
+           if(eventLostAt < rslt) eventLostAt=rslt;
            if(rslt > 0) continue;  
-
-
            nDiMuNoVertexCandidates++;
+
+           // Dimuon Vertex selection
            rslt = doVertexSelection(mumuIdx);
-           //std::cout<<"\tDimuon Vertex rslt : "<<rslt<<"\n";
+           if(eventLostAt < rslt) eventLostAt=rslt;
            if(rslt > 0) { continue ; };
 
            auto dr= getDR( ntupleRawTree.b5_mm_kin_mu1eta[mumuIdx], ntupleRawTree.b5_mm_kin_mu1phi[mumuIdx] ,
                       ntupleRawTree.b5_mm_kin_mu2eta[mumuIdx], ntupleRawTree.b5_mm_kin_mu2phi[mumuIdx] );
            storageArrayDouble[nDiMuCandidates + candidateMapDouble["mumu_dr"] ]   = dr ;
            
-           // VERTEX SELECTION STUFF
-
+           // Filling the histograms after dimuon selection
            fill_dimuonPassHists(mumuIdx);
            fill_dimuonEnvironmentHists(mumuIdx);
 
@@ -162,7 +166,11 @@ void BMMGAnalysis::Analyze()
                                     ntupleRawTree.b5_mm_kin_phi[mumuIdx],  \
                                     ntupleRawTree.b5_mm_kin_mass[mumuIdx]  );
            nBMMGCandidatesPerDimu=0;
-
+           
+           if(ntupleRawTree.bG_nSC<1)
+           {
+                if(eventLostAt < ( 2 + cutFlowOffsets["basicCuts"]) )   eventLostAt=cutFlowOffsets["basicCuts"]+2;
+           }
            for(int phoSCIdx=0;phoSCIdx < ntupleRawTree.bG_nSC ; phoSCIdx++)
            {
                // photon selection
@@ -170,10 +178,13 @@ void BMMGAnalysis::Analyze()
                {
                     photonSelectionCheck[phoSCIdx]=doPhotonSelection(phoSCIdx );
                }
-
-               if( photonSelectionCheck[phoSCIdx] > 0) continue;
+               
+               rslt=photonSelectionCheck[phoSCIdx];
+               if(eventLostAt < rslt) eventLostAt=rslt;
+               if( rslt > 0) continue;
 
                rslt=doBMMGSelection(mumuIdx,phoSCIdx);
+               if(eventLostAt < rslt) eventLostAt=rslt;
                if(rslt > 0) continue;
 
                auto et= ntupleRawTree.bG_scE[phoSCIdx]/cosh(ntupleRawTree.bG_scEta[phoSCIdx]);
@@ -235,8 +246,9 @@ void BMMGAnalysis::Analyze()
        }
        
        fill_globalEventHists();
-
-     if(outTree)  outTree->Fill();
+       FillCutFlow(eventLostAt);
+       
+       if(outTree)  outTree->Fill();
     }
     std::cout<<"\n\n"
             <<"  Number of Events with trigger = "<<EventCount<<"\n"
@@ -258,16 +270,16 @@ void BMMGAnalysis::GenAnalyze()
  Make sure the branches used here are not turned off to 0 by BMMGAnalysis::setupBranchStatus()
 
     *************************************************************************************/
-
     Double_t dr;
     
-    std::cout<<"\nBegining Analysis Script !";
+    std::cout<<"\nBegining GEN Analysis Script !";
     if (maxEvents >0 ) maxEvents = nentries > maxEvents ? maxEvents : nentries;
     cout<<"\nProcessing total "<<maxEvents<<" events \n\n";
    
     Long64_t EventCount=0;
     Long64_t EventCountWithTrigger=0;
     Long64_t EventCountWithCand=0;
+    Long64_t EventCountWith2GoodMuonsInDimu=0;
     Long64_t EventCountWithDimuCand=0;
     Long64_t EventCountWithDimuVertexCand=0;
     Long64_t nb = 0,nbytes=0 ;
@@ -284,10 +296,10 @@ void BMMGAnalysis::GenAnalyze()
     auto nDiMuNoVertexCandidates=0;
     Int_t prevRun(-1),prevLumi(-1);
     bool goodRunLumi = false;
-
-
+    Int_t eventLostAt=0,n2GoodMuonInDimuon;
     for (Long64_t jentry=0; jentry<maxEvents; jentry++)
     {   
+       eventLostAt=0;
 
        nDiMuCandidates=0;
        isTriggerd=false;
@@ -298,7 +310,7 @@ void BMMGAnalysis::GenAnalyze()
 
        nb = ntupleRawTree.fChain->GetEntry(jentry);   nbytes += nb;
        
-       if(jentry%1000 == 0 )
+       if(jentry%reportEvery == 0 )
        {
              t_end = std::chrono::high_resolution_clock::now();
              std::cout<<"Processing Entry in event loop : "<<jentry<<" / "<<maxEvents<<"  [ "<<100.0*jentry/maxEvents<<"  % ]  "
@@ -308,9 +320,6 @@ void BMMGAnalysis::GenAnalyze()
        
        }
       
-      
-         //std::cout<<"Processing Entry in event loop : "<<jentry<<" / "<<maxEvents<<"  [ "<<100.0*jentry/maxEvents<<"  % ]  "<<"\n";
-       
        // Checks if atleast 1 PV is there .. by default there will always be  one pV , the beamspot
        if(ntupleRawTree.bG_nPrimaryVertex < 1 ) continue;
        
@@ -319,9 +328,9 @@ void BMMGAnalysis::GenAnalyze()
        if( ntupleRawTree.b5_HLT_DoubleMu4_3_Jpsi ) isTriggerd=true;
        if( ntupleRawTree.b5_HLT_Dimuon0_Jpsi_NoVertexing ) isTriggerd=true;
        if( ntupleRawTree.b5_HLT_Dimuon0_Jpsi_NoVertexing_L1_4R_0er1p5R ) isTriggerd=true;
-       //if(not isTriggerd) continue;
        if( isTriggerd ) EventCountWithTrigger++;
-      for(Int_t i=0;i<NSTORAGE_ARRAY_MAX;i++)
+       
+       for(Int_t i=0;i<NSTORAGE_ARRAY_MAX;i++)
             storageArrayDouble[i]=0;
        for(int phoSCIdx=0;phoSCIdx < ntupleRawTree.bG_nSC ; phoSCIdx++)
             photonSelectionCheck[phoSCIdx]=-1;
@@ -333,20 +342,10 @@ void BMMGAnalysis::GenAnalyze()
 
        int rslt=0;
        nBMMGCandidates=0;
-       
+       n2GoodMuonInDimuon=0;
        Int_t mumMatchIdx(-1),mupMatchIdx(-1),phoMatchIdx(-1);
        Int_t mumFoundIdx(-1),mupFoundIdx(-1),phoFoundIdx(-1);
        Int_t motherIdx(-1);
-       /*for(Int_t i=0; i< ntupleRawTree.b5_nGenPart; i++)
-       {
-            std::cout<<"\t"<<i<<"/"<<ntupleRawTree.b5_nGenPart<<" , "<< ntupleRawTree.b5_GenPart_pdgId[i]  <<" from ";
-            if (ntupleRawTree.b5_GenPart_genPartIdxMother[i] >0 )
-                std::cout<<ntupleRawTree.b5_GenPart_pdgId[ ntupleRawTree.b5_GenPart_genPartIdxMother[i]  ];
-            else
-            std::cout<<ntupleRawTree.b5_GenPart_genPartIdxMother[i];
-            std::cout<<"\n";
-        
-       }*/
 
        for(Int_t i=0; i< ntupleRawTree.b5_nGenPart; i++)
        {
@@ -398,7 +397,7 @@ void BMMGAnalysis::GenAnalyze()
        }
    
        th1fStore["ProcessingSummary"]->Fill("nGenDecay",1);
-        TLorentzVector mumLV,mupLV;
+       TLorentzVector mumLV,mupLV;
 
        if( phoFoundIdx == 0 )
        {
@@ -408,7 +407,7 @@ void BMMGAnalysis::GenAnalyze()
                                  ntupleRawTree.b5_GenPart_phi[mumMatchIdx], ntupleRawTree.b5_GenPart_mass[mumMatchIdx] ) ;    
             mupLV.SetPtEtaPhiM( ntupleRawTree.b5_GenPart_pt[mupMatchIdx], ntupleRawTree.b5_GenPart_eta[mupMatchIdx],
                                 ntupleRawTree.b5_GenPart_phi[mupMatchIdx], ntupleRawTree.b5_GenPart_mass[mupMatchIdx] )   ; 
-            photonLV=bmmgLV- ( mumLV  +  mupLV );
+            photonLV=bmmgLV - ( mumLV  +  mupLV );
             
        //     std::cout<<"Recalculating Pho P4 pt  = "<<photonLV.Pt()<<" , eta = "<<photonLV.Eta()<<"\n" ;
        }
@@ -423,10 +422,9 @@ void BMMGAnalysis::GenAnalyze()
       // std::cout<<"\n";
 
        Int_t mumRecoMatchIdx(-1),mupRecoMatchIdx(-1),phoRecoMatchIdx(-1);
-       Float_t mumRecoMatchDr(1e9),mupRecoMatchDr(1e9),phoRecoMatchDr(1e9);
+       Float_t mumRecoMatchDr(drMaxForGenMatchMu),mupRecoMatchDr(drMaxForGenMatchMu),phoRecoMatchDr(drMaxForGenMatchSC);
        for(int i=0;i<ntupleRawTree.b5_nMuon ; i++)
        {
-        //    std::cout<<"i = "<<i<<"/"<<ntupleRawTree.b5_nMuon<<" : "<<ntupleRawTree.b5_Muon_pdgId[i]<<" [ "<<ntupleRawTree.b5_Muon_eta[i]<<" , "<<ntupleRawTree.b5_Muon_phi[i]<<" ] "<<"\n";
             if(ntupleRawTree.b5_Muon_pdgId[i] == 13 )
             {
                 dr= getDR(ntupleRawTree.b5_Muon_eta[i], ntupleRawTree.b5_Muon_phi[i],
@@ -464,7 +462,7 @@ void BMMGAnalysis::GenAnalyze()
        th1fStore["gen_mupDeltaR"]->Fill(mupRecoMatchDr);
        th1fStore["gen_phoDeltaR"]->Fill(phoRecoMatchDr);
       // std::cout<<"mup , mum , pho Dr : "<<mumRecoMatchDr<<" , "<<mupRecoMatchDr<<" , "<<phoRecoMatchDr<<"\n";
-       if(mumRecoMatchDr < 0.1 ) { 
+       if(mumRecoMatchDr < drMaxForGenMatchMu) { 
         th1fStore["ProcessingSummary"]->Fill("nGenMatchedMuM",1);
         mumMatchCount++;
 		fill_muonHists(mumRecoMatchIdx);
@@ -474,9 +472,8 @@ void BMMGAnalysis::GenAnalyze()
       {
         mumRecoMatchIdx=-1;
       }
-       if(mupRecoMatchDr < 0.1 ) { 
+       if(mupRecoMatchDr < drMaxForGenMatchMu) { 
           mupMatchCount++;
-
         th1fStore["ProcessingSummary"]->Fill("nGenMatchedMuP",1);
 		fill_muonHists(mupRecoMatchIdx);
 	//	std::cout<<"Match Found for : mu+"<<"\n";
@@ -486,7 +483,7 @@ void BMMGAnalysis::GenAnalyze()
         mupRecoMatchIdx=-1;
       }
 
-      if(phoRecoMatchDr < 0.1 ) { 
+      if(phoRecoMatchDr < drMaxForGenMatchSC ) { 
 
         th1fStore["ProcessingSummary"]->Fill("nGenMatchedSC",1);
         scMatchCount++;
@@ -506,110 +503,186 @@ void BMMGAnalysis::GenAnalyze()
      
 
 
-       if(mumRecoMatchDr < 0.1 and mupRecoMatchDr <0.1 )
+       if(mumRecoMatchDr < drMaxForGenMatchMu and mupRecoMatchDr < drMaxForGenMatchSC )
        {
             th1fStore["ProcessingSummary"]->Fill("nGenMatchedMM",1);
        }
-       if(mumRecoMatchDr < 0.1 and mupRecoMatchDr <0.1 and phoRecoMatchDr < 0.1)
+
+       if(mumRecoMatchDr < drMaxForGenMatchMu and mupRecoMatchDr <  drMaxForGenMatchSC and phoRecoMatchDr < drMaxForGenMatchSC)
        {
             fullEventMatchesFound++;
             th1fStore["ProcessingSummary"]->Fill("nGenMatchedMMG",1);
        }
-       nDiMuNoVertexCandidates=0;
-      
-       for(int mumuIdx=0; mumuIdx < ntupleRawTree.b5_nmm;mumuIdx++)
-       {    
-           if(ntupleRawTree.b5_mm_mu1_index[mumuIdx] < 0 or ntupleRawTree.b5_mm_mu2_index[mumuIdx] <0 ) continue;  
-           if(ntupleRawTree.b5_mm_mu1_index[mumuIdx] >= ntupleRawTree.b5_nMuon ) continue;
-           if(ntupleRawTree.b5_mm_mu2_index[mumuIdx] >= ntupleRawTree.b5_nMuon ) continue;
-
-           if(ntupleRawTree.b5_mm_mu1_index[mumuIdx] != mumRecoMatchIdx and ntupleRawTree.b5_mm_mu2_index[mumuIdx] != mumRecoMatchIdx ) continue;  
-           if(ntupleRawTree.b5_mm_mu1_index[mumuIdx] != mupRecoMatchIdx and ntupleRawTree.b5_mm_mu2_index[mumuIdx] != mupRecoMatchIdx ) continue;  
-           
-           dimuMatchCount++;
-           // Muon Selection
-           fill_dimuonHists(mumuIdx);
-           fill_dimuonEnvironmentHists(mumuIdx);
-		   
-                 
-           // Dimuon Selection
-           rslt=doDimuonSelection(mumuIdx);
-           if(rslt > 0) continue;        
-           nDiMuNoVertexCandidates++;
-           rslt = doVertexSelection(mumuIdx);
-           //std::cout<<"\tDimuon Vertex rslt : "<<rslt<<"\n";
-           if(rslt > 0) continue;
-           
-
-           auto dr= getDR( ntupleRawTree.b5_mm_kin_mu1eta[mumuIdx], ntupleRawTree.b5_mm_kin_mu1phi[mumuIdx] ,
-                      ntupleRawTree.b5_mm_kin_mu2eta[mumuIdx], ntupleRawTree.b5_mm_kin_mu2phi[mumuIdx] );
-           storageArrayDouble[nDiMuCandidates + candidateMapDouble["mumu_dr"] ]   = dr ;
-           
-           // VERTEX SELECTION STUFF
-
-           fill_dimuonPassHists(mumuIdx);
-           diMuLV.SetPtEtaPhiM(     ntupleRawTree.b5_mm_kin_pt[mumuIdx],   \
-                                    ntupleRawTree.b5_mm_kin_eta[mumuIdx],  \
-                                    ntupleRawTree.b5_mm_kin_phi[mumuIdx],  \
-                                    ntupleRawTree.b5_mm_kin_mass[mumuIdx]  );
-           nBMMGCandidatesPerDimu=0;
-
-           for(int phoSCIdx=0;phoSCIdx < ntupleRawTree.bG_nSC ; phoSCIdx++)
-           {
-                if(phoSCIdx != phoRecoMatchIdx) continue;
-
-               // photon selection
-               if(photonSelectionCheck[phoSCIdx] < 0)
-               {
-                    photonSelectionCheck[phoSCIdx]=doPhotonSelection(phoSCIdx );
-               }
-
-               if( photonSelectionCheck[phoSCIdx] > 0) continue;
-               
-               rslt=doBMMGSelection(mumuIdx,phoSCIdx);
-               //if(rslt > 0) continue;
-               
-               auto et= ntupleRawTree.bG_scE[phoSCIdx]/cosh(ntupleRawTree.bG_scEta[phoSCIdx]);
-               photonLV.SetPtEtaPhiM( et,ntupleRawTree.bG_scEta[phoSCIdx],ntupleRawTree.bG_scPhi[phoSCIdx], PHO_MASS );
-               bmmgLV = diMuLV + photonLV;
-                
-               fill_bmmgHists( bmmgLV , mumuIdx, phoSCIdx );
-
-               storageArrayDouble[  nBMMGCandidates + candidateMapDouble["dimuGamma_dr"]          ]   = dr           ;
-               storageArrayDouble[  nBMMGCandidates + candidateMapDouble["bmmg_pt"]               ]   = bmmgLV.Pt()  ;
-               storageArrayDouble[  nBMMGCandidates + candidateMapDouble["bmmg_eta"]              ]   = bmmgLV.Eta() ;
-               storageArrayDouble[  nBMMGCandidates + candidateMapDouble["bmmg_phi"]              ]   = bmmgLV.Phi() ;
-               storageArrayDouble[  nBMMGCandidates + candidateMapDouble["bmmg_mass"]             ]   = bmmgLV.M()   ;
-               storageArrayDouble[  nBMMGCandidates + candidateMapDouble["bmmg_massErr"]          ]   = bmmgLV.M()*-1; // TODO
-               storageArrayInt[nBMMGCandidates + candidateMapInt["bmmg_dimuon_idx"]   ]        = mumuIdx       ;
-               storageArrayInt[nBMMGCandidates + candidateMapInt["bmmg_photonSC_idx"] ]        = phoSCIdx      ;
-               
-               nBMMGCandidatesPerDimu++;
-               nBMMGCandidates++;
-
-               if(nBMMGCandidates >= NBMMG_MAX)
-               {
-                    std::cout<<" BMMG count per event above NBMMG_MAX , Aborting !! \n";
-                    exit(9);
-               }
-
-               
-           }
-           
-           
-           storageArrayInt[ nDiMuCandidates + candidateMapInt["nBMMGCandidatesPerDimu"]  ]   = nBMMGCandidatesPerDimu ;
-           nDiMuCandidates++;
-
-           if(nDiMuCandidates >= NDIMU_MAX)
-           {
-                std::cout<<" Dimuon count per event above NDIMU_MAX , Aborting !! \n";
-                exit(9);
-           }
-            
-       }
        
-    
+
+       if(mumRecoMatchIdx < 0 )
+       {
+            eventLostAt=cutFlowOffsets["genSelection"]+2;    
+       }
+       else if ( mupRecoMatchIdx <0 )
+       {
+            eventLostAt=cutFlowOffsets["genSelection"]+3;    
+       }
+       else 
+       {
+            nDiMuNoVertexCandidates=0;
+            if(ntupleRawTree.b5_nmm <1 ) 
+            { 
+                 rslt=cutFlowOffsets["basicCuts"]+1;
+                 if(rslt > eventLostAt ) eventLostAt=rslt;
+            }
+            for(int mumuIdx=0; mumuIdx < ntupleRawTree.b5_nmm;mumuIdx++)
+            {   
+                /*
+                if(ntupleRawTree.b5_mm_mu1_index[mumuIdx] < 0 or ntupleRawTree.b5_mm_mu2_index[mumuIdx] <0 ) continue;  
+                if(ntupleRawTree.b5_mm_mu1_index[mumuIdx] >= ntupleRawTree.b5_nMuon ) continue;
+                if(ntupleRawTree.b5_mm_mu2_index[mumuIdx] >= ntupleRawTree.b5_nMuon ) continue;
+
+                if(ntupleRawTree.b5_mm_mu1_index[mumuIdx] != mumRecoMatchIdx and ntupleRawTree.b5_mm_mu2_index[mumuIdx] != mumRecoMatchIdx ) continue;  
+                if(ntupleRawTree.b5_mm_mu1_index[mumuIdx] != mupRecoMatchIdx and ntupleRawTree.b5_mm_mu2_index[mumuIdx] != mupRecoMatchIdx ) continue;      
+                */
+
+                if(ntupleRawTree.b5_mm_mu1_index[mumuIdx] < 0 or ntupleRawTree.b5_mm_mu2_index[mumuIdx] <0 ) 
+	            {
+                    if(eventLostAt < ( 3 + cutFlowOffsets["basicCuts"]) )   eventLostAt=cutFlowOffsets["basicCuts"]+3;
+                    continue;
+                }
+                if(ntupleRawTree.b5_mm_mu1_index[mumuIdx] >= ntupleRawTree.b5_nMuon ) 
+	            {
+                    if(eventLostAt < ( 4 + cutFlowOffsets["basicCuts"]) )   eventLostAt=cutFlowOffsets["basicCuts"]+4;
+                    continue;
+	            }
+                if(ntupleRawTree.b5_mm_mu2_index[mumuIdx] >= ntupleRawTree.b5_nMuon ) 
+	            {
+                    if(eventLostAt < ( 5 + cutFlowOffsets["basicCuts"]) )   eventLostAt=cutFlowOffsets["basicCuts"]+5;
+                    continue;
+	            }
+               
+               if(ntupleRawTree.b5_mm_mu1_index[mumuIdx] != mumRecoMatchIdx and ntupleRawTree.b5_mm_mu2_index[mumuIdx] != mumRecoMatchIdx ) {
+                  rslt=cutFlowOffsets["genSelection"]+1;
+                  if(rslt >eventLostAt ) eventLostAt=rslt;
+                  continue;
+                }
+                if(ntupleRawTree.b5_mm_mu1_index[mumuIdx] != mupRecoMatchIdx and ntupleRawTree.b5_mm_mu2_index[mumuIdx] != mupRecoMatchIdx ) { 
+                  rslt=cutFlowOffsets["genSelection"]+2;
+                  if(rslt >eventLostAt ) eventLostAt=rslt;
+                  continue;  
+                }
+                n2GoodMuonInDimuon++;
+                // Muon Selection
+                fill_dimuonHists(mumuIdx);
+                fill_dimuonEnvironmentHists(mumuIdx);
+	            
+                      
+                // Dimuon Selection
+                rslt=doDimuonSelection(mumuIdx);
+                // std::cout<<__LINE__<<"  "<<EventCountWithDimuCand<<" "<<nDiMuNoVertexCandidates<<" doDimuonSelection : "<<rslt<<"\n";
+                if(eventLostAt < rslt) eventLostAt=rslt;
+                if(rslt > 0) continue;        
+                nDiMuNoVertexCandidates++;
+                
+                //Dimuon Vertex Selection
+                rslt = doVertexSelection(mumuIdx);
+                // std::cout<<EventCountWithDimuVertexCand<<" doVertexSelection : "<<rslt<<"\n";
+                if(eventLostAt < rslt) eventLostAt=rslt;
+                if(rslt > 0) continue;
+                
+
+                auto dr= getDR( ntupleRawTree.b5_mm_kin_mu1eta[mumuIdx], ntupleRawTree.b5_mm_kin_mu1phi[mumuIdx] ,
+                           ntupleRawTree.b5_mm_kin_mu2eta[mumuIdx], ntupleRawTree.b5_mm_kin_mu2phi[mumuIdx] );
+                storageArrayDouble[nDiMuCandidates + candidateMapDouble["mumu_dr"] ]   = dr ;
+                
+                // VERTEX SELECTION STUFF
+
+                fill_dimuonPassHists(mumuIdx);
+                diMuLV.SetPtEtaPhiM(     ntupleRawTree.b5_mm_kin_pt[mumuIdx],   \
+                                         ntupleRawTree.b5_mm_kin_eta[mumuIdx],  \
+                                         ntupleRawTree.b5_mm_kin_phi[mumuIdx],  \
+                                         ntupleRawTree.b5_mm_kin_mass[mumuIdx]  );
+                nBMMGCandidatesPerDimu=0;
+
+                if(phoRecoMatchIdx < 0 ){
+                    rslt=cutFlowOffsets["gen"]+3;
+                    if(rslt > eventLostAt) eventLostAt=rslt;
+                }
+                else 
+                {
+                    if(ntupleRawTree.bG_nSC < 1 ) 
+                    { 
+                         rslt= cutFlowOffsets["basicCuts"]+2;
+                         if(rslt > eventLostAt ) eventLostAt=rslt;
+                    }
+
+                    for(int phoSCIdx=0;phoSCIdx < ntupleRawTree.bG_nSC ; phoSCIdx++)
+                    {
+                         if(phoSCIdx != phoRecoMatchIdx) { 
+                                rslt=cutFlowOffsets["photonSelection"]+4;
+                                if(rslt > eventLostAt ) eventLostAt=rslt;
+                                continue;
+                         }
+                        // photon selection
+                        if(photonSelectionCheck[phoSCIdx] < 0)
+                        {
+                             photonSelectionCheck[phoSCIdx]=doPhotonSelection(phoSCIdx );
+                        }
+                        
+                        rslt = photonSelectionCheck[phoSCIdx] ;
+                        //std::cout<<"photonSelectionCheck : "<<rslt<<"\n";
+                        if(eventLostAt < rslt) eventLostAt=rslt;
+                        if( rslt > 0) continue;
+                        
+                        rslt=doBMMGSelection(mumuIdx,phoSCIdx);
+                        //std::cout<<"doBMMGSelection : "<<rslt<<"\n";
+                        if(eventLostAt < rslt) eventLostAt=rslt;
+                        if(rslt > 0) continue;
+                        
+                        auto et= ntupleRawTree.bG_scE[phoSCIdx]/cosh(ntupleRawTree.bG_scEta[phoSCIdx]);
+                        photonLV.SetPtEtaPhiM( et,ntupleRawTree.bG_scEta[phoSCIdx],ntupleRawTree.bG_scPhi[phoSCIdx], PHO_MASS );
+                        bmmgLV = diMuLV + photonLV;
+                         
+                        fill_bmmgHists( bmmgLV , mumuIdx, phoSCIdx );
+
+                        storageArrayDouble[  nBMMGCandidates + candidateMapDouble["dimuGamma_dr"]          ]   = dr           ;
+                        storageArrayDouble[  nBMMGCandidates + candidateMapDouble["bmmg_pt"]               ]   = bmmgLV.Pt()  ;
+                        storageArrayDouble[  nBMMGCandidates + candidateMapDouble["bmmg_eta"]              ]   = bmmgLV.Eta() ;
+                        storageArrayDouble[  nBMMGCandidates + candidateMapDouble["bmmg_phi"]              ]   = bmmgLV.Phi() ;
+                        storageArrayDouble[  nBMMGCandidates + candidateMapDouble["bmmg_mass"]             ]   = bmmgLV.M()   ;
+                        storageArrayDouble[  nBMMGCandidates + candidateMapDouble["bmmg_massErr"]          ]   = bmmgLV.M()*-1; // TODO
+                        storageArrayInt[nBMMGCandidates + candidateMapInt["bmmg_dimuon_idx"]   ]        = mumuIdx       ;
+                        storageArrayInt[nBMMGCandidates + candidateMapInt["bmmg_photonSC_idx"] ]        = phoSCIdx      ;
+                        
+                        nBMMGCandidatesPerDimu++;
+                        nBMMGCandidates++;
+
+                        if(nBMMGCandidates >= NBMMG_MAX)
+                        {
+                             std::cout<<" BMMG count per event above NBMMG_MAX , Aborting !! \n";
+                             exit(9);
+                        }
+
+                        
+                    }
+                
+                }
+                storageArrayInt[ nDiMuCandidates + candidateMapInt["nBMMGCandidatesPerDimu"]  ]   = nBMMGCandidatesPerDimu ;
+                nDiMuCandidates++;
+
+                if(nDiMuCandidates >= NDIMU_MAX)
+                {
+                     std::cout<<" Dimuon count per event above NDIMU_MAX , Aborting !! \n";
+                     exit(9);
+                }
+                 
+            }
+       } 
+       
+       //std::cout<<"nDiMuNoVertexCandidates "<<nDiMuNoVertexCandidates <<"\n";
        EventCount++;
+       if(n2GoodMuonInDimuon > 0)
+       {
+           dimuMatchCount++;
+           th1fStore["ProcessingSummary"]->Fill("EventCountWith2GoodMuons",1);
+       }
        if(nDiMuNoVertexCandidates > 0)
        {
             EventCountWithDimuCand++;
@@ -628,18 +701,21 @@ void BMMGAnalysis::GenAnalyze()
        }
        
        fill_globalEventHists();
-
+     FillCutFlow(eventLostAt);
      if(outTree)  outTree->Fill();
     }
     std::cout<<"\n\n"
-            <<"  Number of Events                           = "<<EventCount<<"\n"
-            <<"  Number of Events with trigger              = "<<EventCountWithTrigger<<"\n"
-            <<"  Number of Events with mu+ reconstructed    = "<<mupMatchCount<<"\n"
-            <<"  Number of Events with mu- reconstructed    = "<<mumMatchCount<<"\n"
-            <<"  Number of Events with sc reconstructed     = "<<scMatchCount<<"\n"
-            <<"  Number of Events with pho reconstructed    = "<<phoMatchCount<<"\n"
-            <<"  Number of Events with dimu reconstructed   = "<<dimuMatchCount<<"\n"
-            <<"  Number of Events with all reconstructed    = "<<fullEventMatchesFound<<"\n"
+            <<"  Number of Events                                    = "<<EventCount<<"\n"
+            <<"  Number of Events with trigger                       = "<<EventCountWithTrigger<<"\n"
+            <<"  Number of Events with mu+ reconstructed             = "<<mupMatchCount<<"\n"
+            <<"  Number of Events with mu- reconstructed             = "<<mumMatchCount<<"\n"
+            <<"  Number of Events with sc reconstructed              = "<<scMatchCount<<"\n"
+            <<"  Number of Events with pho reconstructed             = "<<phoMatchCount<<"\n"
+            <<"  Number of Events with mu+/mu- reconstructed as dimu = "<<dimuMatchCount<<"\n"
+            <<"  Number of Events with all reconstructed             = "<<fullEventMatchesFound<<"\n"
+            <<"  Number of Events with dimu candidates               = "<<EventCountWithDimuCand<<"\n"
+            <<"  Number of Events with dimu vtx candidates           = "<<EventCountWithDimuVertexCand<<"\n"
+            <<"  Number of Events with candidates                    = "<<EventCountWithCand<<"\n"
             <<"  Analysis loop completed"
             <<"  \n\n";
 
@@ -681,60 +757,6 @@ void BMMGAnalysis::setUpPhotonMVA()
     hasSetupPhotonMVA=true;
 
 }
-
-/*
-void MVATester::setUpTestTree( Int_t treeIdx )
-{
-    std::cout<<"Setting Current Tree to : "<<treeNames[treeIdx]<<" from "<<InFileList[treeIdx]<<"\n";
-    auto currentTree = ntupleRawTree.fChain ;
-
-    if(not currentTree ) {
-        std::cout<<"Empty tree given for MVA test Setup !! exiting .. "; std::cout<<"\n";
-    }
-    else {
-        std::cout<<"Sucessfully set  Current Tree to the ntuple tree ! \n";
-    }
-
-    for(Int_t i=0;i<spectatorVars.size();i++)
-    {
-        storageDouble[spectatorVars[i]]=0.0;
- //       std::cout<<" Setting spec var : "<<spectatorVars[i]<<"\n"; 
-        currentTree->SetBranchAddress( spectatorVars[i].c_str(), storageDoubleArray[ spectatorVars[i] ]  ) ;
-    }
-
-    for(Int_t i=0;i<mvaTrainVars.size();i++)
-    {
-        storageDouble[mvaTrainVars[i]]=0.0;
-//       std::cout<<" Setting mva var : "<<mvaTrainVars[i]<<"\n"; 
-        currentTree->SetBranchAddress( mvaTrainVars[i].c_str(), storageDoubleArray[ mvaTrainVars[i] ] )  ;
-    }
-
-}
-
-
-scR9
-scSigmaIetaIeta
-scFull5x5_E2x5MaxRatio
-scPFPhoIso3
-scSigmaIetaIphi
-scFull5x5_SwissCross
-scEtaWidth
-scE2ndRatio
-scEMaxRatio
-scPFChIso1
-scPFChIso2
-scPFChIso3
-scPFChIso4
-scPFChIso5
-
-scRawE
-scE
-scRawE
-scPhi
-scX
-scY
-scZ
-*/
 
 void BMMGAnalysis::doPhotonMVAScores()
 {   
@@ -1326,10 +1348,11 @@ void BMMGAnalysis::bookHistograms()
      th1fStore["dimu_IPwrtPVsignificance"]  = new TH1F("dimu_IPwrtPVsignificance","IP(#mu#mu) wrt. PV for #mu#mu Candidate" ,160 , 0.0 , 40.0 );
      th1fStore["dimu_LIPwrtPV"]              = new TH1F("dimu_LIPwrtPV","Longitudinal IP(#mu#mu) wrt. PV for #mu#mu Candidate" , 200 , -2.0 , 2.0  );
      th1fStore["dimu_LIPwrtPVsignificance"]  = new TH1F("dimu_LIPwrtPVsignificance","Longitudinal IP(#mu#mu) wrt. PV for #mu#mu Candidate" , 400 , -50.0 , 50.0 );
+     th1fStore["dimu_docatrk"]       = new TH1F("dimu_dcaToCloseTrack","min(doca,0.03) to all pf tracks  #mu#mu Candidate" ,100 , 0.0 , 0.04  );
      th1fStore["dimu_NTrakClose"]       = new TH1F("dimu_NTrakClose","#Tracks doca(trk,sv) < 0.3 for #mu#mu Candidate" ,100 , -0.50 , 99.5  );
-     th1fStore["dimu_NTrakCloseSig1"]   = new TH1F("dimu_NTrakCloseSig1","#Tracks d(trk,sv) < 0.3 & d(trk,sv)/#sigma_{d}(trk,sv) < 1 for #mu#mu Candidate" ,100 , -0.50 , 99.5  );
-     th1fStore["dimu_NTrakCloseSig2"]   = new TH1F("dimu_NTrakCloseSig2","#Tracks d(trk,sv) < 0.3 & d(trk,sv)/#sigma_{d}(trk,sv) < 2 for #mu#mu Candidate" ,100 , -0.50 , 99.5  );
-     th1fStore["dimu_NTrakCloseSig3"]   = new TH1F("dimu_NTrakCloseSig3","#Tracks d(trk,sv) < 0.3 & d(trk,sv)/#sigma_{d}(trk,sv) < 3 for #mu#mu Candidate" ,100 , -0.50 , 99.5  );
+     th1fStore["dimu_NTrakCloseSig1"]   = new TH1F("dimu_NTrakCloseSig1","#Tracks d(trk,sv) < 0.3 & d(trk,sv)/#sigma_{d}(trk,sv) > 1 for #mu#mu Candidate" ,100 , -0.50 , 99.5  );
+     th1fStore["dimu_NTrakCloseSig2"]   = new TH1F("dimu_NTrakCloseSig2","#Tracks d(trk,sv) < 0.3 & d(trk,sv)/#sigma_{d}(trk,sv) > 2 for #mu#mu Candidate" ,100 , -0.50 , 99.5  );
+     th1fStore["dimu_NTrakCloseSig3"]   = new TH1F("dimu_NTrakCloseSig3","#Tracks d(trk,sv) < 0.3 & d(trk,sv)/#sigma_{d}(trk,sv) > 3 for #mu#mu Candidate" ,100 , -0.50 , 99.5  );
      th1fStore["dimu_Isolation"]  = new TH1F("dimu_Isolation","I(#mu#mu) for #mu#mu Candidate" ,120 , -0.10 , 1.1  );
 
     // Selected Dimu Vertex Hists
@@ -1354,6 +1377,7 @@ void BMMGAnalysis::bookHistograms()
      th1fStore["dimuPass_IPwrtPVsignificance"]  = new TH1F("dimuPass_IPwrtPVsignificance","IP(#mu#mu) wrt. PV for #mu#mu#gamma Candidate" ,160 , 0.0 , 40.0 );
      th1fStore["dimuPass_LIPwrtPV"]              = new TH1F("dimuPass_LIPwrtPV","Longitudinal IP(#mu#mu) wrt. PV for #mu#mu#gamma Candidate" , 200 , -2.0 , 2.0  );
      th1fStore["dimuPass_LIPwrtPVsignificance"]  = new TH1F("dimuPass_LIPwrtPVsignificance","Longitudinal IP(#mu#mu) wrt. PV for #mu#mu#gamma Candidate" , 400 , -50.0 , 50.0 );
+     th1fStore["dimuPass_docatrk"]       = new TH1F("dimuPass_dcaToCloseTrack","min(doca,0.03) to all pf tracks  #mu#mu Candidate" ,100 , 0.0 , 0.04  );
      th1fStore["dimuPass_NTrakClose"]       = new TH1F("dimuPass_NTrakClose","#Tracks doca(trk,sv) < 0.3 for #mu#mu#gamma Candidate" ,100 , -0.50 , 99.5  );
      th1fStore["dimuPass_NTrakCloseSig1"]= new TH1F("dimuPass_NTrakCloseSig1","#trk d(trk,sv) < 0.3 & d(trk,sv)/#sigma_{d}(trk,sv) < 1 for #mu#mu#gamma Candidate" ,100 , -0.50 , 99.5  );
      th1fStore["dimuPass_NTrakCloseSig2"]= new TH1F("dimuPass_NTrakCloseSig2","#trk d(trk,sv) < 0.3 & d(trk,sv)/#sigma_{d}(trk,sv) < 2 for #mu#mu#gamma Candidate" ,100 , -0.50 , 99.5  );
@@ -1403,6 +1427,7 @@ void BMMGAnalysis::bookHistograms()
      th1fStore["bmmg_IPwrtPVsignificance"]  = new TH1F("bmmg_IPwrtPVsignificance","IP(#mu#mu) wrt. PV for #mu#mu#gamma Candidate" ,160 , 0.0 , 40.0 );
      th1fStore["bmmg_LIPwrtPV"]              = new TH1F("bmmg_LIPwrtPV","Longitudinal IP(#mu#mu) wrt. PV for #mu#mu#gamma Candidate" , 200 , -2.0 , 2.0  );
      th1fStore["bmmg_LIPwrtPVsignificance"]  = new TH1F("bmmg_LIPwrtPVsignificance","Longitudinal IP(#mu#mu) wrt. PV for #mu#mu#gamma Candidate" , 400 , -50.0 , 50.0 );
+     th1fStore["bmmg_docatrk"]       = new TH1F("bmmg_dcaToCloseTrack","min(doca,0.03) to all pf tracks  #mu#mu Candidate" ,100 , 0.0 , 0.04  );
      th1fStore["bmmg_NTrakClose"]       = new TH1F("bmmg_NTrakClose","#Tracks doca(trk,sv) < 0.3 for #mu#mu#gamma Candidate" ,100 , -0.50 , 99.5  );
      th1fStore["bmmg_NTrakCloseSig1"]= new TH1F("bmmg_NTrakCloseSig1","#trk d(trk,sv) < 0.3 & d(trk,sv)/#sigma_{d}(trk,sv) < 1 for #mu#mu#gamma Candidate" ,100 , -0.50 , 99.5  );
      th1fStore["bmmg_NTrakCloseSig2"]= new TH1F("bmmg_NTrakCloseSig2","#trk d(trk,sv) < 0.3 & d(trk,sv)/#sigma_{d}(trk,sv) < 2 for #mu#mu#gamma Candidate" ,100 , -0.50 , 99.5  );
@@ -1421,6 +1446,9 @@ void BMMGAnalysis::bookHistograms()
      th1fStore["gen_phoDeltaR"]   = new TH1F("gen_phoDeltaR","#Delta(#gamma,#gamma_{Gen})", 200 , 0.0  , 2.0  );
    // Processing Summary Hists 
      th1fStore["ProcessingSummary"] = new TH1F("processing_summary","",3,0.0,3.0);
+     th1fStore["ProcessingSummary"]->SetCanExtend(TH1::kAllAxes);
+     
+     th1fStore["CutFlowSummary"] = new TH1F("cutFlow_summary","",3,0.0,3.0);
      th1fStore["ProcessingSummary"]->SetCanExtend(TH1::kAllAxes);
 }
 
@@ -1517,6 +1545,7 @@ void BMMGAnalysis::fill_dimuonHists(Int_t idx)
      th1fStore["dimu_IPwrtPVsignificance"]  ->Fill(ntupleRawTree.b5_mm_kin_spvip[mumuIdx]);
      th1fStore["dimu_LIPwrtPV"]              ->Fill(ntupleRawTree.b5_mm_kin_pvlip[mumuIdx]);
      th1fStore["dimu_LIPwrtPVsignificance"]  ->Fill(ntupleRawTree.b5_mm_kin_pvlipSig[mumuIdx]);
+     th1fStore["dimu_docatrk"]       ->Fill(min(ntupleRawTree.b5_mm_docatrk[mumuIdx],Float_t(0.04)));
      th1fStore["dimu_NTrakClose"]       ->Fill(ntupleRawTree.b5_mm_closetrk[mumuIdx]);
      th1fStore["dimu_NTrakCloseSig1"]   ->Fill(ntupleRawTree.b5_mm_closetrks1[mumuIdx]);
      th1fStore["dimu_NTrakCloseSig2"]   ->Fill(ntupleRawTree.b5_mm_closetrks2[mumuIdx]);
@@ -1550,6 +1579,7 @@ void BMMGAnalysis::fill_dimuonPassHists(Int_t mumuIdx)
      th1fStore["dimuPass_IPwrtPVsignificance"]  ->Fill(ntupleRawTree.b5_mm_kin_spvip[mumuIdx]);
      th1fStore["dimuPass_LIPwrtPV"]              ->Fill(ntupleRawTree.b5_mm_kin_pvlip[mumuIdx]);
      th1fStore["dimuPass_LIPwrtPVsignificance"]  ->Fill(ntupleRawTree.b5_mm_kin_pvlipSig[mumuIdx]);
+     th1fStore["dimuPass_docatrk"]       ->Fill(min(ntupleRawTree.b5_mm_docatrk[mumuIdx],Float_t(0.04)));
      th1fStore["dimuPass_NTrakClose"]       ->Fill(ntupleRawTree.b5_mm_closetrk[mumuIdx]);
      th1fStore["dimuPass_NTrakCloseSig1"]   ->Fill(ntupleRawTree.b5_mm_closetrks1[mumuIdx]);
      th1fStore["dimuPass_NTrakCloseSig2"]   ->Fill(ntupleRawTree.b5_mm_closetrks2[mumuIdx]);
@@ -1642,6 +1672,7 @@ void BMMGAnalysis::fill_bmmgHists(  TLorentzVector &bmmgLV , Int_t mumuIdx, Int_
     th1fStore["bmmg_IPwrtPVsignificance"]  ->Fill(ntupleRawTree.b5_mm_kin_spvip[mumuIdx]);
     th1fStore["bmmg_LIPwrtPV"]              ->Fill(ntupleRawTree.b5_mm_kin_pvlip[mumuIdx]);
     th1fStore["bmmg_LIPwrtPVsignificance"]  ->Fill(ntupleRawTree.b5_mm_kin_pvlipSig[mumuIdx]);
+    th1fStore["bmmg_docatrk"]       ->Fill(min(ntupleRawTree.b5_mm_docatrk[mumuIdx],Float_t(0.04)));
     th1fStore["bmmg_NTrakClose"]       ->Fill(ntupleRawTree.b5_mm_closetrk[mumuIdx]);
     th1fStore["bmmg_NTrakCloseSig1"]   ->Fill(ntupleRawTree.b5_mm_closetrks1[mumuIdx]);
     th1fStore["bmmg_NTrakCloseSig2"]   ->Fill(ntupleRawTree.b5_mm_closetrks2[mumuIdx]);
@@ -1690,41 +1721,44 @@ void BMMGAnalysis::fill_globalEventHists()
 
 Int_t BMMGAnalysis::doMuonSelection(Int_t muIdx, bool isLead)
 {
-    
- //   std::cout<<"\t\t  muIdx : "<<muIdx<<"\n"; 
-    if(  ntupleRawTree.b5_Muon_pt[muIdx] < 4.0 )  return 1;
-    if(  abs(ntupleRawTree.b5_Muon_eta[muIdx]) > 1.4 )  return 2;
-    if(not ntupleRawTree.b5_Muon_isTracker[muIdx]) return 4;
-    if(not ntupleRawTree.b5_Muon_isGlobal[muIdx]) return 5;
-    if(not ntupleRawTree.b5_Muon_looseId[muIdx]) return 6;
-    if(not ntupleRawTree.b5_MuonId_highPurity[muIdx]) return 7;
-    // auto muGblId= ntupleRawTree.b5_mm_mu1_index[muIdx];
-    // Soft Muon ID   : Cut Based
-    
-    /*
+    Int_t rslt(0);
 
-    if( not ntupleRawTree.Muon_softId[muGblId] ) return 1;
-    
-    */
-
-    // Soft Muon MVA 
-    
-    //if( not ntupleRawTree.b5_Muon_softMvaId[muIdx] ) return 2;
-
-    // BMM5 MVA
-
-
-    if(ntupleRawTree.b5_MuonId_newSoftMuonMva[muIdx] < BDTWorkingPoint ) return 8;
-
-    return 0;
-
+    rslt++;
+    if(  ntupleRawTree.b5_Muon_pt[muIdx] < minMuonPt )  
+		 return cutFlowOffsets["muonSelection"] + rslt ;
+	rslt++;
+    if(  abs(ntupleRawTree.b5_Muon_eta[muIdx]) > maxMuonEta )  
+		 return cutFlowOffsets["muonSelection"] + rslt ;
+	rslt++;
+    if( ( not ntupleRawTree.b5_Muon_isTracker[muIdx] ) and muonHasToBeTracker) 
+		 return cutFlowOffsets["muonSelection"] + rslt ;
+	rslt++;
+    if( ( not ntupleRawTree.b5_Muon_isGlobal[muIdx]) and muonHasToBeGlobal )
+		 return cutFlowOffsets["muonSelection"] + rslt ;
+	rslt++;
+    if( (not ntupleRawTree.b5_Muon_looseId[muIdx] ) and muonHasToBeLoose )
+		 return cutFlowOffsets["muonSelection"] + rslt ;
+	rslt++;
+    if( (not ntupleRawTree.b5_MuonId_highPurity[muIdx]) and muonHasToBeHighPurity )  
+		 return cutFlowOffsets["muonSelection"] + rslt ;
+	rslt++;
+    if(ntupleRawTree.b5_MuonId_newSoftMuonMva[muIdx] < BDTWorkingPoint ) 
+		 return cutFlowOffsets["muonSelection"] + rslt ;
+		 
+         return  0;
 }
 
 Int_t BMMGAnalysis::doDimuonSelection(Int_t mumuIdx)
 {
-    if( ntupleRawTree.b5_mm_m1iso[mumuIdx]  < 0.80 ) return 1;
-    if( ntupleRawTree.b5_mm_m2iso[mumuIdx]  < 0.80 ) return 2;
-
+    Int_t rslt(0);
+	rslt++;   
+    //std::cout<<" "<<ntupleRawTree.b5_mm_m1iso[mumuIdx] <<" < "<<minLeadMuIsolation<<"\n";
+    if( ntupleRawTree.b5_mm_m1iso[mumuIdx]  < minLeadMuIsolation ) 
+		 return cutFlowOffsets["diMuonSelection"] + rslt ;
+	rslt++;
+    //std::cout<<" "<<ntupleRawTree.b5_mm_m2iso[mumuIdx] <<" < "<<minLeadMuIsolation<<"\n";
+    if( ntupleRawTree.b5_mm_m2iso[mumuIdx]  < minSubLeadMuIsolation ) 
+		 return cutFlowOffsets["diMuonSelection"] + rslt ;
 
     diMuLV.SetPtEtaPhiM(     ntupleRawTree.b5_mm_kin_pt[mumuIdx],   \
                              ntupleRawTree.b5_mm_kin_eta[mumuIdx],  \
@@ -1734,7 +1768,9 @@ Int_t BMMGAnalysis::doDimuonSelection(Int_t mumuIdx)
     auto dr= getDR( ntupleRawTree.b5_mm_kin_mu1eta[mumuIdx], ntupleRawTree.b5_mm_kin_mu1phi[mumuIdx] ,
                ntupleRawTree.b5_mm_kin_mu2eta[mumuIdx], ntupleRawTree.b5_mm_kin_mu2phi[mumuIdx] );
 
-    if (dr > maxMuMuDr ) return 3;
+	rslt++;
+    if (dr > maxMuMuDr ) 
+		 return cutFlowOffsets["diMuonSelection"] + rslt ;
     
     auto diMuMass = diMuLV.M();
     bool selection=false;
@@ -1745,7 +1781,9 @@ Int_t BMMGAnalysis::doDimuonSelection(Int_t mumuIdx)
          if(selection) break;
     }
     
-    if( not selection ) return 4;   
+	rslt++;   
+    if( not selection ) 
+		 return cutFlowOffsets["diMuonSelection"] + rslt ;
 
     
     return 0;
@@ -1754,6 +1792,31 @@ Int_t BMMGAnalysis::doDimuonSelection(Int_t mumuIdx)
 
 Int_t BMMGAnalysis::doVertexSelection(Int_t mumuIdx)
 {
+    Int_t rslt(0);
+    
+	rslt++;
+    if( ntupleRawTree.b5_mm_doca[mumuIdx]  > muMuMaxDOCA ) 
+		 return cutFlowOffsets["diMuonVertexSelection"] + rslt ;
+	rslt++;
+    if( ntupleRawTree.b5_mm_kal_vtx_prob[mumuIdx] <  muMuVtxProbabilityMin ) 
+		 return cutFlowOffsets["diMuonVertexSelection"] + rslt ;
+	rslt++;
+   // std::cout<<ntupleRawTree.b5_mm_docatrk[mumuIdx]<<"  < "<<svMinDocaTrack<<"\n";
+    if( ntupleRawTree.b5_mm_docatrk[mumuIdx]  < svMinDocaTrack ) 
+		 return cutFlowOffsets["diMuonVertexSelection"] + rslt ;
+	rslt++;
+    if( ntupleRawTree.b5_mm_closetrk[mumuIdx] > svMaxNTracksClose ) 
+		 return cutFlowOffsets["diMuonVertexSelection"] + rslt ;
+	rslt++;
+    if( ntupleRawTree.b5_mm_closetrks1[mumuIdx] > svMaxN1SigmaTracksClose ) 
+		 return cutFlowOffsets["diMuonVertexSelection"] + rslt ;
+	rslt++;
+    if( ntupleRawTree.b5_mm_closetrks2[mumuIdx] > svMaxN2SigmaTracksClose ) 
+		 return cutFlowOffsets["diMuonVertexSelection"] + rslt ;
+	rslt++;
+    if( ntupleRawTree.b5_mm_closetrks3[mumuIdx] > svMaxN3SigmaTracksClose ) 
+		 return cutFlowOffsets["diMuonVertexSelection"] + rslt ;
+
  //   if( cos(ntupleRawTree.b5_mm_kin_alpha[mumuIdx])  > 0.80 ) return 1;
  //   if( ntupleRawTree.b5_mm_kin_vtx_chi2dof[mumuIdx] > 2.20  ) return 2;
  //   if( ntupleRawTree.b5_mm_kin_sl3d[mumuIdx]  < 13.0  ) return 3;
@@ -1763,59 +1826,50 @@ Int_t BMMGAnalysis::doVertexSelection(Int_t mumuIdx)
  //   if( ntupleRawTree.b5_mm_doca[mumuIdx]  > 0.100 ) return 7;
  //   if( ntupleRawTree.b5_mm_iso[mumuIdx]   < 0.80  ) return 8;
  //   if( ntupleRawTree.b5_mm_closetrk[mumuIdx]  >= 2.0 ) return 9;
-    if( ntupleRawTree.b5_mm_docatrk[mumuIdx]  > muMuMaxDOCA ) return 10;
-    if( ntupleRawTree.b5_mm_kal_vtx_prob[mumuIdx] <  muMuVtxProbabilityMin ) return 11;
-    if( ntupleRawTree.b5_mm_closetrks1[mumuIdx] > muMuMaxNTracksClose1Sigma ) return 12;
-
-
     return 0;
 }
 
 Int_t BMMGAnalysis::doPhotonSelection(Int_t scIdx)
 {
-    if( ntupleRawTree.bG_scEt[scIdx] < 4.0 )  return 2;
-
-    if( storageArrayDouble[ scIdx + candidateMapInt["scPhotonMVAScore"]  ] < photonIDcut  ) return 1;
+    Int_t rslt=0;
+    rslt++;
+    if( ntupleRawTree.bG_scEt[scIdx] < minSCEt )  return  cutFlowOffsets["photonSelection"]+rslt;
+    rslt++;
+    if( abs(ntupleRawTree.bG_scEta[scIdx]) > maxSCEta )  return  cutFlowOffsets["photonSelection"]+rslt;
+    
+    rslt++;
+    if( storageArrayDouble[ scIdx + candidateMapInt["scPhotonMVAScore"]  ] < photonIDcut  ) 
+    return cutFlowOffsets["photonSelection"]+rslt;
     
     return 0;
 }
 
 Int_t BMMGAnalysis::doBMMGSelection(Int_t mumuIdx, Int_t phoSCIdx)
 {
+   Int_t rslt(0);
+   rslt++;
+   if( ntupleRawTree.bG_scEt[phoSCIdx]  < minSCEt )  
+        return cutFlowOffsets["bmmgSelection"] + rslt;
+   rslt++;
+   if( ntupleRawTree.bG_scEta[phoSCIdx]  > maxSCEta)  
+        return cutFlowOffsets["bmmgSelection"] + rslt;
+   
    auto dr=getDR(ntupleRawTree.bG_scEta[phoSCIdx],ntupleRawTree.bG_scPhi[phoSCIdx],
                  ntupleRawTree.b5_mm_kin_eta[mumuIdx] , ntupleRawTree.b5_mm_kin_phi[mumuIdx]  );
-   if(dr > maxDimuPhotonDr ) return 1;
-   if(getDCAGammaToDimuVertex(mumuIdx,phoSCIdx) > svGammaMaxDCA) return 2;
+   rslt++;
+   if(dr > maxDimuPhotonDr ) 
+        return cutFlowOffsets["bmmgSelection"] + rslt;
+   rslt++;
+   if(getDCAGammaToDimuVertex(mumuIdx,phoSCIdx) > svGammaMaxDCA) 
+        return cutFlowOffsets["bmmgSelection"] + rslt;
 
-/*   
-
-   auto pvMatch=getPVMatch(mumuIdx);
-
-//   TODO  : NEED TO USES THE PROPER ERROR FINDING APPROCH FOR BETA // try out implimnetation in saras Util.cc 
-   
-   svDisplacementVecor.SetCoordinates( 
-                                        ntupleRawTree.b5_mm_kin_vtx_x[mumuIdx] - ntupleRawTree.bG_primaryVertex_x[pvMatch],
-                                        ntupleRawTree.b5_mm_kin_vtx_y[mumuIdx] - ntupleRawTree.bG_primaryVertex_y[pvMatch],
-                                        ntupleRawTree.b5_mm_kin_vtx_z[mumuIdx] - ntupleRawTree.bG_primaryVertex_z[pvMatch]
-                                     );
-   bmmg3Momentum.SetCoordinates(
-                                    bmmgLV.Px(),
-                                    bmmgLV.Py(),
-                                    bmmgLV.Pz()
-                               );
-    
-   auto cos_beta       =  bmmg3Momentum.Dot(svDisplacementVecor)/sqrt(bmmg3Momentum.Mag2())/sqrt(svDisplacementVecor.Mag2());
-   auto cos_beta_error =  cos_beta*-1;
-   
-   if(cos_beta > 0.8 ) return 2;
-*/
    return 0;
 }
 
 Int_t BMMGAnalysis::getMuonMatch(Double_t muEta,Double_t muPhi)
 {
 
-    Double_t dr,drMin=1e9;
+    Double_t dr,drMin( drMaxForGenMatchMu );
     Int_t muMatch=-1;
     
     std::cout<<"nMM = "<<ntupleRawTree.b5_nmm<<" , nmu : "<< ntupleRawTree.b5_nMuon<<"\n";
