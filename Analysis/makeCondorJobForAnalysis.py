@@ -61,11 +61,18 @@ if len(sys.argv) > argC:
     FILES_PER_JOB=int(sys.argv[argC])  
 argC+=1
 if len(sys.argv) > argC:
+    NEVENTS_PER_JOB=int(sys.argv[argC])  
+argC+=1
+if len(sys.argv) > argC:
     tag=sys.argv[argC]  
 
 if(not os.path.exists(destination)):
     os.system("mkdir -p "+destination)
 destination=os.path.abspath(destination)
+
+head='condor/Jobs'+tag
+if not os.path.exists(head ):
+    os.system('mkdir -p '+head)
 
 print("Executable ",executable)
 print("Source file list ",FileSource)
@@ -94,7 +101,8 @@ error = $Fp(filename)run.$(Cluster).stderr\n\
 log = $Fp(filename)run.$(Cluster).log\n\
 +JobFlavour = \"espresso\"\n\
 "
-condorScriptName='job'+tag+'.sub'
+
+condorScriptName='condor/job'+tag+'.sub'
 condorScript=open(condorScriptName,'w')
 condorScript.write(condorScriptString)
 
@@ -128,10 +136,6 @@ else\n\
     echo FAIL\n\
 fi\n\
 "
-
-head='Jobs'+tag
-if not os.path.exists(head ):
-    os.system('mkdir '+head)
 
 n=int(len(sourceFileList)/FILES_PER_JOB) + 1
 if n < NJOBS:
