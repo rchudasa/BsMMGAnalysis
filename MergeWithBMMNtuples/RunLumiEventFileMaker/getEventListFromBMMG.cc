@@ -206,7 +206,7 @@ void getRunDetails(   std::vector<string> fList,
         runLumiTxt<<"\n@ "<<run<<","<<lumi<<","<<filename<<"\n\t";
         runLumiTxt<<event;
         run_o=run;
-        std::cout<<run<<" , "<<lumi<<" : "<< eventCount<<" / "<<evt <<"\n";
+   //     std::cout<<run<<" , "<<lumi<<" : "<< eventCount<<" / "<<evt <<"\n";
         eventCount=0;
         lumi_o=lumi;
      }
