@@ -10,18 +10,50 @@ echo ""
 EXECUTABLE=mcAnalysis.exe
 
 declare -a SourceFiles=(\
-"fileList/mc_sig_BsTMMG_v2.files" \
+# "fileList/mc_sig_BsTMMG_v2.files" \
+"fileList/mc_bkg_bdToKK.files" \
+"fileList/mc_bkg_bdToKPi.files" \
+"fileList/mc_bkg_bdToPiMuNu.files" \
+"fileList/mc_bkg_bdToPiPi.files" \
+"fileList/mc_bkg_bsToKK.files" \
+"fileList/mc_bkg_bsToKMuNu.files" \
+"fileList/mc_bkg_bsToKPi.files" \
+"fileList/mc_bkg_bsToPiPi.files" \
 )
 
 declare -a tagArr=(\
-"mc_sig_bs2mmg" \
+#"mc_sig_bs2mmg" \
+"mc_bkg_bdToKKg" \
+"mc_bkg_bdToKPig" \
+"mc_bkg_bdToPiMuNug" \
+"mc_bkg_bdToPiPig" \
+"mc_bkg_bsToKKg" \
+"mc_bkg_bsToKMuNug" \
+"mc_bkg_bsToKPig" \
+"mc_bkg_bsToPiPig" \
 )
 
 declare -a AnalysisOption=(\
-0 \
+# 0 \
+1 \
+1 \
+1 \
+1 \
+1 \
+1 \
+1 \
+1 \
 )
 
 declare -a CfgTemplate=(\
+"configs/analysisMC.tpl.cfg" \
+"configs/analysisMC.tpl.cfg" \
+"configs/analysisMC.tpl.cfg" \
+"configs/analysisMC.tpl.cfg" \
+"configs/analysisMC.tpl.cfg" \
+"configs/analysisMC.tpl.cfg" \
+"configs/analysisMC.tpl.cfg" \
+"configs/analysisMC.tpl.cfg" \
 "configs/analysisMC.tpl.cfg" \
 )
 
