@@ -1,6 +1,5 @@
 /*
- *          USAGE
- *
+ *                        USAGE
  * root -b -q 'bmmX_distributionStudy.cc("YOURCONFIG.CFG")'
  *
  * */
@@ -27,7 +26,7 @@ int  main(int argc,char *argv[])
     analyzer2018.Init(cfgFile);
     
     analyzer2018.SetupAnalysis(true);
-    analyzer2018.Analyze();
+    analyzer2018.SkimData();
     analyzer2018.SaveFile();
 
 }
