@@ -24,7 +24,7 @@
 
 #define NSTORAGE_ARRAY_MAX 200000
 #define NDIMU_MAX 20
-#define NBMMG_MAX 40
+#define NBMMG_MAX 100
 #define NSC_MAX   50
 #define NMUONS_MAX  20
 
@@ -66,7 +66,6 @@ struct PhotonMVAvariables
 class BMMGAnalysis 
 {
     public  :
-    
 
     // Data members
 
@@ -133,13 +132,23 @@ class BMMGAnalysis
     std::vector<TTree*> treesToStore;
     Long64_t nentries, maxEvents ;
     Int_t reportEvery;
+    
+    // Dimuon MVA vars 
+    bool doDimuonMVA;
+    bool hasDimuonWeightFiles;
+    bool hasSetupDimuonMVA;
+    TString dimuonMVAWeightFile;
+    
     // Photon MVA vars 
     bool doPhotonMVA;
     bool hasWeightFiles;
     bool hasSetupPhotonMVA;
     TMVA::Reader *reader ;
+    std::map<string , TMVA::Reader*> readerStore ;
     PhotonMVAvariables photonMVAdata;
     TString photonIdxMVAWeightFile;
+    TString photonIdxECapMVAWeightFile;
+    TString photonIdxBarrelMVAWeightFile;
     Float_t photonMVAValue;
     Float_t photonIDcut;
 
@@ -211,13 +220,17 @@ class BMMGAnalysis
     void fill_dimuonEnvironmentHists(Int_t mumuIdx);
     void fill_bmmgHists(TLorentzVector &bmmgLV,Int_t mumuIdx, Int_t phoSCIdx);
     void fill_globalEventHists();
-    void getVetorFillledFromConfigFile( fstream &cfgFile , std::vector<string> &vecList, string beginTag,string endTag, bool verbose);
-    void getFloatFromTag(string tag,std::istringstream &strStream, string inputStr ,Float_t &var);
-    void getIntFromTag(string tag,std::istringstream &strStream, string inputStr ,Int_t &var);
-    void getBoolFromTag(string tag,std::istringstream &strStream, string inputStr ,Bool_t &var);
+    //void getVetorFillledFromConfigFile( fstream &cfgFile , std::vector<string> &vecList, string beginTag,string endTag, bool verbose);
+    //void getFloatFromTag(string tag,std::istringstream &strStream, string inputStr ,Float_t &var);
+    //void getIntFromTag(string tag,std::istringstream &strStream, string inputStr ,Int_t &var);
+    //void getBoolFromTag(string tag,std::istringstream &strStream, string inputStr ,Bool_t &var);
     // Analysis Functions
     void doPhotonMVAScores();
     void setUpPhotonMVA();
+    void doDimuonMVAScores();
+    
+    void doMuonMVAScores();
+    void setUpDimuonMVA();
     
     Int_t doMuonSelection(Int_t muIdx, bool isLead);
     Int_t doDimuonSelection(Int_t mumuIdx);
@@ -226,6 +239,7 @@ class BMMGAnalysis
     Int_t doPhotonSelection(Int_t scIdx);
     Int_t getPVMatch(Int_t mumuIdx);
     void setupReducedAnalysisTreeBranches();
+    void SkimData();
     void Analyze();
     #ifdef __MCANALYSIS__
     void GenAnalyze();
@@ -260,6 +274,9 @@ void BMMGAnalysis::Init(string cfgFileName)
     svGammaMaxDCA = 1e9;
     drMaxForGenMatchSC = 1e9;
     drMaxForGenMatchMu = 1e9;
+    reader=nullptr;
+    readerStore["photonIDMVA"]=nullptr;
+    readerStore["dimuonMVA"]=nullptr;
 
     minMuonPt          = -1.0;
     maxMuonEta         =  1e9;
@@ -279,19 +296,33 @@ void BMMGAnalysis::Init(string cfgFileName)
     maxDimuPhotonDr    =1.4;
     maxMMGMass         =6.2;
     minMMGMass         =4.4;
-    doPhotonMVA        =false;
+
     doTriggerFiltering=false;
+    
+    doPhotonMVA        =false;
     photonIdxMVAWeightFile="";
+    photonIdxBarrelMVAWeightFile="";
+    photonIdxECapMVAWeightFile="";
     hasWeightFiles=false;
+
+    doDimuonMVA=false;
+    dimuonMVAWeightFile="";
+    hasDimuonWeightFiles=false;
+    hasSetupDimuonMVA=false;
     
     doRunLumiMask=false;
-    doReducedTree=true;
+    doReducedTree=false;
     doRunLumiLog=false;
     minDimuMass.clear(); minDimuMass.push_back(0.0);
     maxDimuMass.clear(); maxDimuMass.push_back(6.0);
 
     readParameters(cfgFileName);
     
+    if(doDimuonMVA)
+    {
+       setUpDimuonMVA();
+    }
+ 
     if(doPhotonMVA)
     {
        setUpPhotonMVA();
@@ -307,12 +338,14 @@ void BMMGAnalysis::Init(string cfgFileName)
 void BMMGAnalysis::SetupCutFlowOffsets()
 {
     Int_t i(0),j(0),offset(50);
-    
+   cutFlowIdxNamesMap[0]="sucess"; 
     // Need to 
     i=0;
-    j=0;
+    cutFlowOffsets["evtSelection"] =i;
     j=1;    cutFlowIdxNamesMap[cutFlowOffsets["evtSelection"] + j ] = "allEventSelection";
+    j=2;    cutFlowIdxNamesMap[cutFlowOffsets["evtSelection"] + j ] = "notGoodEvent";
 
+    i+=offset;
     cutFlowOffsets["genSelection"]=i ;
     j=1;    cutFlowIdxNamesMap[cutFlowOffsets["genSelection"] + j ] = "gen_dimuonNoMuP";
     j=2;    cutFlowIdxNamesMap[cutFlowOffsets["genSelection"] + j ] = "gen_dimuonNoMuM";
@@ -535,15 +568,19 @@ void BMMGAnalysis::readParameters(string fname)
            getFloatFromTag("SvMinDocaTrack"			  ,strStream , field , svMinDocaTrack);
            getFloatFromTag("DrMaxForGenMatchSC"	      ,strStream , field , drMaxForGenMatchSC);
            getFloatFromTag("DrMaxForGenMatchMu"	      ,strStream , field , drMaxForGenMatchMu);
-           getIntFromTag("SvMaxNTracksClose"        ,strStream , field , svMaxNTracksClose);
-           getIntFromTag("SvMaxN1SigmaTracksClose"  ,strStream , field , svMaxN1SigmaTracksClose);
-           getIntFromTag("SvMaxN2SigmaTracksClose"  ,strStream , field , svMaxN2SigmaTracksClose);
-           getIntFromTag("SvMaxN3SigmaTracksClose"  ,strStream , field , svMaxN3SigmaTracksClose);
+           getIntFromTag("SvMaxNTracksClose"          ,strStream , field , svMaxNTracksClose);
+           getIntFromTag("SvMaxN1SigmaTracksClose"    ,strStream , field , svMaxN1SigmaTracksClose);
+           getIntFromTag("SvMaxN2SigmaTracksClose"    ,strStream , field , svMaxN2SigmaTracksClose);
+           getIntFromTag("SvMaxN3SigmaTracksClose"    ,strStream , field , svMaxN3SigmaTracksClose);
            getFloatFromTag("MinLeadMuIsolation"		  ,strStream , field , minLeadMuIsolation);
            getFloatFromTag("MinSubLeadMuIsolation"	  ,strStream , field , minSubLeadMuIsolation);
-           getBoolFromTag ("MuonHasToBeTracker"		  ,strStream , field , muonHasToBeTracker);
-           getBoolFromTag ("MuonHasToBeGlobal"		  ,strStream , field , muonHasToBeGlobal);
-           getBoolFromTag ("MuonHasToBeHighPurity"	  ,strStream , field , muonHasToBeHighPurity);
+           getBoolFromTag("MuonHasToBeTracker"		  ,strStream , field , muonHasToBeTracker);
+           getBoolFromTag("MuonHasToBeGlobal"		  ,strStream , field , muonHasToBeGlobal);
+           getBoolFromTag("MuonHasToBeLoose"		  ,strStream , field , muonHasToBeLoose);
+           getBoolFromTag("MuonHasToBeHighPurity"	  ,strStream , field , muonHasToBeHighPurity);
+           getBoolFromTag("DoReducedTree"	          ,strStream , field , doReducedTree);
+           getBoolFromTag("DoDimuonMVA"	              ,strStream , field , doDimuonMVA);
+           //getTStringFromTag("DimuonMVAWeightFile"	  ,strStream , field , dimuonMVAWeightFile);
 
            if(field.compare("MaxMuMuDr")==0){
                  getline(strStream, field);
@@ -621,11 +658,29 @@ void BMMGAnalysis::readParameters(string fname)
                  doPhotonMVA= tmpI >0 ? 1 : 0;
                  cout<<" setting DoPhotonMVAID  = "<<doPhotonMVA<<"\n";
             }
+             if(field.compare("DimuonMVAWeightFile")==0){
+                 hasDimuonWeightFiles=true;
+                 getline(strStream, field);
+                 dimuonMVAWeightFile=field;
+                 std::cout<<" setting DimuonMVAWeightFile = "<<dimuonMVAWeightFile<<"\n";
+            }
              if(field.compare("PhotonIDWeightFile")==0){
                  hasWeightFiles=true;
                  getline(strStream, field);
                  photonIdxMVAWeightFile=field;
                  std::cout<<" setting photonIdxMVAWeightFile = "<<photonIdxMVAWeightFile<<"\n";
+            }
+             if(field.compare("PhotonIDBarrelWeightFile")==0){
+                 hasWeightFiles=true;
+                 getline(strStream, field);
+                 photonIdxBarrelMVAWeightFile=field;
+                 std::cout<<" setting photonIdxBarrelMVAWeightFile = "<<photonIdxBarrelMVAWeightFile<<"\n";
+            }
+             if(field.compare("PhotonIDECapWeightFile")==0){
+                 hasWeightFiles=true;
+                 getline(strStream, field);
+                 photonIdxECapMVAWeightFile=field;
+                 std::cout<<" setting photonIdxECapMVAWeightFile = "<<photonIdxECapMVAWeightFile<<"\n";
             }
             
             if(field.compare("MinDimuMass")==0){
@@ -676,73 +731,6 @@ void BMMGAnalysis::readParameters(string fname)
     }
 }
 
-void BMMGAnalysis::getBoolFromTag(string tag,std::istringstream &strStream, string inputStr  , Bool_t &var)
-{   
-    std::string field;
-    if(inputStr.compare(tag)==0){
-           getline(strStream, field);
-           var =  std::atoi(field.c_str()) > 0 ? 1 : 0;
-           cout<<" SETTING  "<<tag<<" = "<<var<<"\n";
-       }
-}
-
-void BMMGAnalysis::getFloatFromTag(string tag,std::istringstream &strStream, string inputStr  , Float_t &var)
-{   
-    std::string field;
-    if(inputStr.compare(tag)==0){
-             getline(strStream, field);
-             var=std::atof(field.c_str());
-             cout<<" SETTING  "<<tag<<" = "<<var<<"\n";
-       }
-}
-
-void BMMGAnalysis::getIntFromTag(string tag,std::istringstream &strStream, string inputStr  , Int_t &var)
-{   
-    std::string field;
-    if(inputStr.compare(tag)==0){
-             getline(strStream, field);
-             var=std::atoi(field.c_str());
-             cout<<" SETTING  "<<tag<<" = "<<var<<"\n";
-       }
-}
-
-
-
-void BMMGAnalysis::getVetorFillledFromConfigFile( fstream &cfgFile , std::vector<string> &vecList, string beginTag,string endTag, bool verbose)
-{
-	
-    bool cfgModeFlag=false;
-    cfgModeFlag=false;
-    std::istringstream strStream;
-    std::string field;
-	string line;
-    
-    // getting flists
-    cfgFile.clear();
-	cfgFile.seekp(ios::beg);
-    cfgModeFlag=false;
-	int nItems(0);
-    while(std::getline(cfgFile,line))
-	{
-	   if(line==beginTag) {cfgModeFlag=true;continue;}
-	   if(line==endTag) {cfgModeFlag=false;continue;}
-	   if(not cfgModeFlag) continue;
-	   if(line=="") continue;
-	   if(line=="#END") break;
-	   vecList.push_back(line);
-	   nItems++;
-    }
-
-    if(verbose)
-    {
-       std::cout<<" Added "<<nItems<<" between "<<beginTag<<" and "<< endTag<<"\n";
-       for( auto &name : vecList)
-       {
-           std::cout<<"\t"<<name<<"\n";
-       }
-    }
-
-}
 
 #include "../src/BMMGAnalysis.cc"
 

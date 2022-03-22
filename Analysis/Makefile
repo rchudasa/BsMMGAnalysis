@@ -20,8 +20,16 @@ mcAnalysis : src/mcAnalysis.cc src/BMMGAnalysis.cc
 analysis : src/analysis.cc src/BMMGAnalysis.cc 
 	$(CXX) $(CXXFLAGS) -I$(INCPATH) -o $@.exe $<  $(LIBS)
 
+mvaDataMaker : src/mvaDataMaker.cc
+	$(CXX) $(CXXFLAGS) -I$(INCPATH) -o $@.exe $<  $(LIBS)
+
+mvaDataMakerMC : src/mvaDataMakerMC.cc
+	$(CXX) $(CXXFLAGS) -I$(INCPATH) -o $@.exe $<  $(LIBS)
 
 runlumi : src/runLumi.cc 
+	$(CXX) $(CXXFLAGS) -I$(INCPATH) -o $@.exe $<  $(LIBS)
+
+mvaTrainer : src/makeMVAModels.cc
 	$(CXX) $(CXXFLAGS) -I$(INCPATH) -o $@.exe $<  $(LIBS)
 
 clean :
