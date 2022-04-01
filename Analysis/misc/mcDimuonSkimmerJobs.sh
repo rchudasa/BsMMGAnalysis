@@ -7,9 +7,10 @@ echo NJOBS : $NJOBS
 echo FILES_PER_JOB : $FILES_PER_JOB
 echo MAXEVENTS : $MAXEVENTS
 echo ""
-EXECUTABLE=mcAnalysis.exe
 
-declare -a SourceFiles=(\
+EXECUTABLE=mvaDataMakerMC.exe
+
+declare -a SourceFiles=( \
 "fileList/mc_sig_BsTMMG_v2.files" \
 "fileList/mc_sig_BsTMMG_v2.files" \
 "fileList/mc_bkg_bdToKK.files" \
@@ -22,43 +23,43 @@ declare -a SourceFiles=(\
 "fileList/mc_bkg_bsToPiPi.files" \
 )
 
-declare -a tagArr=(\
-"mc_sig_bs2mmg_genAnalysis" \
-"mc_sig_bs2mmg" \
-"mc_bkg_bdToKKg" \
-"mc_bkg_bdToKPig" \
-"mc_bkg_bdToPiMuNug" \
-"mc_bkg_bdToPiPig" \
-"mc_bkg_bsToKKg" \
-"mc_bkg_bsToKMuNug" \
-"mc_bkg_bsToKPig" \
-"mc_bkg_bsToPiPig" \
+declare -a tagArr=( \
+"dimuonSkimmed_mc_sig_bs2mmg_genAnalysis" \
+"dimuonSkimmed_mc_sig_bs2mmg" \
+"dimuonSkimmed_mc_bkg_bdToKKg" \
+"dimuonSkimmed_mc_bkg_bdToKPig" \
+"dimuonSkimmed_mc_bkg_bdToPiMuNug" \
+"dimuonSkimmed_mc_bkg_bdToPiPig" \
+"dimuonSkimmed_mc_bkg_bsToKKg" \
+"dimuonSkimmed_mc_bkg_bsToKMuNug" \
+"dimuonSkimmed_mc_bkg_bsToKPig" \
+"dimuonSkimmed_mc_bkg_bsToPiPig" \
 )
 
 declare -a AnalysisOption=(\
+1 \
 0 \
-1 \
-1 \
-1 \
-1 \
-1 \
-1 \
-1 \
-1 \
-1 \
+0 \
+0 \
+0 \
+0 \
+0 \
+0 \
+0 \
+0 \
 )
 
 declare -a CfgTemplate=(\
-"configs/analysisMC.tpl.cfg" \
-"configs/analysis.tpl.cfg" \
-"configs/analysis.tpl.cfg" \
-"configs/analysis.tpl.cfg" \
-"configs/analysis.tpl.cfg" \
-"configs/analysis.tpl.cfg" \
-"configs/analysis.tpl.cfg" \
-"configs/analysis.tpl.cfg" \
-"configs/analysis.tpl.cfg" \
-"configs/analysis.tpl.cfg" \
+"configs/MCSampleDimuons.tpl.cfg" \
+"configs/DataDimuonSkimmer.tpl.cfg" \
+"configs/DataDimuonSkimmer.tpl.cfg" \
+"configs/DataDimuonSkimmer.tpl.cfg" \
+"configs/DataDimuonSkimmer.tpl.cfg" \
+"configs/DataDimuonSkimmer.tpl.cfg" \
+"configs/DataDimuonSkimmer.tpl.cfg" \
+"configs/DataDimuonSkimmer.tpl.cfg" \
+"configs/DataDimuonSkimmer.tpl.cfg" \
+"configs/DataDimuonSkimmer.tpl.cfg" \
 )
 
 # ./makeCondorJobForAnalysis.py mvaDataMaker.exe configs/QcdSample.tpl 1 /home/athachay/t3store3/bs2mumug/photonID/analysis/CMSSW_10_6_29/src/BsMMGAnalysis/PhotonID/test/results/MC/mc_bkg_qcd30To50EMEnriched 5 1 -1 mc_bkg_qcd30To50EMEnriched
@@ -68,7 +69,7 @@ for i in "${!tagArr[@]}"; do
     TAG=${tagArr[$i]}
     ANALYSIS_OPT=${AnalysisOption[$i]}
     CFG_TEMPLATE=${CfgTemplate[$i]}
-    set -x
+ #   set -x
     ./makeCondorJobForAnalysis.py \
         $EXECUTABLE \
         $src \
@@ -79,5 +80,5 @@ for i in "${!tagArr[@]}"; do
         $FILES_PER_JOB \
         $MAXEVENTS \
         $TAG
-    set +x
+  #  set +x
 done

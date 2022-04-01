@@ -7,40 +7,25 @@ echo NJOBS : $NJOBS
 echo FILES_PER_JOB : $FILES_PER_JOB
 echo MAXEVENTS : $MAXEVENTS
 echo ""
-EXECUTABLE=mcAnalysis.exe
+EXECUTABLE=analysisNtupleMaker.exe
 
 declare -a SourceFiles=(\
-"fileList/mc_sig_BsTMMG_v2.files" \
-"fileList/mc_sig_BsTMMG_v2.files" \
-"fileList/mc_bkg_bdToKK.files" \
-"fileList/mc_bkg_bdToKPi.files" \
-"fileList/mc_bkg_bdToPiMuNu.files" \
-"fileList/mc_bkg_bdToPiPi.files" \
-"fileList/mc_bkg_bsToKK.files" \
-"fileList/mc_bkg_bsToKMuNu.files" \
-"fileList/mc_bkg_bsToKPi.files" \
-"fileList/mc_bkg_bsToPiPi.files" \
+"fileList/bph2Ap1.fls" \
+"fileList/bph3Ap1.fls" \
+"fileList/bph4Ap1.fls" \
+"fileList/bph5Ap1.fls" \
+"fileList/bph6Ap1.fls" \
 )
 
 declare -a tagArr=(\
-"mc_sig_bs2mmg_genAnalysis" \
-"mc_sig_bs2mmg" \
-"mc_bkg_bdToKKg" \
-"mc_bkg_bdToKPig" \
-"mc_bkg_bdToPiMuNug" \
-"mc_bkg_bdToPiPig" \
-"mc_bkg_bsToKKg" \
-"mc_bkg_bsToKMuNug" \
-"mc_bkg_bsToKPig" \
-"mc_bkg_bsToPiPig" \
+"skimmerBph2Ap1" \
+"skimmerBph3Ap1" \
+"skimmerBph4Ap1" \
+"skimmerBph5Ap1" \
+"skimmerBph6Ap1" \
 )
 
 declare -a AnalysisOption=(\
-0 \
-1 \
-1 \
-1 \
-1 \
 1 \
 1 \
 1 \
@@ -49,11 +34,6 @@ declare -a AnalysisOption=(\
 )
 
 declare -a CfgTemplate=(\
-"configs/analysisMC.tpl.cfg" \
-"configs/analysis.tpl.cfg" \
-"configs/analysis.tpl.cfg" \
-"configs/analysis.tpl.cfg" \
-"configs/analysis.tpl.cfg" \
 "configs/analysis.tpl.cfg" \
 "configs/analysis.tpl.cfg" \
 "configs/analysis.tpl.cfg" \
@@ -74,7 +54,7 @@ for i in "${!tagArr[@]}"; do
         $src \
         $CFG_TEMPLATE \
         $ANALYSIS_OPT \
-        $PWD/results/MC/$TAG \
+        $PWD/results/Data/$TAG \
         $NJOBS \
         $FILES_PER_JOB \
         $MAXEVENTS \

@@ -1,0 +1,5 @@
+for f in Condor/Jobsmc_bkg_*/Job_0/run.3156*.stdout
+    do
+        echo $f
+        tail $f -n 1
+    done
