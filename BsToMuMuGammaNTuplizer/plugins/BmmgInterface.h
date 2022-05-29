@@ -284,7 +284,8 @@ struct CloseTrack{
   float svDoca, svDocaErr, svProb,
     pvDoca, pvDocaErr,
     impactParameterSignificanceBS;
-  const pat::PackedCandidate* pfCand;
+  //const reco::PFCandidate* pfCand;
+  const reco::PFCandidate* pfCand;
   CloseTrack(): svDoca(-1), svDocaErr(-1), svProb(-1),
 		pvDoca(-1), pvDocaErr(-1),
 		impactParameterSignificanceBS(-1),
@@ -294,18 +295,27 @@ struct CloseTrack{
 
 
 struct CloseTrackInfo{
+  edm::Handle<reco::VertexCollection> pvHandle_;
   std::vector<CloseTrack> tracks;
   unsigned int nTracksByVertexProbability(double minProb = 0.1, 
 					  double minIpSignificance = -1,
 					  int pvIndex = -1,
-					  const pat::PackedCandidate* ignoreTrack1 = 0)
+					  const reco::PFCandidate* ignoreTrack1 = 0)
   {
+  const reco::VertexCollection& vertices = *pvHandle_.product();
+  auto pvIndex_=-1;
+  if( pvIndex >=0 ) pvIndex_=pvIndex;
+  const auto & vertex = vertices.at(pvIndex_);
+  Float_t vx(vertex.x());
+  Float_t vy(vertex.y());
+  Float_t vz(vertex.z());
     unsigned int n = 0;
     for (auto track: tracks){
       if (ignoreTrack1 and track.pfCand==ignoreTrack1) continue;
       if (minIpSignificance>0 and track.impactParameterSignificanceBS<minIpSignificance) continue;
       if (track.svProb<minProb) continue;
-      if (pvIndex >= 0 and int(track.pfCand->vertexRef().key())!=pvIndex) continue;
+      if (pvIndex >= 0 )
+          if ((abs(track.pfCand->vz() - vz) < 0.01 ) and  (abs(track.pfCand->vy() - vy) < 0.01 ) and ( abs(track.pfCand->vx() - vx) < 0.01 ) ) continue;
       n++;
     }
     return n;
@@ -313,15 +323,23 @@ struct CloseTrackInfo{
   unsigned int nTracksByDisplacementSignificance(double max_svDoca = 0.03, 
 						 double maxSignificance = -1,
 						 int pvIndex = -1,
-						 const pat::PackedCandidate* ignoreTrack1 = 0)
+						 const reco::PFCandidate* ignoreTrack1 = 0)
   {
+   const reco::VertexCollection& vertices = *pvHandle_.product();
+  auto pvIndex_=-1;
+  if( pvIndex >=0 ) pvIndex_=pvIndex;
+  const auto & vertex = vertices.at(pvIndex_);
+   Float_t vx(vertex.x());
+   Float_t vy(vertex.y());
+   Float_t vz(vertex.z());
     unsigned int n = 0;
     for (auto track: tracks){
       if (track.svDoca>max_svDoca) continue;
       if (ignoreTrack1 and track.pfCand==ignoreTrack1) continue;
       if (maxSignificance>0 and (track.svDocaErr<=0 or 
 				 track.svDoca/track.svDocaErr > maxSignificance) ) continue;
-      if (pvIndex >= 0 and int(track.pfCand->vertexRef().key())!=pvIndex) continue;
+      if (pvIndex >= 0 )
+          if ((abs(track.pfCand->vz() - vz) < 0.01 ) and  (abs(track.pfCand->vy() - vy) < 0.01 ) and ( abs(track.pfCand->vx() - vx) < 0.01 ) ) continue;
       n++;
     }
     return n;
@@ -329,29 +347,45 @@ struct CloseTrackInfo{
   unsigned int nTracksByBetterMatch(double max_svDoca = 0.03, 
 				    double maxSignificance = 2,
 				    int pvIndex = -1,
-				    const pat::PackedCandidate* ignoreTrack1 = 0)
+				    const reco::PFCandidate* ignoreTrack1 = 0)
   {
-    unsigned int n = 0;
+  const reco::VertexCollection& vertices = *pvHandle_.product();
+  auto pvIndex_=0;
+  if( pvIndex >=0 ) pvIndex_=pvIndex;
+  const auto & vertex = vertices.at(pvIndex_);
+  Float_t vx(vertex.x());
+  Float_t vy(vertex.y());
+  Float_t vz(vertex.z());
+  unsigned int n = 0;
     for (auto track: tracks){
       if (track.svDoca>max_svDoca) continue;
       if (ignoreTrack1 and track.pfCand==ignoreTrack1) continue;
       if (maxSignificance>0 and (track.svDocaErr<=0 or 
 				 track.svDoca/track.svDocaErr > maxSignificance) ) continue;
       if (track.svDocaErr<=0 or (track.pvDocaErr>0 and track.svDoca/track.svDocaErr > track.pvDoca/track.pvDocaErr) ) continue;
-      if (pvIndex >= 0 and int(track.pfCand->vertexRef().key())!=pvIndex) continue;
+      if (pvIndex >= 0)
+          if ((abs(track.pfCand->vz() - vz) < 0.01 ) and  (abs(track.pfCand->vy() - vy) < 0.01 ) and ( abs(track.pfCand->vx() - vx) < 0.01 ) ) continue;
       n++;
     }
     return n;
   }
   float minDoca(double max_svDoca = 0.03, 
 		int pvIndex = -1,
-		const pat::PackedCandidate* ignoreTrack1 = 0)
+		const reco::PFCandidate* ignoreTrack1 = 0)
   {
+  const reco::VertexCollection& vertices = *pvHandle_.product();
+  auto pvIndex_=0;
+  if( pvIndex >=0 ) pvIndex_=pvIndex;
+  const auto & vertex = vertices.at(pvIndex_);
+  Float_t vx(vertex.x());
+  Float_t vy(vertex.y());
+  Float_t vz(vertex.z());
     float doca = 99.;
     for (auto track: tracks){
       if (track.svDoca>max_svDoca) continue;
       if (ignoreTrack1 and track.pfCand==ignoreTrack1) continue;
-      if (pvIndex >= 0 and int(track.pfCand->vertexRef().key())!=pvIndex) continue;
+      if (pvIndex >= 0 )
+          if ((abs(track.pfCand->vz() - vz) < 0.01 ) and  (abs(track.pfCand->vy() - vy) < 0.01 ) and ( abs(track.pfCand->vx() - vx) < 0.01 ) ) continue;
       if (doca>track.svDoca) doca = track.svDoca;
     }
     return doca;
@@ -386,12 +420,12 @@ namespace {
       pat::Muon(muon), index_(index), gen_(false)
     {
     }
-    MuonCand(const pat::PackedCandidate& hadron, bool from_gen):
+    MuonCand(const reco::PFCandidate& hadron, bool from_gen):
       pat::Muon(reco::Muon(hadron.charge(), hadron.p4())),
       index_(-1), gen_(from_gen)
     {
       std::vector<reco::Track> tracks;
-      assert(hadron.hasTrackDetails());
+      assert(not hadron.trackRef());
       tracks.push_back(*hadron.bestTrack());
       setInnerTrack(reco::TrackRef(&tracks,0));
       embedTrack();

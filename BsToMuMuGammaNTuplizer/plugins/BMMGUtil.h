@@ -15,9 +15,14 @@ float
 BsToMuMuGammaNTuplizer::computeTrkMuonIsolation(const pat::Muon& the_muon, const pat::Muon& the_other_muon, 
 					  unsigned int primaryVertexIndex,
 					  float minPt, float dR,
-					  std::vector<const pat::PackedCandidate*> ignoreTracks)
+					  std::vector<const reco::PFCandidate*> ignoreTracks)
 {
   float sumPt(0);
+  const reco::VertexCollection& vertices = *pvHandle_.product();
+  const auto & vertex = vertices.at(primaryVertexIndex);
+  Float_t vx(vertex.x());
+  Float_t vy(vertex.y());
+  Float_t vz(vertex.z());
   for (const auto& pfCand: *pfCandHandle_.product()){
     bool ignore_track = false;
     for (auto trk: ignoreTracks){
@@ -29,9 +34,10 @@ BsToMuMuGammaNTuplizer::computeTrkMuonIsolation(const pat::Muon& the_muon, const
     if (ignore_track) continue;
     if (deltaR(the_muon, pfCand) < 0.01 || deltaR(the_other_muon, pfCand) < 0.01) continue;
     if (pfCand.charge() == 0 ) continue;
-    if (!pfCand.hasTrackDetails()) continue;
+    if (not pfCand.trackRef()) continue;
     if (pfCand.pt()<minPt) continue;
-    if (pfCand.vertexRef().key()!=primaryVertexIndex) continue;
+    //if (pfCand.vertexRef().key()!=primaryVertexIndex) continue;
+    if ((abs(pfCand.vz() - vz) < 0.01 ) and  (abs(pfCand.vy() - vy) < 0.01 ) and ( abs(pfCand.vx() - vx) < 0.01 ) ) continue;
     if (deltaR(the_muon, pfCand) > dR) continue;
     sumPt += pfCand.pt();
   }
@@ -45,7 +51,7 @@ BsToMuMuGammaNTuplizer::otherVertexMaxProb(const pat::Muon& muon1,
 				     const pat::Muon& muon2,
 				     float minPt,
 				     float max_doca,
-				     std::vector<const pat::PackedCandidate*> ignoreTracks){
+				     std::vector<const reco::PFCandidate*> ignoreTracks){
   float bestMu1Vtx = 0;
   float bestMu2Vtx = 0;
   KalmanVertexFitter kvf;
@@ -66,7 +72,8 @@ BsToMuMuGammaNTuplizer::otherVertexMaxProb(const pat::Muon& muon1,
     if (ignore_track) continue;
     if (deltaR(muon1, pfCand) < 0.01 || deltaR(muon2, pfCand) < 0.01) continue;
     if (pfCand.charge() == 0 ) continue;
-    if (!pfCand.hasTrackDetails()) continue;
+    //if (!pfCand.hasTrackDetails()) continue;
+    if ( not pfCand.trackRef() ) continue;
     if (pfCand.pt()<minPt) continue;
     double mu1_doca = distanceOfClosestApproach(muon1.innerTrack().get(),
 						pfCand.bestTrack());
@@ -157,10 +164,15 @@ float
 BsToMuMuGammaNTuplizer::computeTrkMuMuIsolation(const pat::Muon& muon1, const pat::Muon& muon2, 
 					  unsigned int primaryVertexIndex,
 					  float minPt, float dR,
-					  std::vector<const pat::PackedCandidate*> ignoreTracks)
+					  std::vector<const reco::PFCandidate*> ignoreTracks)
 {
   float sumPt(0);
   auto b_p4 = muon1.p4()+muon2.p4();
+  const reco::VertexCollection& vertices = *pvHandle_.product();
+  const auto & vertex = vertices.at(primaryVertexIndex);
+  Float_t vx(vertex.x());
+  Float_t vy(vertex.y());
+  Float_t vz(vertex.z());
   for (const auto& pfCand: *pfCandHandle_.product()){
     bool ignore_track = false;
     for (auto trk: ignoreTracks){
@@ -172,10 +184,10 @@ BsToMuMuGammaNTuplizer::computeTrkMuMuIsolation(const pat::Muon& muon1, const pa
     if (ignore_track) continue;
     if (deltaR(muon1, pfCand) < 0.01 || deltaR(muon2, pfCand) < 0.01) continue;
     if (pfCand.charge() == 0 ) continue;
-    if (!pfCand.hasTrackDetails()) continue;
+    if ( not pfCand.trackRef()) continue;
     if (pfCand.pt()<minPt) continue;
-    if (pfCand.vertexRef().key()!=primaryVertexIndex) continue;
     if (deltaR(b_p4, pfCand) > dR) continue;
+    if ((abs(pfCand.vz() - vz) < 0.01 ) and  (abs(pfCand.vy() - vy) < 0.01 ) and ( abs(pfCand.vx() - vx) < 0.01 ) ) continue;
     sumPt += pfCand.pt();
   }
 
@@ -413,7 +425,7 @@ BsToMuMuGammaNTuplizer::vertexMuonsWithKinematicFitter(const pat::Muon& muon1,
 KinematicFitResult
 BsToMuMuGammaNTuplizer::vertexWithKinematicFitter(const pat::Muon& muon1,
 					    const pat::Muon& muon2,
-					    const pat::PackedCandidate& pion)
+					    const reco::PFCandidate& pion)
 {
   std::vector<const reco::Track*> trks;
   std::vector<float> masses;
@@ -431,9 +443,10 @@ BsToMuMuGammaNTuplizer::findTracksCompatibleWithTheVertex(const pat::Muon& muon1
 						    const pat::Muon& muon2,
 						    const KinematicFitResult& fit, 
 						    double maxDoca,
-						    std::vector<const pat::PackedCandidate*> ignoreTracks)
+						    std::vector<const reco::PFCandidate*> ignoreTracks)
 {
   CloseTrackInfo result;
+  result.pvHandle_ = pvHandle_;
   if (not fit.valid()) return result;
   for (const auto& pfCand: *pfCandHandle_.product()){
     bool ignore_track = false;
@@ -447,7 +460,7 @@ BsToMuMuGammaNTuplizer::findTracksCompatibleWithTheVertex(const pat::Muon& muon1
     
     if (deltaR(muon1, pfCand) < 0.01 || deltaR(muon2, pfCand) < 0.01) continue;
     if (pfCand.charge() == 0 ) continue;
-    if (!pfCand.hasTrackDetails()) continue;
+    if (not pfCand.trackRef()) continue;
     double mu1_kaon_doca = distanceOfClosestApproach(muon1.innerTrack().get(),
 						     pfCand.bestTrack());
     double mu2_kaon_doca = distanceOfClosestApproach(muon2.innerTrack().get(),
@@ -461,8 +474,29 @@ BsToMuMuGammaNTuplizer::findTracksCompatibleWithTheVertex(const pat::Muon& muon1
     track.svDocaErr = doca.error();
 
     // add PV doca
-    if (pfCand.vertexRef().key()<pvHandle_->size()){
-      doca = distanceOfClosestApproach(pfCand.bestTrack(),pvHandle_->at(pfCand.vertexRef().key()) );
+    if (not  pfCand.v0Ref()){
+      //doca = distanceOfClosestApproach(pfCand.bestTrack(),pvHandle_->at(pfCand.vertexRef().key()) );a
+      auto DrMin=1e9;
+      auto pv_idx=-1;
+      auto idx=-1;
+        for(auto&  aVertex : *pvHandle_){
+            idx++;
+            if( not aVertex.isValid() ) continue;
+            auto dr= sqrt( (pfCand.vx()-aVertex.x())*(pfCand.vx()-aVertex.x())  
+                       + (pfCand.vy()-aVertex.y())*(pfCand.vy()-aVertex.y())
+                       + (pfCand.vz()-aVertex.z())*(pfCand.vz()-aVertex.z())
+                       );
+            if(dr < DrMin)
+            {
+                DrMin=dr;
+                pv_idx=idx;
+            }
+           }
+      if( DrMin > 0.1){
+         return result;
+      }
+      
+      doca = distanceOfClosestApproach(pfCand.bestTrack(),pvHandle_->at(pv_idx) );
       track.pvDoca = doca.value();
       track.pvDocaErr = doca.error();
     }

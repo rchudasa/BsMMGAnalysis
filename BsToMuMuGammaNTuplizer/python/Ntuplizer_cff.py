@@ -128,13 +128,22 @@ def getDefaultWorkflow( testFileName = ''  ):
     process.load("Configuration.Geometry.GeometryExtended2017Reco_cff")
     process.load("RecoJets.Configuration.CaloTowersES_cfi")
     process.load("Geometry.HcalEventSetup.hcalTopologyIdeal_cfi")
-    
+    # import of standard configurations
+    process.load("TrackingTools/TransientTrack/TransientTrackBuilder_cfi")
+    process.load('Configuration.StandardSequences.Services_cff')
+    # process.load('Configuration.StandardSequences.MagneticField_AutoFromDBCurrent_cff')
+    process.load('Configuration.StandardSequences.EndOfProcess_cff')
+
+
+
+
     process.MessageLogger.cerr.FwkReport.reportEvery = 50
     process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(200) )
     process.options = options
     process.source = source
     process.TFileService = TFileService
     process.Ntuples = Ntuples
+
 
     process.p = cms.Path(process.Ntuples)
     

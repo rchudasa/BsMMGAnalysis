@@ -54,6 +54,7 @@
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/Utilities/interface/EDGetToken.h"
+#include "FWCore/Framework/interface/ESHandle.h"
 #include "Geometry/CaloGeometry/interface/CaloGeometry.h"
 #include "RecoEgamma/EgammaTools/interface/ConversionTools.h"
 #include "RecoEgamma/EgammaTools/interface/EffectiveAreas.h"
@@ -119,7 +120,6 @@
 #include "RecoVertex/KinematicFitPrimitives/interface/TransientTrackKinematicParticle.h"
 #include "RecoVertex/VertexPrimitives/interface/TransientVertex.h"
 
-#include "TrackingTools/Records/interface/TransientTrackRecord.h"
 #include "TrackingTools/IPTools/interface/IPTools.h"
 #include "TrackingTools/PatternTools/interface/ClosestApproachInRPhi.h"
 #include "TrackingTools/TransientTrack/interface/TransientTrack.h"
@@ -213,9 +213,9 @@ private:
   KinematicFitResult 
   vertexWithKinematicFitter(const pat::Muon& muon1,
 			    const pat::Muon& muon2,
-			    const pat::PackedCandidate& pfCand);
+			    const reco::PFCandidate& pfCand);
 
-  pair<double,double> computeDCA(const pat::PackedCandidate &kaon,
+  pair<double,double> computeDCA(const reco::PFCandidate &kaon,
    				 reco::BeamSpot beamSpot);
 
   // Two track DOCA
@@ -244,30 +244,30 @@ private:
 				    const pat::Muon& muon2,
 				    const KinematicFitResult& fit,
 				    double maxDoca=0.03,
-				    std::vector<const pat::PackedCandidate*> ignoreTracks = 
-				    std::vector<const pat::PackedCandidate*>());
+				    std::vector<const reco::PFCandidate*> ignoreTracks = 
+				    std::vector<const reco::PFCandidate*>());
   float
   computeTrkMuonIsolation(const pat::Muon& muon, 
 			  const pat::Muon& the_other_muon,
 			  unsigned int primaryVertexIndex,
 			  float minPt=0.5, float dR=0.5,
-			  std::vector<const pat::PackedCandidate*> ignoreTracks = 
-			  std::vector<const pat::PackedCandidate*>());
+			  std::vector<const reco::PFCandidate*> ignoreTracks = 
+			  std::vector<const reco::PFCandidate*>());
   float
   computeTrkMuMuIsolation(const pat::Muon& muon1, 
 			  const pat::Muon& muon2,
 			  unsigned int primaryVertexIndex,
 			  float minPt=0.9, float dR=0.7,
-			  std::vector<const pat::PackedCandidate*> ignoreTracks = 
-			  std::vector<const pat::PackedCandidate*>());
+			  std::vector<const reco::PFCandidate*> ignoreTracks = 
+			  std::vector<const reco::PFCandidate*>());
 
   float
   otherVertexMaxProb(const pat::Muon& muon1, 
 		     const pat::Muon& muon2,
 		     float min_pt = 0.5,
 		     float max_doca = 0.1,
-		     std::vector<const pat::PackedCandidate*> ignoreTracks = 
-		     std::vector<const pat::PackedCandidate*>());
+		     std::vector<const reco::PFCandidate*> ignoreTracks = 
+		     std::vector<const reco::PFCandidate*>());
   void 
   injectHadronsThatMayFakeMuons(std::vector<MuonCand>& good_muon_candidates);
 
@@ -277,12 +277,12 @@ private:
 //                      const pat::Muon& the_other_muon, 
 //					  unsigned int primaryVertexIndex,
 //					  float minPt, float dR,
-//					  std::vector<const pat::PackedCandidate*> ignoreTracks);
+//					  std::vector<const reco::PFCandidate*> ignoreTracks);
 //  float otherVertexMaxProb(const pat::Muon& muon1, 
 //				     const pat::Muon& muon2,
 //				     float minPt,
 //				     float max_doca,
-//				     std::vector<const pat::PackedCandidate*> ignoreTracks);
+//				     std::vector<const reco::PFCandidate*> ignoreTracks);
 //
   
   void addDimuonBranches();
@@ -370,8 +370,10 @@ private:
   edm::EDGetTokenT<edm::SortedCollection<HBHERecHit,edm::StrictWeakOrdering<HBHERecHit>>> hbheRechitToken_; 
   
   edm::EDGetTokenT<reco::PFCandidateCollection>     pfCandidateCollection_;
-  edm::Handle<edm::View<pat::PackedCandidate>> pfCandHandle_;
+  //edm::Handle<edm::View<reco::PFCandidateCollection>> pfCandHandle_;
+  edm::Handle<reco::PFCandidateCollection> pfCandHandle_;
   
+  edm::ESGetToken<TransientTrackBuilder, TransientTrackRecord> track_builder_token_;
   edm::ESHandle<TransientTrackBuilder> theTTBuilder_;
   edm::ESHandle<MagneticField> bFieldHandle_;
   

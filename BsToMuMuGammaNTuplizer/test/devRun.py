@@ -14,6 +14,7 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(200) )
 
 process.options.numberOfStreams =0 ;
 process.options.numberOfThreads =1 ;
+process.MessageLogger.cerr.FwkReport.reportEvery = 50
 
 
 

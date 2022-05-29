@@ -127,6 +127,7 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
   Utility= new Utils();
   
  // if(doMuons_ or do doDimuons ) 
+  track_builder_token_=esConsumes<TransientTrackBuilder, TransientTrackRecord>(edm::ESInputTag("", "TransientTrackBuilder"));
   muonToken_     = consumes<reco::MuonCollection>(iConfig.getParameter<edm::InputTag>("muons"));
   if(doPhotons_)    gedPhotonsCollection_       = consumes<std::vector<reco::Photon>>(iConfig.getUntrackedParameter<edm::InputTag>("gedPhotonSrc"));
   
@@ -889,7 +890,8 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
   
   iEvent.getByToken(pfCandidateCollection_, pfCandHandle_);
   iSetup.get<IdealMagneticFieldRecord>().get(bFieldHandle_);
-  iSetup.get<TransientTrackRecord>().get("TransientTrackBuilder",theTTBuilder_);
+  //iSetup.get<TransientTrackRecord>().get("TransientTrackBuilder",theTTBuilder_);
+  theTTBuilder_ = iSetup.getHandle(track_builder_token_);
   iEvent.getByToken(beamSpotToken_, beamSpotHandle);
   iEvent.getByToken(primaryVtxToken_, pvHandle_);
 
@@ -2009,9 +2011,9 @@ void BsToMuMuGammaNTuplizer::fillPrimaryVertexBranches(const edm::Event& iEvent,
     storageMapFloatArray["primaryVertex_ndof"           ][i] =   aVertex.ndof() 	 	  ;
     storageMapFloatArray["primaryVertex_chi2"           ][i] =   aVertex.chi2()             ;
     storageMapFloatArray["primaryVertex_normalizedChi2" ][i] =   aVertex.normalizedChi2()  ;
-    storageMapInt["nPrimaryVertex"]++;
     i++;
   } // loop over primary vertex collection
+    storageMapInt["nPrimaryVertex"]=i;
 }
 void BsToMuMuGammaNTuplizer::addGeneralTracksBranches()
 {
@@ -2650,7 +2652,6 @@ void BsToMuMuGammaNTuplizer::addDimuonBranches()
 
 void BsToMuMuGammaNTuplizer::fillDimuonBranches( const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
-  
     edm::Handle<std::vector<reco::Muon>> muonHandle;
     iEvent.getByToken(muonToken_, muonHandle);
     
@@ -2668,8 +2669,6 @@ void BsToMuMuGammaNTuplizer::fillDimuonBranches( const edm::Event& iEvent, const
     
     auto nMuons   = muonHandle->size();
     // auto nPhotons = photonHandle->size();
-    auto nPFCands = pfCandHandle_->size();
-    // unsigned int lostTrackNumber = useLostTracks_ ? lostTrackHandle->size() : 0;
     
     // Output collection
     auto dimuon  = std::make_unique<pat::CompositeCandidateCollection>();
@@ -2751,7 +2750,6 @@ void BsToMuMuGammaNTuplizer::fillDimuonBranches( const edm::Event& iEvent, const
 
 	  // dimuon
 	  if (muon1.index() >= 0 and muon2.index() >= 0){
-	    auto imm = dimuon->size();
 	    
 	    // MuMuGamma
         /*
@@ -2785,7 +2783,7 @@ void BsToMuMuGammaNTuplizer::fillDimuonBranches( const edm::Event& iEvent, const
 	    // mmK and mmKK
         /*
 	    for (unsigned int k = 0; k < nPFCands; ++k) {
-	      pat::PackedCandidate kaonCand1((*pfCandHandle_)[k]);
+	      reco::PFCandidate kaonCand1((*pfCandHandle_)[k]);
 	      kaonCand1.setMass(KaonMass_);
 	      if (deltaR(muon1, kaonCand1) < 0.01 || deltaR(muon2, kaonCand1) < 0.01) continue;
 	      if (kaonCand1.charge() == 0 ) continue;
@@ -2826,7 +2824,7 @@ void BsToMuMuGammaNTuplizer::fillDimuonBranches( const edm::Event& iEvent, const
 
 	      if (goodBtoJpsiKK){ // good candidate to consider for JpsiKK
 		for (unsigned int k2 = k+1; k2 < nPFCands; ++k2) { // only works if selection requirements for both kaons are identical
-		  pat::PackedCandidate kaonCand2((*pfCandHandle_)[k2]);
+		  reco::PFCandidate kaonCand2((*pfCandHandle_)[k2]);
 		  kaonCand2.setMass(KaonMass_);
 		  if (deltaR(muon1, kaonCand2) < 0.01 || deltaR(muon2, kaonCand2) < 0.01) continue;
 		  if (kaonCand2.charge() == 0 ) continue;
@@ -2960,6 +2958,7 @@ void BsToMuMuGammaNTuplizer::fillDimuonBranches( const edm::Event& iEvent, const
     storageMapFloatArray["dimuon_docatrk"][nDimu]  =      closeTracks.minDoca(0.03,pvIndex);
 
     storageMapFloatArray["dimuon_m1iso"][nDimu]             =   computeTrkMuonIsolation(muon1,muon2,pvIndex,0.5,0.5);
+
     storageMapFloatArray["dimuon_m2iso"][nDimu]             =   computeTrkMuonIsolation(muon2,muon1,pvIndex,0.5,0.5);
     storageMapFloatArray["dimuon_iso"][nDimu]               =   computeTrkMuMuIsolation(muon2,muon1,pvIndex,0.9,0.7);
     storageMapFloatArray["dimuon_otherVtxMaxProb"][nDimu]   =   otherVertexMaxProb(muon1,muon2,0.5);
@@ -3005,6 +3004,7 @@ void BsToMuMuGammaNTuplizer::fillDimuonBranches( const edm::Event& iEvent, const
      }
     }
     
+    storageMapInt["nDimuons"]=nDimu;
 }
 
 
