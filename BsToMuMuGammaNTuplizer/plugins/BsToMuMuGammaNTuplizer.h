@@ -168,6 +168,9 @@
 #include "Geometry/CaloTopology/interface/CaloSubdetectorTopology.h"
 #include "DataFormats/ParticleFlowReco/interface/PFCluster.h"
 #include "DataFormats/ParticleFlowReco/interface/PFClusterFwd.h"
+#include "TrackingTools/GeomPropagators/interface/AnalyticalImpactPointExtrapolator.h"
+#include "RecoVertex/KalmanVertexFit/interface/KalmanVertexFitter.h"
+#include "TrackingTools/PatternTools/interface/TwoTrackMinimumDistance.h"
 #include <TTree.h>
 #include "TMath.h"
 
@@ -176,6 +179,16 @@
 #define N_PF_MAX 10000
 #define N_ECAL_CLUSTERS 1000
 #define N_HCAL_CLUSTERS 1000
+#define N_MUON_MAX 1000
+#define N_DIMU_MAX 1000
+#define N_GEN_MAX 4000
+
+#include "BmmgInterface.h"
+
+using namespace std;
+
+typedef std::pair<const reco::MuonChamberMatch*, const reco::MuonSegmentMatch*> MatchPair;
+
 class BsToMuMuGammaNTuplizer : public edm::EDAnalyzer {
 
  public:
@@ -183,9 +196,101 @@ class BsToMuMuGammaNTuplizer : public edm::EDAnalyzer {
   BsToMuMuGammaNTuplizer(const edm::ParameterSet&);
   virtual ~BsToMuMuGammaNTuplizer() {};
   
-  bool printMsg;
+  Bool_t printMsg;
   
 private:
+  
+  /////////////////////////////////////
+
+  bool isGoodMuon(const pat::Muon& muon);
+    
+  KinematicFitResult vertexWithKinematicFitter(std::vector<const reco::Track*> trks, std::vector<float> masses);
+
+  KinematicFitResult 
+  vertexMuonsWithKinematicFitter(const pat::Muon& muon1,
+				 const pat::Muon& muon2);
+
+  KinematicFitResult 
+  vertexWithKinematicFitter(const pat::Muon& muon1,
+			    const pat::Muon& muon2,
+			    const pat::PackedCandidate& pfCand);
+
+  pair<double,double> computeDCA(const pat::PackedCandidate &kaon,
+   				 reco::BeamSpot beamSpot);
+
+  // Two track DOCA
+  float 
+  distanceOfClosestApproach( const reco::Track* track1,
+			     const reco::Track* track2 );
+  float 
+  distanceOfClosestApproach( const reco::GenParticle* track1,
+			     const reco::GenParticle* track2);
+  
+  // Track to vertex DOCA
+  Measurement1D
+  distanceOfClosestApproach( const reco::Track* track,
+			     RefCountedKinematicVertex vertex);
+  Measurement1D 
+  distanceOfClosestApproach( const reco::Track* track,
+			     const reco::Vertex& vertex);
+
+  DisplacementInformationIn3D 
+  compute3dDisplacement(const KinematicFitResult& fit,
+			const reco::VertexCollection& vertices,
+			bool closestIn3D = true);
+
+  CloseTrackInfo 
+  findTracksCompatibleWithTheVertex(const pat::Muon& muon1,
+				    const pat::Muon& muon2,
+				    const KinematicFitResult& fit,
+				    double maxDoca=0.03,
+				    std::vector<const pat::PackedCandidate*> ignoreTracks = 
+				    std::vector<const pat::PackedCandidate*>());
+  float
+  computeTrkMuonIsolation(const pat::Muon& muon, 
+			  const pat::Muon& the_other_muon,
+			  unsigned int primaryVertexIndex,
+			  float minPt=0.5, float dR=0.5,
+			  std::vector<const pat::PackedCandidate*> ignoreTracks = 
+			  std::vector<const pat::PackedCandidate*>());
+  float
+  computeTrkMuMuIsolation(const pat::Muon& muon1, 
+			  const pat::Muon& muon2,
+			  unsigned int primaryVertexIndex,
+			  float minPt=0.9, float dR=0.7,
+			  std::vector<const pat::PackedCandidate*> ignoreTracks = 
+			  std::vector<const pat::PackedCandidate*>());
+
+  float
+  otherVertexMaxProb(const pat::Muon& muon1, 
+		     const pat::Muon& muon2,
+		     float min_pt = 0.5,
+		     float max_doca = 0.1,
+		     std::vector<const pat::PackedCandidate*> ignoreTracks = 
+		     std::vector<const pat::PackedCandidate*>());
+  void 
+  injectHadronsThatMayFakeMuons(std::vector<MuonCand>& good_muon_candidates);
+
+  void 
+  injectBhhHadrons(std::vector<MuonCand>& good_muon_candidates);
+//  float computeTrkMuonIsolation(const pat::Muon& the_muon, 
+//                      const pat::Muon& the_other_muon, 
+//					  unsigned int primaryVertexIndex,
+//					  float minPt, float dR,
+//					  std::vector<const pat::PackedCandidate*> ignoreTracks);
+//  float otherVertexMaxProb(const pat::Muon& muon1, 
+//				     const pat::Muon& muon2,
+//				     float minPt,
+//				     float max_doca,
+//				     std::vector<const pat::PackedCandidate*> ignoreTracks);
+//
+  
+  void addDimuonBranches();
+  void fillDimuonBranches      (const edm::Event&, const edm::EventSetup&);
+  /////////////////////////////////////
+
+
+
   virtual void analyze(const edm::Event&, const edm::EventSetup&) ;
   
   void fillGenParticles (const edm::Event&);
@@ -194,7 +299,17 @@ private:
   void fillPFPhotons    (const edm::Event&, const edm::EventSetup&);
   void fillSC           (const edm::Event&, const edm::EventSetup&, reco::Vertex& pv);
   void fillHLT          (edm::Event const& );
-  std::vector<float> getShowerShapes(reco::CaloCluster* caloBC, const EcalRecHitCollection* recHits, const CaloTopology *topology);
+  std::vector<Float_t> getShowerShapes(reco::CaloCluster* caloBC, const EcalRecHitCollection* recHits, const CaloTopology *topology);
+  
+  void fillMatchInfo(Int_t idxToFill, const reco::Muon &muon);
+  void fillMatchInfoForStation(std::string prefix,Int_t idxToFill, const MatchPair& match);
+  
+  void addGenBranches();
+  void fillGenBranches( const edm::Event&);
+
+  void addMuonBranches();
+  void fillMuonBranches( const edm::Event&, const edm::EventSetup& );
+
   void fillPFCandiateCollection( const edm::Event&, const edm::EventSetup& );
   void addParticleFlowBranches();
   void fillGeneralTrackCollectionBranches( const edm::Event&, const edm::EventSetup& );
@@ -203,65 +318,75 @@ private:
   void addHCALCluserBranches();
   void fillECALClusterCollection( const edm::Event&, const edm::EventSetup& );
   void addECALCluserBranches();
-  void  addPrimaryVertexBranches();
+  void addPrimaryVertexBranches();
   void fillPrimaryVertexBranches(const edm::Event&, const edm::EventSetup&);
-  float reduceFloat(float val, int bits);
+  Float_t reduceFloat(Float_t val, int bits);
   static int calDIEta(int iEta1, int iEta2);
   static int calDIPhi(int iPhi1, int iPhi2);
-  float getMinEnergyHCAL_(HcalDetId id) const;
+  Float_t getMinEnergyHCAL_(HcalDetId id) const;
 
+  // master switches
+  Bool_t         isMC;
+  Bool_t         isRECO;
+  Bool_t         isMiniAOD;
+  Bool_t         Run2_2018_;
+  
   // switches
-  bool doGenParticles_;
-  bool doMuons_;
-  bool doPhotons_;
-  bool doPFPhotons_;
-  bool doSuperClusters_;
-  bool isMC;
-  bool doBsToMuMuGamma;
-  bool doCompression_;
-  bool doParticleFlow;
-  bool doGeneralTracks;
-  bool doECALClusters;
-  bool doHCALClusters;
-  bool doPrimaryVetrices;
-  bool doBeamSpot;
-  bool doFlatPt_;
-  bool Run2_2018_;
-  bool doHLT;
+  Bool_t doGenParticles_;
+  Bool_t doMuons_;
+  Bool_t doDimuons_;
+  Bool_t doPhotons_;
+  Bool_t doPFPhotons_;
+  Bool_t doSuperClusters_;
+  Bool_t doBsToMuMuGamma;
+  Bool_t doCompression_;
+  Bool_t doParticleFlow;
+  Bool_t doGeneralTracks;
+  Bool_t doECALClusters;
+  Bool_t doHCALClusters;
+  Bool_t doPrimaryVetrices;
+  Bool_t doBeamSpot;
+  Bool_t doFlatPt_;
+  Bool_t doHLT;
   int maxDIEta_=5;
   int maxDIPhi_=5;
   
-  
+  // ----------
+
+  const AnalyticalImpactPointExtrapolator* impactPointExtrapolator_;
+
   // ----------member data ---------------------------
-  edm::EDGetTokenT<reco::BeamSpot>                  beamSpotToken_;
-  edm::EDGetTokenT<reco::GenParticleCollection>    genParticlesCollection_;
+  edm::EDGetTokenT<reco::GenParticleCollection>     genParticlesCollection_;
   edm::EDGetTokenT<std::vector<reco::Photon>>       gedPhotonsCollection_;
-  edm::EDGetTokenT<edm::View<reco::PFCandidate>>  pfPhotonsCollection_;
+  edm::EDGetTokenT<edm::View<reco::PFCandidate>>    pfPhotonsCollection_;
   edm::EDGetTokenT<std::vector<reco::SuperCluster>> MustacheSCBarrelCollection_;
   edm::EDGetTokenT<std::vector<reco::SuperCluster>> MustacheSCEndcapCollection_;
   edm::EDGetTokenT<reco::GsfElectronCollection>     gsfElectronToken_;
-  edm::EDGetTokenT<reco::VertexCollection>          primaryVtxToken_;
   edm::EDGetTokenT<edm::TriggerResults>             triggerBits_;
   edm::EDGetTokenT<std::vector<reco::Muon>>         muonToken_;
-  edm::EDGetTokenT<reco::TrackCollection>         generalTracksCollection_;
-  edm::EDGetTokenT<reco::PFClusterCollection>        ecalClusterCollection_;
-  edm::EDGetTokenT<reco::PFClusterCollection>        hcalClusterCollection_;
-  edm::EDGetTokenT<reco::PFCandidateCollection>         pfCandidateCollection_;
+  edm::EDGetTokenT<reco::TrackCollection>           generalTracksCollection_;
+  edm::EDGetTokenT<reco::PFClusterCollection>       ecalClusterCollection_;
+  edm::EDGetTokenT<reco::PFClusterCollection>       hcalClusterCollection_;
   edm::EDGetTokenT<edm::SortedCollection<HBHERecHit,edm::StrictWeakOrdering<HBHERecHit>>> hbheRechitToken_; 
   
- // const EcalClusterLazyTools::ESGetTokens ecalClusterToolsESGetTokens_;
+  edm::EDGetTokenT<reco::PFCandidateCollection>     pfCandidateCollection_;
+  edm::Handle<edm::View<pat::PackedCandidate>> pfCandHandle_;
+  
+  edm::ESHandle<TransientTrackBuilder> theTTBuilder_;
+  edm::ESHandle<MagneticField> bFieldHandle_;
+  
+  edm::EDGetTokenT<reco::BeamSpot>                  beamSpotToken_;
+  edm::Handle<reco::BeamSpot> beamSpotHandle;
+  
+  edm::EDGetTokenT<reco::VertexCollection>          primaryVtxToken_;
+  edm::Handle<reco::VertexCollection> pvHandle_;
+  
   const Int_t energyMatrixSize_;
   Int_t energyMatrixSizeFull_;
-  //      edm::EDGetTokenT<std::vector<CaloParticle> > caloPartToken_;
   edm::EDGetTokenT<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit>>> ebRechitToken_; 
   edm::EDGetTokenT<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit>>> eeRechitToken_; 
-  //edm::EDGetTokenT<EcalRecHitCollection> ebRechitToken_; 
-  //     edm::EDGetTokenT<EcalRecHitCollection> eeRechitToken_; 
-  //   edm::EDGetTokenT<std::vector<reco::PFRecHit>  > pfRecHitToken_; 
-  //   edm::EDGetTokenT<std::vector<reco::PFCluster> > pfClusterToken_; 
 
   // input tags 
-  //edm::InputTag genParticleSrc_;
   edm::InputTag gedPhotonSrc_;
   edm::InputTag pfPhotonSrc_;
   edm::InputTag MustacheSCBarrelSrc_;
@@ -269,21 +394,23 @@ private:
 
 
   // selection cuts;
-  double pTMinMuons;
-  double pTMinPFPhotons;
-  double cl_dimuon_vtx;
-  double ls_max_dimuonBS          ;
-  double dcaMax_dimuon_mumu           ;
-  double dcaMax_muon_bs           ;
-  double cosAlphaMax_dimuonBs    ;
-  double MUMINPT           ;
-  double etaMax_muon          ;
-  double minDimuon_pt         ;
-  double minDimuonInvariantMass    ;
-  double maxDimuonInvariantMass    ;
-  double trackIP_zMax_muon 		;
-  double trackIP_rMax_muon	        ;
-  
+  Float_t pTMinMuons;
+  Float_t pTMinPFPhotons;
+  Float_t cl_dimuon_vtx;
+  Float_t ls_max_dimuonBS          ;
+  Float_t dcaMax_dimuon_mumu           ;
+  Float_t dcaMax_muon_bs           ;
+  Float_t cosAlphaMax_dimuonBs    ;
+  Float_t MUMINPT           ;
+  Float_t etaMax_muon          ;
+  Float_t minDimuon_pt         ;
+  Float_t minDimuonInvariantMass    ;
+  Float_t maxDimuonInvariantMass    ;
+  Float_t trackIP_zMax_muon 		;
+  Float_t trackIP_rMax_muon	        ;
+  Float_t maxTwoTrackDOCA_          ;
+  bool diMuonCharge_ ;
+
   // Utility 
   Utils* Utility;
     
@@ -296,16 +423,15 @@ private:
   RefCountedKinematicTree mumuVertexFitTree;
 	 
   TLorentzVector bsDimuon_lv,sc_p4_;
-  //LorentzVector scp4;
   reco::LeafCandidate scPhoton;
   reco::CompositeCandidate mmg;
 
 
   // for showershape
   int nBits_;
-  std::vector<float> locCov_;
-  std::vector<float> full5x5_locCov_;
-  std::vector<float> showerShapes_;
+  std::vector<Float_t> locCov_;
+  std::vector<Float_t> full5x5_locCov_;
+  std::vector<Float_t> showerShapes_;
  
   TTree*         theTree;
 
@@ -318,26 +444,26 @@ private:
 
 
   // # BeamSpot # //
-  double beamspot_x_,beamspot_y_,beamspot_z_,beamspot_x_error_,beamspot_y_error_,beamspot_z_error_;
-  double beamspot_dxdz_,beamspot_dydz_,beamspot_sigmaZ_,beamspot_dxdz_error_,beamspot_dydz_error_,beamspot_sigmaZError_;
-  double beamspot_beamWidthX_,beamspot_beamWidthY_,beamspot_beamWidthX_error_,beamspot_beamWidthY_error_;
-  double beamspot_covXX,beamspot_covXY,beamspot_covXZ,beamspot_covYY,beamspot_covYZ,beamspot_covZZ;  
+  Float_t beamspot_x_,beamspot_y_,beamspot_z_,beamspot_x_error_,beamspot_y_error_,beamspot_z_error_;
+  Float_t beamspot_dxdz_,beamspot_dydz_,beamspot_sigmaZ_,beamspot_dxdz_error_,beamspot_dydz_error_,beamspot_sigmaZError_;
+  Float_t beamspot_beamWidthX_,beamspot_beamWidthY_,beamspot_beamWidthX_error_,beamspot_beamWidthY_error_;
+  Float_t beamspot_covXX,beamspot_covXY,beamspot_covXZ,beamspot_covYY,beamspot_covYZ,beamspot_covZZ;  
   // # offlinePrimaryVertices # //
   int nPrimaryVertex_;
-  std::vector<bool> primaryVertex_isFake_;
-  std::vector<double> primaryVertex_x_, primaryVertex_y_,primaryVertex_z_,primaryVertex_t_;
-  std::vector<double> primaryVertex_x_error_, primaryVertex_y_error_,primaryVertex_z_error_,primaryVertex_t_error_;
-  std::vector<double> primaryVertex_ntracks_,primaryVertex_ndof_,primaryVertex_chi2_,primaryVertex_normalizedChi2_;
-  std::vector<double> primaryVertex_covXX,primaryVertex_covXY,primaryVertex_covXZ,primaryVertex_covYY,primaryVertex_covYZ,primaryVertex_covZZ;  
+  std::vector<Bool_t> primaryVertex_isFake_;
+  std::vector<Float_t> primaryVertex_x_, primaryVertex_y_,primaryVertex_z_,primaryVertex_t_;
+  std::vector<Float_t> primaryVertex_x_error_, primaryVertex_y_error_,primaryVertex_z_error_,primaryVertex_t_error_;
+  std::vector<Float_t> primaryVertex_ntracks_,primaryVertex_ndof_,primaryVertex_chi2_,primaryVertex_normalizedChi2_;
+  std::vector<Float_t> primaryVertex_covXX,primaryVertex_covXY,primaryVertex_covXZ,primaryVertex_covYY,primaryVertex_covYZ,primaryVertex_covZZ;  
 
   // # Trigger #
   std::vector<std::string>  trigTable;
   std::vector<std::string>  trigNames;
-  std::vector<bool>         trigResult;
+  std::vector<Bool_t>         trigResult;
   std::vector<int>          trigPrescales;
   
   std::vector<std::string>  *TrigTable_store;
-  std::vector<bool>         *TrigResult_store;
+  std::vector<Bool_t>         *TrigResult_store;
   std::vector<int>          *TrigPrescales_store;
   
   std::vector<std::string>  l1Table;
@@ -352,79 +478,81 @@ private:
 
   std::map<std::string,Int_t > storageMapInt;
   std::map<std::string,Float_t * > storageMapFloatArray;
+  std::map<std::string,Bool_t * > storageMapBoolArray;
+  std::map<std::string,uint64_t * > storageMapUint64Array;
 
 
   // reco::GenParticle
   int  gen_nBs_, gen_nBsMuonM_, gen_nBsMuonP_ , gen_nBsPhoton_ ;
-  std::vector<double> gen_Bs_pt_,  gen_Bs_energy_,    gen_Bs_eta_,      gen_Bs_phi_,   gen_Bs_pz_,  gen_Bs_pdgId_;
-  std::vector<double> gen_BsMuonM_pt_, gen_BsMuonM_eta_, gen_BsMuonM_phi_;
-  std::vector<double> gen_BsMuonP_pt_, gen_BsMuonP_eta_, gen_BsMuonP_phi_;
-  std::vector<double> gen_BsPhoton_pt_, gen_BsPhoton_energy_, gen_BsPhoton_eta_, gen_BsPhoton_phi_;
+  std::vector<Float_t> gen_Bs_pt_,  gen_Bs_energy_,    gen_Bs_eta_,      gen_Bs_phi_,   gen_Bs_pz_,  gen_Bs_pdgId_;
+  std::vector<Float_t> gen_BsMuonM_pt_, gen_BsMuonM_eta_, gen_BsMuonM_phi_;
+  std::vector<Float_t> gen_BsMuonP_pt_, gen_BsMuonP_eta_, gen_BsMuonP_phi_;
+  std::vector<Float_t> gen_BsPhoton_pt_, gen_BsPhoton_energy_, gen_BsPhoton_eta_, gen_BsPhoton_phi_;
 
 
   // ### mu+ mu- variables ###
-  std::vector<double>   mumuPt_;
-  std::vector<double>   mumuEta_;
-  std::vector<double>   mumuRapidity_;
-  std::vector<double>   mumuPhi_;
-  std::vector<double>   mumuMass_;
-  std::vector<double>   mumuMassE_;
-  std::vector<double>   mumuPx_;
-  std::vector<double>   mumuPy_;
-  std::vector<double>   mumuPz_;
-  std::vector<double>   mumuDR_;
-  std::vector<double>   mumuCovPxPx_;
-  std::vector<double>   mumuCovPxPy_;
-  std::vector<double>   mumuCovPxPz_;
-  std::vector<double>   mumuCovPyPy_;
-  std::vector<double>   mumuCovPyPz_;
-  std::vector<double>   mumuCovPzPz_;
+  std::vector<Float_t>   mumuPt_;
+  std::vector<Float_t>   mumuEta_;
+  std::vector<Float_t>   mumuRapidity_;
+  std::vector<Float_t>   mumuPhi_;
+  std::vector<Float_t>   mumuMass_;
+  std::vector<Float_t>   mumuMassE_;
+  std::vector<Float_t>   mumuPx_;
+  std::vector<Float_t>   mumuPy_;
+  std::vector<Float_t>   mumuPz_;
+  std::vector<Float_t>   mumuDR_;
+  std::vector<Float_t>   mumuCovPxPx_;
+  std::vector<Float_t>   mumuCovPxPy_;
+  std::vector<Float_t>   mumuCovPxPz_;
+  std::vector<Float_t>   mumuCovPyPy_;
+  std::vector<Float_t>   mumuCovPyPz_;
+  std::vector<Float_t>   mumuCovPzPz_;
   
 
   std::vector<int>   mumuParentMuM_;
   std::vector<int>   mumuParentMuP_;
   // ### mu+ mu- Vtx ###
-  std::vector<double>  mumuVtxCL_;
-  std::vector<double>  mumuVtxX_;
-  std::vector<double>  mumuVtxY_;
-  std::vector<double>  mumuVtxZ_;
-  std::vector<double>  mumuVtxCovXX_;
-  std::vector<double>  mumuVtxCovXY_;
-  std::vector<double>  mumuVtxCovXZ_;
-  std::vector<double>  mumuVtxCovYY_;
-  std::vector<double>  mumuVtxCovYZ_;
-  std::vector<double>  mumuVtxCovZZ_;
+  std::vector<Float_t>  mumuVtxCL_;
+  std::vector<Float_t>  mumuVtxX_;
+  std::vector<Float_t>  mumuVtxY_;
+  std::vector<Float_t>  mumuVtxZ_;
+  std::vector<Float_t>  mumuVtxCovXX_;
+  std::vector<Float_t>  mumuVtxCovXY_;
+  std::vector<Float_t>  mumuVtxCovXZ_;
+  std::vector<Float_t>  mumuVtxCovYY_;
+  std::vector<Float_t>  mumuVtxCovYZ_;
+  std::vector<Float_t>  mumuVtxCovZZ_;
   
-  std::vector<double>  mumuVtxChi2_;
-  std::vector<double>  mumuVtxNdof_;
+  std::vector<Float_t>  mumuVtxChi2_;
+  std::vector<Float_t>  mumuVtxNdof_;
 
-  std::vector<double>  mumuCosAlphaBS_;
-  std::vector<double>  mumuCosAlphaBSE_; 
-  std::vector<double>  mumuLBS_;
-  std::vector<double>  mumuLBSE_;
-  std::vector<double>  mumuDCA_;
+  std::vector<Float_t>  mumuCosAlphaBS_;
+  std::vector<Float_t>  mumuCosAlphaBSE_; 
+  std::vector<Float_t>  mumuLBS_;
+  std::vector<Float_t>  mumuLBSE_;
+  std::vector<Float_t>  mumuDCA_;
   
 
 
   
   // ### mu- ###
   int 	               nMuM_; 
-  std::vector<bool>    mumHighPurity_;
-  std::vector<double>  mumPt_;
-  std::vector<double>  mumEta_;
-  std::vector<double>  mumPhi_;
-  std::vector<double>  mumCL_; 
-  std::vector<double>  mumNormChi2_;
-  std::vector<double>  mumVx_;
-  std::vector<double>  mumVy_;
-  std::vector<double>  mumVz_;
+  std::vector<Bool_t>    mumHighPurity_;
+  std::vector<Float_t>  mumPt_;
+  std::vector<Float_t>  mumEta_;
+  std::vector<Float_t>  mumPhi_;
+  std::vector<Float_t>  mumCL_; 
+  std::vector<Float_t>  mumNormChi2_;
+  std::vector<Float_t>  mumVx_;
+  std::vector<Float_t>  mumVy_;
+  std::vector<Float_t>  mumVz_;
 
-  std::vector<double>  mumDCABS_;
-  std::vector<double>  mumDCABSE_;
+  std::vector<Float_t>  mumDCABS_;
+  std::vector<Float_t>  mumDCABSE_;
 
-  std::vector<double>  mumFracHits_;
-  std::vector<double>  mumdxyBS_;
-  std::vector<double>  mumdzBS_;
+  std::vector<Float_t>  mumFracHits_;
+  std::vector<Float_t>  mumdxyBS_;
+  std::vector<Float_t>  mumdzBS_;
  
 
   std::vector<int>     mumIdx_;
@@ -435,72 +563,72 @@ private:
   std::vector<int>     mumNTrkLayers_;
   std::vector<int>     mumNMuonHits_;
   std::vector<int>     mumNMatchStation_;
-  std::vector<bool>    mum_isGlobalMuon_;
-  std::vector<bool>    mum_isTrackerMuon_;
-  std::vector<bool>    mum_StandAloneMuon_;
-  std::vector<bool>    mum_isCaloMuon_;
-  std::vector<bool>    mum_isPFMuon_;
+  std::vector<Bool_t>    mum_isGlobalMuon_;
+  std::vector<Bool_t>    mum_isTrackerMuon_;
+  std::vector<Bool_t>    mum_StandAloneMuon_;
+  std::vector<Bool_t>    mum_isCaloMuon_;
+  std::vector<Bool_t>    mum_isPFMuon_;
 
   std::vector<uint64_t> mum_selector_; 
-  std::vector<bool>	mum_isIsolationValid_;
-  std::vector<bool>	mum_isPFIsolationValid_;
+  std::vector<Bool_t>	mum_isIsolationValid_;
+  std::vector<Bool_t>	mum_isPFIsolationValid_;
   
-  std::vector<double>  mum_isolationR03_trackSumPt_;
-  std::vector<double>  mum_isolationR03_trackEcalSumEt_;
-  std::vector<double>  mum_isolationR03_trackHcalSumEt_;
-  std::vector<double>  mum_isolationR03_trackHoSumEt_;
+  std::vector<Float_t>  mum_isolationR03_trackSumPt_;
+  std::vector<Float_t>  mum_isolationR03_trackEcalSumEt_;
+  std::vector<Float_t>  mum_isolationR03_trackHcalSumEt_;
+  std::vector<Float_t>  mum_isolationR03_trackHoSumEt_;
   std::vector<int>     mum_isolationR03_trackNTracks_;
   std::vector<int>     mum_isolationR03_trackNJets_;
-  std::vector<double>  mum_isolationR03_trackerVetoSumPt_;
-  std::vector<double>  mum_isolationR03_emVetoSumEt_;
-  std::vector<double>  mum_isolationR03_hadVetoSumEt_;
-  std::vector<double>  mum_isolationR03_hoVetoEt_;
+  std::vector<Float_t>  mum_isolationR03_trackerVetoSumPt_;
+  std::vector<Float_t>  mum_isolationR03_emVetoSumEt_;
+  std::vector<Float_t>  mum_isolationR03_hadVetoSumEt_;
+  std::vector<Float_t>  mum_isolationR03_hoVetoEt_;
   
-  std::vector<double>  mum_isolationR05_trackSumPt_;
-  std::vector<double>  mum_isolationR05_trackEcalSumEt_;
-  std::vector<double>  mum_isolationR05_trackHcalSumEt_;
-  std::vector<double>  mum_isolationR05_trackHoSumEt_;
+  std::vector<Float_t>  mum_isolationR05_trackSumPt_;
+  std::vector<Float_t>  mum_isolationR05_trackEcalSumEt_;
+  std::vector<Float_t>  mum_isolationR05_trackHcalSumEt_;
+  std::vector<Float_t>  mum_isolationR05_trackHoSumEt_;
   std::vector<int>     mum_isolationR05_trackNTracks_;
   std::vector<int>     mum_isolationR05_trackNJets_;
-  std::vector<double>  mum_isolationR05_trackerVetoSumPt_;
-  std::vector<double>  mum_isolationR05_emVetoSumEt_;
-  std::vector<double>  mum_isolationR05_hadVetoSumEt_;
-  std::vector<double>  mum_isolationR05_hoVetoEt_;
+  std::vector<Float_t>  mum_isolationR05_trackerVetoSumPt_;
+  std::vector<Float_t>  mum_isolationR05_emVetoSumEt_;
+  std::vector<Float_t>  mum_isolationR05_hadVetoSumEt_;
+  std::vector<Float_t>  mum_isolationR05_hoVetoEt_;
   
-  std::vector<double>  mum_PFIsolationR03_sumChargedHadronPt_;
-  std::vector<double>  mum_PFIsolationR03_sumChargedParticlePt_;
-  std::vector<double>  mum_PFIsolationR03_sumNeutralHadronEt_;
-  std::vector<double>  mum_PFIsolationR03_sumPhotonEt_;
-  std::vector<double>  mum_PFIsolationR03_sumNeutralHadronEtHighThreshold_;
-  std::vector<double>  mum_PFIsolationR03_sumPhotonEtHighThreshold_;
-  std::vector<double>  mum_PFIsolationR03_sumPUPt_;
+  std::vector<Float_t>  mum_PFIsolationR03_sumChargedHadronPt_;
+  std::vector<Float_t>  mum_PFIsolationR03_sumChargedParticlePt_;
+  std::vector<Float_t>  mum_PFIsolationR03_sumNeutralHadronEt_;
+  std::vector<Float_t>  mum_PFIsolationR03_sumPhotonEt_;
+  std::vector<Float_t>  mum_PFIsolationR03_sumNeutralHadronEtHighThreshold_;
+  std::vector<Float_t>  mum_PFIsolationR03_sumPhotonEtHighThreshold_;
+  std::vector<Float_t>  mum_PFIsolationR03_sumPUPt_;
   
-  std::vector<double>  mum_PFIsolationR04_sumChargedHadronPt_;
-  std::vector<double>  mum_PFIsolationR04_sumChargedParticlePt_;
-  std::vector<double>  mum_PFIsolationR04_sumNeutralHadronEt_;
-  std::vector<double>  mum_PFIsolationR04_sumPhotonEt_;
-  std::vector<double>  mum_PFIsolationR04_sumNeutralHadronEtHighThreshold_;
-  std::vector<double>  mum_PFIsolationR04_sumPhotonEtHighThreshold_;
-  std::vector<double>  mum_PFIsolationR04_sumPUPt_;
+  std::vector<Float_t>  mum_PFIsolationR04_sumChargedHadronPt_;
+  std::vector<Float_t>  mum_PFIsolationR04_sumChargedParticlePt_;
+  std::vector<Float_t>  mum_PFIsolationR04_sumNeutralHadronEt_;
+  std::vector<Float_t>  mum_PFIsolationR04_sumPhotonEt_;
+  std::vector<Float_t>  mum_PFIsolationR04_sumNeutralHadronEtHighThreshold_;
+  std::vector<Float_t>  mum_PFIsolationR04_sumPhotonEtHighThreshold_;
+  std::vector<Float_t>  mum_PFIsolationR04_sumPUPt_;
 
   // ### mu+ ###
   int 	               nMuP_; 
-  std::vector<bool>    mupHighPurity_;
-  std::vector<double>  mupPt_;
-  std::vector<double>  mupEta_;
-  std::vector<double>  mupPhi_;
-  std::vector<double>  mupCL_; 
-  std::vector<double>  mupNormChi2_;
-  std::vector<double>  mupVx_;
-  std::vector<double>  mupVy_;
-  std::vector<double>  mupVz_;
+  std::vector<Bool_t>    mupHighPurity_;
+  std::vector<Float_t>  mupPt_;
+  std::vector<Float_t>  mupEta_;
+  std::vector<Float_t>  mupPhi_;
+  std::vector<Float_t>  mupCL_; 
+  std::vector<Float_t>  mupNormChi2_;
+  std::vector<Float_t>  mupVx_;
+  std::vector<Float_t>  mupVy_;
+  std::vector<Float_t>  mupVz_;
  
-  std::vector<double>  mupDCABS_;
-  std::vector<double>  mupDCABSE_;
+  std::vector<Float_t>  mupDCABS_;
+  std::vector<Float_t>  mupDCABSE_;
 
-  std::vector<double>  mupFracHits_;
-  std::vector<double>  mupdxyBS_;
-  std::vector<double>  mupdzBS_;
+  std::vector<Float_t>  mupFracHits_;
+  std::vector<Float_t>  mupdxyBS_;
+  std::vector<Float_t>  mupdzBS_;
  
   std::vector<int>     mupIdx_;
   std::vector<int>     mupCharge_;
@@ -510,249 +638,249 @@ private:
   std::vector<int>     mupNTrkLayers_;
   std::vector<int>     mupNMuonHits_;
   std::vector<int>     mupNMatchStation_;
-  std::vector<bool>    mup_isGlobalMuon_;
-  std::vector<bool>    mup_isTrackerMuon_;
-  std::vector<bool>    mup_StandAloneMuon_;
-  std::vector<bool>    mup_isCaloMuon_;
-  std::vector<bool>    mup_isPFMuon_;
+  std::vector<Bool_t>    mup_isGlobalMuon_;
+  std::vector<Bool_t>    mup_isTrackerMuon_;
+  std::vector<Bool_t>    mup_StandAloneMuon_;
+  std::vector<Bool_t>    mup_isCaloMuon_;
+  std::vector<Bool_t>    mup_isPFMuon_;
 
   std::vector<uint64_t> mup_selector_; 
-  std::vector<bool>	mup_isIsolationValid_;
-  std::vector<bool>	mup_isPFIsolationValid_;
+  std::vector<Bool_t>	mup_isIsolationValid_;
+  std::vector<Bool_t>	mup_isPFIsolationValid_;
   
-  std::vector<double>  mup_isolationR03_trackSumPt_;
-  std::vector<double>  mup_isolationR03_trackEcalSumEt_;
-  std::vector<double>  mup_isolationR03_trackHcalSumEt_;
-  std::vector<double>  mup_isolationR03_trackHoSumEt_;
+  std::vector<Float_t>  mup_isolationR03_trackSumPt_;
+  std::vector<Float_t>  mup_isolationR03_trackEcalSumEt_;
+  std::vector<Float_t>  mup_isolationR03_trackHcalSumEt_;
+  std::vector<Float_t>  mup_isolationR03_trackHoSumEt_;
   std::vector<int>     mup_isolationR03_trackNTracks_;
   std::vector<int>     mup_isolationR03_trackNJets_;
-  std::vector<double>  mup_isolationR03_trackerVetoSumPt_;
-  std::vector<double>  mup_isolationR03_emVetoSumEt_;
-  std::vector<double>  mup_isolationR03_hadVetoSumEt_;
-  std::vector<double>  mup_isolationR03_hoVetoEt_;
+  std::vector<Float_t>  mup_isolationR03_trackerVetoSumPt_;
+  std::vector<Float_t>  mup_isolationR03_emVetoSumEt_;
+  std::vector<Float_t>  mup_isolationR03_hadVetoSumEt_;
+  std::vector<Float_t>  mup_isolationR03_hoVetoEt_;
   
-  std::vector<double>  mup_isolationR05_trackSumPt_;
-  std::vector<double>  mup_isolationR05_trackEcalSumEt_;
-  std::vector<double>  mup_isolationR05_trackHcalSumEt_;
-  std::vector<double>  mup_isolationR05_trackHoSumEt_;
+  std::vector<Float_t>  mup_isolationR05_trackSumPt_;
+  std::vector<Float_t>  mup_isolationR05_trackEcalSumEt_;
+  std::vector<Float_t>  mup_isolationR05_trackHcalSumEt_;
+  std::vector<Float_t>  mup_isolationR05_trackHoSumEt_;
   std::vector<int>     mup_isolationR05_trackNTracks_;
   std::vector<int>     mup_isolationR05_trackNJets_;
-  std::vector<double>  mup_isolationR05_trackerVetoSumPt_;
-  std::vector<double>  mup_isolationR05_emVetoSumEt_;
-  std::vector<double>  mup_isolationR05_hadVetoSumEt_;
-  std::vector<double>  mup_isolationR05_hoVetoEt_;
+  std::vector<Float_t>  mup_isolationR05_trackerVetoSumPt_;
+  std::vector<Float_t>  mup_isolationR05_emVetoSumEt_;
+  std::vector<Float_t>  mup_isolationR05_hadVetoSumEt_;
+  std::vector<Float_t>  mup_isolationR05_hoVetoEt_;
   
-  std::vector<double>  mup_PFIsolationR03_sumChargedHadronPt_;
-  std::vector<double>  mup_PFIsolationR03_sumChargedParticlePt_;
-  std::vector<double>  mup_PFIsolationR03_sumNeutralHadronEt_;
-  std::vector<double>  mup_PFIsolationR03_sumPhotonEt_;
-  std::vector<double>  mup_PFIsolationR03_sumNeutralHadronEtHighThreshold_;
-  std::vector<double>  mup_PFIsolationR03_sumPhotonEtHighThreshold_;
-  std::vector<double>  mup_PFIsolationR03_sumPUPt_;
+  std::vector<Float_t>  mup_PFIsolationR03_sumChargedHadronPt_;
+  std::vector<Float_t>  mup_PFIsolationR03_sumChargedParticlePt_;
+  std::vector<Float_t>  mup_PFIsolationR03_sumNeutralHadronEt_;
+  std::vector<Float_t>  mup_PFIsolationR03_sumPhotonEt_;
+  std::vector<Float_t>  mup_PFIsolationR03_sumNeutralHadronEtHighThreshold_;
+  std::vector<Float_t>  mup_PFIsolationR03_sumPhotonEtHighThreshold_;
+  std::vector<Float_t>  mup_PFIsolationR03_sumPUPt_;
   
-  std::vector<double>  mup_PFIsolationR04_sumChargedHadronPt_;
-  std::vector<double>  mup_PFIsolationR04_sumChargedParticlePt_;
-  std::vector<double>  mup_PFIsolationR04_sumNeutralHadronEt_;
-  std::vector<double>  mup_PFIsolationR04_sumPhotonEt_;
-  std::vector<double>  mup_PFIsolationR04_sumNeutralHadronEtHighThreshold_;
-  std::vector<double>  mup_PFIsolationR04_sumPhotonEtHighThreshold_;
-  std::vector<double>  mup_PFIsolationR04_sumPUPt_;
+  std::vector<Float_t>  mup_PFIsolationR04_sumChargedHadronPt_;
+  std::vector<Float_t>  mup_PFIsolationR04_sumChargedParticlePt_;
+  std::vector<Float_t>  mup_PFIsolationR04_sumNeutralHadronEt_;
+  std::vector<Float_t>  mup_PFIsolationR04_sumPhotonEt_;
+  std::vector<Float_t>  mup_PFIsolationR04_sumNeutralHadronEtHighThreshold_;
+  std::vector<Float_t>  mup_PFIsolationR04_sumPhotonEtHighThreshold_;
+  std::vector<Float_t>  mup_PFIsolationR04_sumPUPt_;
 
 
   // reco::Photon
   Int_t          nPho_;
-  std::vector<float>  phoE_;
-  std::vector<float>  phoEt_;
-  std::vector<float>  phoEta_;
-  std::vector<float>  phoPhi_;
+  std::vector<Float_t>  phoE_;
+  std::vector<Float_t>  phoEt_;
+  std::vector<Float_t>  phoEta_;
+  std::vector<Float_t>  phoPhi_;
 
-  std::vector<float>  phoSigmaE_;
-  std::vector<float>  phoCalibE_;
-  std::vector<float>  phoCalibEt_;
-  std::vector<float>  phoSCE_;
-  std::vector<float>  phoSCEt_;
-  std::vector<float>  phoSCRawE_;
-  std::vector<float>  phoESEnP1_;
-  std::vector<float>  phoESEnP2_;
-  std::vector<float>  phoSCEta_;
-  std::vector<float>  phoSCPhi_;
-  std::vector<float>  phoSCEtaWidth_;
-  std::vector<float>  phoSCPhiWidth_;
-  std::vector<float>  phoSCBrem_;
+  std::vector<Float_t>  phoSigmaE_;
+  std::vector<Float_t>  phoCalibE_;
+  std::vector<Float_t>  phoCalibEt_;
+  std::vector<Float_t>  phoSCE_;
+  std::vector<Float_t>  phoSCEt_;
+  std::vector<Float_t>  phoSCRawE_;
+  std::vector<Float_t>  phoESEnP1_;
+  std::vector<Float_t>  phoESEnP2_;
+  std::vector<Float_t>  phoSCEta_;
+  std::vector<Float_t>  phoSCPhi_;
+  std::vector<Float_t>  phoSCEtaWidth_;
+  std::vector<Float_t>  phoSCPhiWidth_;
+  std::vector<Float_t>  phoSCBrem_;
   std::vector<int>    phohasPixelSeed_;
   std::vector<int>    phoEleVeto_;
-  std::vector<float>  phoR9_;
-  std::vector<float>  phoHoverE_;
-  std::vector<float>  phoESEffSigmaRR_;
+  std::vector<Float_t>  phoR9_;
+  std::vector<Float_t>  phoHoverE_;
+  std::vector<Float_t>  phoESEffSigmaRR_;
 
-  std::vector<float>  phoSigmaIEtaIEtaFull5x5_;
-  std::vector<float>  phoSigmaIEtaIPhiFull5x5_;
-  std::vector<float>  phoSigmaIPhiIPhiFull5x5_;
-  std::vector<float>  phoE2x2Full5x5_;
-  std::vector<float>  phoE5x5Full5x5_;
-  std::vector<float>  phoR9Full5x5_;
+  std::vector<Float_t>  phoSigmaIEtaIEtaFull5x5_;
+  std::vector<Float_t>  phoSigmaIEtaIPhiFull5x5_;
+  std::vector<Float_t>  phoSigmaIPhiIPhiFull5x5_;
+  std::vector<Float_t>  phoE2x2Full5x5_;
+  std::vector<Float_t>  phoE5x5Full5x5_;
+  std::vector<Float_t>  phoR9Full5x5_;
 
-  std::vector<float>  phoPFChIso_;
-  std::vector<float>  phoPFPhoIso_;
-  std::vector<float>  phoPFNeuIso_;
-  std::vector<float>  phoEcalPFClusterIso_;
-  std::vector<float>  phoHcalPFClusterIso_;
-  std::vector<float>  phoIDMVA_;
+  std::vector<Float_t>  phoPFChIso_;
+  std::vector<Float_t>  phoPFPhoIso_;
+  std::vector<Float_t>  phoPFNeuIso_;
+  std::vector<Float_t>  phoEcalPFClusterIso_;
+  std::vector<Float_t>  phoHcalPFClusterIso_;
+  std::vector<Float_t>  phoIDMVA_;
 
-  std::vector<float>  phoSeedTime_;
-  std::vector<float>  phoSeedEnergy_;
-  std::vector<float>  phoMIPTotEnergy_;
-  std::vector<float>  phoMIPChi2_;
-  std::vector<float>  phoMIPSlope_;
-  std::vector<float>  phoMIPIntercept_;
-  std::vector<float>  phoMIPNhitCone_;
-  std::vector<float>  phoMIPIsHalo_;
+  std::vector<Float_t>  phoSeedTime_;
+  std::vector<Float_t>  phoSeedEnergy_;
+  std::vector<Float_t>  phoMIPTotEnergy_;
+  std::vector<Float_t>  phoMIPChi2_;
+  std::vector<Float_t>  phoMIPSlope_;
+  std::vector<Float_t>  phoMIPIntercept_;
+  std::vector<Float_t>  phoMIPNhitCone_;
+  std::vector<Float_t>  phoMIPIsHalo_;
 
 
   // reco::PFPhoton
   Int_t          nPFPho_;
-  std::vector<float>  phoPFE_;
-  std::vector<float>  phoPFEt_;
-  std::vector<float>  phoPFEta_;
-  std::vector<float>  phoPFPhi_;
+  std::vector<Float_t>  phoPFE_;
+  std::vector<Float_t>  phoPFEt_;
+  std::vector<Float_t>  phoPFEta_;
+  std::vector<Float_t>  phoPFPhi_;
 
   /* supercluster info */
   int nSC_;
-  std::vector<float> scE_;
-  std::vector<float> scEta_;
-  std::vector<float> scPhi_;
-  std::vector<float>  scX_;
-  std::vector<float>  scY_;
-  std::vector<float>  scZ_;
-  std::vector<float>  scEtaWidth_;
-  std::vector<float>  scPhiWidth_;
-  std::vector<float>  scRawE_;
-  std::vector<float>  scRawEt_;
-  std::vector<float>  scMinDrWithGsfElectornSC_;
-  std::vector< bool>  scFoundGsfMatch_;
-  std::vector<float> superCluster_e5x5_;
-  std::vector<float> superCluster_e2x2Ratio_;
-  std::vector<float> superCluster_e3x3Ratio_;
-  std::vector<float> superCluster_eMaxRatio_;
-  std::vector<float> superCluster_e2ndRatio_;
-  std::vector<float> superCluster_eTopRatio_;
-  std::vector<float> superCluster_eRightRatio_;
-  std::vector<float> superCluster_eBottomRatio_;
-  std::vector<float> superCluster_eLeftRatio_;
-  std::vector<float> superCluster_e2x5MaxRatio_;
-  std::vector<float> superCluster_e2x5TopRatio_;
-  std::vector<float> superCluster_e2x5RightRatio_;
-  std::vector<float> superCluster_e2x5BottomRatio_;
-  std::vector<float> superCluster_e2x5LeftRatio_;
-  std::vector<float> superCluster_swissCross_;
-  std::vector<float> superCluster_r9_;
-  std::vector<float> superCluster_sigmaIetaIeta_; 
-  std::vector<float> superCluster_sigmaIetaIphi_; 
-  std::vector<float> superCluster_sigmaIphiIphi_; 
-  std::vector<float> superCluster_full5x5_e5x5_;
-  std::vector<float> superCluster_full5x5_e2x2Ratio_;
-  std::vector<float> superCluster_full5x5_e3x3Ratio_;
-  std::vector<float> superCluster_full5x5_eMaxRatio_;
-  std::vector<float> superCluster_full5x5_e2ndRatio_;
-  std::vector<float> superCluster_full5x5_eTopRatio_;
-  std::vector<float> superCluster_full5x5_eRightRatio_;
-  std::vector<float> superCluster_full5x5_eBottomRatio_;
-  std::vector<float> superCluster_full5x5_eLeftRatio_;
-  std::vector<float> superCluster_full5x5_e2x5MaxRatio_;
-  std::vector<float> superCluster_full5x5_e2x5TopRatio_;
-  std::vector<float> superCluster_full5x5_e2x5RightRatio_;
-  std::vector<float> superCluster_full5x5_e2x5BottomRatio_;
-  std::vector<float> superCluster_full5x5_e2x5LeftRatio_;
-  std::vector<float> superCluster_full5x5_swissCross_;
-  std::vector<float> superCluster_full5x5_r9_;
-  std::vector<float> superCluster_full5x5_sigmaIetaIeta_; 
-  std::vector<float> superCluster_full5x5_sigmaIetaIphi_; 
-  std::vector<float> superCluster_full5x5_sigmaIphiIphi_;   
+  std::vector<Float_t> scE_;
+  std::vector<Float_t> scEta_;
+  std::vector<Float_t> scPhi_;
+  std::vector<Float_t>  scX_;
+  std::vector<Float_t>  scY_;
+  std::vector<Float_t>  scZ_;
+  std::vector<Float_t>  scEtaWidth_;
+  std::vector<Float_t>  scPhiWidth_;
+  std::vector<Float_t>  scRawE_;
+  std::vector<Float_t>  scRawEt_;
+  std::vector<Float_t>  scMinDrWithGsfElectornSC_;
+  std::vector< Bool_t>  scFoundGsfMatch_;
+  std::vector<Float_t> superCluster_e5x5_;
+  std::vector<Float_t> superCluster_e2x2Ratio_;
+  std::vector<Float_t> superCluster_e3x3Ratio_;
+  std::vector<Float_t> superCluster_eMaxRatio_;
+  std::vector<Float_t> superCluster_e2ndRatio_;
+  std::vector<Float_t> superCluster_eTopRatio_;
+  std::vector<Float_t> superCluster_eRightRatio_;
+  std::vector<Float_t> superCluster_eBottomRatio_;
+  std::vector<Float_t> superCluster_eLeftRatio_;
+  std::vector<Float_t> superCluster_e2x5MaxRatio_;
+  std::vector<Float_t> superCluster_e2x5TopRatio_;
+  std::vector<Float_t> superCluster_e2x5RightRatio_;
+  std::vector<Float_t> superCluster_e2x5BottomRatio_;
+  std::vector<Float_t> superCluster_e2x5LeftRatio_;
+  std::vector<Float_t> superCluster_swissCross_;
+  std::vector<Float_t> superCluster_r9_;
+  std::vector<Float_t> superCluster_sigmaIetaIeta_; 
+  std::vector<Float_t> superCluster_sigmaIetaIphi_; 
+  std::vector<Float_t> superCluster_sigmaIphiIphi_; 
+  std::vector<Float_t> superCluster_full5x5_e5x5_;
+  std::vector<Float_t> superCluster_full5x5_e2x2Ratio_;
+  std::vector<Float_t> superCluster_full5x5_e3x3Ratio_;
+  std::vector<Float_t> superCluster_full5x5_eMaxRatio_;
+  std::vector<Float_t> superCluster_full5x5_e2ndRatio_;
+  std::vector<Float_t> superCluster_full5x5_eTopRatio_;
+  std::vector<Float_t> superCluster_full5x5_eRightRatio_;
+  std::vector<Float_t> superCluster_full5x5_eBottomRatio_;
+  std::vector<Float_t> superCluster_full5x5_eLeftRatio_;
+  std::vector<Float_t> superCluster_full5x5_e2x5MaxRatio_;
+  std::vector<Float_t> superCluster_full5x5_e2x5TopRatio_;
+  std::vector<Float_t> superCluster_full5x5_e2x5RightRatio_;
+  std::vector<Float_t> superCluster_full5x5_e2x5BottomRatio_;
+  std::vector<Float_t> superCluster_full5x5_e2x5LeftRatio_;
+  std::vector<Float_t> superCluster_full5x5_swissCross_;
+  std::vector<Float_t> superCluster_full5x5_r9_;
+  std::vector<Float_t> superCluster_full5x5_sigmaIetaIeta_; 
+  std::vector<Float_t> superCluster_full5x5_sigmaIetaIphi_; 
+  std::vector<Float_t> superCluster_full5x5_sigmaIphiIphi_;   
 
-   std::vector<float> scE5x5_;
-   std::vector<float> scE2x2Ratio_;
-   std::vector<float> scE3x3Ratio_;
-   std::vector<float> scEMaxRatio_;
-   std::vector<float> scE2ndRatio_;
-   std::vector<float> scETopRatio_;
-   std::vector<float> scERightRatio_;
-   std::vector<float> scEBottomRatio_;
-   std::vector<float> scELeftRatio_;
-   std::vector<float> scE2x5MaxRatio_;
-   std::vector<float> scE2x5TopRatio_;
-   std::vector<float> scE2x5RightRatio_;
-   std::vector<float> scE2x5BottomRatio_;
-   std::vector<float> scE2x5LeftRatio_;
-   std::vector<float> scSwissCross_;
-   std::vector<float> scR9_;
-   std::vector<float> scSigmaIetaIeta_; 
-   std::vector<float> scSigmaIetaIphi_; 
-   std::vector<float> scSigmaIphiIphi_; 
-   std::vector<float> scFull5x5_e5x5_;
-   std::vector<float> scFull5x5_e2x2Ratio_;
-   std::vector<float> scFull5x5_e3x3Ratio_;
-   std::vector<float> scFull5x5_eMaxRatio_;
-   std::vector<float> scFull5x5_e2ndRatio_;
-   std::vector<float> scFull5x5_eTopRatio_;
-   std::vector<float> scFull5x5_eRightRatio_;
-   std::vector<float> scFull5x5_eBottomRatio_;
-   std::vector<float> scFull5x5_eLeftRatio_;
-   std::vector<float> scFull5x5_e2x5MaxRatio_;
-   std::vector<float> scFull5x5_e2x5TopRatio_;
-   std::vector<float> scFull5x5_e2x5RightRatio_;
-   std::vector<float> scFull5x5_e2x5BottomRatio_;
-   std::vector<float> scFull5x5_e2x5LeftRatio_;
-   std::vector<float> scFull5x5_swissCross_;
-   std::vector<float> scFull5x5_r9_;
-   std::vector<float> scFull5x5_sigmaIetaIeta_; 
-   std::vector<float> scFull5x5_sigmaIetaIphi_; 
-   std::vector<float> scFull5x5_sigmaIphiIphi_;   
+   std::vector<Float_t> scE5x5_;
+   std::vector<Float_t> scE2x2Ratio_;
+   std::vector<Float_t> scE3x3Ratio_;
+   std::vector<Float_t> scEMaxRatio_;
+   std::vector<Float_t> scE2ndRatio_;
+   std::vector<Float_t> scETopRatio_;
+   std::vector<Float_t> scERightRatio_;
+   std::vector<Float_t> scEBottomRatio_;
+   std::vector<Float_t> scELeftRatio_;
+   std::vector<Float_t> scE2x5MaxRatio_;
+   std::vector<Float_t> scE2x5TopRatio_;
+   std::vector<Float_t> scE2x5RightRatio_;
+   std::vector<Float_t> scE2x5BottomRatio_;
+   std::vector<Float_t> scE2x5LeftRatio_;
+   std::vector<Float_t> scSwissCross_;
+   std::vector<Float_t> scR9_;
+   std::vector<Float_t> scSigmaIetaIeta_; 
+   std::vector<Float_t> scSigmaIetaIphi_; 
+   std::vector<Float_t> scSigmaIphiIphi_; 
+   std::vector<Float_t> scFull5x5_e5x5_;
+   std::vector<Float_t> scFull5x5_e2x2Ratio_;
+   std::vector<Float_t> scFull5x5_e3x3Ratio_;
+   std::vector<Float_t> scFull5x5_eMaxRatio_;
+   std::vector<Float_t> scFull5x5_e2ndRatio_;
+   std::vector<Float_t> scFull5x5_eTopRatio_;
+   std::vector<Float_t> scFull5x5_eRightRatio_;
+   std::vector<Float_t> scFull5x5_eBottomRatio_;
+   std::vector<Float_t> scFull5x5_eLeftRatio_;
+   std::vector<Float_t> scFull5x5_e2x5MaxRatio_;
+   std::vector<Float_t> scFull5x5_e2x5TopRatio_;
+   std::vector<Float_t> scFull5x5_e2x5RightRatio_;
+   std::vector<Float_t> scFull5x5_e2x5BottomRatio_;
+   std::vector<Float_t> scFull5x5_e2x5LeftRatio_;
+   std::vector<Float_t> scFull5x5_swissCross_;
+   std::vector<Float_t> scFull5x5_r9_;
+   std::vector<Float_t> scFull5x5_sigmaIetaIeta_; 
+   std::vector<Float_t> scFull5x5_sigmaIetaIphi_; 
+   std::vector<Float_t> scFull5x5_sigmaIphiIphi_;   
  
  
    int nhcalRechit_;
-   std::vector<float> hcalRechitIEta_;
-   std::vector<float> hcalRechitIPhi_;
-   std::vector<float> hcalRechitEnergy_;
+   std::vector<Float_t> hcalRechitIEta_;
+   std::vector<Float_t> hcalRechitIPhi_;
+   std::vector<Float_t> hcalRechitEnergy_;
  
-   std::vector<float>  scNHcalRecHitInDIEta2IPhi2;
-   std::vector<float>  scEFromHcalRecHitInDIEta2IPhi2;
+   std::vector<Float_t>  scNHcalRecHitInDIEta2IPhi2;
+   std::vector<Float_t>  scEFromHcalRecHitInDIEta2IPhi2;
    
-   std::vector<float>  scNHcalRecHitInDIEta5IPhi5;
-   std::vector<float>  scEFromHcalRecHitInDIEta5IPhi5;
+   std::vector<Float_t>  scNHcalRecHitInDIEta5IPhi5;
+   std::vector<Float_t>  scEFromHcalRecHitInDIEta5IPhi5;
    
-   std::vector<float>  scPFChIso1_;
-   std::vector<float>  scPFChIso2_;
-   std::vector<float>  scPFChIso3_;
-   std::vector<float>  scPFChIso4_;
-   std::vector<float>  scPFChIso5_;
+   std::vector<Float_t>  scPFChIso1_;
+   std::vector<Float_t>  scPFChIso2_;
+   std::vector<Float_t>  scPFChIso3_;
+   std::vector<Float_t>  scPFChIso4_;
+   std::vector<Float_t>  scPFChIso5_;
    
-   std::vector<float>  scPFPhoIso1_;
-   std::vector<float>  scPFPhoIso2_;
-   std::vector<float>  scPFPhoIso3_;
-   std::vector<float>  scPFPhoIso4_;
-   std::vector<float>  scPFPhoIso5_;
+   std::vector<Float_t>  scPFPhoIso1_;
+   std::vector<Float_t>  scPFPhoIso2_;
+   std::vector<Float_t>  scPFPhoIso3_;
+   std::vector<Float_t>  scPFPhoIso4_;
+   std::vector<Float_t>  scPFPhoIso5_;
    
-   std::vector<float>  scPFNeuIso1_;
-   std::vector<float>  scPFNeuIso2_;
-   std::vector<float>  scPFNeuIso3_;
-   std::vector<float>  scPFNeuIso4_;
-   std::vector<float>  scPFNeuIso5_;
+   std::vector<Float_t>  scPFNeuIso1_;
+   std::vector<Float_t>  scPFNeuIso2_;
+   std::vector<Float_t>  scPFNeuIso3_;
+   std::vector<Float_t>  scPFNeuIso4_;
+   std::vector<Float_t>  scPFNeuIso5_;
 
 
 
     Int_t               nMC_;
     std::vector<int>    mcPID_;
     std::vector<int>    mcStatus_;
-    std::vector<float>  mcVtx_x_;
-    std::vector<float>  mcVtx_y_;
-    std::vector<float>  mcVtx_z_;
-    std::vector<float>  mcPt_;
-    std::vector<float>  mcEta_;
-    std::vector<float>  mcPhi_;
-    std::vector<float>  mcE_;
-    std::vector<float>  mcEt_;
-    std::vector<float>  mcMass_;
-    std::vector<float> scEt_;
+    std::vector<Float_t>  mcVtx_x_;
+    std::vector<Float_t>  mcVtx_y_;
+    std::vector<Float_t>  mcVtx_z_;
+    std::vector<Float_t>  mcPt_;
+    std::vector<Float_t>  mcEta_;
+    std::vector<Float_t>  mcPhi_;
+    std::vector<Float_t>  mcE_;
+    std::vector<Float_t>  mcEt_;
+    std::vector<Float_t>  mcMass_;
+    std::vector<Float_t> scEt_;
 
 };
 

@@ -102,28 +102,32 @@
 
 
 BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig) :
-
-  doGenParticles_(iConfig.getParameter<bool>("doGenParticles")),
-  doMuons_(iConfig.getParameter<bool>("doMuons")),
-  doPhotons_(iConfig.getParameter<bool>("doPhotons")),
-  doPFPhotons_(iConfig.getParameter<bool>("doPFPhotons")),
-  doSuperClusters_(iConfig.getParameter<bool>("doSuperClusters")),
-  doParticleFlow(iConfig.getParameter<bool>("doParticleFlow")),
-  doGeneralTracks(iConfig.getParameter<bool>("doGeneralTracks")),
-  doECALClusters(iConfig.getParameter<bool>("doECALClusters")),
-  doHCALClusters(iConfig.getParameter<bool>("doHCALClusters")),
-  doPrimaryVetrices(iConfig.getParameter<bool>("doPrimaryVetrices")),
-  doBeamSpot(iConfig.getParameter<bool>("doBeamSpot")),
-  doFlatPt_(iConfig.getParameter<bool>("doFlatPt")),
-  Run2_2018_(iConfig.getParameter<bool>("Run2_2018")),
-  doHLT(iConfig.getParameter<bool>("doHLT")),
+  isMC(iConfig.getParameter<Bool_t>("isMC")),
+  isRECO(iConfig.getParameter<Bool_t>("isRECO")),
+  isMiniAOD(iConfig.getParameter<Bool_t>("isMiniAOD")),
+  Run2_2018_(iConfig.getParameter<Bool_t>("Run2_2018")),
+  doGenParticles_(iConfig.getParameter<Bool_t>("doGenParticles")),
+  doMuons_(iConfig.getParameter<Bool_t>("doMuons")),
+  doDimuons_(iConfig.getParameter<Bool_t>("doDimuons")),
+  doPhotons_(iConfig.getParameter<Bool_t>("doPhotons")),
+  doPFPhotons_(iConfig.getParameter<Bool_t>("doPFPhotons")),
+  doSuperClusters_(iConfig.getParameter<Bool_t>("doSuperClusters")),
+  doParticleFlow(iConfig.getParameter<Bool_t>("doParticleFlow")),
+  doGeneralTracks(iConfig.getParameter<Bool_t>("doGeneralTracks")),
+  doECALClusters(iConfig.getParameter<Bool_t>("doECALClusters")),
+  doHCALClusters(iConfig.getParameter<Bool_t>("doHCALClusters")),
+  doPrimaryVetrices(iConfig.getParameter<Bool_t>("doPrimaryVetrices")),
+  doBeamSpot(iConfig.getParameter<Bool_t>("doBeamSpot")),
+  doFlatPt_(iConfig.getParameter<Bool_t>("doFlatPt")),
+  doHLT(iConfig.getParameter<Bool_t>("doHLT")),
   energyMatrixSize_(2)
 {
   
   energyMatrixSizeFull_=(2*energyMatrixSize_+1)*(2*energyMatrixSize_+1);
   Utility= new Utils();
   
-  if(doMuons_) muonToken_              = consumes<reco::MuonCollection>(iConfig.getParameter<edm::InputTag>("muons"));
+ // if(doMuons_ or do doDimuons ) 
+  muonToken_     = consumes<reco::MuonCollection>(iConfig.getParameter<edm::InputTag>("muons"));
   if(doPhotons_)    gedPhotonsCollection_       = consumes<std::vector<reco::Photon>>(iConfig.getUntrackedParameter<edm::InputTag>("gedPhotonSrc"));
   
   if(doPFPhotons_ or doSuperClusters_){
@@ -140,20 +144,20 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
     ebRechitToken_                 = consumes<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit>>>(iConfig.getParameter<edm::InputTag>("ebRechitCollection"));
     eeRechitToken_                 = consumes<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit>>>(iConfig.getParameter<edm::InputTag>("eeRechitCollection"));
   }
+
   if(doParticleFlow)
   {
      pfCandidateCollection_        = consumes<reco::PFCandidateCollection>(iConfig.getParameter<edm::InputTag>("particlFlowSrc"));
   }
-  if(doHCALClusters)
+  if(doHCALClusters and isRECO)
   {
-     //std::cout<<" doHCALClusters : is true \n";
      hcalClusterCollection_        = consumes<reco::PFClusterCollection>(iConfig.getParameter<edm::InputTag>("hcalClusterSrc"));
   }
-  if(doECALClusters)
+  if(doECALClusters and isRECO)
   {
      ecalClusterCollection_        = consumes<reco::PFClusterCollection>(iConfig.getParameter<edm::InputTag>("ecalClusterSrc"));
   }
-  if(doGeneralTracks)
+  if(doGeneralTracks and isRECO)
   {
      generalTracksCollection_        = consumes<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("generalTrackSrc"));
   }
@@ -168,15 +172,18 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
   
   beamSpotToken_  	   =consumes<reco::BeamSpot>(iConfig.getParameter<edm::InputTag>("beamSpot"));
   primaryVtxToken_       =consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"));
-  if(doGenParticles_)genParticlesCollection_          =consumes<reco::GenParticleCollection>(iConfig.getParameter<edm::InputTag>("genParticles"));
+  if(doGenParticles_)   genParticlesCollection_          =consumes<reco::GenParticleCollection>(iConfig.getParameter<edm::InputTag>("genParticles"));
+  
+  diMuonCharge_    =  iConfig.getUntrackedParameter<bool>("diMuonCharge")    ;
   
   etaMax_muon               =  iConfig.getUntrackedParameter<double>("muon_EtaMax")        ;
   dcaMax_muon_bs            =  iConfig.getUntrackedParameter<double>("muon_dcaMAX")        ;
-  pTMinMuons 		      =  iConfig.getUntrackedParameter<double>("muon_minPt");
-  pTMinPFPhotons               =  iConfig.getUntrackedParameter<double>("PFPhoton_minPt");
-  trackIP_zMax_muon	      =  iConfig.getUntrackedParameter<double>("muon_zIPMax")        ;
-  trackIP_rMax_muon	      =  iConfig.getUntrackedParameter<double>("muon_rIPMax")        ;
+  pTMinMuons 		        =  iConfig.getUntrackedParameter<double>("muon_minPt");
+  pTMinPFPhotons            =  iConfig.getUntrackedParameter<double>("PFPhoton_minPt");
+  trackIP_zMax_muon	        =  iConfig.getUntrackedParameter<double>("muon_zIPMax")        ;
+  trackIP_rMax_muon	        =  iConfig.getUntrackedParameter<double>("muon_rIPMax")        ;
   
+  maxTwoTrackDOCA_          =  iConfig.getUntrackedParameter<double>("maxTwoTrackDOCA")      ;
   minDimuon_pt              =  iConfig.getUntrackedParameter<double>("dimuon_minPt")      ;
   cl_dimuon_vtx             =  iConfig.getUntrackedParameter<double>("dimuon_minVtxCL")      ;
   ls_max_dimuonBS           =  iConfig.getUntrackedParameter<double>("dimuon_maxLStoBS")       ;
@@ -185,11 +192,10 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
   minDimuonInvariantMass    =  iConfig.getUntrackedParameter<double>("dimuon_minInvMass")    ;
   maxDimuonInvariantMass    =  iConfig.getUntrackedParameter<double>("dimuon_maxInvMass")    ;
   
-  printMsg=iConfig.getParameter<bool>("verbose");
-  isMC=iConfig.getParameter<bool>("isMC");
-  doBsToMuMuGamma=iConfig.getParameter<bool>("doBsToMuMuGamma");
+  printMsg=iConfig.getParameter<Bool_t>("verbose");
+  doBsToMuMuGamma=iConfig.getParameter<Bool_t>("doBsToMuMuGamma");
   nBits_                         = iConfig.getParameter<int>("nBits"); 
-  doCompression_                 = iConfig.getParameter<bool>("doCompression");  
+  doCompression_                 = iConfig.getParameter<Bool_t>("doCompression");  
   // initialize output TTree
   
   edm::Service<TFileService> fs;
@@ -245,7 +251,10 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
 
 
   if (doGenParticles_) {
-    theTree->Branch("gen_nBs"			,&gen_nBs_);
+
+    addGenBranches();
+
+    /*theTree->Branch("gen_nBs"			,&gen_nBs_);
     theTree->Branch("gen_Bs_pt"			,&gen_Bs_pt_);
     theTree->Branch("gen_Bs_energy"		,&gen_Bs_energy_);
     theTree->Branch("gen_Bs_eta"		,&gen_Bs_eta_);
@@ -283,194 +292,7 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
     theTree->Branch("mcEt",         &mcEt_);
     theTree->Branch("mcMass",       &mcMass_);
    }
- 
-  }
-
-  if(doMuons_){
-
-    // ### mu- ###  
-    theTree->Branch("nMuM",             &nMuM_);
-    theTree->Branch("mumHighPurity",    &mumHighPurity_);
-    theTree->Branch("mumPt",            &mumPt_);
-    theTree->Branch("mumEta",           &mumEta_);
-    theTree->Branch("mumPhi",           &mumPhi_);
-    theTree->Branch("mumCL",            &mumCL_);
-    theTree->Branch("mumNormChi2",      &mumNormChi2_);
-    theTree->Branch("mumVx",            &mumVx_);
-    theTree->Branch("mumVy",            &mumVy_);
-    theTree->Branch("mumVz",            &mumVz_);
-    theTree->Branch("mumDCABS",         &mumDCABS_);
-    theTree->Branch("mumDCABSE",        &mumDCABSE_);
-    theTree->Branch("mumFracHits",      &mumFracHits_);
-    theTree->Branch("mumdxyBS",         &mumdxyBS_);
-    theTree->Branch("mumdzBS",          &mumdzBS_);
-    theTree->Branch("mumIdx",           &mumIdx_);
-    theTree->Branch("mumNPixHits",      &mumNPixHits_);
-    theTree->Branch("mumNPixLayers",    &mumNPixLayers_);
-    theTree->Branch("mumNTrkHits",      &mumNTrkHits_);
-    theTree->Branch("mumNTrkLayers",    &mumNTrkLayers_);
-    theTree->Branch("mumNMuonHits",     &mumNMuonHits_);
-    theTree->Branch("mumNMatchStation", &mumNMatchStation_);
-    theTree->Branch("mum_isGlobalMuon", &mum_isGlobalMuon_);
-    theTree->Branch("mum_isTrackerMuon",&mum_isTrackerMuon_);
-    theTree->Branch("mum_StandAloneMuon",&mum_StandAloneMuon_);
-    theTree->Branch("mum_isCaloMuon",    &mum_isCaloMuon_);
-    theTree->Branch("mum_isPFMuon",      &mum_isPFMuon_);
-
-    theTree->Branch("mum_selector"          	,  &mum_selector_); 
-    theTree->Branch("mum_isIsolationValid"  	,  &mum_isIsolationValid_);
-    theTree->Branch("mum_isPFIsolationValid"	,  &mum_isPFIsolationValid_);
-   
-    theTree->Branch("mum_isolationR03_trackSumPt"			,&mum_isolationR03_trackSumPt_);
-    theTree->Branch("mum_isolationR03_trackEcalSumEt"			,&mum_isolationR03_trackEcalSumEt_);
-    theTree->Branch("mum_isolationR03_trackHcalSumEt"			,&mum_isolationR03_trackHcalSumEt_);
-    theTree->Branch("mum_isolationR03_trackHoSumEt"			,&mum_isolationR03_trackHoSumEt_);
-    theTree->Branch("mum_isolationR03_trackNTracks"			,&mum_isolationR03_trackNTracks_);
-    theTree->Branch("mum_isolationR03_trackNJets"			,&mum_isolationR03_trackNJets_);
-    theTree->Branch("mum_isolationR03_trackerVetoSumPt"			,&mum_isolationR03_trackerVetoSumPt_);
-    theTree->Branch("mum_isolationR03_emVetoSumEt"			,&mum_isolationR03_emVetoSumEt_);
-    theTree->Branch("mum_isolationR03_hadVetoSumEt"			,&mum_isolationR03_hadVetoSumEt_);
-    theTree->Branch("mum_isolationR03_hoVetoEt"				,&mum_isolationR03_hoVetoEt_);
-
-    theTree->Branch("mum_isolationR05_trackSumPt"			,&mum_isolationR05_trackSumPt_);
-    theTree->Branch("mum_isolationR05_trackEcalSumEt"			,&mum_isolationR05_trackEcalSumEt_);
-    theTree->Branch("mum_isolationR05_trackHcalSumEt"			,&mum_isolationR05_trackHcalSumEt_);
-    theTree->Branch("mum_isolationR05_trackHoSumEt"			,&mum_isolationR05_trackHoSumEt_);
-    theTree->Branch("mum_isolationR05_trackNTracks"			,&mum_isolationR05_trackNTracks_);
-    theTree->Branch("mum_isolationR05_trackNJets"			,&mum_isolationR05_trackNJets_);
-    theTree->Branch("mum_isolationR05_trackerVetoSumPt"			,&mum_isolationR05_trackerVetoSumPt_);
-    theTree->Branch("mum_isolationR05_emVetoSumEt"			,&mum_isolationR05_emVetoSumEt_);
-    theTree->Branch("mum_isolationR05_hadVetoSumEt"			,&mum_isolationR05_hadVetoSumEt_);
-    theTree->Branch("mum_isolationR05_hoVetoEt"				,&mum_isolationR05_hoVetoEt_);
-                                                                                                                                                                                                                                                          
-    theTree->Branch("mum_PFIsolationR03_sumChargedHadronPt"		,&mum_PFIsolationR03_sumChargedHadronPt_);
-    theTree->Branch("mum_PFIsolationR03_sumChargedParticlePt"		,&mum_PFIsolationR03_sumChargedParticlePt_);
-    theTree->Branch("mum_PFIsolationR03_sumNeutralHadronEt"		,&mum_PFIsolationR03_sumNeutralHadronEt_);
-    theTree->Branch("mum_PFIsolationR03_sumPhotonEt"			,&mum_PFIsolationR03_sumPhotonEt_);
-    theTree->Branch("mum_PFIsolationR03_sumNeutralHadronEtHighThreshold",&mum_PFIsolationR03_sumNeutralHadronEtHighThreshold_);
-    theTree->Branch("mum_PFIsolationR03_sumPhotonEtHighThreshold"	,&mum_PFIsolationR03_sumPhotonEtHighThreshold_);
-    theTree->Branch("mum_PFIsolationR03_sumPUPt"			        ,&mum_PFIsolationR03_sumPUPt_);
-                                                                                                                             
-    theTree->Branch("mum_PFIsolationR04_sumChargedHadronPt"		,&mum_PFIsolationR04_sumChargedHadronPt_);
-    theTree->Branch("mum_PFIsolationR04_sumChargedParticlePt"		,&mum_PFIsolationR04_sumChargedParticlePt_);
-    theTree->Branch("mum_PFIsolationR04_sumNeutralHadronEt"		,&mum_PFIsolationR04_sumNeutralHadronEt_);
-    theTree->Branch("mum_PFIsolationR04_sumPhotonEt"			,&mum_PFIsolationR04_sumPhotonEt_);
-    theTree->Branch("mum_PFIsolationR04_sumNeutralHadronEtHighThreshold",&mum_PFIsolationR04_sumNeutralHadronEtHighThreshold_);
-    theTree->Branch("mum_PFIsolationR04_sumPhotonEtHighThreshold"	,&mum_PFIsolationR04_sumPhotonEtHighThreshold_);
-    theTree->Branch("mum_PFIsolationR04_sumPUPt"			        ,&mum_PFIsolationR04_sumPUPt_);
-
-    // ### mu+ ###  
-    theTree->Branch("nMuP",             &nMuP_);
-    theTree->Branch("mupHighPurity",    &mupHighPurity_);
-    theTree->Branch("mupPt",            &mupPt_);
-    theTree->Branch("mupEta",           &mupEta_);
-    theTree->Branch("mupPhi",           &mupPhi_);
-    theTree->Branch("mupCL",            &mupCL_);
-    theTree->Branch("mupNormChi2",      &mupNormChi2_);
-    theTree->Branch("mupVx",            &mupVx_);
-    theTree->Branch("mupVy",            &mupVy_);
-    theTree->Branch("mupVz",            &mupVz_);
-    theTree->Branch("mupDCABS",         &mupDCABS_);
-    theTree->Branch("mupDCABSE",        &mupDCABSE_);
-    theTree->Branch("mupFracHits",      &mupFracHits_);
-    theTree->Branch("mupdxyBS",         &mupdxyBS_);
-    theTree->Branch("mupdzBS",          &mupdzBS_);
-    theTree->Branch("mupIdx_",          &mupIdx_);
-    theTree->Branch("mupNPixHits",      &mupNPixHits_);
-    theTree->Branch("mupNPixLayers",    &mupNPixLayers_);
-    theTree->Branch("mupNTrkHits",      &mupNTrkHits_);
-    theTree->Branch("mupNTrkLayers",    &mupNTrkLayers_);
-    theTree->Branch("mupNMuonHits",     &mupNMuonHits_);
-    theTree->Branch("mupNMatchStation", &mupNMatchStation_);
-    theTree->Branch("mup_isGlobalMuon", &mup_isGlobalMuon_);
-    theTree->Branch("mup_isTrackerMuon",&mup_isTrackerMuon_);
-    theTree->Branch("mup_StandAloneMuon",&mup_StandAloneMuon_);
-    theTree->Branch("mup_isCaloMuon",    &mup_isCaloMuon_);
-    theTree->Branch("mup_isPFMuon",      &mup_isPFMuon_);
-
-    theTree->Branch("mup_selector"          	,  &mup_selector_); 
-    theTree->Branch("mup_isIsolationValid"  	,  &mup_isIsolationValid_);
-    theTree->Branch("mup_isPFIsolationValid"	,  &mup_isPFIsolationValid_);
-   
-    theTree->Branch("mup_isolationR03_trackSumPt"			,&mup_isolationR03_trackSumPt_);
-    theTree->Branch("mup_isolationR03_trackEcalSumEt"			,&mup_isolationR03_trackEcalSumEt_);
-    theTree->Branch("mup_isolationR03_trackHcalSumEt"			,&mup_isolationR03_trackHcalSumEt_);
-    theTree->Branch("mup_isolationR03_trackHoSumEt"			,&mup_isolationR03_trackHoSumEt_);
-    theTree->Branch("mup_isolationR03_trackNTracks"			,&mup_isolationR03_trackNTracks_);
-    theTree->Branch("mup_isolationR03_trackNJets"			,&mup_isolationR03_trackNJets_);
-    theTree->Branch("mup_isolationR03_trackerVetoSumPt"			,&mup_isolationR03_trackerVetoSumPt_);
-    theTree->Branch("mup_isolationR03_emVetoSumEt"			,&mup_isolationR03_emVetoSumEt_);
-    theTree->Branch("mup_isolationR03_hadVetoSumEt"			,&mup_isolationR03_hadVetoSumEt_);
-    theTree->Branch("mup_isolationR03_hoVetoEt"				,&mup_isolationR03_hoVetoEt_);
-
-    theTree->Branch("mup_isolationR05_trackSumPt"			,&mup_isolationR05_trackSumPt_);
-    theTree->Branch("mup_isolationR05_trackEcalSumEt"			,&mup_isolationR05_trackEcalSumEt_);
-    theTree->Branch("mup_isolationR05_trackHcalSumEt"			,&mup_isolationR05_trackHcalSumEt_);
-    theTree->Branch("mup_isolationR05_trackHoSumEt"			,&mup_isolationR05_trackHoSumEt_);
-    theTree->Branch("mup_isolationR05_trackNTracks"			,&mup_isolationR05_trackNTracks_);
-    theTree->Branch("mup_isolationR05_trackNJets"			,&mup_isolationR05_trackNJets_);
-    theTree->Branch("mup_isolationR05_trackerVetoSumPt"			,&mup_isolationR05_trackerVetoSumPt_);
-    theTree->Branch("mup_isolationR05_emVetoSumEt"			,&mup_isolationR05_emVetoSumEt_);
-    theTree->Branch("mup_isolationR05_hadVetoSumEt"			,&mup_isolationR05_hadVetoSumEt_);
-    theTree->Branch("mup_isolationR05_hoVetoEt"				,&mup_isolationR05_hoVetoEt_);
-                                                                                                                                                                                                                                                          
-    theTree->Branch("mup_PFIsolationR03_sumChargedHadronPt"		,&mup_PFIsolationR03_sumChargedHadronPt_);
-    theTree->Branch("mup_PFIsolationR03_sumChargedParticlePt"		,&mup_PFIsolationR03_sumChargedParticlePt_);
-    theTree->Branch("mup_PFIsolationR03_sumNeutralHadronEt"		,&mup_PFIsolationR03_sumNeutralHadronEt_);
-    theTree->Branch("mup_PFIsolationR03_sumPhotonEt"			,&mup_PFIsolationR03_sumPhotonEt_);
-    theTree->Branch("mup_PFIsolationR03_sumNeutralHadronEtHighThreshold",&mup_PFIsolationR03_sumNeutralHadronEtHighThreshold_);
-    theTree->Branch("mup_PFIsolationR03_sumPhotonEtHighThreshold"	,&mup_PFIsolationR03_sumPhotonEtHighThreshold_);
-    theTree->Branch("mup_PFIsolationR03_sumPUPt"			        ,&mup_PFIsolationR03_sumPUPt_);
-                                                                                                                             
-    theTree->Branch("mup_PFIsolationR04_sumChargedHadronPt"		,&mup_PFIsolationR04_sumChargedHadronPt_);
-    theTree->Branch("mup_PFIsolationR04_sumChargedParticlePt"		,&mup_PFIsolationR04_sumChargedParticlePt_);
-    theTree->Branch("mup_PFIsolationR04_sumNeutralHadronEt"		,&mup_PFIsolationR04_sumNeutralHadronEt_);
-    theTree->Branch("mup_PFIsolationR04_sumPhotonEt"			,&mup_PFIsolationR04_sumPhotonEt_);
-    theTree->Branch("mup_PFIsolationR04_sumNeutralHadronEtHighThreshold",&mup_PFIsolationR04_sumNeutralHadronEtHighThreshold_);
-    theTree->Branch("mup_PFIsolationR04_sumPhotonEtHighThreshold"	,&mup_PFIsolationR04_sumPhotonEtHighThreshold_);
-    theTree->Branch("mup_PFIsolationR04_sumPUPt"			        ,&mup_PFIsolationR04_sumPUPt_);
-
-    // ### mu+ mu- Mass ###
-    theTree->Branch("mumuPt",    &mumuPt_);
-    theTree->Branch("mumuEta",   &mumuEta_);
-    theTree->Branch("mumuRapidity",&mumuRapidity_);
-    theTree->Branch("mumuPhi",   &mumuPhi_);
-    theTree->Branch("mumuMass",  &mumuMass_);
-    theTree->Branch("mumuMassE", &mumuMassE_);
-    theTree->Branch("mumuPx",    &mumuPx_);
-    theTree->Branch("mumuPy",    &mumuPy_);
-    theTree->Branch("mumuPz",    &mumuPz_);
-    theTree->Branch("mumuCovPxPx_",    &mumuCovPxPx_);
-    theTree->Branch("mumuCovPxPy_",    &mumuCovPxPy_);
-    theTree->Branch("mumuCovPxPz_",    &mumuCovPxPz_);
-    theTree->Branch("mumuCovPyPy_",    &mumuCovPyPy_);
-    theTree->Branch("mumuCovPyPz_",    &mumuCovPyPz_);
-    theTree->Branch("mumuCovPzPz_",    &mumuCovPzPz_);
-    theTree->Branch("mumuDR",    &mumuDR_);
-    theTree->Branch("mumuParentMuP",    &mumuParentMuP_);
-    theTree->Branch("mumuParentMuM",    &mumuParentMuM_);
-
-    // ### mu+ mu- Vtx ###
-    theTree->Branch("mumuVtxCL",       &mumuVtxCL_);
-    theTree->Branch("mumuVtxX",        &mumuVtxX_);
-    theTree->Branch("mumuVtxY",        &mumuVtxY_);
-    theTree->Branch("mumuVtxZ",        &mumuVtxZ_);
-    theTree->Branch("mumuVtxCovXX_",   &mumuVtxCovXX_);
-    theTree->Branch("mumuVtxCovXY_",   &mumuVtxCovXY_);
-    theTree->Branch("mumuVtxCovXZ_",   &mumuVtxCovYY_);
-    theTree->Branch("mumuVtxCovYY_",   &mumuVtxCovYY_);
-    theTree->Branch("mumuVtxCovYZ_",   &mumuVtxCovYZ_);
-    theTree->Branch("mumuVtxCovZZ_",   &mumuVtxCovZZ_);
-    theTree->Branch("mumuVtxChi2",     &mumuVtxChi2_);
-    theTree->Branch("mumuVtxNdof",     &mumuVtxNdof_);
-
-    theTree->Branch("mumuCosAlphaBS",  &mumuCosAlphaBS_);
-    theTree->Branch("mumuCosAlphaBSE", &mumuCosAlphaBSE_);
-    theTree->Branch("mumuLBS",         &mumuLBS_);
-    theTree->Branch("mumuLBSE",        &mumuLBSE_);
-    theTree->Branch("mumuDCA",         &mumuDCA_);
-
-
+    */
   }
   
   if (doPhotons_) {
@@ -612,6 +434,14 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
     theTree->Branch("scPFNeuIso4",             &scPFNeuIso4_);
     theTree->Branch("scPFNeuIso5",             &scPFNeuIso5_);
   }
+  if(doMuons_)
+  {
+        addMuonBranches();
+  }
+  if(doDimuons_)
+  {
+        addDimuonBranches();
+  }
   if(doParticleFlow)
   {
      addParticleFlowBranches();
@@ -676,7 +506,7 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
   
   }
   if (doGenParticles_) {
-  
+  /*
     gen_nBs_ = 0;
     gen_nBsMuonM_ = 0 ;
     gen_nBsMuonP_ = 0 ;
@@ -712,9 +542,11 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
     mcEt_                 .clear();
     mcMass_               .clear();
      }
+     */
 }
 
   if(doMuons_){
+  /*
     nMuM_ = 0;
     nMuP_ = 0; 
     mumHighPurity_.clear();
@@ -906,6 +738,7 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
     
     nMuP_=0;
     nMuM_=0;
+    */
   }
   
   if (doPhotons_) {
@@ -1053,18 +886,19 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
   event_  = iEvent.id().event();
   lumis_  = iEvent.luminosityBlock();
   isData_ = iEvent.isRealData();
+  
+  iEvent.getByToken(pfCandidateCollection_, pfCandHandle_);
+  iSetup.get<IdealMagneticFieldRecord>().get(bFieldHandle_);
+  iSetup.get<TransientTrackRecord>().get("TransientTrackBuilder",theTTBuilder_);
+  iEvent.getByToken(beamSpotToken_, beamSpotHandle);
+  iEvent.getByToken(primaryVtxToken_, pvHandle_);
 
-  // Get magnetic field
-    
   //  Get BeamSpot
   if(doBeamSpot)
   {
-  edm::Handle<reco::BeamSpot> beamSpotH;
-  iEvent.getByToken(beamSpotToken_, beamSpotH);
-  reco::BeamSpot beamSpot = *beamSpotH;
+  
+  reco::BeamSpot beamSpot = *beamSpotHandle;
 
- 
- 
   // adding  BEAMSOPT 
   beamspot_x_			= beamSpot.x0();  ;
   beamspot_y_			= beamSpot.y0();  ;
@@ -1097,23 +931,25 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
   }
   // MC truth
   if (isMC and doGenParticles_) {
-    fillGenParticles(iEvent);
+    fillGenBranches(iEvent);
   }
 
   if (doHLT) 		    fillHLT(iEvent);
-  if (doMuons_)     	fillMuons(iEvent, iSetup);
+  if (doDimuons_)    	fillDimuonBranches(iEvent, iSetup);
   if (doPhotons_)    	fillPhotons(iEvent, iSetup);
   if (doPFPhotons_) 	fillPFPhotons(iEvent, iSetup);
   if (doSuperClusters_) {
         reco::Vertex pv(math::XYZPoint(0, 0, -999), math::Error<3>::type()); 
         fillSC(iEvent, iSetup,pv);
   }
-  if (doHCALClusters) {
-        fillHCALClusterCollection(iEvent,iSetup);
-  }
-  if (doECALClusters)  fillECALClusterCollection(iEvent,iSetup);
+  if (doMuons_)     	fillMuonBranches(iEvent, iSetup);
   if (doGeneralTracks)  fillGeneralTrackCollectionBranches(iEvent,iSetup);
   if (doParticleFlow)   fillPFCandiateCollection(iEvent,iSetup);
+  
+  if (isRECO and doHCALClusters) {
+        fillHCALClusterCollection(iEvent,iSetup);
+  }
+  if (isRECO and doECALClusters)   fillECALClusterCollection(iEvent,iSetup);
   theTree->Fill();
   
 }
@@ -1122,7 +958,7 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
 
 void BsToMuMuGammaNTuplizer::fillGenParticles(const edm::Event& iEvent)
 {
-  
+ /* 
   edm::Handle<reco::GenParticleCollection> genParticleCollection;
   iEvent.getByToken(genParticlesCollection_, genParticleCollection);
   
@@ -1179,7 +1015,6 @@ void BsToMuMuGammaNTuplizer::fillGenParticles(const edm::Event& iEvent)
 	gen_BsPhoton_eta_.push_back(bsDaughter.eta());
 	gen_BsPhoton_phi_.push_back(bsDaughter.phi());
 	gen_nBsPhoton_++;
-	
       }
     }  //number of daughters
 
@@ -1192,12 +1027,11 @@ void BsToMuMuGammaNTuplizer::fillGenParticles(const edm::Event& iEvent)
     gen_nBs_++;
     
   } // genparticle collection
-  
+  */
 } // fill gen particles
 
-
+/*
 void BsToMuMuGammaNTuplizer::fillMuons(const edm::Event& iEvent, const edm::EventSetup& iSetup){
-
   
   // Get magnetic field
     
@@ -1217,7 +1051,7 @@ void BsToMuMuGammaNTuplizer::fillMuons(const edm::Event& iEvent, const edm::Even
   double mu_mu_vtx_cl, mu_mu_pt, mu_mu_mass, mu_mu_mass_err;
   
   // variables
-  float muonMass,muonMassErr;
+  Float_t muonMass,muonMassErr;
   muonMass= Utility->muonMass;
   muonMassErr= Utility->muonMassErr;
   double chi2,ndof;
@@ -1467,7 +1301,6 @@ void BsToMuMuGammaNTuplizer::fillMuons(const edm::Event& iEvent, const edm::Even
       
       if (true or (bsDimuon_lv.Pt() < minDimuon_pt)  || (bsDimuon_lv.M() < minDimuonInvariantMass) || (bsDimuon_lv.M() > maxDimuonInvariantMass))
 	{
-	  if (printMsg) std::cout << __LINE__ << " : continue --> no good mumu pair pT: " << bsDimuon_lv.Pt() << "\tinv. mass: " << bsDimuon_lv.M() << std::endl;
 	  //        continue;
 	}
       
@@ -1489,8 +1322,7 @@ void BsToMuMuGammaNTuplizer::fillMuons(const edm::Event& iEvent, const edm::Even
       if ( !mumuVertexFitTree->isValid()) continue;
       
       if (mumuVertexFitTree->isValid() == false){
-	if (printMsg) std::cout << __LINE__ << " : continue --> invalid vertex from the mu+ mu- vertex fit" << std::endl;
-	continue; 
+	     continue; 
       }
       
       mumuVertexFitTree->movePointerToTheTop();
@@ -1637,6 +1469,8 @@ void BsToMuMuGammaNTuplizer::fillMuons(const edm::Event& iEvent, const edm::Even
 
 } //fill muons
 
+*/
+
 void BsToMuMuGammaNTuplizer::fillPhotons(const edm::Event& e, const edm::EventSetup& es)
 {
   // Fills tree branches with photons.
@@ -1665,7 +1499,6 @@ void BsToMuMuGammaNTuplizer::fillPhotons(const edm::Event& e, const edm::EventSe
     
     //phoSigmaE_          .push_back(pho->userFloat("ecalEnergyErrPostCorr"));
     //phoCalibE_          .push_back(pho->userFloat("ecalEnergyPostCorr"));
-    
     //phoCalibEt_         .push_back(pho->et()*pho->userFloat("ecalEnergyPostCorr")/pho->energy());
     phoSCE_             .push_back((*pho).superCluster()->energy());
     phoSCEt_            .push_back(pho->superCluster()->energy()/cosh(pho->superCluster()->eta()));
@@ -1678,7 +1511,6 @@ void BsToMuMuGammaNTuplizer::fillPhotons(const edm::Event& e, const edm::EventSe
     phoSCPhiWidth_      .push_back((*pho).superCluster()->phiWidth());
     phoSCBrem_          .push_back((*pho).superCluster()->phiWidth()/(*pho).superCluster()->etaWidth());
     phohasPixelSeed_    .push_back((Int_t)pho->hasPixelSeed());
-    //phoEleVeto_         .push_back((Int_t)pho->passElectronVeto());
     phoR9_              .push_back(pho->r9());
     phoHoverE_          .push_back(pho->hadTowOverEm());
     phoESEffSigmaRR_    .push_back(lazyTool.eseffsirir(*((*pho).superCluster())));
@@ -1686,10 +1518,11 @@ void BsToMuMuGammaNTuplizer::fillPhotons(const edm::Event& e, const edm::EventSe
     phoPFChIso_         .push_back(pho->chargedHadronIso()); 
     phoPFPhoIso_        .push_back(pho->photonIso());
     phoPFNeuIso_        .push_back(pho->neutralHadronIso());
-
     phoEcalPFClusterIso_.push_back(pho->ecalPFClusterIso());
     phoHcalPFClusterIso_.push_back(pho->hcalPFClusterIso());
-    //phoIDMVA_           .push_back(pho->userFloat("PhotonMVAEstimatorRunIIFall17v2Values"));  
+
+    // phoEleVeto_         .push_back((Int_t)pho->passElectronVeto());
+    // phoIDMVA_           .push_back(pho->userFloat("PhotonMVAEstimatorRunIIFall17v2Values"));  
     
     phoSigmaIEtaIEtaFull5x5_ .push_back(pho->full5x5_sigmaIetaIeta());
     phoSigmaIEtaIPhiFull5x5_ .push_back(pho->full5x5_showerShapeVariables().sigmaIetaIphi);
@@ -1698,8 +1531,6 @@ void BsToMuMuGammaNTuplizer::fillPhotons(const edm::Event& e, const edm::EventSe
     phoE5x5Full5x5_          .push_back(pho->full5x5_e5x5());
     phoR9Full5x5_            .push_back(pho->full5x5_r9());
     phoMIPTotEnergy_         .push_back(pho->mipTotEnergy());
-    
-    
     phoMIPChi2_        .push_back(pho->mipChi2());
     phoMIPSlope_       .push_back(pho->mipSlope());
     phoMIPIntercept_   .push_back(pho->mipIntercept());
@@ -1708,7 +1539,7 @@ void BsToMuMuGammaNTuplizer::fillPhotons(const edm::Event& e, const edm::EventSe
     
     ///////////////////////////////SATURATED/UNSATURATED ///from ggFlash////
     DetId seed = (pho->superCluster()->seed()->hitsAndFractions())[0].first;
-    bool isBarrel = seed.subdetId() == EcalBarrel;
+    Bool_t isBarrel = seed.subdetId() == EcalBarrel;
     const EcalRecHitCollection * rechits = (isBarrel?lazyTool.getEcalEBRecHitCollection():lazyTool.getEcalEERecHitCollection());
     
     EcalRecHitCollection::const_iterator theSeedHit = rechits->find(seed);
@@ -1734,7 +1565,7 @@ void BsToMuMuGammaNTuplizer::fillPFPhotons(const edm::Event& e, const edm::Event
   // Fills tree branches with photons.
   edm::Handle<edm::View<reco::PFCandidate> > pfPhotonsHandle;
   e.getByToken(pfPhotonsCollection_, pfPhotonsHandle);
-
+  
   // loop over photons
   for (auto pf = pfPhotonsHandle->begin(); pf != pfPhotonsHandle->end(); ++pf) {
     if(pf->pdgId() !=22)continue;
@@ -1743,7 +1574,6 @@ void BsToMuMuGammaNTuplizer::fillPFPhotons(const edm::Event& e, const edm::Event
     phoPFEt_            .push_back(pf->et());
     phoPFEta_           .push_back(pf->eta());
     phoPFPhi_           .push_back(pf->phi());
-    
     nPFPho_++;
   } // PF photons loop
 }
@@ -1860,7 +1690,7 @@ void BsToMuMuGammaNTuplizer::fillSC(edm::Event const& e, const edm::EventSetup& 
 
       ++nSC_;
       double dRmin=1e9;
-      bool foundGsfEleMatch=false;
+      Bool_t foundGsfEleMatch=false;
       for(auto const& ele : *gsfElectronHandle)
 	{
 	  auto dr=deltaR(*(ele.superCluster()),sc);
@@ -1908,9 +1738,9 @@ void BsToMuMuGammaNTuplizer::fillSC(edm::Event const& e, const edm::EventSetup& 
 	} // HCAL rec hits
         
         scEFromHcalRecHitInDIEta5IPhi5.push_back(hcalEnergy);
-        scNHcalRecHitInDIEta5IPhi5.push_back(float(nhcalRechit_));
+        scNHcalRecHitInDIEta5IPhi5.push_back(Float_t(nhcalRechit_));
         scEFromHcalRecHitInDIEta2IPhi2.push_back(hcal2Energy);
-        scNHcalRecHitInDIEta2IPhi2.push_back(float(nhcal2Rechit_));
+        scNHcalRecHitInDIEta2IPhi2.push_back(Float_t(nhcal2Rechit_));
         
 
         pfIsoCalculator pfIso(e, pfPhotonsCollection_, pv.position());
@@ -1943,7 +1773,7 @@ void BsToMuMuGammaNTuplizer::SetupTriggerStorageVectors()
 {
   auto numTrigs = trigTable.size();
   TrigPrescales_store = new std::vector<int> [numTrigs];
-  TrigResult_store    = new std::vector<bool>[numTrigs];
+  TrigResult_store    = new std::vector<Bool_t>[numTrigs];
 }
 
 void BsToMuMuGammaNTuplizer::ClearTrggerStorages()
@@ -2030,23 +1860,23 @@ void BsToMuMuGammaNTuplizer::fillHLT(edm::Event const& iEvent)
     
 }
 
-std::vector<float> BsToMuMuGammaNTuplizer::getShowerShapes(reco::CaloCluster* caloBC, const EcalRecHitCollection* recHits, const CaloTopology *topology)
+std::vector<Float_t> BsToMuMuGammaNTuplizer::getShowerShapes(reco::CaloCluster* caloBC, const EcalRecHitCollection* recHits, const CaloTopology *topology)
 {
-  std::vector<float> shapes;
+  std::vector<Float_t> shapes;
   shapes.resize(38); 
   locCov_.clear();
   full5x5_locCov_.clear();
   locCov_ = EcalClusterTools::localCovariances(*caloBC, recHits, topology);
   full5x5_locCov_ = noZS::EcalClusterTools::localCovariances(*caloBC, recHits, topology);
     
-  float e5x5 = EcalClusterTools::e5x5(*caloBC, recHits, topology); // e5x5
-  float e3x3 = EcalClusterTools::e3x3(*caloBC, recHits, topology); // e3x3
-  float eMax = EcalClusterTools::eMax(*caloBC, recHits); // eMax
-  float eTop = EcalClusterTools::eTop(*caloBC, recHits, topology); // eTop 
-  float eRight = EcalClusterTools::eRight(*caloBC, recHits, topology); // eRight
-  float eBottom = EcalClusterTools::eBottom(*caloBC, recHits, topology); // eBottom
-  float eLeft = EcalClusterTools::eLeft(*caloBC, recHits, topology); // eLeft
-  float e4 = eTop + eRight + eBottom + eLeft;
+  Float_t e5x5 = EcalClusterTools::e5x5(*caloBC, recHits, topology); // e5x5
+  Float_t e3x3 = EcalClusterTools::e3x3(*caloBC, recHits, topology); // e3x3
+  Float_t eMax = EcalClusterTools::eMax(*caloBC, recHits); // eMax
+  Float_t eTop = EcalClusterTools::eTop(*caloBC, recHits, topology); // eTop 
+  Float_t eRight = EcalClusterTools::eRight(*caloBC, recHits, topology); // eRight
+  Float_t eBottom = EcalClusterTools::eBottom(*caloBC, recHits, topology); // eBottom
+  Float_t eLeft = EcalClusterTools::eLeft(*caloBC, recHits, topology); // eLeft
+  Float_t e4 = eTop + eRight + eBottom + eLeft;
 
   shapes[0] = e5x5;
   shapes[1] = EcalClusterTools::e2x2(*caloBC, recHits, topology)/e5x5; // e2x2/e5x5
@@ -2071,14 +1901,14 @@ std::vector<float> BsToMuMuGammaNTuplizer::getShowerShapes(reco::CaloCluster* ca
   //if(std::isnan(shapes.at(17))) std::cout << shapes[0] << " - " << shapes[1] << " - " << shapes[2] << " - " << shapes[3] << " - " << shapes[4] << " - " << shapes[5]  << " - " << shapes[6] << " - " << shapes[7] << " - " << shapes[8] << " - " << shapes[9] << " - " << shapes[10] << " - " << shapes[11] << " - " << shapes[12] << " - " << shapes[13] << " - " << shapes[14] << " - " << shapes[15]  << " - " << shapes[16] << " - " << shapes[17] << " - " << shapes[18] << std::endl;
 
   // full_5x5 variables
-  float full5x5_e5x5 = noZS::EcalClusterTools::e5x5(*caloBC, recHits, topology); // e5x5
-  float full5x5_e3x3 = noZS::EcalClusterTools::e3x3(*caloBC, recHits, topology); // e3x3
-  float full5x5_eMax = noZS::EcalClusterTools::eMax(*caloBC, recHits); // eMax
-  float full5x5_eTop = noZS::EcalClusterTools::eTop(*caloBC, recHits, topology); // eTop 
-  float full5x5_eRight = noZS::EcalClusterTools::eRight(*caloBC, recHits, topology); // eRight
-  float full5x5_eBottom = noZS::EcalClusterTools::eBottom(*caloBC, recHits, topology); // eBottom
-  float full5x5_eLeft = noZS::EcalClusterTools::eLeft(*caloBC, recHits, topology); // eLeft
-  float full5x5_e4 = full5x5_eTop + full5x5_eRight + full5x5_eBottom + full5x5_eLeft;
+  Float_t full5x5_e5x5 = noZS::EcalClusterTools::e5x5(*caloBC, recHits, topology); // e5x5
+  Float_t full5x5_e3x3 = noZS::EcalClusterTools::e3x3(*caloBC, recHits, topology); // e3x3
+  Float_t full5x5_eMax = noZS::EcalClusterTools::eMax(*caloBC, recHits); // eMax
+  Float_t full5x5_eTop = noZS::EcalClusterTools::eTop(*caloBC, recHits, topology); // eTop 
+  Float_t full5x5_eRight = noZS::EcalClusterTools::eRight(*caloBC, recHits, topology); // eRight
+  Float_t full5x5_eBottom = noZS::EcalClusterTools::eBottom(*caloBC, recHits, topology); // eBottom
+  Float_t full5x5_eLeft = noZS::EcalClusterTools::eLeft(*caloBC, recHits, topology); // eLeft
+  Float_t full5x5_e4 = full5x5_eTop + full5x5_eRight + full5x5_eBottom + full5x5_eLeft;
 
   shapes[19] = full5x5_e5x5;
   shapes[20] = noZS::EcalClusterTools::e2x2(*caloBC, recHits, topology)/full5x5_e5x5; // e2x2/e5x5
@@ -2155,13 +1985,10 @@ void BsToMuMuGammaNTuplizer::addPrimaryVertexBranches()
 void BsToMuMuGammaNTuplizer::fillPrimaryVertexBranches(const edm::Event& iEvent,  const edm::EventSetup& iSetup)
 {
 
-    edm::Handle<std::vector<reco::Vertex>> primaryVertexCollection;
-    iEvent.getByToken(primaryVtxToken_, primaryVertexCollection);
     int i=0;
     storageMapInt["nPrimaryVertex"]=0;
-    for(auto&  aVertex : *primaryVertexCollection){
+    for(auto&  aVertex : *pvHandle_){
     if( not aVertex.isValid() ) continue;
-    
     // # offlinePrimaryVertices # //
     storageMapFloatArray["primaryVertex_isFake"         ][i] =   aVertex.isFake()           ;
     storageMapFloatArray["primaryVertex_x"              ][i] =   aVertex.x()                ;
@@ -2206,11 +2033,8 @@ void BsToMuMuGammaNTuplizer::addGeneralTracksBranches()
     theTree->Branch("generalTracks_charge",   storageMapFloatArray["generalTracks_charge"],"generalTracks_charge[nGeneralTracks]/F");
 }
 
-
-
 void BsToMuMuGammaNTuplizer::fillGeneralTrackCollectionBranches( const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
-  // Fills tree branches with photons.
   edm::Handle<reco::TrackCollection>  generalTracksHandle;
   iEvent.getByToken(generalTracksCollection_, generalTracksHandle);
   //std::cout<<"Size of trackColection = "<<generalTracksHandle->size()<<"\n";
@@ -2246,24 +2070,6 @@ void BsToMuMuGammaNTuplizer::addParticleFlowBranches()
       theTree->Branch("pf_HoE",   storageMapFloatArray["pf_HoE"],"pf_HoE[nPFCandidates]/F");
       storageMapFloatArray["pf_mvaIso"] = new Float_t[N_PF_MAX];
       theTree->Branch("pf_mvaIso",   storageMapFloatArray["pf_mvaIso"],"pf_mvaIso[nPFCandidates]/F");
-      storageMapFloatArray["pf_mvaPiMu"] = new Float_t[N_PF_MAX];
-     // theTree->Branch("pf_mvaPiMu",   storageMapFloatArray["pf_mvaPiMu"],"pf_mvaPiMu[nPFCandidates]/F");
-     // storageMapFloatArray["pf_mvaEMu"] = new Float_t[N_PF_MAX];
-      // theTree->Branch("pf_mvaEMu",   storageMapFloatArray["pf_mvaEMu"],"pf_mvaEMu[nPFCandidates]/F");
-      // storageMapFloatArray["pf_mvaEPi"] = new Float_t[N_PF_MAX];
-      // theTree->Branch("pf_mvaEPi",   storageMapFloatArray["pf_mvaEPi"],"pf_mvaEPi[nPFCandidates]/F");
-      // storageMapFloatArray["pf_mvaGamma"] = new Float_t[N_PF_MAX];
-      // theTree->Branch("pf_mvaGamma",   storageMapFloatArray["pf_mvaGamma"],"pf_mvaGamma[nPFCandidates]/F");
-      // storageMapFloatArray["pf_mvaNeuH"] = new Float_t[N_PF_MAX];
-      // theTree->Branch("pf_mvaNeuH",   storageMapFloatArray["pf_mvaNeuH"],"pf_mvaNeuH[nPFCandidates]/F");
-      // storageMapFloatArray["pf_mvaNeuHGamma"] = new Float_t[N_PF_MAX];
-      // theTree->Branch("pf_mvaNeuHGamma",   storageMapFloatArray["pf_mvaNeuHGamma"],"pf_mvaNeuHGamma[nPFCandidates]/F");
-     // storageMapFloatArray["pf_dnnGamma"] = new Float_t[N_PF_MAX];
-     // theTree->Branch("pf_dnnGamma",   storageMapFloatArray["pf_dnnGamma"],"pf_dnnGamma[nPFCandidates]/F");
-     // storageMapFloatArray["pf_dnnEeleBkgGamma"] = new Float_t[N_PF_MAX];
-     // theTree->Branch("pf_dnnEeleBkgGamma",   storageMapFloatArray["pf_dnnEeleBkgGamma"],"pf_dnnEeleBkgGamma[nPFCandidates]/F");
-     // storageMapFloatArray["pf_dnnEeleSigIso"] = new Float_t[N_PF_MAX];
-     // theTree->Branch("pf_dnnEeleSigIso",   storageMapFloatArray["pf_dnnEeleSigIso"],"pf_dnnEeleSigIso[nPFCandidates]/F");
       storageMapFloatArray["pf_vertexX"] = new Float_t[N_PF_MAX];
       theTree->Branch("pf_vertexX",   storageMapFloatArray["pf_vertexX"],"pf_vertexX[nPFCandidates]/F");
       storageMapFloatArray["pf_vertexY"] = new Float_t[N_PF_MAX];
@@ -2301,21 +2107,14 @@ void BsToMuMuGammaNTuplizer::fillPFCandiateCollection( const edm::Event& iEvent,
   storageMapInt["nPFCandidates"]=0;
   for (auto pfCd = pfCandidateHandle->begin();pfCd != pfCandidateHandle->end(); pfCd++) 
   {
+    if(  pfCd->pt() < 2.0 ) continue;
+
       storageMapFloatArray["pf_ecalEnergy"]     [i]= pfCd->ecalEnergy();   
       storageMapFloatArray["pf_ecalRawEnergy"]  [i]= pfCd->rawEcalEnergy(); 
       storageMapFloatArray["pf_hcalEnergy"]     [i]= pfCd->hcalEnergy(); 
       storageMapFloatArray["pf_hcalRawEnergy"]  [i]= pfCd->rawHcalEnergy(); 
       storageMapFloatArray["pf_HoE"]            [i]= pfCd->hcalEnergy()/(1e-6 +  pfCd->ecalEnergy() ); 
       storageMapFloatArray["pf_mvaIso"]         [i]= pfCd->mva_Isolated(); 
-    //  storageMapFloatArray["pf_mvaPiMu"]        [i]= pfCd->mva_pi_mu(); 
-    //  storageMapFloatArray["pf_mvaEMu"]         [i]= pfCd->mva_e_mu(); 
-    //  storageMapFloatArray["pf_mvaEPi"]         [i]= pfCd->mva_e_pi(); 
-    //  storageMapFloatArray["pf_mvaGamma"]       [i]= pfCd->mva_nothing_gamma(); 
-    //  storageMapFloatArray["pf_mvaNeuH"]        [i]= pfCd->mva_nothing_nh(); 
-    //  storageMapFloatArray["pf_mvaNeuHGamma"]   [i]= pfCd->mva_gamma_nh(); 
-    //  storageMapFloatArray["pf_dnnGamma"]       [i]= pfCd->dnn_gamma(); 
-    //  storageMapFloatArray["pf_dnnEeleBkgGamma"][i]= pfCd->dnn_e_bkgPhoton();
-    //  storageMapFloatArray["pf_dnnEeleSigNonIso"]  [i]= pfCd->dnn_e_sigNonIsolated(); 
       storageMapFloatArray["pf_vertexX"]    [i] = pfCd->vx();  
       storageMapFloatArray["pf_vertexY"]    [i] = pfCd->vy();
       storageMapFloatArray["pf_vertexZ"]    [i] = pfCd->vz();
@@ -2334,13 +2133,13 @@ void BsToMuMuGammaNTuplizer::fillPFCandiateCollection( const edm::Event& iEvent,
   }
   storageMapInt["nPFCandidates"]=i;
 }
+
 void BsToMuMuGammaNTuplizer::addECALCluserBranches()
 {
       storageMapInt["nECALClusters"]=0;
       theTree->Branch("nECALClusters",   &storageMapInt["nECALClusters"]);
       storageMapInt["nECALClusterEnergyMatrix"]=0;
       theTree->Branch("nECALClusterEnergyMatrix",   &storageMapInt["nECALClusterEnergyMatrix"]);
-      
       storageMapFloatArray["clusterECAL_energy"] = new Float_t[N_ECAL_CLUSTERS];
       theTree->Branch("clusterECAL_energy",   storageMapFloatArray["clusterECAL_energy"],"clusterECAL_energy[nECALClusters]/F");
       storageMapFloatArray["clusterECAL_correctedEnergy"] = new Float_t[N_ECAL_CLUSTERS];
@@ -2370,15 +2169,10 @@ void BsToMuMuGammaNTuplizer::fillECALClusterCollection( const edm::Event& iEvent
 {
   edm::Handle<reco::PFClusterCollection>  ecalClusterHandle;
   iEvent.getByToken(ecalClusterCollection_, ecalClusterHandle);
+
   //std::cout<<"Size of ECAL Cluster Collection  = "<<ecalClusterHandle->size()<<"\n";
   
   noZS::EcalClusterLazyTools lazyTool(iEvent,  iSetup, ebRechitToken_, eeRechitToken_);
-  
-  //std::unique_ptr<noZS::EcalClusterLazyTools> lazyTools;
-  //lazyTools = std::make_unique<noZS::EcalClusterLazyTools>(iEvent, ecalClusterToolsESGetTokens_.get(iSetup), ebRechitToken_, eeRechitToken_);
-
-  //EcalClusterLazyTools       lazyTool    (e, es, ebRechitToken_, eeRechitToken_);
-  //noZS::EcalClusterLazyTools lazyToolnoZS(e, es, ebRechitToken_, eeRechitToken_);
   
   Int_t i=0,energySize=0;
   storageMapInt["nECALClusters"]=0;
@@ -2406,6 +2200,76 @@ void BsToMuMuGammaNTuplizer::fillECALClusterCollection( const edm::Event& iEvent
   storageMapInt["nECALClusters"]=i;
   storageMapInt["nECALClusterEnergyMatrix"]=energySize;
 
+}
+
+
+void BsToMuMuGammaNTuplizer::addGenBranches()
+{
+      storageMapInt["nHCALClusters"]=0;
+      theTree->Branch("nHCALClusters",   &storageMapInt["nHCALClusters"]);
+
+      storageMapInt["nGen"]   = 0;
+      theTree->Branch("nGen",   &storageMapInt["nGen"]);
+
+      storageMapFloatArray["gen_mcPID"]   = new Float_t[N_GEN_MAX];
+      theTree->Branch("gen_mcPID", storageMapFloatArray["gen_mcPID"],"gen_mcPID[nGen/F");
+      storageMapFloatArray["gen_mcStatus"]   = new Float_t[N_GEN_MAX];
+      theTree->Branch("gen_mcStatus", storageMapFloatArray["gen_mcStatus"],"gen_mcStatus[nGen/F");
+      storageMapFloatArray["gen_mcVtx_x"]   = new Float_t[N_GEN_MAX];
+      theTree->Branch("gen_mcVtx_x", storageMapFloatArray["gen_mcVtx_x"],"gen_mcVtx_x[nGen/F");
+      storageMapFloatArray["gen_mcVtx_y"]   = new Float_t[N_GEN_MAX];
+      theTree->Branch("gen_mcVtx_y", storageMapFloatArray["gen_mcVtx_y"],"gen_mcVtx_y[nGen/F");
+      storageMapFloatArray["gen_mcVtx_z"]   = new Float_t[N_GEN_MAX];
+      theTree->Branch("gen_mcVtx_z", storageMapFloatArray["gen_mcVtx_z"],"gen_mcVtx_z[nGen/F");
+      storageMapFloatArray["gen_mcPt"]   = new Float_t[N_GEN_MAX];
+      theTree->Branch("gen_mcPt", storageMapFloatArray["gen_mcPt"],"gen_mcPt[nGen/F");
+      storageMapFloatArray["gen_mcEta"]   = new Float_t[N_GEN_MAX];
+      theTree->Branch("gen_mcEta", storageMapFloatArray["gen_mcEta"],"gen_mcEta[nGen/F");
+      storageMapFloatArray["gen_mcPhi"]   = new Float_t[N_GEN_MAX];
+      theTree->Branch("gen_mcPhi", storageMapFloatArray["gen_mcPhi"],"gen_mcPhi[nGen/F");
+      storageMapFloatArray["gen_mcE"]   = new Float_t[N_GEN_MAX];
+      theTree->Branch("gen_mcE", storageMapFloatArray["gen_mcE"],"gen_mcE[nGen/F");
+      storageMapFloatArray["gen_mcEt"]   = new Float_t[N_GEN_MAX];
+      theTree->Branch("gen_mcEt", storageMapFloatArray["gen_mcEt"],"gen_mcEt[nGen/F");
+      storageMapFloatArray["gen_mcMass"]   = new Float_t[N_GEN_MAX];
+      theTree->Branch("gen_mcMass", storageMapFloatArray["gen_mcMass"],"gen_mcMass[nGen/F");
+      storageMapFloatArray["gen_mcMotherPDGID"]   = new Float_t[N_GEN_MAX];
+      theTree->Branch("gen_mcMotherPDGID", storageMapFloatArray["gen_mcMotherPDGID"],"gen_mcMotherPDGID[nGen/F");
+      storageMapFloatArray["gen_mcMotherPt"]   = new Float_t[N_GEN_MAX];
+      theTree->Branch("gen_mcMotherPt", storageMapFloatArray["gen_mcMotherPt"],"gen_mcMotherPt[nGen/F");
+      storageMapFloatArray["gen_mcMotherEta"]   = new Float_t[N_GEN_MAX];
+      theTree->Branch("gen_mcMotherEta", storageMapFloatArray["gen_mcMotherEta"],"gen_mcMotherEta[nGen/F");
+      storageMapFloatArray["gen_mcMotherPhi"]   = new Float_t[N_GEN_MAX];
+      theTree->Branch("gen_mcMotherPhi", storageMapFloatArray["gen_mcMotherPhi"],"gen_mcMotherPhi[nGen/F");
+      storageMapFloatArray["gen_mcMotherMass"]   = new Float_t[N_GEN_MAX];
+      theTree->Branch("gen_mcMotherMass", storageMapFloatArray["gen_mcMotherMass"],"gen_mcMotherMass[nGen/F");
+}
+
+void BsToMuMuGammaNTuplizer::fillGenBranches( const edm::Event& iEvent)
+{
+  edm::Handle<reco::GenParticleCollection> genParticleCollection;
+  iEvent.getByToken(genParticlesCollection_, genParticleCollection);
+    Int_t nGen=0;
+    for (auto p = genParticleCollection->begin(); p != genParticleCollection->end(); ++p) {
+        storageMapFloatArray["gen_mcPID"][nGen]   = p->pdgId() ;
+        storageMapFloatArray["gen_mcStatus"][nGen]   = p->status(); 
+        storageMapFloatArray["gen_mcVtx_x"][nGen]   = p->vx() ;
+        storageMapFloatArray["gen_mcVtx_y"][nGen]   = p->vy() ;
+        storageMapFloatArray["gen_mcVtx_z"][nGen]   = p->vz() ;
+        storageMapFloatArray["gen_mcPt"][nGen]   = p->pt() ;
+        storageMapFloatArray["gen_mcEta"][nGen]   = p->eta(); 
+        storageMapFloatArray["gen_mcPhi"][nGen]   = p->phi() ;
+        storageMapFloatArray["gen_mcE"][nGen]   = p->energy() ;
+        storageMapFloatArray["gen_mcEt"][nGen]   = p->et() ;
+        storageMapFloatArray["gen_mcMass"][nGen]   = p->mass() ;
+        storageMapFloatArray["gen_gen_mcMotherPDGID"][nGen]   = p->mother()->pdgId() ;
+        storageMapFloatArray["gen_gen_mcMotherPt"][nGen]      = p->mother()->pt() ;
+        storageMapFloatArray["gen_gen_mcMotherEta"][nGen]     = p->mother()->eta() ;
+        storageMapFloatArray["gen_gen_mcMotherPhi"][nGen]     = p->mother()->phi() ;
+        storageMapFloatArray["gen_gen_mcMotherMass"][nGen]    = p->mother()->mass() ;
+        nGen++;
+     }
+        storageMapInt["nGen"]     = nGen ;
 }
 
 void BsToMuMuGammaNTuplizer::addHCALCluserBranches()
@@ -2442,11 +2306,6 @@ void BsToMuMuGammaNTuplizer::fillHCALClusterCollection( const edm::Event& iEvent
      iEvent.getByToken(hcalClusterCollection_, hcalClusterHandle);
      //std::cout<<"Size of HCAL Cluster Collection  = "<<hcalClusterHandle->size()<<"\n";
      
-     //std::unique_ptr<noZS::EcalClusterLazyTools> lazyTools;
-     //lazyTools = std::make_unique<noZS::EcalClusterLazyTools>(iEvent, hcalClusterToolsESGetTokens_.get(iSetup), ebRechitToken_, eeRechitToken_);
-   
-     //EcalClusterLazyTools       lazyTool    (e, es, ebRechitToken_, eeRechitToken_);
-     //noZS::EcalClusterLazyTools lazyToolnoZS(e, es, ebRechitToken_, eeRechitToken_);
      Int_t i=0;
      for (auto hcalClus = hcalClusterHandle->begin(); hcalClus != hcalClusterHandle->end(); hcalClus++) 
      {
@@ -2466,57 +2325,694 @@ void BsToMuMuGammaNTuplizer::fillHCALClusterCollection( const edm::Event& iEvent
      storageMapInt["nHCALClusters"]=i;
 }
 
-float BsToMuMuGammaNTuplizer::reduceFloat(float val, int bits)
+void BsToMuMuGammaNTuplizer::addMuonBranches()
 {
-  if(!doCompression_) return val;
-  else return MiniFloatConverter::reduceMantissaToNbitsRounding(val,bits);
+      storageMapInt["nMuons"]=0;
+      theTree->Branch("nMuons",   &storageMapInt["nMuons"]);
+      storageMapFloatArray["muon_Charge"]   = new Float_t[N_MUON_MAX];
+      theTree->Branch("muon_Charge", storageMapFloatArray["muon_Charge"],"muon_Charge[nMuons]/F");
+      storageMapFloatArray["muon_Idx"]   = new Float_t[N_MUON_MAX];
+      theTree->Branch("muon_Idx", storageMapFloatArray["muon_Idx"],"muon_Idx[nMuons]/F");
+      storageMapFloatArray["muon_Pt"]   = new Float_t[N_MUON_MAX];
+      theTree->Branch("muon_Pt", storageMapFloatArray["muon_Pt"],"muon_Pt[nMuons]/F");
+      storageMapFloatArray["muon_Eta"]   = new Float_t[N_MUON_MAX];
+      theTree->Branch("muon_Eta", storageMapFloatArray["muon_Eta"],"muon_Eta[nMuons]/F");
+      storageMapFloatArray["muon_Phi"]   = new Float_t[N_MUON_MAX];
+      theTree->Branch("muon_Phi", storageMapFloatArray["muon_Phi"],"muon_Phi[nMuons]/F");
+      storageMapFloatArray["muon_CL"]   = new Float_t[N_MUON_MAX];
+      theTree->Branch("muon_CL", storageMapFloatArray["muon_CL"],"muon_CL[nMuons]/F");
+      storageMapFloatArray["muon_NormChi2"]   = new Float_t[N_MUON_MAX];
+      theTree->Branch("muon_NormChi2", storageMapFloatArray["muon_NormChi2"],"muon_NormChi2[nMuons]/F");
+      storageMapFloatArray["muon_Vx"]   = new Float_t[N_MUON_MAX];
+      theTree->Branch("muon_Vx", storageMapFloatArray["muon_Vx"],"muon_Vx[nMuons]/F");
+      storageMapFloatArray["muon_Vy"]   = new Float_t[N_MUON_MAX];
+      theTree->Branch("muon_Vy", storageMapFloatArray["muon_Vy"],"muon_Vy[nMuons]/F");
+      storageMapFloatArray["muon_Vz"]   = new Float_t[N_MUON_MAX];
+      theTree->Branch("muon_Vz", storageMapFloatArray["muon_Vz"],"muon_Vz[nMuons]/F");
+      storageMapFloatArray["muon_dxyBS"]   = new Float_t[N_MUON_MAX];
+      theTree->Branch("muon_dxyBS", storageMapFloatArray["muon_dxyBS"],"muon_dxyBS[nMuons]/F");
+      storageMapFloatArray["muon_dzBS"]   = new Float_t[N_MUON_MAX];
+      theTree->Branch("muon_dzBS", storageMapFloatArray["muon_dzBS"],"muon_dzBS[nMuons]/F");
+      storageMapFloatArray["muon_MissingHits"]   = new Float_t[N_MUON_MAX];
+      theTree->Branch("muon_MissingHits", storageMapFloatArray["muon_MissingHits"],"muon_MissingHits[nMuons]/F");
+      
+      storageMapUint64Array["muon_selectors"]   = new uint64_t[N_MUON_MAX];
+      theTree->Branch("muon_selectors", storageMapUint64Array["muon_selectors"],"muon_selectors[nMuons]/l");
+      storageMapBoolArray["muon_isGlobalMuon"]   = new Bool_t[N_MUON_MAX];
+      theTree->Branch("muon_isGlobalMuon", storageMapBoolArray["muon_isGlobalMuon"],"muon_isGlobalMuon[nMuons]/O");
+      storageMapBoolArray["muon_isTrackerMuon"]   = new Bool_t[N_MUON_MAX];
+      theTree->Branch("muon_isTrackerMuon", storageMapBoolArray["muon_isTrackerMuon"],"muon_isTrackerMuon[nMuons]/O");
+      storageMapBoolArray["muon_isStandAloneMuon"]   = new Bool_t[N_MUON_MAX];
+      theTree->Branch("muon_isStandAloneMuon", storageMapBoolArray["muon_isStandAloneMuon"],"muon_isStandAloneMuon[nMuons]/O");
+      storageMapBoolArray["muon_isCaloMuon"]   = new Bool_t[N_MUON_MAX];
+      theTree->Branch("muon_isCaloMuon", storageMapBoolArray["muon_isCaloMuon"],"muon_isCaloMuon[nMuons]/O");
+      storageMapBoolArray["muon_isPFMuon"]   = new Bool_t[N_MUON_MAX];
+      theTree->Branch("muon_isPFMuon", storageMapBoolArray["muon_isPFMuon"],"muon_isPFMuon[nMuons]/O");
+
+      storageMapFloatArray["muon_chi2LocalPosition"]   = new Float_t[N_MUON_MAX];
+      theTree->Branch("muon_chi2LocalPosition", storageMapFloatArray["muon_chi2LocalPosition"],"muon_chi2LocalPosition[nMuons]/F");
+      storageMapFloatArray["muon_glbNormChi2"]   = new Float_t[N_MUON_MAX];
+      theTree->Branch("muon_glbNormChi2", storageMapFloatArray["muon_glbNormChi2"],"muon_glbNormChi2[nMuons]/F");
+      storageMapFloatArray["muon_glbTrackProbability"]   = new Float_t[N_MUON_MAX];
+      theTree->Branch("muon_glbTrackProbability", storageMapFloatArray["muon_glbTrackProbability"],"muon_glbTrackProbability[nMuons]/F");
+      storageMapFloatArray["muon_nLostHitsInner"]   = new Float_t[N_MUON_MAX];
+      theTree->Branch("muon_nLostHitsInner", storageMapFloatArray["muon_nLostHitsInner"],"muon_nLostHitsInner[nMuons]/F");
+      storageMapFloatArray["muon_nLostHitsOn"]   = new Float_t[N_MUON_MAX];
+      theTree->Branch("muon_nLostHitsOn", storageMapFloatArray["muon_nLostHitsOn"],"muon_nLostHitsOn[nMuons]/F");
+      storageMapFloatArray["muon_nLostHitsOuter"]   = new Float_t[N_MUON_MAX];
+      theTree->Branch("muon_nLostHitsOuter", storageMapFloatArray["muon_nLostHitsOuter"],"muon_nLostHitsOuter[nMuons]/F");
+      storageMapFloatArray["muon_nPixels"]   = new Float_t[N_MUON_MAX];
+      theTree->Branch("muon_nPixels", storageMapFloatArray["muon_nPixels"],"muon_nPixels[nMuons]/F");
+      storageMapFloatArray["muon_nValidHits"]   = new Float_t[N_MUON_MAX];
+      theTree->Branch("muon_nValidHits", storageMapFloatArray["muon_nValidHits"],"muon_nValidHits[nMuons]/F");
+      storageMapFloatArray["muon_trkKink"]   = new Float_t[N_MUON_MAX];
+      theTree->Branch("muon_trkKink", storageMapFloatArray["muon_trkKink"],"muon_trkKink[nMuons]/F");
+      storageMapFloatArray["muon_trkValidFrac"]   = new Float_t[N_MUON_MAX];
+      theTree->Branch("muon_trkValidFrac", storageMapFloatArray["muon_trkValidFrac"],"muon_trkValidFrac[nMuons]/F");
+      storageMapFloatArray["muon_trkLayers"]   = new Float_t[N_MUON_MAX];
+      theTree->Branch("muon_trkLayers", storageMapFloatArray["muon_trkLayers"],"muon_trkLayers[nMuons]/F");
+      storageMapFloatArray["muon_trkLostLayersInner"]   = new Float_t[N_MUON_MAX];
+      theTree->Branch("muon_trkLostLayersInner", storageMapFloatArray["muon_trkLostLayersInner"],"muon_trkLostLayersInner[nMuons]/F");
+      storageMapFloatArray["muon_trkLostLayersOn"]   = new Float_t[N_MUON_MAX];
+      theTree->Branch("muon_trkLostLayersOn", storageMapFloatArray["muon_trkLostLayersOn"],"muon_trkLostLayersOn[nMuons]/F");
+      storageMapFloatArray["muon_trkLostLayersOuter"]   = new Float_t[N_MUON_MAX];
+      theTree->Branch("muon_trkLostLayersOuter", storageMapFloatArray["muon_trkLostLayersOuter"],"muon_trkLostLayersOuter[nMuons]F");
+      storageMapFloatArray["muon_highPurity"]   = new Float_t[N_MUON_MAX];
+      theTree->Branch("muon_highPurity", storageMapFloatArray["muon_highPurity"],"muon_highPurity[nMuons]/F");
+      storageMapFloatArray["muon_match1_dX"]   = new Float_t[N_MUON_MAX];
+      theTree->Branch("muon_match1_dX", storageMapFloatArray["muon_match1_dX"],"muon_match1_dX[nMuons]/F");
+      storageMapFloatArray["muon_match1_dY"]   = new Float_t[N_MUON_MAX];
+      theTree->Branch("muon_match1_dY", storageMapFloatArray["muon_match1_dY"],"muon_match1_dY[nMuons]/F");
+      storageMapFloatArray["muon_match1_pullDxDz"]   = new Float_t[N_MUON_MAX];
+      theTree->Branch("muon_match1_pullDxDz", storageMapFloatArray["muon_match1_pullDxDz"],"muon_match1_pullDxDz[nMuons]/F");
+      storageMapFloatArray["muon_match1_pullDyDz"]   = new Float_t[N_MUON_MAX];
+      theTree->Branch("muon_match1_pullDyDz", storageMapFloatArray["muon_match1_pullDyDz"],"muon_match1_pullDyDz[nMuons]/F");
+      storageMapFloatArray["muon_match1_pullX"]   = new Float_t[N_MUON_MAX];
+      theTree->Branch("muon_match1_pullX", storageMapFloatArray["muon_match1_pullX"],"muon_match1_pullX[nMuons]/F");
+      storageMapFloatArray["muon_match1_pullY"]   = new Float_t[N_MUON_MAX];
+      theTree->Branch("muon_match1_pullY", storageMapFloatArray["muon_match1_pullY"],"muon_match1_pullY[nMuons]/F");
+      storageMapFloatArray["muon_match2_dX"]   = new Float_t[N_MUON_MAX];
+      theTree->Branch("muon_match2_dX", storageMapFloatArray["muon_match2_dX"],"muon_match2_dX[nMuons]/F");
+      storageMapFloatArray["muon_match2_pullDxDz"]   = new Float_t[N_MUON_MAX];
+      theTree->Branch("muon_match2_pullDxDz", storageMapFloatArray["muon_match2_pullDxDz"],"muon_match2_pullDxDz[nMuons]/F");
+      storageMapFloatArray["muon_match2_pullDyDz"]   = new Float_t[N_MUON_MAX];
+      theTree->Branch("muon_match2_pullDyDz", storageMapFloatArray["muon_match2_pullDyDz"],"muon_match2_pullDyDz[nMuons]/F");
+      storageMapFloatArray["muon_match2_pullX"]   = new Float_t[N_MUON_MAX];
+      theTree->Branch("muon_match2_pullX", storageMapFloatArray["muon_match2_pullX"],"muon_match2_pullX[nMuons]/F");
+      storageMapFloatArray["muon_match2_pullY"]   = new Float_t[N_MUON_MAX];
+      theTree->Branch("muon_match2_pullY", storageMapFloatArray["muon_match2_pullY"],"muon_match2_pullY[nMuons]/F");
+
 }
 
+void BsToMuMuGammaNTuplizer::fillMuonBranches( const edm::Event& iEvent, const edm::EventSetup& iSetup)
+{
 
-int BsToMuMuGammaNTuplizer::calDIPhi(int iPhi1, int iPhi2) {
-  int dPhi = iPhi1 - iPhi2;
-  if (dPhi > 72 / 2)
-    dPhi -= 72;
-  else if (dPhi < -72 / 2)
-    dPhi += 72;
-  return dPhi;
-}
+  edm::Handle<std::vector<reco::Muon>> muons;
+  iEvent.getByToken(muonToken_, muons);
+   
+  //std::cout << " muon size:" << muons->size() << std::endl; 
+  //start loop on first muon 
+  
+  int nMu=0;
+  for (uint32_t i=0;i<muons->size();i++){
+   
+    auto &mu = muons->at(i);
+    auto muTrack = mu.innerTrack();
 
-int BsToMuMuGammaNTuplizer::calDIEta(int iEta1, int iEta2) {
-  int dEta = iEta1 - iEta2;
-  if (iEta1 * iEta2 < 0) {  //-ve to +ve transistion and no crystal at zero
-    if (dEta < 0)
-      dEta++;
-    else
-      dEta--;
-  }
-  return dEta;
-}
+    if ((muTrack.isNull() == true)) continue;
+    
+    //const reco::TransientTrack muTrackTT( muTrack, &(*bFieldHandle));
+    // # Compute mu- DCA to BeamSpot #
+    // theDCAXBS = muTrackTT.trajectoryStateClosestToPoint(GlobalPoint(beamSpot.position().x(),beamSpot.position().y(),beamSpot.position().z()));
+    // double DCAmuBS    = theDCAXBS.perigeeParameters().transverseImpactParameter();
+    // double DCAmuBSErr = theDCAXBS.perigeeError().transverseImpactParameterError();
+    
+    storageMapFloatArray["muon_Idx"][nMu]          = i;  
+    storageMapFloatArray["muon_Charge"][nMu]       = mu.charge();  
+    storageMapFloatArray["muon_Pt"][nMu]           = mu.pt() ;
+    storageMapFloatArray["muon_Eta"][nMu]          = mu.eta() ;
+    storageMapFloatArray["muon_Phi"][nMu]          = mu.phi() ;
+    storageMapFloatArray["muon_CL"][nMu]           = TMath::Prob(muTrack->chi2(), static_cast<int>(rint(muTrack->ndof()))) ;
+    storageMapFloatArray["muon_NormChi2"][nMu]     = muTrack->normalizedChi2() ;
+    storageMapFloatArray["muon_Vx"][nMu]           = mu.vx() ;
+    storageMapFloatArray["muon_Vy"][nMu]           = mu.vy() ;
+    storageMapFloatArray["muon_Vz"][nMu]           = mu.vz() ;
+    storageMapFloatArray["muon_MissingHits"][nMu]  = muTrack->hitPattern().numberOfLostHits(reco::HitPattern::TRACK_HITS) +
+											    muTrack->hitPattern().numberOfLostHits(reco::HitPattern::MISSING_INNER_HITS) +
+											    muTrack->hitPattern().numberOfLostHits(reco::HitPattern::MISSING_OUTER_HITS) ;
+    storageMapBoolArray["muon_isGlobalMuon"][nMu]   = mu.isGlobalMuon() ;
+    storageMapBoolArray["muon_isTrackerMuon"][nMu]  = mu.isTrackerMuon() ;
+    storageMapBoolArray["muon_isStandAloneMuon"][nMu] = mu.isStandAloneMuon() ;
+    storageMapBoolArray["muon_isCaloMuon"][nMu]     = mu.isCaloMuon() ;
+    storageMapBoolArray["muon_isPFMuon"][nMu]       = mu.isPFMuon();
+    
+    storageMapFloatArray["muon_trkKink"][nMu]             = mu.combinedQuality().trkKink ;
+    storageMapFloatArray["muon_glbTrackProbability"][nMu] = mu.combinedQuality().glbTrackProbability ;
+    storageMapFloatArray["muon_chi2LocalPosition"][nMu]   = mu.combinedQuality().chi2LocalPosition ;
 
-float BsToMuMuGammaNTuplizer::getMinEnergyHCAL_(HcalDetId id) const {
-  if ( (id.subdetId() == HcalBarrel)  ) {
-    if ( (Run2_2018_ == 1) )
-      return 0.7;
-    else if ( (Run2_2018_ == 0) ) { //means Run3
-      if (id.depth() == 1)
-	return 0.1;
-      else if (id.depth() == 2)
-	return 0.2;
+      if (mu.isGlobalMuon())
+    	storageMapFloatArray["muon_glbNormChi2"][nMu]=mu.globalTrack()->normalizedChi2();
       else
-	return 0.3;
-    }
-    else //neither 2018 , nor Run3, not supported
-      return 9999.0;
-  } 
+    	storageMapFloatArray["muon_glbNormChi2"][nMu]=9e4f;
+	  
+     storageMapFloatArray["muon_nPixels"][nMu]            = muTrack->hitPattern().numberOfValidPixelHits();
+	 storageMapFloatArray["muon_nValidHits"][nMu]         = muTrack->hitPattern().numberOfValidTrackerHits();
+	 storageMapFloatArray["muon_nLostHitsInner"][nMu]     = muTrack->hitPattern().numberOfLostTrackerHits(reco::HitPattern::MISSING_INNER_HITS);
+	 storageMapFloatArray["muon_nLostHitsOn"][nMu]        = muTrack->hitPattern().numberOfLostTrackerHits(reco::HitPattern::TRACK_HITS);
+	 storageMapFloatArray["muon_nLostHitsOuter"][nMu]     = muTrack->hitPattern().numberOfLostTrackerHits(reco::HitPattern::MISSING_OUTER_HITS);
+	 storageMapFloatArray["muon_trkLayers"][nMu]          = muTrack->hitPattern().trackerLayersWithMeasurement();
+	 storageMapFloatArray["muon_trkLostLayersInner"][nMu] = muTrack->hitPattern().trackerLayersWithoutMeasurement(reco::HitPattern::MISSING_INNER_HITS);
+	 storageMapFloatArray["muon_trkLostLayersOn"][nMu]    = muTrack->hitPattern().trackerLayersWithoutMeasurement(reco::HitPattern::TRACK_HITS);
+	 storageMapFloatArray["muon_trkLostLayersOuter"][nMu] = muTrack->hitPattern().trackerLayersWithoutMeasurement(reco::HitPattern::MISSING_OUTER_HITS);
+	 storageMapFloatArray["muon_highPurity"][nMu]         = muTrack->quality(reco::Track::highPurity);
 
-  else if (id.subdetId() == HcalEndcap) {
-    if (id.depth() == 1)
-      return 0.1;
-    else
-      return 0.2;
-  } else
-    return 9999.0;
+      if (mu.isTrackerMuon() or mu.isGlobalMuon()){
+	     storageMapFloatArray["muon_trkValidFrac"][nMu]  = muTrack->validFraction() ;
+      } 
+      else 
+      {
+	     storageMapFloatArray["muon_trkValidFrac"][nMu]  =0.0f ;
+      }
+
+      storageMapUint64Array["muon_selectors"][nMu] = mu.selectors(); 
+      nMu++; 
+      if(nMu>= N_MUON_MAX) 
+      {
+            std::cout<<" nMu --> "<<nMu<<"  !! \n";
+      }
+
+    }
+    storageMapInt["nMuons"]=nMu;
+
 }
+void BsToMuMuGammaNTuplizer::addDimuonBranches()
+{
+        storageMapInt["nDimuons"]=0;
+        theTree->Branch("nDimuons",   &storageMapInt["nDimuons"]);
+        
+        storageMapFloatArray["dimuon_mu1_index"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_mu1_index", storageMapFloatArray["dimuon_mu1_index"],"dimuon_mu1_index[nDimuons]/F");
+        storageMapFloatArray["dimuon_mu1_pdgId"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_mu1_pdgId", storageMapFloatArray["dimuon_mu1_pdgId"],"dimuon_mu1_pdgId[nDimuons]/F");
+        storageMapFloatArray["dimuon_mu1_pt"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_mu1_pt", storageMapFloatArray["dimuon_mu1_pt"],"dimuon_mu1_pt[nDimuons]/F");
+        storageMapFloatArray["dimuon_mu1_eta"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_mu1_eta", storageMapFloatArray["dimuon_mu1_eta"],"dimuon_mu1_eta[nDimuons]/F");
+        storageMapFloatArray["dimuon_mu1_phi"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_mu1_phi", storageMapFloatArray["dimuon_mu1_phi"],"dimuon_mu1_phi[nDimuons]/F");
+        storageMapFloatArray["dimuon_mu2_index"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_mu2_index", storageMapFloatArray["dimuon_mu2_index"],"dimuon_mu2_index[nDimuons]/F");
+        storageMapFloatArray["dimuon_mu2_pdgId"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_mu2_pdgId", storageMapFloatArray["dimuon_mu2_pdgId"],"dimuon_mu2_pdgId[nDimuons]/F");
+        storageMapFloatArray["dimuon_mu2_pt"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_mu2_pt", storageMapFloatArray["dimuon_mu2_pt"],"dimuon_mu2_pt[nDimuons]/F");
+        storageMapFloatArray["dimuon_mu2_eta"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_mu2_eta", storageMapFloatArray["dimuon_mu2_eta"],"dimuon_mu2_eta[nDimuons]/F");
+        storageMapFloatArray["dimuon_mu2_phi"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_mu2_phi", storageMapFloatArray["dimuon_mu2_phi"],"dimuon_mu2_phi[nDimuons]/F");
+        storageMapFloatArray["dimuon_doca"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_doca", storageMapFloatArray["dimuon_doca"],"dimuon_doca[nDimuons]/F");
+        storageMapFloatArray["dimuon_kin_valid"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_kin_valid", storageMapFloatArray["dimuon_kin_valid"],"dimuon_kin_valid[nDimuons]/F");
+        storageMapFloatArray["dimuon_kin_vtx_prob"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_kin_vtx_prob", storageMapFloatArray["dimuon_kin_vtx_prob"],"dimuon_kin_vtx_prob[nDimuons]/F");
+        storageMapFloatArray["dimuon_kin_vtx_chi2dof"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_kin_vtx_chi2dof", storageMapFloatArray["dimuon_kin_vtx_chi2dof"],"dimuon_kin_vtx_chi2dof[nDimuons]/F");
+        storageMapFloatArray["dimuon_kin_mass"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_kin_mass", storageMapFloatArray["dimuon_kin_mass"],"dimuon_kin_mass[nDimuons]/F");
+        storageMapFloatArray["dimuon_kin_massErr"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_kin_massErr", storageMapFloatArray["dimuon_kin_massErr"],"dimuon_kin_massErr[nDimuons]/F");
+        storageMapFloatArray["dimuon_kin_lxy"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_kin_lxy", storageMapFloatArray["dimuon_kin_lxy"],"dimuon_kin_lxy[nDimuons]/F");
+        storageMapFloatArray["dimuon_kin_sigLxy"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_kin_sigLxy", storageMapFloatArray["dimuon_kin_sigLxy"],"dimuon_kin_sigLxy[nDimuons]/F");
+        storageMapFloatArray["dimuon_kin_alphaBS"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_kin_alphaBS", storageMapFloatArray["dimuon_kin_alphaBS"],"dimuon_kin_alphaBS[nDimuons]/F");
+        storageMapFloatArray["dimuon_kin_alphaBSErr"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_kin_alphaBSErr", storageMapFloatArray["dimuon_kin_alphaBSErr"],"dimuon_kin_alphaBSErr[nDimuons]/F");
+        storageMapFloatArray["dimuon_kin_vtx_x"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_kin_vtx_x", storageMapFloatArray["dimuon_kin_vtx_x"],"dimuon_kin_vtx_x[nDimuons]/F");
+        storageMapFloatArray["dimuon_kin_vtx_xErr"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_kin_vtx_xErr", storageMapFloatArray["dimuon_kin_vtx_xErr"],"dimuon_kin_vtx_xErr[nDimuons]/F");
+        storageMapFloatArray["dimuon_kin_vtx_y"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_kin_vtx_y", storageMapFloatArray["dimuon_kin_vtx_y"],"dimuon_kin_vtx_y[nDimuons]/F");
+        storageMapFloatArray["dimuon_kin_vtx_yErr"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_kin_vtx_yErr", storageMapFloatArray["dimuon_kin_vtx_yErr"],"dimuon_kin_vtx_yErr[nDimuons]/F");
+        storageMapFloatArray["dimuon_kin_vtx_z"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_kin_vtx_z", storageMapFloatArray["dimuon_kin_vtx_z"],"dimuon_kin_vtx_z[nDimuons]/F");
+        storageMapFloatArray["dimuon_kin_vtx_zErr"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_kin_vtx_zErr", storageMapFloatArray["dimuon_kin_vtx_zErr"],"dimuon_kin_vtx_zErr[nDimuons]/F");
+        storageMapFloatArray["dimuon_kin_pt"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_kin_pt", storageMapFloatArray["dimuon_kin_pt"],"dimuon_kin_pt[nDimuons]/F");
+        storageMapFloatArray["dimuon_kin_eta"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_kin_eta", storageMapFloatArray["dimuon_kin_eta"],"dimuon_kin_eta[nDimuons]/F");
+        storageMapFloatArray["dimuon_kin_phi"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_kin_phi", storageMapFloatArray["dimuon_kin_phi"],"dimuon_kin_phi[nDimuons]/F");
+        storageMapFloatArray["dimuon_kin_alpha"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_kin_alpha", storageMapFloatArray["dimuon_kin_alpha"],"dimuon_kin_alpha[nDimuons]/F");
+        storageMapFloatArray["dimuon_kin_alphaErr"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_kin_alphaErr", storageMapFloatArray["dimuon_kin_alphaErr"],"dimuon_kin_alphaErr[nDimuons]/F");
+        storageMapFloatArray["dimuon_kin_l3d"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_kin_l3d", storageMapFloatArray["dimuon_kin_l3d"],"dimuon_kin_l3d[nDimuons]/F");
+        storageMapFloatArray["dimuon_kin_sl3d"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_kin_sl3d", storageMapFloatArray["dimuon_kin_sl3d"],"dimuon_kin_sl3d[nDimuons]/F");
+        storageMapFloatArray["dimuon_kin_pv_z"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_kin_pv_z", storageMapFloatArray["dimuon_kin_pv_z"],"dimuon_kin_pv_z[nDimuons]/F");
+        storageMapFloatArray["dimuon_kin_pv_zErr"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_kin_pv_zErr", storageMapFloatArray["dimuon_kin_pv_zErr"],"dimuon_kin_pv_zErr[nDimuons]/F");
+        storageMapFloatArray["dimuon_kin_pvip"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_kin_pvip", storageMapFloatArray["dimuon_kin_pvip"],"dimuon_kin_pvip[nDimuons]/F");
+        storageMapFloatArray["dimuon_kin_spvip"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_kin_spvip", storageMapFloatArray["dimuon_kin_spvip"],"dimuon_kin_spvip[nDimuons]/F");
+        storageMapFloatArray["dimuon_kin_pvipErr"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_kin_pvipErr", storageMapFloatArray["dimuon_kin_pvipErr"],"dimuon_kin_pvipErr[nDimuons]/F");
+        storageMapFloatArray["dimuon_kin_pv2ip"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_kin_pv2ip", storageMapFloatArray["dimuon_kin_pv2ip"],"dimuon_kin_pv2ip[nDimuons]/F");
+        storageMapFloatArray["dimuon_kin_spv2ip"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_kin_spv2ip", storageMapFloatArray["dimuon_kin_spv2ip"],"dimuon_kin_spv2ip[nDimuons]/F");
+        storageMapFloatArray["dimuon_kin_pv2ipErr"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_kin_pv2ipErr", storageMapFloatArray["dimuon_kin_pv2ipErr"],"dimuon_kin_pv2ipErr[nDimuons]/F");
+        storageMapFloatArray["dimuon_kin_pvlip"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_kin_pvlip", storageMapFloatArray["dimuon_kin_pvlip"],"dimuon_kin_pvlip[nDimuons]/F");
+        storageMapFloatArray["dimuon_kin_pvlipSig"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_kin_pvlipSig", storageMapFloatArray["dimuon_kin_pvlipSig"],"dimuon_kin_pvlipSig[nDimuons]/F");
+        storageMapFloatArray["dimuon_kin_pvlipErr"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_kin_pvlipErr", storageMapFloatArray["dimuon_kin_pvlipErr"],"dimuon_kin_pvlipErr[nDimuons]/F");
+        storageMapFloatArray["dimuon_kin_pv2lip"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_kin_pv2lip", storageMapFloatArray["dimuon_kin_pv2lip"],"dimuon_kin_pv2lip[nDimuons]/F");
+        storageMapFloatArray["dimuon_kin_pv2lipSig"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_kin_pv2lipSig", storageMapFloatArray["dimuon_kin_pv2lipSig"],"dimuon_kin_pv2lipSig[nDimuons]/F");
+        storageMapFloatArray["dimuon_kin_pv2lipErr"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_kin_pv2lipErr", storageMapFloatArray["dimuon_kin_pv2lipErr"],"dimuon_kin_pv2lipErr[nDimuons]/F");
+        storageMapFloatArray["dimuon_kin_pvIndex"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_kin_pvIndex", storageMapFloatArray["dimuon_kin_pvIndex"],"dimuon_kin_pvIndex[nDimuons]/F");
+        storageMapFloatArray["dimuon_kin_tau"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_kin_tau", storageMapFloatArray["dimuon_kin_tau"],"dimuon_kin_tau[nDimuons]/F");
+        storageMapFloatArray["dimuon_kin_taue"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_kin_taue", storageMapFloatArray["dimuon_kin_taue"],"dimuon_kin_taue[nDimuons]/F");
+        storageMapFloatArray["dimuon_kin_tauxy"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_kin_tauxy", storageMapFloatArray["dimuon_kin_tauxy"],"dimuon_kin_tauxy[nDimuons]/F");
+        storageMapFloatArray["dimuon_kin_tauxye"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_kin_tauxye", storageMapFloatArray["dimuon_kin_tauxye"],"dimuon_kin_tauxye[nDimuons]/F");
+        storageMapFloatArray["dimuon_nTrks"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_nTrks", storageMapFloatArray["dimuon_nTrks"],"dimuon_nTrks[nDimuons]/F");
+        storageMapFloatArray["dimuon_nBMTrks"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_nBMTrks", storageMapFloatArray["dimuon_nBMTrks"],"dimuon_nBMTrks[nDimuons]/F");
+        storageMapFloatArray["dimuon_nDisTrks"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_nDisTrks", storageMapFloatArray["dimuon_nDisTrks"],"dimuon_nDisTrks[nDimuons]/F");
+        storageMapFloatArray["dimuon_closetrk"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_closetrk", storageMapFloatArray["dimuon_closetrk"],"dimuon_closetrk[nDimuons]/F");
+        storageMapFloatArray["dimuon_closetrks1"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_closetrks1", storageMapFloatArray["dimuon_closetrks1"],"dimuon_closetrks1[nDimuons]/F");
+        storageMapFloatArray["dimuon_closetrks2"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_closetrks2", storageMapFloatArray["dimuon_closetrks2"],"dimuon_closetrks2[nDimuons]/F");
+        storageMapFloatArray["dimuon_closetrks3"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_closetrks3", storageMapFloatArray["dimuon_closetrks3"],"dimuon_closetrks3[nDimuons]/F");
+        storageMapFloatArray["dimuon_docatrk"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_docatrk", storageMapFloatArray["dimuon_docatrk"],"dimuon_docatrk[nDimuons]/F");
+        storageMapFloatArray["dimuon_m1iso"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_m1iso", storageMapFloatArray["dimuon_m1iso"],"dimuon_m1iso[nDimuons]/F");
+        storageMapFloatArray["dimuon_m2iso"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_m2iso", storageMapFloatArray["dimuon_m2iso"],"dimuon_m2iso[nDimuons]/F");
+        storageMapFloatArray["dimuon_iso"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_iso", storageMapFloatArray["dimuon_iso"],"dimuon_iso[nDimuons]/F");
+        storageMapFloatArray["dimuon_otherVtxMaxProb"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_otherVtxMaxProb", storageMapFloatArray["dimuon_otherVtxMaxProb"],"dimuon_otherVtxMaxProb[nDimuons]/F");
+        storageMapFloatArray["dimuon_otherVtxMaxProb1"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_otherVtxMaxProb1", storageMapFloatArray["dimuon_otherVtxMaxProb1"],"dimuon_otherVtxMaxProb1[nDimuons]/F");
+        storageMapFloatArray["dimuon_otherVtxMaxProb2"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_otherVtxMaxProb2", storageMapFloatArray["dimuon_otherVtxMaxProb2"],"dimuon_otherVtxMaxProb2[nDimuons]/F");
+}
+
+
+
+
+
+void BsToMuMuGammaNTuplizer::fillDimuonBranches( const edm::Event& iEvent, const edm::EventSetup& iSetup)
+{
+  
+    edm::Handle<std::vector<reco::Muon>> muonHandle;
+    iEvent.getByToken(muonToken_, muonHandle);
+    
+    AnalyticalImpactPointExtrapolator extrapolator(bFieldHandle_.product());
+    
+    impactPointExtrapolator_ = &extrapolator;
+
+    if ( ! beamSpotHandle.isValid() ) {
+        edm::LogError("BsToMuMuGammaNTuplizer") << "No beam spot available from EventSetup" ;
+    }
+    
+    auto beamSpot_ = beamSpotHandle.product();
+    
+
+    
+    auto nMuons   = muonHandle->size();
+    // auto nPhotons = photonHandle->size();
+    auto nPFCands = pfCandHandle_->size();
+    // unsigned int lostTrackNumber = useLostTracks_ ? lostTrackHandle->size() : 0;
+    
+    // Output collection
+    auto dimuon  = std::make_unique<pat::CompositeCandidateCollection>();
+    auto btommg  = std::make_unique<pat::CompositeCandidateCollection>();
+    AddFourMomenta addP4;
+
+    // good muon candidates
+    std::vector<MuonCand> good_muon_candidates;
+    for (unsigned int i = 0; i < nMuons; ++i) {
+      const pat::Muon & muon = muonHandle->at(i);
+      if (not isGoodMuon(muon)) continue;
+      good_muon_candidates.push_back(MuonCand(muon, i));
+    }
+    
+    // Inject B to hh candidates where hadrons are explicitely matched
+    // to gen level decays 
+    // if ( injectMatchedBtohh_ and isMC_ ) {
+    //  injectHadronsThatMayFakeMuons(good_muon_candidates);
+    //}
+
+    // Inject reco B to hh candidates
+    //if ( injectBtohh_ ) {
+    //  injectBhhHadrons(good_muon_candidates);
+    //}
+    
+    // Build dimuon candidates
+
+    Int_t nDimu=0;
+    if ( good_muon_candidates.size() > 1 ){
+      for (unsigned int i = 0; i < good_muon_candidates.size(); ++i) {
+	const MuonCand & muon1 = good_muon_candidates.at(i);
+	for (unsigned int j = 0; j < good_muon_candidates.size(); ++j) {
+	  if (i==j) continue;
+	  const MuonCand & muon2 = good_muon_candidates.at(j);
+	  // Ensure that muon1.pt > muon2.pt
+	  if (muon2.pt() > muon1.pt()) continue;
+
+	  auto mm_doca = distanceOfClosestApproach(muon1.innerTrack().get(),
+						   muon2.innerTrack().get());
+	  if (maxTwoTrackDOCA_>0 and mm_doca > maxTwoTrackDOCA_) continue;
+	  if (diMuonCharge_ && muon1.charge() * muon2.charge()>0) continue;
+
+	  pat::CompositeCandidate dimuonCand;
+	  dimuonCand.addDaughter( muon1 , "muon1");
+	  dimuonCand.addDaughter( muon2 , "muon2");
+	  addP4.set( dimuonCand );
+
+	  // reco Btohh
+	  //if (muon1.index() < 0 and not muon1.from_gen() and 
+	  //    muon2.index() < 0 and not muon2.from_gen())
+	  //  {
+	  //    if (dimuonCand.mass() < minBhhMass_) continue;
+	  //    if (dimuonCand.mass() > maxBhhMass_) continue;
+	  //  }
+	  	  
+	storageMapFloatArray["dimuon_mu1_index"][nDimu]  =  muon1.index();
+	storageMapFloatArray["dimuon_mu1_pdgId"][nDimu]  =  muon1.pdgId();
+	storageMapFloatArray["dimuon_mu1_pt"][nDimu]  =   muon1.pt();
+	storageMapFloatArray["dimuon_mu1_eta"][nDimu]  =  muon1.eta();
+	storageMapFloatArray["dimuon_mu1_phi"][nDimu]  =  muon1.phi();
+	storageMapFloatArray["dimuon_mu2_index"][nDimu]  =  muon2.index();
+	storageMapFloatArray["dimuon_mu2_pdgId"][nDimu]  =  muon2.pdgId();
+	storageMapFloatArray["dimuon_mu2_pt"][nDimu]  =   muon2.pt();
+	storageMapFloatArray["dimuon_mu2_eta"][nDimu]  =  muon2.eta();
+	storageMapFloatArray["dimuon_mu2_phi"][nDimu]  =  muon2.phi();
+	storageMapFloatArray["dimuon_doca"][nDimu]  =  mm_doca;
+
+	  // Kinematic Fits
+	  // auto kinematicMuMuVertexFit = fillMuMuInfo(dimuonCand,iEvent,muon1,muon2);
+
+	  // reco Btohh
+	  // if (muon1.index() < 0 and not muon1.from_gen() and 
+	  //     muon2.index() < 0 and not muon2.from_gen())
+	  //   {
+	  //     if (not kinematicMuMuVertexFit.valid()) continue;
+	  //     if (kinematicMuMuVertexFit.vtxProb() < minBhhVtxProb_) continue;
+	  //     if (kinematicMuMuVertexFit.sigLxy < minBhhSigLxy_) continue;
+	  //   }
+
+	  // dimuon
+	  if (muon1.index() >= 0 and muon2.index() >= 0){
+	    auto imm = dimuon->size();
+	    
+	    // MuMuGamma
+        /*
+	    if (recoMuMuGamma_ && kinematicMuMuVertexFit.valid()){
+	      for (unsigned int k=0; k < nPhotons; ++k){
+		auto photon(photonHandle->at(k));
+		const auto & vtx_point = kinematicMuMuVertexFit.refitVertex->vertexState().position();
+		photon.setVertex(reco::Photon::Point(vtx_point.x(), vtx_point.y(), vtx_point.z()));
+		auto dimuon_p4(makeLorentzVectorFromPxPyPzM(kinematicMuMuVertexFit.p3().x(),
+							    kinematicMuMuVertexFit.p3().y(),
+							    kinematicMuMuVertexFit.p3().z(),
+							    kinematicMuMuVertexFit.mass()));
+		double mmg_mass = (dimuon_p4 + photon.p4()).mass();
+		if (mmg_mass >= minMuMuGammaMass_ and mmg_mass <= maxMuMuGammaMass_){
+		  // fill BtoMuMuPhoton candidate info
+	    
+		  pat::CompositeCandidate mmgCand;
+		  mmgCand.addUserInt("mm_index", imm);
+		  mmgCand.addUserInt("ph_index", k);
+		  mmgCand.addUserFloat("mass", mmg_mass);
+		  
+		  fillMuMuGammaInfo(mmgCand,iEvent,kinematicMuMuVertexFit,muon1,muon2,photon);
+		  // fillMvaInfoForMuMuGamma(mmgCand,dimuonCand,iEvent,kinematicMuMuVertexFit,muon1,muon2,photon);
+
+		  btommg->push_back(mmgCand);
+		}
+	      }
+	    }
+        */
+
+	    // mmK and mmKK
+        /*
+	    for (unsigned int k = 0; k < nPFCands; ++k) {
+	      pat::PackedCandidate kaonCand1((*pfCandHandle_)[k]);
+	      kaonCand1.setMass(KaonMass_);
+	      if (deltaR(muon1, kaonCand1) < 0.01 || deltaR(muon2, kaonCand1) < 0.01) continue;
+	      if (kaonCand1.charge() == 0 ) continue;
+	      if (!kaonCand1.hasTrackDetails()) continue;
+	      double mu1_kaon_doca = distanceOfClosestApproach(muon1.innerTrack().get(),
+							       kaonCand1.bestTrack());
+	      double mu2_kaon_doca = distanceOfClosestApproach(muon2.innerTrack().get(),
+							       kaonCand1.bestTrack());
+	      // BtoMuMuK
+	      bool goodBtoMuMuK = true;
+	      if (kinematicMuMuVertexFit.mass() < 2.9) goodBtoMuMuK = false;
+	      if (abs(kaonCand1.pdgId()) != 211) goodBtoMuMuK = false; //Charged hadrons
+	      if (kaonCand1.pt() < ptMinKaon_ || abs(kaonCand1.eta()) > etaMaxKaon_)
+		goodBtoMuMuK = false;
+	      if (maxTwoTrackDOCA_ > 0 and mu1_kaon_doca > maxTwoTrackDOCA_) goodBtoMuMuK = false;
+	      if (maxTwoTrackDOCA_ > 0 and mu2_kaon_doca > maxTwoTrackDOCA_) goodBtoMuMuK = false;
+	      
+	      // BToJpsiKK
+	      bool goodBtoJpsiKK = goodBtoMuMuK;
+	      if (fabs(kinematicMuMuVertexFit.mass()-3.1) > 0.2) goodBtoJpsiKK = false;
+	  
+	      double kmm_mass = (muon1.p4() + muon2.p4() + kaonCand1.p4()).mass();
+	      if (kmm_mass < minBKmmMass_ || kmm_mass > maxBKmmMass_) goodBtoMuMuK = false;
+	    
+	      if (goodBtoMuMuK){
+		// fill BtoMuMuK candidate info
+	    
+		pat::CompositeCandidate btokmmCand;
+		btokmmCand.addUserInt("mm_index", imm);
+		btokmmCand.addUserFloat("kaon_mu1_doca", mu1_kaon_doca);
+		btokmmCand.addUserFloat("kaon_mu2_doca", mu2_kaon_doca);
+		
+		fillBtoMuMuKInfo(btokmmCand,iEvent,kinematicMuMuVertexFit,muon1,muon2,kaonCand1);
+		fillMvaInfoForBtoJpsiKCandidatesEmulatingBmm(btokmmCand,dimuonCand,iEvent,kinematicMuMuVertexFit,muon1,muon2,kaonCand1);
+
+		btokmm->push_back(btokmmCand);
+	      }
+
+	      if (goodBtoJpsiKK){ // good candidate to consider for JpsiKK
+		for (unsigned int k2 = k+1; k2 < nPFCands; ++k2) { // only works if selection requirements for both kaons are identical
+		  pat::PackedCandidate kaonCand2((*pfCandHandle_)[k2]);
+		  kaonCand2.setMass(KaonMass_);
+		  if (deltaR(muon1, kaonCand2) < 0.01 || deltaR(muon2, kaonCand2) < 0.01) continue;
+		  if (kaonCand2.charge() == 0 ) continue;
+		  if (!kaonCand2.hasTrackDetails()) continue;
+		  double mu1_kaon2_doca = distanceOfClosestApproach(muon1.innerTrack().get(),
+								    kaonCand2.bestTrack());
+		  double mu2_kaon2_doca = distanceOfClosestApproach(muon2.innerTrack().get(),
+								    kaonCand2.bestTrack());
+	      
+		  if (abs(kaonCand2.pdgId())!=211) goodBtoJpsiKK = false; //Charged hadrons
+		  if (kaonCand2.pt()<ptMinKaon_ || abs(kaonCand2.eta())>etaMaxKaon_) goodBtoJpsiKK = false;
+		  if (maxTwoTrackDOCA_>0 and mu1_kaon2_doca> maxTwoTrackDOCA_) goodBtoJpsiKK = false;	      
+		  if (maxTwoTrackDOCA_>0 and mu2_kaon2_doca> maxTwoTrackDOCA_) goodBtoJpsiKK = false;	      
+		  
+		  double kkmm_mass = (muon1.p4()+muon2.p4()+kaonCand1.p4()+kaonCand2.p4()).mass();
+		  if ( kkmm_mass<minBKKmmMass_ || kkmm_mass>maxBKKmmMass_ ) goodBtoJpsiKK = false;
+		  
+		  if (goodBtoJpsiKK){
+		    // fill BtoJpsiKK candidate info
+		    
+		    pat::CompositeCandidate btokkmmCand;
+		    btokkmmCand.addUserInt("mm_index", imm);
+		    int ikmm = -1;
+		    if (goodBtoMuMuK) ikmm = btokmm->size()-1;
+		    btokkmmCand.addUserInt("kmm_index", ikmm);
+		    btokkmmCand.addUserFloat("kaon_mu1_doca", mu1_kaon2_doca);
+		    btokkmmCand.addUserFloat("kaon_mu2_doca", mu2_kaon2_doca);
+		    
+		    fillBstoJpsiKKInfo(btokkmmCand,iEvent,kinematicMuMuVertexFit,muon1,muon2,kaonCand1,kaonCand2);
+		    // FIXME
+		    // fillMvaInfoForBtoJpsiKCandidatesEmulatingBmm(btokkmmCand,dimuonCand,iEvent,kinematicMuMuVertexFit,muon1,muon2,kaonCand1);
+
+		    btokkmm->push_back(btokkmmCand);
+		  }
+		}
+	      }
+	    }
+        */
+
+    auto fit = vertexMuonsWithKinematicFitter(muon1, muon2);
+    fit.postprocess(*beamSpot_);
+  
+    // printf("kinematicMuMuVertexFit (x,y,z): (%7.3f,%7.3f,%7.3f)\n", 
+    auto displacement3d = compute3dDisplacement(fit, *pvHandle_.product(),true);
+    
+    //addFitInfo(dimuonCand, kinematicMuMuVertexFit, "kin", displacement3D,0,1);
+    storageMapFloatArray["dimuon_kin_valid"][nDimu]  =        fit.valid() ;
+    storageMapFloatArray["dimuon_kin_vtx_prob"][nDimu]  =     fit.vtxProb() ;
+    storageMapFloatArray["dimuon_kin_vtx_chi2dof"][nDimu]  =  fit.chi2()>0?fit.chi2()/fit.ndof():-1;
+    storageMapFloatArray["dimuon_kin_mass"][nDimu]  =         fit.mass() ;
+    storageMapFloatArray["dimuon_kin_massErr"][nDimu]  =      fit.massErr() ;
+    storageMapFloatArray["dimuon_kin_lxy"][nDimu]  =          fit.lxy ;
+    storageMapFloatArray["dimuon_kin_sigLxy"][nDimu]  =       fit.sigLxy ;
+    storageMapFloatArray["dimuon_kin_alphaBS"][nDimu]  =      fit.alphaBS;
+    storageMapFloatArray["dimuon_kin_alphaBSErr"][nDimu]  =   fit.alphaBSErr;
+    storageMapFloatArray["dimuon_kin_vtx_x"][nDimu]  =        fit.valid()?fit.refitVertex->position().x():0 ;
+    storageMapFloatArray["dimuon_kin_vtx_xErr"][nDimu]  =     fit.valid()?sqrt(fit.refitVertex->error().cxx()):0 ;
+    storageMapFloatArray["dimuon_kin_vtx_y"][nDimu]  =        fit.valid()?fit.refitVertex->position().y():0 ;
+    storageMapFloatArray["dimuon_kin_vtx_yErr"][nDimu]  =     fit.valid()?sqrt(fit.refitVertex->error().cyy()):0 ;
+    storageMapFloatArray["dimuon_kin_vtx_z"][nDimu]  =        fit.valid()?fit.refitVertex->position().z():0 ;
+    storageMapFloatArray["dimuon_kin_vtx_zErr"][nDimu]  =     fit.valid()?sqrt(fit.refitVertex->error().czz()):0 ;
+    storageMapFloatArray["dimuon_kin_pt"][nDimu]  =           fit.p3().perp() ;
+    storageMapFloatArray["dimuon_kin_eta"][nDimu]  =          fit.p3().eta() ;
+    storageMapFloatArray["dimuon_kin_phi"][nDimu]  =          fit.p3().phi() ;
+    
+    // IP info
+    storageMapFloatArray["dimuon_kin_alpha"][nDimu]  =        displacement3d.alpha;
+    storageMapFloatArray["dimuon_kin_alphaErr"][nDimu]  =     displacement3d.alphaErr;
+    storageMapFloatArray["dimuon_kin_l3d"][nDimu]  =          displacement3d.decayLength;
+    storageMapFloatArray["dimuon_kin_sl3d"][nDimu]  =         displacement3d.decayLengthErr>0?displacement3d.decayLength/displacement3d.decayLengthErr:0;
+    storageMapFloatArray["dimuon_kin_pv_z"][nDimu]  =         displacement3d.pv?displacement3d.pv->position().z():0;
+    storageMapFloatArray["dimuon_kin_pv_zErr"][nDimu]  =      displacement3d.pv?displacement3d.pv->zError():0;
+    storageMapFloatArray["dimuon_kin_pvip"][nDimu]  =         displacement3d.distaceOfClosestApproach;
+    storageMapFloatArray["dimuon_kin_spvip"][nDimu]  =        displacement3d.distaceOfClosestApproachSig;
+    storageMapFloatArray["dimuon_kin_pvipErr"][nDimu]  =      displacement3d.distaceOfClosestApproachErr;
+    storageMapFloatArray["dimuon_kin_pv2ip"][nDimu]  =        displacement3d.distaceOfClosestApproach2;
+    storageMapFloatArray["dimuon_kin_spv2ip"][nDimu]  =       displacement3d.distaceOfClosestApproach2Sig;
+    storageMapFloatArray["dimuon_kin_pv2ipErr"][nDimu]  =     displacement3d.distaceOfClosestApproach2Err;
+    storageMapFloatArray["dimuon_kin_pvlip"][nDimu]  =        displacement3d.longitudinalImpactParameter;
+    storageMapFloatArray["dimuon_kin_pvlipSig"][nDimu]  =     displacement3d.longitudinalImpactParameterSig;
+    storageMapFloatArray["dimuon_kin_pvlipErr"][nDimu]  =     displacement3d.longitudinalImpactParameterErr;
+    storageMapFloatArray["dimuon_kin_pv2lip"][nDimu]  =       displacement3d.longitudinalImpactParameter2;
+    storageMapFloatArray["dimuon_kin_pv2lipSig"][nDimu]  =    displacement3d.longitudinalImpactParameter2Sig;
+    storageMapFloatArray["dimuon_kin_pv2lipErr"][nDimu]  =    displacement3d.longitudinalImpactParameter2Err;
+    storageMapFloatArray["dimuon_kin_pvIndex"][nDimu]  =      displacement3d.pvIndex;
+
+    // DecayTime
+    storageMapFloatArray["dimuon_kin_tau"][nDimu]  =          displacement3d.decayTime;
+    storageMapFloatArray["dimuon_kin_taue"][nDimu]  =         displacement3d.decayTimeError;
+    storageMapFloatArray["dimuon_kin_tauxy"][nDimu]  =        displacement3d.decayTimeXY;
+    storageMapFloatArray["dimuon_kin_tauxye"][nDimu]  =       displacement3d.decayTimeXYError;
+
+    // Refitted daughter information
+    // if (firstMuonDaughterIndex>=0){
+    //   storageMapFloatArray["dimuon_kin_mu1pt"][nDimu]  =        fit.dau_p3(firstMuonDaughterIndex).perp() ;
+    //   storageMapFloatArray["dimuon_kin_mu1eta"][nDimu]  =       fit.dau_p3(firstMuonDaughterIndex).eta() ;
+    //   storageMapFloatArray["dimuon_kin_mu1phi"][nDimu]  =       fit.dau_p3(firstMuonDaughterIndex).phi() ;
+    // }
+    // if (secondMuonDaughterIndex>=0){
+    //   storageMapFloatArray["dimuon_kin_mu2pt"][nDimu]  =        fit.dau_p3(secondMuonDaughterIndex).perp() ;
+    //   storageMapFloatArray["dimuon_kin_mu2eta"][nDimu]  =       fit.dau_p3(secondMuonDaughterIndex).eta() ;
+    //   storageMapFloatArray["dimuon_kin_mu2phi"][nDimu]  =       fit.dau_p3(secondMuonDaughterIndex).phi() ;
+    // }
+    // if (firstKaonDaughterIndex>=0){
+    //   storageMapFloatArray["dimuon_kin_kaon1pt"][nDimu]  =      fit.dau_p3(firstKaonDaughterIndex).perp() ;
+    //   storageMapFloatArray["dimuon_kin_kaon1eta"][nDimu]  =     fit.dau_p3(firstKaonDaughterIndex).eta() ;
+    //   storageMapFloatArray["dimuon_kin_kaon1phi"][nDimu]  =     fit.dau_p3(firstKaonDaughterIndex).phi() ;
+    // }
+    // if (secondKaonDaughterIndex>=0){
+    //   storageMapFloatArray["dimuon_kin_kaon2pt"][nDimu]  =      fit.dau_p3(secondKaonDaughterIndex).perp() ;
+    //   storageMapFloatArray["dimuon_kin_kaon2eta"][nDimu]  =     fit.dau_p3(secondKaonDaughterIndex).eta() ;
+    //   storageMapFloatArray["dimuon_kin_kaon2phi"][nDimu]  =     fit.dau_p3(secondKaonDaughterIndex).phi() ;
+    // }
+
+
+    ////////////////////////////////////////////
+
+
+  
+    int pvIndex = displacement3d.pvIndex;
+    // Look for additional tracks compatible with the dimuon vertex
+    auto closeTracks = findTracksCompatibleWithTheVertex(muon1,muon2,fit);
+    //closeTracks.fillCandInfo(dimuonCand, pvIndex, "");
+    storageMapFloatArray["dimuon_nTrks"][nDimu]  =        closeTracks.nTracksByVertexProbability(0.1, -1.0, pvIndex);
+    storageMapFloatArray["dimuon_nBMTrks"][nDimu]  =      closeTracks.nTracksByBetterMatch();
+    storageMapFloatArray["dimuon_nDisTrks"][nDimu]  =     closeTracks.nTracksByVertexProbability(0.1,  2.0 ,  pvIndex);
+    storageMapFloatArray["dimuon_closetrk"][nDimu]  =     closeTracks.nTracksByDisplacementSignificance(0.03 ,-1 ,  pvIndex);
+    storageMapFloatArray["dimuon_closetrks1"][nDimu]  =   closeTracks.nTracksByDisplacementSignificance(0.03 , 1 ,  pvIndex);
+    storageMapFloatArray["dimuon_closetrks2"][nDimu]  =   closeTracks.nTracksByDisplacementSignificance(0.03 , 2 ,  pvIndex);
+    storageMapFloatArray["dimuon_closetrks3"][nDimu]  =   closeTracks.nTracksByDisplacementSignificance(0.03 , 3 ,  pvIndex);
+    storageMapFloatArray["dimuon_docatrk"][nDimu]  =      closeTracks.minDoca(0.03,pvIndex);
+
+    storageMapFloatArray["dimuon_m1iso"][nDimu]             =   computeTrkMuonIsolation(muon1,muon2,pvIndex,0.5,0.5);
+    storageMapFloatArray["dimuon_m2iso"][nDimu]             =   computeTrkMuonIsolation(muon2,muon1,pvIndex,0.5,0.5);
+    storageMapFloatArray["dimuon_iso"][nDimu]               =   computeTrkMuMuIsolation(muon2,muon1,pvIndex,0.9,0.7);
+    storageMapFloatArray["dimuon_otherVtxMaxProb"][nDimu]   =   otherVertexMaxProb(muon1,muon2,0.5);
+    storageMapFloatArray["dimuon_otherVtxMaxProb1"][nDimu]  =   otherVertexMaxProb(muon1,muon2,1.0);
+    storageMapFloatArray["dimuon_otherVtxMaxProb2"][nDimu]  =   otherVertexMaxProb(muon1,muon2,2.0);
+  
+    // BDT
+    // bdtData_.fls3d    = dimuonCand.userFloat("kin_sl3d";
+    // bdtData_.alpha    = dimuonCand.userFloat("kin_alpha";
+    // bdtData_.pvips    = dimuonCand.userFloat("kin_pvipErr")>0?dimuonCand.userFloat("kin_pvip")/dimuonCand.userFloat("kin_pvipErr"):999.;
+    // bdtData_.iso      = dimuonCand.userFloat("iso";
+    // bdtData_.chi2dof  = dimuonCand.userFloat("kin_vtx_chi2dof";
+    // bdtData_.docatrk  = dimuonCand.userFloat("docatrk");
+    // bdtData_.closetrk = dimuonCand.userInt(  "closetrk");
+    // bdtData_.m1iso    = dimuonCand.userFloat("m1iso");
+    // bdtData_.m2iso    = dimuonCand.userFloat("m2iso");
+    // bdtData_.eta      = dimuonCand.userFloat("kin_eta");	  
+    // bdtData_.m        = dimuonCand.userFloat("kin_mass");	  
+  
+    // dimuonCand.addUserFloat("bdt",computeAnalysisBDT(iEvent.eventAuxiliary().event()%3));
+  
+    // XGBoost
+    // unsigned int xg_index = iEvent.eventAuxiliary().event()%3;
+  
+    // xgBoosters_.at(xg_index).set("mm_kin_alpha",       dimuonCand.userFloat("kin_alpha"));
+    // xgBoosters_.at(xg_index).set("mm_kin_alphaXY",     cos(dimuonCand.userFloat("kin_alphaBS"))); // FIXME - need new training
+    // xgBoosters_.at(xg_index).set("mm_kin_spvip",       dimuonCand.userFloat("kin_spvip"));
+    // xgBoosters_.at(xg_index).set("mm_kin_pvip",        dimuonCand.userFloat("kin_pvip"));
+    // xgBoosters_.at(xg_index).set("mm_iso",             dimuonCand.userFloat("iso"));
+    // xgBoosters_.at(xg_index).set("mm_m1iso",           dimuonCand.userFloat("m1iso"));
+    // xgBoosters_.at(xg_index).set("mm_m2iso",           dimuonCand.userFloat("m2iso"));
+    // xgBoosters_.at(xg_index).set("mm_kin_sl3d",        dimuonCand.userFloat("kin_sl3d"));
+    // xgBoosters_.at(xg_index).set("mm_kin_vtx_chi2dof", dimuonCand.userFloat("kin_vtx_chi2dof"));
+    // xgBoosters_.at(xg_index).set("mm_nBMTrks",         dimuonCand.userInt(  "nBMTrks"));
+    // xgBoosters_.at(xg_index).set("mm_otherVtxMaxProb1", dimuonCand.userFloat(  "otherVtxMaxProb1"));
+    // xgBoosters_.at(xg_index).set("mm_otherVtxMaxProb2", dimuonCand.userFloat(  "otherVtxMaxProb2"));
+  
+    // dimuonCand.addUserFloat("mva", xgBoosters_.at(xg_index).predict());
+  
+          nDimu++;
+	   }
+      }
+     }
+    }
+    
+}
+
+
+
+
+
+
+#include "BMMGUtil.h"
 
 
 //define this as a plug-in
