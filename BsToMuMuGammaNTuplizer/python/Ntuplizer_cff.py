@@ -41,7 +41,7 @@ Ntuples = cms.EDAnalyzer("BsToMuMuGammaNTuplizer",
     doBeamSpot = cms.bool(False),
 	beamSpot = cms.InputTag("offlineBeamSpot"),
     
-    doPrimaryVetrices = cms.bool(True),
+    doPrimaryVetrices = cms.bool(False),
 	vertices = cms.InputTag("offlinePrimaryVertices"),
     
     doMuons                 = cms.bool(True),
@@ -81,11 +81,20 @@ Ntuples = cms.EDAnalyzer("BsToMuMuGammaNTuplizer",
     doPhotons          = cms.bool(True),
     gedPhotonSrc       = cms.untracked.InputTag("gedPhotons"),
     
-    doPFPhotons        = cms.bool(False),
+    doPFPhotons        = cms.bool(True),
     pfPhotonSrc        = cms.untracked.InputTag("particleFlow"),
-	PFPhoton_minPt     = cms.untracked.double(0.0),	
+	PFPhoton_minPt     = cms.untracked.double(2.5),	
     
-    doParticleFlow     = cms.bool(True),
+    doMuMuGamma        = cms.bool(True),
+    doJPsiGamma        = cms.bool(True),
+    minJPsiGammaMass   = cms.double(3.50),
+    maxJPsiGammaMass   = cms.double(6.00),
+    minBsToMuMuGammaMass = cms.double(3.50),    
+    maxBsToMuMuGammaMass = cms.double(6.00),    
+    minJPsiMass        = cms.double(2.90),
+    maxJPsiMass        = cms.double(3.30),
+
+    doParticleFlow     = cms.bool(False),
     particlFlowSrc     = cms.InputTag("particleFlow"),
     
     doGeneralTracks    = cms.bool(False),

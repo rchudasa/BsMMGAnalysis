@@ -23,7 +23,7 @@ BsToMuMuGammaNTuplizer::computeTrkMuonIsolation(const pat::Muon& the_muon, const
   Float_t vx(vertex.x());
   Float_t vy(vertex.y());
   Float_t vz(vertex.z());
-  for (const auto& pfCand: *pfCandHandle_.product()){
+  for (const auto& pfCand: *pfCandidateHandle.product()){
     bool ignore_track = false;
     for (auto trk: ignoreTracks){
       if (trk==&pfCand){
@@ -61,7 +61,7 @@ BsToMuMuGammaNTuplizer::otherVertexMaxProb(const pat::Muon& muon1,
   transTrksForMu2Vertex.push_back((*theTTBuilder_).build(muon2.innerTrack().get()));
 
 
-  for (const auto& pfCand: *pfCandHandle_.product()){
+  for (const auto& pfCand: *pfCandidateHandle.product()){
     bool ignore_track = false;
     for (auto trk: ignoreTracks){
       if (trk==&pfCand){
@@ -173,7 +173,7 @@ BsToMuMuGammaNTuplizer::computeTrkMuMuIsolation(const pat::Muon& muon1, const pa
   Float_t vx(vertex.x());
   Float_t vy(vertex.y());
   Float_t vz(vertex.z());
-  for (const auto& pfCand: *pfCandHandle_.product()){
+  for (const auto& pfCand: *pfCandidateHandle.product()){
     bool ignore_track = false;
     for (auto trk: ignoreTracks){
       if (trk==&pfCand){
@@ -448,7 +448,7 @@ BsToMuMuGammaNTuplizer::findTracksCompatibleWithTheVertex(const pat::Muon& muon1
   CloseTrackInfo result;
   result.pvHandle_ = pvHandle_;
   if (not fit.valid()) return result;
-  for (const auto& pfCand: *pfCandHandle_.product()){
+  for (const auto& pfCand: *pfCandidateHandle.product()){
     bool ignore_track = false;
     for (auto trk: ignoreTracks){
       if (deltaR(*trk, pfCand) < 0.01){

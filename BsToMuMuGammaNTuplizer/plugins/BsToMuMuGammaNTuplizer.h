@@ -182,6 +182,7 @@
 #define N_MUON_MAX 1000
 #define N_DIMU_MAX 1000
 #define N_GEN_MAX 4000
+#define NMAX_MMG 1000
 
 #include "BmmgInterface.h"
 
@@ -309,6 +310,16 @@ private:
 
   void addMuonBranches();
   void fillMuonBranches( const edm::Event&, const edm::EventSetup& );
+  
+  void addMMGBranches();
+  void fillBmmgBranchs(Int_t nDimu,Int_t phoIdx,Int_t scIdx , Float_t mmg_mass);
+  void addJPsiGammaBranches();
+  void fillJPsiGammaBranches(Int_t nDimu,Int_t phoIdx,Int_t scIdx , Float_t mmg_mass);
+
+  void addPF_MMGBranches();
+  void fillPF_BmmgBranchs(Int_t nDimu,Int_t phoIdx,Float_t mmg_mass);
+  void addPF_JPsiGammaBranches();
+  void fillPF_JPsiGammaBranches(Int_t nDimu,Int_t phoIdx, Float_t mmg_mass);
 
   void fillPFCandiateCollection( const edm::Event&, const edm::EventSetup& );
   void addParticleFlowBranches();
@@ -335,6 +346,8 @@ private:
   Bool_t doGenParticles_;
   Bool_t doMuons_;
   Bool_t doDimuons_;
+  Bool_t doMuMuGamma;
+  Bool_t doJPsiGamma;
   Bool_t doPhotons_;
   Bool_t doPFPhotons_;
   Bool_t doSuperClusters_;
@@ -370,8 +383,10 @@ private:
   edm::EDGetTokenT<edm::SortedCollection<HBHERecHit,edm::StrictWeakOrdering<HBHERecHit>>> hbheRechitToken_; 
   
   edm::EDGetTokenT<reco::PFCandidateCollection>     pfCandidateCollection_;
+  edm::Handle<reco::PFCandidateCollection> pfCandidateHandle;
   //edm::Handle<edm::View<reco::PFCandidateCollection>> pfCandHandle_;
-  edm::Handle<reco::PFCandidateCollection> pfCandHandle_;
+  //edm::Handle<reco::PFCandidateCollection> pfCandHandle_;
+  //edm::Handle<edm::View<reco::PFCandidate> > pfCandidateHandle;
   
   edm::ESGetToken<TransientTrackBuilder, TransientTrackRecord> track_builder_token_;
   edm::ESHandle<TransientTrackBuilder> theTTBuilder_;
@@ -403,7 +418,7 @@ private:
   Float_t dcaMax_dimuon_mumu           ;
   Float_t dcaMax_muon_bs           ;
   Float_t cosAlphaMax_dimuonBs    ;
-  Float_t MUMINPT           ;
+  Float_t muMinpt           ;
   Float_t etaMax_muon          ;
   Float_t minDimuon_pt         ;
   Float_t minDimuonInvariantMass    ;
@@ -411,6 +426,12 @@ private:
   Float_t trackIP_zMax_muon 		;
   Float_t trackIP_rMax_muon	        ;
   Float_t maxTwoTrackDOCA_          ;
+  Float_t minJPsiMass_;
+  Float_t maxJPsiMass_;
+  Float_t minJPsiGammaMass_;
+  Float_t maxJPsiGammaMass_;
+  Float_t maxBsMuMuGammaMass_;
+  Float_t minBsMuMuGammaMass_;
   bool diMuonCharge_ ;
 
   // Utility 
@@ -479,6 +500,7 @@ private:
   // generic storage dictionary
 
   std::map<std::string,Int_t > storageMapInt;
+  std::map<std::string,Int_t *> storageMapIntArray;
   std::map<std::string,Float_t * > storageMapFloatArray;
   std::map<std::string,Bool_t * > storageMapBoolArray;
   std::map<std::string,uint64_t * > storageMapUint64Array;

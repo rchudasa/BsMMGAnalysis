@@ -109,6 +109,8 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
   doGenParticles_(iConfig.getParameter<Bool_t>("doGenParticles")),
   doMuons_(iConfig.getParameter<Bool_t>("doMuons")),
   doDimuons_(iConfig.getParameter<Bool_t>("doDimuons")),
+  doMuMuGamma(iConfig.getParameter<Bool_t>("doMuMuGamma")),
+  doJPsiGamma(iConfig.getParameter<Bool_t>("doJPsiGamma")),
   doPhotons_(iConfig.getParameter<Bool_t>("doPhotons")),
   doPFPhotons_(iConfig.getParameter<Bool_t>("doPFPhotons")),
   doSuperClusters_(iConfig.getParameter<Bool_t>("doSuperClusters")),
@@ -121,7 +123,18 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
   doFlatPt_(iConfig.getParameter<Bool_t>("doFlatPt")),
   doHLT(iConfig.getParameter<Bool_t>("doHLT")),
   energyMatrixSize_(2)
-{
+{  
+  if(doJPsiGamma)
+  {
+    doMuMuGamma=true;
+  }
+  if(doMuMuGamma)
+  {
+    doMuons_=true;
+    doPhotons_=true;
+    doSuperClusters_=true;
+    doDimuons_=true;
+  }
   
   energyMatrixSizeFull_=(2*energyMatrixSize_+1)*(2*energyMatrixSize_+1);
   Utility= new Utils();
@@ -146,14 +159,7 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
     eeRechitToken_                 = consumes<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit>>>(iConfig.getParameter<edm::InputTag>("eeRechitCollection"));
   }
 
-  if(doParticleFlow)
-  {
-     pfCandidateCollection_        = consumes<reco::PFCandidateCollection>(iConfig.getParameter<edm::InputTag>("particlFlowSrc"));
-  }
   if(doHCALClusters and isRECO)
-  {
-     hcalClusterCollection_        = consumes<reco::PFClusterCollection>(iConfig.getParameter<edm::InputTag>("hcalClusterSrc"));
-  }
   if(doECALClusters and isRECO)
   {
      ecalClusterCollection_        = consumes<reco::PFClusterCollection>(iConfig.getParameter<edm::InputTag>("ecalClusterSrc"));
@@ -173,6 +179,8 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
   
   beamSpotToken_  	   =consumes<reco::BeamSpot>(iConfig.getParameter<edm::InputTag>("beamSpot"));
   primaryVtxToken_       =consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"));
+  pfCandidateCollection_        = consumes<reco::PFCandidateCollection>(iConfig.getParameter<edm::InputTag>("particlFlowSrc"));
+  
   if(doGenParticles_)   genParticlesCollection_          =consumes<reco::GenParticleCollection>(iConfig.getParameter<edm::InputTag>("genParticles"));
   
   diMuonCharge_    =  iConfig.getUntrackedParameter<bool>("diMuonCharge")    ;
@@ -193,8 +201,16 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
   minDimuonInvariantMass    =  iConfig.getUntrackedParameter<double>("dimuon_minInvMass")    ;
   maxDimuonInvariantMass    =  iConfig.getUntrackedParameter<double>("dimuon_maxInvMass")    ;
   
+  minJPsiMass_    =  iConfig.getParameter<double>("minJPsiMass")    ;
+  maxJPsiMass_    =  iConfig.getParameter<double>("maxJPsiMass")    ;
+  minJPsiGammaMass_    =  iConfig.getParameter<double>("minJPsiGammaMass")    ;
+  maxJPsiGammaMass_    =  iConfig.getParameter<double>("maxJPsiGammaMass")    ;
+  minBsMuMuGammaMass_  =  iConfig.getParameter<double>("minBsToMuMuGammaMass")    ;
+  maxBsMuMuGammaMass_    =  iConfig.getParameter<double>("maxBsToMuMuGammaMass")    ;
+
+
   printMsg=iConfig.getParameter<Bool_t>("verbose");
-  doBsToMuMuGamma=iConfig.getParameter<Bool_t>("doBsToMuMuGamma");
+  doMuMuGamma=iConfig.getParameter<Bool_t>("doMuMuGamma");
   nBits_                         = iConfig.getParameter<int>("nBits"); 
   doCompression_                 = iConfig.getParameter<Bool_t>("doCompression");  
   // initialize output TTree
@@ -252,48 +268,7 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
 
 
   if (doGenParticles_) {
-
     addGenBranches();
-
-    /*theTree->Branch("gen_nBs"			,&gen_nBs_);
-    theTree->Branch("gen_Bs_pt"			,&gen_Bs_pt_);
-    theTree->Branch("gen_Bs_energy"		,&gen_Bs_energy_);
-    theTree->Branch("gen_Bs_eta"		,&gen_Bs_eta_);
-    theTree->Branch("gen_Bs_phi"		,&gen_Bs_phi_);
-    theTree->Branch("gen_Bs_pz"			,&gen_Bs_pz_);
-    theTree->Branch("gen_Bs_pdgId"		,&gen_Bs_pdgId_);
-
-    theTree->Branch("gen_nBsMuonM"		,&gen_nBsMuonM_);
-    theTree->Branch("gen_BsMuonM_pt"		,&gen_BsMuonM_pt_);
-    theTree->Branch("gen_BsMuonM_eta"		,&gen_BsMuonM_eta_);
-    theTree->Branch("gen_BsMuonM_phi"		,&gen_BsMuonM_phi_);
-
-    theTree->Branch("gen_nBsMuonP"		,&gen_nBsMuonP_);
-    theTree->Branch("gen_BsMuonP_pt"		,&gen_BsMuonP_pt_);
-    theTree->Branch("gen_BsMuonP_eta"		,&gen_BsMuonP_eta_);
-    theTree->Branch("gen_BsMuonP_phi"		,&gen_BsMuonP_phi_);
-
-    theTree->Branch("gen_nBsPhoton"		,&gen_nBsPhoton_);
-    theTree->Branch("gen_BsPhoton_pt"		,&gen_BsPhoton_pt_);
-    theTree->Branch("gen_BsPhoton_energy"	,&gen_BsPhoton_energy_);
-    theTree->Branch("gen_BsPhoton_eta"		,&gen_BsPhoton_eta_);
-    theTree->Branch("gen_BsPhoton_phi"		,&gen_BsPhoton_phi_);
-    
-    if(doFlatPt_){
-    theTree->Branch("nMC",          &nMC_);
-    theTree->Branch("mcPID",        &mcPID_);
-    theTree->Branch("mcStatus",     &mcStatus_);
-    theTree->Branch("mcVtx_x",      &mcVtx_x_);
-    theTree->Branch("mcVtx_y",      &mcVtx_y_);
-    theTree->Branch("mcVtx_z",      &mcVtx_z_);
-    theTree->Branch("mcPt",         &mcPt_);
-    theTree->Branch("mcEta",        &mcEta_);
-    theTree->Branch("mcPhi",        &mcPhi_);
-    theTree->Branch("mcE",          &mcE_);
-    theTree->Branch("mcEt",         &mcEt_);
-    theTree->Branch("mcMass",       &mcMass_);
-   }
-    */
   }
   
   if (doPhotons_) {
@@ -307,25 +282,25 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
     theTree->Branch("phoCalibEt",              &phoCalibEt_);
     theTree->Branch("phoSCE",                  &phoSCE_);
     theTree->Branch("phoSCEt",                 &phoSCEt_);
-    theTree->Branch("phoSCRawE",               &phoSCRawE_);
-    theTree->Branch("phoESEnP1",               &phoESEnP1_);
-    theTree->Branch("phoESEnP2",               &phoESEnP2_);
-    theTree->Branch("phoSCEta",                &phoSCEta_);
-    theTree->Branch("phoSCPhi",                &phoSCPhi_);
-    theTree->Branch("phoSCEtaWidth",           &phoSCEtaWidth_);
-    theTree->Branch("phoSCPhiWidth",           &phoSCPhiWidth_);
-    theTree->Branch("phoSCBrem",               &phoSCBrem_);
-    theTree->Branch("phohasPixelSeed",         &phohasPixelSeed_);
-    theTree->Branch("phoEleVeto",              &phoEleVeto_);
-    theTree->Branch("phoR9",                   &phoR9_);
-    theTree->Branch("phoHoverE",               &phoHoverE_);
-    theTree->Branch("phoESEffSigmaRR",         &phoESEffSigmaRR_);
-    theTree->Branch("phoSigmaIEtaIEtaFull5x5", &phoSigmaIEtaIEtaFull5x5_);
-    theTree->Branch("phoSigmaIEtaIPhiFull5x5", &phoSigmaIEtaIPhiFull5x5_);
-    theTree->Branch("phoSigmaIPhiIPhiFull5x5", &phoSigmaIPhiIPhiFull5x5_);
-    theTree->Branch("phoE2x2Full5x5",          &phoE2x2Full5x5_);
-    theTree->Branch("phoE5x5Full5x5",          &phoE5x5Full5x5_);
-    theTree->Branch("phoR9Full5x5",            &phoR9Full5x5_);
+    //theTree->Branch("phoSCRawE",               &phoSCRawE_);
+    //theTree->Branch("phoESEnP1",               &phoESEnP1_);
+    //theTree->Branch("phoESEnP2",               &phoESEnP2_);
+    //theTree->Branch("phoSCEta",                &phoSCEta_);
+    //theTree->Branch("phoSCPhi",                &phoSCPhi_);
+    //theTree->Branch("phoSCEtaWidth",           &phoSCEtaWidth_);
+    //theTree->Branch("phoSCPhiWidth",           &phoSCPhiWidth_);
+    //theTree->Branch("phoSCBrem",               &phoSCBrem_);
+    //theTree->Branch("phohasPixelSeed",         &phohasPixelSeed_);
+    //theTree->Branch("phoEleVeto",              &phoEleVeto_);
+    //theTree->Branch("phoR9",                   &phoR9_);
+    //theTree->Branch("phoHoverE",               &phoHoverE_);
+    //theTree->Branch("phoESEffSigmaRR",         &phoESEffSigmaRR_);
+    //theTree->Branch("phoSigmaIEtaIEtaFull5x5", &phoSigmaIEtaIEtaFull5x5_);
+    //theTree->Branch("phoSigmaIEtaIPhiFull5x5", &phoSigmaIEtaIPhiFull5x5_);
+    //theTree->Branch("phoSigmaIPhiIPhiFull5x5", &phoSigmaIPhiIPhiFull5x5_);
+    //theTree->Branch("phoE2x2Full5x5",          &phoE2x2Full5x5_);
+    //theTree->Branch("phoE5x5Full5x5",          &phoE5x5Full5x5_);
+    //theTree->Branch("phoR9Full5x5",            &phoR9Full5x5_);
     
     theTree->Branch("phoPFChIso",              &phoPFChIso_);
     theTree->Branch("phoPFPhoIso",             &phoPFPhoIso_);
@@ -334,14 +309,14 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
     theTree->Branch("phoHcalPFClusterIso",     &phoHcalPFClusterIso_);
     theTree->Branch("phoIDMVA",                &phoIDMVA_);
    
-    theTree->Branch("phoSeedTime",             &phoSeedTime_);
-    theTree->Branch("phoSeedEnergy",           &phoSeedEnergy_);
-    theTree->Branch("phoMIPTotEnergy",         &phoMIPTotEnergy_);
-    theTree->Branch("phoMIPChi2",                      &phoMIPChi2_);
-    theTree->Branch("phoMIPSlope",                     &phoMIPSlope_);
-    theTree->Branch("phoMIPIntercept",                 &phoMIPIntercept_);
-    theTree->Branch("phoMIPNhitCone",                  &phoMIPNhitCone_);
-    theTree->Branch("phoMIPIsHalo",                    &phoMIPIsHalo_);
+    //theTree->Branch("phoSeedTime",             &phoSeedTime_);
+    //theTree->Branch("phoSeedEnergy",           &phoSeedEnergy_);
+    //theTree->Branch("phoMIPTotEnergy",         &phoMIPTotEnergy_);
+    //theTree->Branch("phoMIPChi2",                      &phoMIPChi2_);
+    //theTree->Branch("phoMIPSlope",                     &phoMIPSlope_);
+    //theTree->Branch("phoMIPIntercept",                 &phoMIPIntercept_);
+    //theTree->Branch("phoMIPNhitCone",                  &phoMIPNhitCone_);
+    //theTree->Branch("phoMIPIsHalo",                    &phoMIPIsHalo_);
 
   }
 
@@ -435,6 +410,22 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
     theTree->Branch("scPFNeuIso4",             &scPFNeuIso4_);
     theTree->Branch("scPFNeuIso5",             &scPFNeuIso5_);
   }
+  if(doJPsiGamma)
+  {
+    addJPsiGammaBranches();
+    if(doPFPhotons_)
+    {
+        addPF_JPsiGammaBranches();
+    }
+  }
+  if(doMuMuGamma)
+  {
+    addMMGBranches();
+    if(doPFPhotons_)
+    {
+        addPF_MMGBranches();
+    }
+  }
   if(doMuons_)
   {
         addMuonBranches();
@@ -475,6 +466,18 @@ void
 BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
   using namespace edm;
 
+  run_    = iEvent.id().run();
+  event_  = iEvent.id().event();
+  lumis_  = iEvent.luminosityBlock();
+  isData_ = iEvent.isRealData();
+  
+  iSetup.get<IdealMagneticFieldRecord>().get(bFieldHandle_);
+  theTTBuilder_ = iSetup.getHandle(track_builder_token_);
+  iEvent.getByToken(beamSpotToken_, beamSpotHandle);
+  iEvent.getByToken(primaryVtxToken_, pvHandle_);
+  iEvent.getByToken(pfCandidateCollection_, pfCandidateHandle);
+
+
   // ## BEAMSOPT STUFF  ## //
   beamspot_x_  = 0.0   ;
   beamspot_y_  = 0.0   ;
@@ -505,241 +508,6 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
     l1Prescales.clear();
     ClearTrggerStorages();
   
-  }
-  if (doGenParticles_) {
-  /*
-    gen_nBs_ = 0;
-    gen_nBsMuonM_ = 0 ;
-    gen_nBsMuonP_ = 0 ;
-    gen_nBsPhoton_ = 0 ;
-
-    gen_Bs_pt_.clear() ;
-    gen_Bs_energy_.clear() ;
-    gen_Bs_eta_.clear() ;
-    gen_Bs_phi_.clear() ;
-    gen_Bs_pz_.clear() ;
-    gen_Bs_pdgId_.clear();
-    gen_BsMuonM_pt_.clear() ;
-    gen_BsMuonM_eta_.clear() ;
-    gen_BsMuonM_phi_.clear();
-    gen_BsMuonP_pt_.clear() ;
-    gen_BsMuonP_eta_.clear() ;
-    gen_BsMuonP_phi_.clear();
-    gen_BsPhoton_pt_.clear() ;
-    gen_BsPhoton_energy_.clear() ;
-    gen_BsPhoton_eta_.clear() ;
-    gen_BsPhoton_phi_.clear();
-    if(doFlatPt_){
-    nMC_ = 0;
-    mcPID_                .clear();
-    mcStatus_             .clear();
-    mcVtx_x_              .clear();
-    mcVtx_y_              .clear();
-    mcVtx_z_              .clear();
-    mcPt_                 .clear();
-    mcEta_                .clear();
-    mcPhi_                .clear();
-    mcE_                  .clear();
-    mcEt_                 .clear();
-    mcMass_               .clear();
-     }
-     */
-}
-
-  if(doMuons_){
-  /*
-    nMuM_ = 0;
-    nMuP_ = 0; 
-    mumHighPurity_.clear();
-    mumPt_.clear();
-    mumEta_.clear();
-    mumPhi_.clear();
-    mumCL_.clear(); 
-    mumNormChi2_.clear();
-    mumVx_.clear();
-    mumVy_.clear();
-    mumVz_.clear();
- 
-    mumDCABS_.clear();
-    mumDCABSE_.clear();
-    mumFracHits_.clear();
-    mumdxyBS_.clear();
-    mumdzBS_.clear();
-    mumIdx_.clear();
-    mumCharge_.clear();
-    mumNPixHits_.clear();
-    mumNPixLayers_.clear();
-    mumNTrkHits_.clear();
-    mumNTrkLayers_.clear();
-    mumNMuonHits_.clear();
-    mumNMatchStation_.clear();
-    mum_isGlobalMuon_.clear();
-    mum_isTrackerMuon_.clear();
-    mum_StandAloneMuon_.clear();
-    mum_isCaloMuon_.clear();
-    mum_isPFMuon_.clear();
-
-    mum_selector_.clear();
- 
-    mum_isIsolationValid_.clear();
-    mum_isPFIsolationValid_.clear();
-   
-    mum_isolationR03_trackSumPt_.clear();
-    mum_isolationR03_trackEcalSumEt_.clear();
-    mum_isolationR03_trackHcalSumEt_.clear();
-    mum_isolationR03_trackHoSumEt_.clear();
-    mum_isolationR03_trackNTracks_.clear();
-    mum_isolationR03_trackNJets_.clear();
-    mum_isolationR03_trackerVetoSumPt_.clear();
-    mum_isolationR03_emVetoSumEt_.clear();
-    mum_isolationR03_hadVetoSumEt_.clear();
-    mum_isolationR03_hoVetoEt_.clear();
-  
-    mum_isolationR05_trackSumPt_.clear();
-    mum_isolationR05_trackEcalSumEt_.clear();
-    mum_isolationR05_trackHcalSumEt_.clear();
-    mum_isolationR05_trackHoSumEt_.clear();
-    mum_isolationR05_trackNTracks_.clear();
-    mum_isolationR05_trackNJets_.clear();
-    mum_isolationR05_trackerVetoSumPt_.clear();
-    mum_isolationR05_emVetoSumEt_.clear();
-    mum_isolationR05_hadVetoSumEt_.clear();
-    mum_isolationR05_hoVetoEt_.clear();
-  
-    mum_PFIsolationR03_sumChargedHadronPt_.clear();
-    mum_PFIsolationR03_sumChargedParticlePt_.clear();
-    mum_PFIsolationR03_sumNeutralHadronEt_.clear();
-    mum_PFIsolationR03_sumPhotonEt_.clear();
-    mum_PFIsolationR03_sumNeutralHadronEtHighThreshold_.clear();
-    mum_PFIsolationR03_sumPhotonEtHighThreshold_.clear();
-    mum_PFIsolationR03_sumPUPt_.clear();
-    
-    mum_PFIsolationR04_sumChargedHadronPt_.clear();
-    mum_PFIsolationR04_sumChargedParticlePt_.clear();
-    mum_PFIsolationR04_sumNeutralHadronEt_.clear();
-    mum_PFIsolationR04_sumPhotonEt_.clear();
-    mum_PFIsolationR04_sumNeutralHadronEtHighThreshold_.clear();
-    mum_PFIsolationR04_sumPhotonEtHighThreshold_.clear();
-    mum_PFIsolationR04_sumPUPt_.clear();
-  
-  
-  
-    mupHighPurity_.clear();
-    mupPt_.clear();
-    mupEta_.clear();
-    mupPhi_.clear();
-    mupCL_.clear(); 
-    mupNormChi2_.clear();
-    mupVx_.clear();
-    mupVy_.clear();
-    mupVz_.clear();
-    mupDCABS_.clear();
-    mupDCABSE_.clear();
-  
-    mupFracHits_.clear();
-    mupdxyBS_.clear();
-    mupdzBS_.clear();
-    mupIdx_.clear();
-    mupCharge_.clear();
-    mupNPixHits_.clear();
-    mupNPixLayers_.clear();
-    mupNTrkHits_.clear();
-    mupNTrkLayers_.clear();
-    mupNMuonHits_.clear();
-    mupNMatchStation_.clear();
-    mup_isGlobalMuon_.clear();
-    mup_isTrackerMuon_.clear();
-    mup_StandAloneMuon_.clear();
-    mup_isCaloMuon_.clear();
-    mup_isPFMuon_.clear();
-
-    mup_selector_.clear();
- 
-    mup_isIsolationValid_.clear();
-    mup_isPFIsolationValid_.clear();
-   
-    mup_isolationR03_trackSumPt_.clear();
-    mup_isolationR03_trackEcalSumEt_.clear();
-    mup_isolationR03_trackHcalSumEt_.clear();
-    mup_isolationR03_trackHoSumEt_.clear();
-    mup_isolationR03_trackNTracks_.clear();
-    mup_isolationR03_trackNJets_.clear();
-    mup_isolationR03_trackerVetoSumPt_.clear();
-    mup_isolationR03_emVetoSumEt_.clear();
-    mup_isolationR03_hadVetoSumEt_.clear();
-    mup_isolationR03_hoVetoEt_.clear();
-  
-    mup_isolationR05_trackSumPt_.clear();
-    mup_isolationR05_trackEcalSumEt_.clear();
-    mup_isolationR05_trackHcalSumEt_.clear();
-    mup_isolationR05_trackHoSumEt_.clear();
-    mup_isolationR05_trackNTracks_.clear();
-    mup_isolationR05_trackNJets_.clear();
-    mup_isolationR05_trackerVetoSumPt_.clear();
-    mup_isolationR05_emVetoSumEt_.clear();
-    mup_isolationR05_hadVetoSumEt_.clear();
-    mup_isolationR05_hoVetoEt_.clear();
-  
-    mup_PFIsolationR03_sumChargedHadronPt_.clear();
-    mup_PFIsolationR03_sumChargedParticlePt_.clear();
-    mup_PFIsolationR03_sumNeutralHadronEt_.clear();
-    mup_PFIsolationR03_sumPhotonEt_.clear();
-    mup_PFIsolationR03_sumNeutralHadronEtHighThreshold_.clear();
-    mup_PFIsolationR03_sumPhotonEtHighThreshold_.clear();
-    mup_PFIsolationR03_sumPUPt_.clear();
-    
-    mup_PFIsolationR04_sumChargedHadronPt_.clear();
-    mup_PFIsolationR04_sumChargedParticlePt_.clear();
-    mup_PFIsolationR04_sumNeutralHadronEt_.clear();
-    mup_PFIsolationR04_sumPhotonEt_.clear();
-    mup_PFIsolationR04_sumNeutralHadronEtHighThreshold_.clear();
-    mup_PFIsolationR04_sumPhotonEtHighThreshold_.clear();
-    mup_PFIsolationR04_sumPUPt_.clear();
-
-    // ### mu+ mu- variables ###
-    mumuPt_.clear();
-    mumuEta_.clear();
-    mumuRapidity_.clear();
-    mumuPhi_.clear();
-    mumuMass_.clear();
-    mumuMassE_.clear();
-    mumuPx_.clear();
-    mumuPy_.clear();
-    mumuPz_.clear();
-    mumuCovPxPx_.clear();
-    mumuCovPxPy_.clear();
-    mumuCovPxPz_.clear();
-    mumuCovPyPy_.clear();
-    mumuCovPyPz_.clear();
-    mumuCovPzPz_.clear();
-    mumuDR_.clear();
-    mumuParentMuP_.clear();
-    mumuParentMuM_.clear();
-  
-    mumuVtxCL_.clear();
-    mumuVtxX_.clear();
-    mumuVtxY_.clear();
-    mumuVtxZ_.clear();  
-    mumuVtxCovXX_.clear();  
-    mumuVtxCovXY_.clear();  
-    mumuVtxCovXZ_.clear();  
-    mumuVtxCovYY_.clear();  
-    mumuVtxCovYZ_.clear();  
-    mumuVtxCovZZ_.clear();  
-    mumuVtxChi2_.clear();
-    mumuVtxNdof_.clear();
-
-
-    mumuCosAlphaBS_.clear();
-    mumuCosAlphaBSE_.clear(); 
-    mumuLBS_.clear();
-    mumuLBSE_.clear();
-    mumuDCA_.clear();
- 
-    
-    nMuP_=0;
-    nMuM_=0;
-    */
   }
   
   if (doPhotons_) {
@@ -882,19 +650,6 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
 
 
   }
-
-  run_    = iEvent.id().run();
-  event_  = iEvent.id().event();
-  lumis_  = iEvent.luminosityBlock();
-  isData_ = iEvent.isRealData();
-  
-  iEvent.getByToken(pfCandidateCollection_, pfCandHandle_);
-  iSetup.get<IdealMagneticFieldRecord>().get(bFieldHandle_);
-  //iSetup.get<TransientTrackRecord>().get("TransientTrackBuilder",theTTBuilder_);
-  theTTBuilder_ = iSetup.getHandle(track_builder_token_);
-  iEvent.getByToken(beamSpotToken_, beamSpotHandle);
-  iEvent.getByToken(primaryVtxToken_, pvHandle_);
-
   //  Get BeamSpot
   if(doBeamSpot)
   {
@@ -955,523 +710,6 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
   theTree->Fill();
   
 }
-
-
-
-void BsToMuMuGammaNTuplizer::fillGenParticles(const edm::Event& iEvent)
-{
- /* 
-  edm::Handle<reco::GenParticleCollection> genParticleCollection;
-  iEvent.getByToken(genParticlesCollection_, genParticleCollection);
-  
-  int phoMul(-1),muMMul(-1),muPMul(-1);
-  
-  if(doFlatPt_){
-    for (auto p = genParticleCollection->begin(); p != genParticleCollection->end(); ++p) {
-      mcPID_   .push_back(p->pdgId());
-      mcStatus_.push_back(p->status());
-      mcVtx_x_ .push_back(p->vx());
-      mcVtx_y_ .push_back(p->vy());
-      mcVtx_z_ .push_back(p->vz());
-      mcPt_    .push_back(p->pt());
-      mcEta_   .push_back(p->eta());
-      mcPhi_   .push_back(p->phi());
-      mcE_     .push_back(p->energy());
-      mcEt_    .push_back(p->et());
-      mcMass_  .push_back(p->mass());
-      nMC_++;      
-    } 
-  }
-  
-  for(auto& aBsMeson : *genParticleCollection){
-    
-    if(abs(aBsMeson.pdgId())!=531) continue;
-    
-    for(unsigned int j=0; j<aBsMeson.numberOfDaughters(); j++){
-      
-      auto& bsDaughter = *(aBsMeson.daughter(j));
-      if(bsDaughter.pdgId() == -13) muPMul++;
-      if(bsDaughter.pdgId() ==  13) muMMul++;
-      if(bsDaughter.pdgId() ==  22) phoMul++;
-    }
-    if(muMMul <0 or muPMul <0 ) continue;
-    if(phoMul <0 and doBsToMuMuGamma  ) continue;
-
-    for(unsigned int j=0; j<aBsMeson.numberOfDaughters(); j++){
-      auto& bsDaughter = *(aBsMeson.daughter(j));
-      if(bsDaughter.pdgId() == 13) {
-	gen_BsMuonM_pt_.push_back(bsDaughter.pt());
-	gen_BsMuonM_eta_.push_back(bsDaughter.eta());
-	gen_BsMuonM_phi_.push_back(bsDaughter.phi());
-	gen_nBsMuonM_++;
-      }
-      if(bsDaughter.pdgId() == -13){
-	gen_BsMuonP_pt_.push_back(bsDaughter.pt());
-	gen_BsMuonP_eta_.push_back(bsDaughter.eta());
-	gen_BsMuonP_phi_.push_back(bsDaughter.phi());
-	gen_nBsMuonP_++;
-      }
-      if(bsDaughter.pdgId() ==  22){
-	gen_BsPhoton_pt_.push_back(bsDaughter.pt());
-	gen_BsPhoton_energy_.push_back(bsDaughter.energy());
-	gen_BsPhoton_eta_.push_back(bsDaughter.eta());
-	gen_BsPhoton_phi_.push_back(bsDaughter.phi());
-	gen_nBsPhoton_++;
-      }
-    }  //number of daughters
-
-    gen_Bs_pt_.push_back(aBsMeson.pt());
-    gen_Bs_energy_.push_back(aBsMeson.energy());
-    gen_Bs_eta_.push_back(aBsMeson.eta());
-    gen_Bs_phi_.push_back(aBsMeson.phi());
-    gen_Bs_pz_.push_back(aBsMeson.pz());
-    gen_Bs_pdgId_.push_back(aBsMeson.pdgId());
-    gen_nBs_++;
-    
-  } // genparticle collection
-  */
-} // fill gen particles
-
-/*
-void BsToMuMuGammaNTuplizer::fillMuons(const edm::Event& iEvent, const edm::EventSetup& iSetup){
-  
-  // Get magnetic field
-    
-  edm::ESHandle<MagneticField> bFieldHandle;
-  iSetup.get<IdealMagneticFieldRecord>().get(bFieldHandle);      
-  //  Get BeamSpot
-  edm::Handle<reco::BeamSpot> beamSpotH;
-  iEvent.getByToken(beamSpotToken_, beamSpotH);
-  reco::BeamSpot beamSpot = *beamSpotH;
-
-
-  edm::Handle<std::vector<reco::Muon>> muons;
-  iEvent.getByToken(muonToken_, muons);
-  
-  reco::TrackRef muTrackm,muTrackp, muTrack;
-  reco::TransientTrack refitMupTT, refitMumTT;
-  double mu_mu_vtx_cl, mu_mu_pt, mu_mu_mass, mu_mu_mass_err;
-  
-  // variables
-  Float_t muonMass,muonMassErr;
-  muonMass= Utility->muonMass;
-  muonMassErr= Utility->muonMassErr;
-  double chi2,ndof;
-
-  //std::cout << " muon size:" << muons->size() << std::endl; 
-  //start loop on first muon 
-  for (uint32_t i=0;i<muons->size();i++){
-   
-    auto &mu = muons->at(i);
-    if(muons->size() < 2 || mu.pt()  < pTMinMuons) continue;
-    muTrack = mu.innerTrack();
-
-    if ((muTrack.isNull() == true)) continue;
-    
-    const reco::TransientTrack muTrackTT( muTrack, &(*bFieldHandle));
-    if (!muTrackTT.isValid()) continue;
-    
-    // # Compute mu- DCA to BeamSpot #
-    theDCAXBS = muTrackTT.trajectoryStateClosestToPoint(GlobalPoint(beamSpot.position().x(),beamSpot.position().y(),beamSpot.position().z()));
-    double DCAmuBS    = theDCAXBS.perigeeParameters().transverseImpactParameter();
-    double DCAmuBSErr = theDCAXBS.perigeeError().transverseImpactParameterError();
-
-    //// #############
-    //// # Save: mu- #
-    //// #############
-    if(muTrack->charge() ==-1){ 
-      mumHighPurity_.push_back( (int)muTrack->quality(reco::Track::highPurity));
-      mumPt_.push_back(muTrack->pt());
-      mumEta_.push_back(muTrack->eta());
-      mumPhi_.push_back(muTrack->phi());
-      mumCL_.push_back(TMath::Prob(muTrackTT.chi2(), static_cast<int>(rint(muTrackTT.ndof()))));
-      mumNormChi2_.push_back(muTrack->normalizedChi2());
-      mumVx_.push_back(mu.vx());
-      mumVy_.push_back(mu.vy());
-      mumVz_.push_back(mu.vz());
-      
- 
-      mumDCABS_.push_back(DCAmuBS);
-      mumDCABSE_.push_back(DCAmuBSErr);
-      
-
-      mumFracHits_.push_back(static_cast<double>(muTrack->hitPattern().numberOfValidHits()) / static_cast<double>(muTrack->hitPattern().numberOfValidHits() +
-														  muTrack->hitPattern().numberOfLostHits(reco::HitPattern::TRACK_HITS) +
-														  muTrack->hitPattern().numberOfLostHits(reco::HitPattern::MISSING_INNER_HITS) +
-														  muTrack->hitPattern().numberOfLostHits(reco::HitPattern::MISSING_OUTER_HITS)));
-
-      mumdxyBS_.push_back(muTrackTT.track().dxy( (beamSpot.position() )));
-      mumdzBS_.push_back(muTrackTT.track().dz(  (beamSpot.position() )));
-      
-
-      
-      mumIdx_.push_back(i);
-      mumNPixHits_.push_back(muTrack->hitPattern().numberOfValidPixelHits());
-      mumNPixLayers_.push_back(muTrack->hitPattern().pixelLayersWithMeasurement());  
-      mumNTrkHits_.push_back(muTrack->hitPattern().numberOfValidTrackerHits());
-      mumNTrkLayers_.push_back(muTrack->hitPattern().trackerLayersWithMeasurement());
-      if (mu.isGlobalMuon() == true) mumNMuonHits_.push_back(mu.globalTrack()->hitPattern().numberOfValidMuonHits());
-      else mumNMuonHits_.push_back(0);
-      mumNMatchStation_.push_back(mu.numberOfMatchedStations());
-
-      mum_isGlobalMuon_	      .push_back(mu.isGlobalMuon());
-      mum_isTrackerMuon_	      .push_back(mu.isTrackerMuon());
-      mum_StandAloneMuon_          .push_back(mu.isStandAloneMuon());
-      mum_isCaloMuon_	      .push_back(mu.isCaloMuon());
-      mum_isPFMuon_	              .push_back(mu.isPFMuon());
-
-      mum_selector_.push_back(mu.selectors()); 
-      mum_isIsolationValid_.push_back(mu.isIsolationValid());
-      mum_isPFIsolationValid_.push_back(mu.isIsolationValid());
-
-      auto &MuIsol03 = mu.isolationR03();
-      mum_isolationR03_trackSumPt_.push_back(MuIsol03.sumPt);
-      mum_isolationR03_trackEcalSumEt_.push_back(MuIsol03.emEt);
-      mum_isolationR03_trackHcalSumEt_.push_back(MuIsol03.hadEt);
-      mum_isolationR03_trackHoSumEt_.push_back(MuIsol03.hoEt);
-      mum_isolationR03_trackNTracks_.push_back(MuIsol03.nTracks);
-      mum_isolationR03_trackNJets_.push_back(MuIsol03.nJets);
-      mum_isolationR03_trackerVetoSumPt_.push_back(MuIsol03.trackerVetoPt);
-      mum_isolationR03_emVetoSumEt_.push_back(MuIsol03.emVetoEt);
-      mum_isolationR03_hadVetoSumEt_.push_back(MuIsol03.hadVetoEt);
-      mum_isolationR03_hoVetoEt_.push_back(MuIsol03.hoVetoEt);
-  
-      auto &MuIsol05 = mu.isolationR05();
-      mum_isolationR05_trackSumPt_.push_back(MuIsol05.sumPt);
-      mum_isolationR05_trackEcalSumEt_.push_back(MuIsol05.emEt);
-      mum_isolationR05_trackHcalSumEt_.push_back(MuIsol05.hadEt);
-      mum_isolationR05_trackHoSumEt_.push_back(MuIsol05.hoEt);
-      mum_isolationR05_trackNTracks_.push_back(MuIsol05.nTracks);
-      mum_isolationR05_trackNJets_.push_back(MuIsol05.nJets);
-      mum_isolationR05_trackerVetoSumPt_.push_back(MuIsol05.trackerVetoPt);
-      mum_isolationR05_emVetoSumEt_.push_back(MuIsol05.emVetoEt);
-      mum_isolationR05_hadVetoSumEt_.push_back(MuIsol05.hadVetoEt);
-      mum_isolationR05_hoVetoEt_.push_back(MuIsol05.hoVetoEt);
-  
-      auto &MuPFIsol = mu.pfIsolationR03();
-      mum_PFIsolationR03_sumChargedHadronPt_.push_back(MuPFIsol.sumChargedHadronPt);
-      mum_PFIsolationR03_sumChargedParticlePt_.push_back(MuPFIsol.sumChargedParticlePt);
-      mum_PFIsolationR03_sumNeutralHadronEt_.push_back(MuPFIsol.sumNeutralHadronEt);
-      mum_PFIsolationR03_sumPhotonEt_.push_back(MuPFIsol.sumPhotonEt);
-      mum_PFIsolationR03_sumNeutralHadronEtHighThreshold_.push_back(MuPFIsol.sumNeutralHadronEtHighThreshold);
-      mum_PFIsolationR03_sumPhotonEtHighThreshold_.push_back(MuPFIsol.sumPhotonEtHighThreshold);
-      mum_PFIsolationR03_sumPUPt_.push_back(MuPFIsol.sumPUPt);
-    
-      auto &MuPFIsol04 = mu.pfIsolationR04();
-      mum_PFIsolationR04_sumChargedHadronPt_.push_back(MuPFIsol04.sumChargedHadronPt);
-      mum_PFIsolationR04_sumChargedParticlePt_.push_back(MuPFIsol04.sumChargedParticlePt);
-      mum_PFIsolationR04_sumNeutralHadronEt_.push_back(MuPFIsol04.sumNeutralHadronEt);
-      mum_PFIsolationR04_sumPhotonEt_.push_back(MuPFIsol04.sumPhotonEt);
-      mum_PFIsolationR04_sumNeutralHadronEtHighThreshold_.push_back(MuPFIsol04.sumNeutralHadronEtHighThreshold);
-      mum_PFIsolationR04_sumPhotonEtHighThreshold_.push_back(MuPFIsol04.sumPhotonEtHighThreshold);
-      mum_PFIsolationR04_sumPUPt_.push_back(MuPFIsol04.sumPUPt);
-
-      nMuM_++; 
-    }
-      
-    //// #############
-    //// # Save: mu+ #
-    //// #############
-    if(muTrack->charge() == 1){ 
-      mupHighPurity_.push_back( (int) muTrack->quality(reco::Track::highPurity));
-      mupPt_.push_back(muTrack->pt());
-      mupEta_.push_back(muTrack->eta());
-      mupPhi_.push_back(muTrack->phi());
-      mupCL_.push_back(TMath::Prob(muTrackTT.chi2(), static_cast<int>(rint(muTrackTT.ndof()))));
-      mupNormChi2_.push_back(muTrack->normalizedChi2());
-      mupVx_.push_back(mu.vx());
-      mupVy_.push_back(mu.vy());
-      mupVz_.push_back(mu.vz());
-      
-      mupDCABS_.push_back(DCAmuBS);
-      mupDCABSE_.push_back(DCAmuBSErr);
-      mupdxyBS_.push_back(muTrackTT.track().dxy( (beamSpot.position() )));
-      mupdzBS_.push_back(muTrackTT.track().dz(  (beamSpot.position() )));
-      
-      mupFracHits_.push_back(static_cast<double>(muTrack->hitPattern().numberOfValidHits()) / 
-			     (  muTrack->hitPattern().numberOfValidHits() +
-				muTrack->hitPattern().numberOfLostHits(reco::HitPattern::TRACK_HITS) +
-				muTrack->hitPattern().numberOfLostHits(reco::HitPattern::MISSING_INNER_HITS) +
-				muTrack->hitPattern().numberOfLostHits(reco::HitPattern::MISSING_OUTER_HITS) ) ) ;
-
-      
-      mupIdx_.push_back(i);
-      mupNPixHits_.push_back(muTrack->hitPattern().numberOfValidPixelHits());
-      mupNPixLayers_.push_back(muTrack->hitPattern().pixelLayersWithMeasurement());  
-      mupNTrkHits_.push_back(muTrack->hitPattern().numberOfValidTrackerHits());
-      mupNTrkLayers_.push_back(muTrack->hitPattern().trackerLayersWithMeasurement());
-      if (mu.isGlobalMuon() == true) mupNMuonHits_.push_back(mu.globalTrack()->hitPattern().numberOfValidMuonHits());
-      else mupNMuonHits_.push_back(0);
-      mupNMatchStation_.push_back(mu.numberOfMatchedStations());
-
-      mup_isGlobalMuon_	      .push_back(mu.isGlobalMuon());
-      mup_isTrackerMuon_	      .push_back(mu.isTrackerMuon());
-      mup_StandAloneMuon_          .push_back(mu.isStandAloneMuon());
-      mup_isCaloMuon_	      .push_back(mu.isCaloMuon());
-      mup_isPFMuon_	              .push_back(mu.isPFMuon());
-
-      mup_selector_.push_back(mu.selectors()); 
-      mup_isIsolationValid_.push_back(mu.isIsolationValid());
-      mup_isPFIsolationValid_.push_back(mu.isIsolationValid());
-
-      auto &MuIsol03 = mu.isolationR03();
-      mup_isolationR03_trackSumPt_.push_back(MuIsol03.sumPt);
-      mup_isolationR03_trackEcalSumEt_.push_back(MuIsol03.emEt);
-      mup_isolationR03_trackHcalSumEt_.push_back(MuIsol03.hadEt);
-      mup_isolationR03_trackHoSumEt_.push_back(MuIsol03.hoEt);
-      mup_isolationR03_trackNTracks_.push_back(MuIsol03.nTracks);
-      mup_isolationR03_trackNJets_.push_back(MuIsol03.nJets);
-      mup_isolationR03_trackerVetoSumPt_.push_back(MuIsol03.trackerVetoPt);
-      mup_isolationR03_emVetoSumEt_.push_back(MuIsol03.emVetoEt);
-      mup_isolationR03_hadVetoSumEt_.push_back(MuIsol03.hadVetoEt);
-      mup_isolationR03_hoVetoEt_.push_back(MuIsol03.hoVetoEt);
-  
-      auto &MuIsol05 = mu.isolationR05();
-      mup_isolationR05_trackSumPt_.push_back(MuIsol05.sumPt);
-      mup_isolationR05_trackEcalSumEt_.push_back(MuIsol05.emEt);
-      mup_isolationR05_trackHcalSumEt_.push_back(MuIsol05.hadEt);
-      mup_isolationR05_trackHoSumEt_.push_back(MuIsol05.hoEt);
-      mup_isolationR05_trackNTracks_.push_back(MuIsol05.nTracks);
-      mup_isolationR05_trackNJets_.push_back(MuIsol05.nJets);
-      mup_isolationR05_trackerVetoSumPt_.push_back(MuIsol05.trackerVetoPt);
-      mup_isolationR05_emVetoSumEt_.push_back(MuIsol05.emVetoEt);
-      mup_isolationR05_hadVetoSumEt_.push_back(MuIsol05.hadVetoEt);
-      mup_isolationR05_hoVetoEt_.push_back(MuIsol05.hoVetoEt);
-  
-      auto &MuPFIsol = mu.pfIsolationR03();
-      mup_PFIsolationR03_sumChargedHadronPt_.push_back(MuPFIsol.sumChargedHadronPt);
-      mup_PFIsolationR03_sumChargedParticlePt_.push_back(MuPFIsol.sumChargedParticlePt);
-      mup_PFIsolationR03_sumNeutralHadronEt_.push_back(MuPFIsol.sumNeutralHadronEt);
-      mup_PFIsolationR03_sumPhotonEt_.push_back(MuPFIsol.sumPhotonEt);
-      mup_PFIsolationR03_sumNeutralHadronEtHighThreshold_.push_back(MuPFIsol.sumNeutralHadronEtHighThreshold);
-      mup_PFIsolationR03_sumPhotonEtHighThreshold_.push_back(MuPFIsol.sumPhotonEtHighThreshold);
-      mup_PFIsolationR03_sumPUPt_.push_back(MuPFIsol.sumPUPt);
-    
-      auto &MuPFIsol04 = mu.pfIsolationR04();
-      mup_PFIsolationR04_sumChargedHadronPt_.push_back(MuPFIsol04.sumChargedHadronPt);
-      mup_PFIsolationR04_sumChargedParticlePt_.push_back(MuPFIsol04.sumChargedParticlePt);
-      mup_PFIsolationR04_sumNeutralHadronEt_.push_back(MuPFIsol04.sumNeutralHadronEt);
-      mup_PFIsolationR04_sumPhotonEt_.push_back(MuPFIsol04.sumPhotonEt);
-      mup_PFIsolationR04_sumNeutralHadronEtHighThreshold_.push_back(MuPFIsol04.sumNeutralHadronEtHighThreshold);
-      mup_PFIsolationR04_sumPhotonEtHighThreshold_.push_back(MuPFIsol04.sumPhotonEtHighThreshold);
-      mup_PFIsolationR04_sumPUPt_.push_back(MuPFIsol04.sumPUPt);
-
-      nMuP_++; 
-    }
-
-    //std::cout << "1st loop:" <<  iEvent.id().event() <<  " i: " << i <<  " " << muTrack->charge() << " pt: " << muTrack->pt() << " eta:" << muTrack->eta() << std::endl;
-    
-    
-    //start loop on second muon 
-    for ( uint32_t j= i+1 ;j<muons->size();j++){
-
-      auto &mu2 = muons->at(j);
-      
-      if( (mu.charge())*(mu2.charge()) == 1) continue;
-
-      if(mu.charge() == 1){ muTrackp   =  mu.innerTrack();}
-      if(mu.charge() == -1){ muTrackm  =  mu.innerTrack();}
-      
-      if(mu2.charge() == 1) { muTrackp  = mu2.innerTrack();}
-      if(mu2.charge() == -1){ muTrackm  = mu2.innerTrack();}
-
-
-      if(mu2.pt()  < pTMinMuons) continue;
-
-      //muTrackp = mup.innerTrack();
-      if ((muTrackp.isNull() == true) || (muTrackm.isNull() == true)) continue;
-     
-      const reco::TransientTrack muTrackpTT(muTrackp, &(*bFieldHandle));
-      if (!muTrackpTT.isValid()) continue;
-
-      const reco::TransientTrack muTrackmTT(muTrackm, &(*bFieldHandle));
-      if (!muTrackmTT.isValid()) continue;
-      
-      
-      // # Check goodness of dimuons closest approach #
-      ClosestApp.calculate(muTrackpTT.initialFreeState(),muTrackmTT.initialFreeState());
-      XingPoint = ClosestApp.crossingPoint();
-      
-      double mumuDCA = ClosestApp.distance();
-      
-      // # dimuon inviariant mass and pT before vertex fitting #
-      bsDimuon_lv.SetPxPyPzE( muTrackmTT.track().px() + muTrackpTT.track().px(), 
-			      muTrackmTT.track().py() + muTrackpTT.track().py(),
-			      muTrackmTT.track().pz() + muTrackpTT.track().pz(),
-			      sqrt( pow(muTrackmTT.track().p(),2) + pow(Utility->muonMass,2) ) + sqrt( pow(muTrackpTT.track().p(),2) + pow(Utility->muonMass,2) ) );
-      
-      
-      if (true or (bsDimuon_lv.Pt() < minDimuon_pt)  || (bsDimuon_lv.M() < minDimuonInvariantMass) || (bsDimuon_lv.M() > maxDimuonInvariantMass))
-	{
-	  //        continue;
-	}
-      
-      
-      chi2 = 0.;
-      ndof  = 0.;
-      
-      // ####################################################
-      // # Try to vertex the two muons to get dimuon vertex #
-      // ####################################################
-      KinematicParticleFactoryFromTransientTrack partFactory;
-      KinematicParticleVertexFitter PartVtxFitter;
-      
-      std::vector<RefCountedKinematicParticle> muonParticles;
-      muonParticles.push_back(partFactory.particle(muTrackmTT, muonMass,chi2,ndof,muonMassErr));
-      muonParticles.push_back(partFactory.particle(muTrackpTT, muonMass,chi2,ndof,muonMassErr));
-      
-      RefCountedKinematicTree mumuVertexFitTree = PartVtxFitter.fit(muonParticles); 
-      if ( !mumuVertexFitTree->isValid()) continue;
-      
-      if (mumuVertexFitTree->isValid() == false){
-	     continue; 
-      }
-      
-      mumuVertexFitTree->movePointerToTheTop();
-      RefCountedKinematicVertex mumu_KV   = mumuVertexFitTree->currentDecayVertex();
-      RefCountedKinematicParticle mumu_KP = mumuVertexFitTree->currentParticle();
-      
-      if ( !mumu_KV->vertexIsValid()) continue;
-      
-      mu_mu_vtx_cl = TMath::Prob((double)mumu_KV->chiSquared(),
-				 int(rint(mumu_KV->degreesOfFreedom())));
-      
-      
-      // extract the re-fitted tracks
-      mumuVertexFitTree->movePointerToTheTop();
-      
-      mumuVertexFitTree->movePointerToTheFirstChild();
-      RefCountedKinematicParticle refitMum = mumuVertexFitTree->currentParticle();
-      refitMumTT = refitMum->refittedTransientTrack();
-      
-      mumuVertexFitTree->movePointerToTheNextChild();
-      RefCountedKinematicParticle refitMup = mumuVertexFitTree->currentParticle();
-      refitMupTT = refitMup->refittedTransientTrack();
-      
-      TLorentzVector mymum, mymup, mydimu;
-      
-      mymum.SetXYZM(refitMumTT.track().momentum().x(),
-		    refitMumTT.track().momentum().y(),
-		    refitMumTT.track().momentum().z(), muonMass);
-      
-      mymup.SetXYZM(refitMupTT.track().momentum().x(),
-		    refitMupTT.track().momentum().y(),
-		    refitMupTT.track().momentum().z(), muonMass);
-      
-      mydimu = mymum + mymup;
-      mu_mu_pt = mydimu.Perp();
-      
-      mu_mu_mass = mumu_KP->currentState().mass();
-      mu_mu_mass_err = sqrt(mumu_KP->currentState().kinematicParametersError().
-			    matrix()(6,6));
-      
-      //std::cout << mu_mu_vtx_cl << " " << mu_mu_pt << " " << mu_mu_mass << " " << mu_mu_mass_err << std::endl;
-      
-      // ######################################################
-      // # Compute the distance between mumu vtx and BeamSpot #
-      // ######################################################
-      
-      double MuMuLSBS;
-      double MuMuLSBSErr;
-      Utility->computeLS (mumu_KV->position().x(),mumu_KV->position().y(),0.0,
-			  beamSpot.position().x(),beamSpot.position().y(),0.0,
-			  mumu_KV->error().cxx(),mumu_KV->error().cyy(),0.0,
-			  mumu_KV->error().matrix()(0,1),0.0,0.0,
-			  beamSpot.covariance()(0,0),beamSpot.covariance()(1,1),0.0,
-			  beamSpot.covariance()(0,1),0.0,0.0,
-			  &MuMuLSBS,&MuMuLSBSErr);
-      
-      
-      
-      // ###################################################################
-      // # Compute cos(alpha) between mumu momentum and mumuVtx - BeamSpot #
-      // ###################################################################
-      double MuMuCosAlphaBS;
-      double MuMuCosAlphaBSErr;
-      Utility->computeCosAlpha (mumu_KP->currentState().globalMomentum().x(),
-                                mumu_KP->currentState().globalMomentum().y(),
-				0.0,
-				mumu_KV->position().x() - beamSpot.position().x(),
-				mumu_KV->position().y() - beamSpot.position().y(),
-				0.0,
-				mumu_KP->currentState().kinematicParametersError().matrix()(3,3),
-				mumu_KP->currentState().kinematicParametersError().matrix()(4,4),
-				0.0,
-				mumu_KP->currentState().kinematicParametersError().matrix()(3,4),
-				0.0,
-				0.0,
-				mumu_KV->error().cxx() + beamSpot.covariance()(0,0),
-				mumu_KV->error().cyy() + beamSpot.covariance()(1,1),
-				0.0,
-				mumu_KV->error().matrix()(0,1) + beamSpot.covariance()(0,1),
-				0.0,
-				0.0,
-				&MuMuCosAlphaBS,&MuMuCosAlphaBSErr);
-    
-      
-      // add loop for photons here...
-
-       
-    
-      //// #################
-      //// # Save: mu+ mu- #
-      //// #################
-      if(mu2.charge()==1) {
-        mumuParentMuM_.push_back(i);
-        mumuParentMuP_.push_back(j);
-      }
-      if(mu2.charge()==-1){
-        mumuParentMuM_.push_back(j);
-        mumuParentMuP_.push_back(i);
-
-      }
-
-      
-      mumuPt_.push_back(mu_mu_pt);
-      mumuEta_.push_back(mydimu.Eta());
-      mumuRapidity_.push_back(mydimu.Rapidity());
-      mumuPhi_.push_back(mydimu.Phi());
-      mumuMass_.push_back(mu_mu_mass);
-      mumuMassE_.push_back(mu_mu_mass_err);
-      
-      mumuPx_.push_back(mumu_KP->currentState().globalMomentum().x());
-      mumuPy_.push_back(mumu_KP->currentState().globalMomentum().y());
-      mumuPz_.push_back(mumu_KP->currentState().globalMomentum().z()); 
-      mumuCovPxPx_.push_back(mumu_KP->currentState().kinematicParametersError().matrix()(3,3)); 
-      mumuCovPxPy_.push_back(mumu_KP->currentState().kinematicParametersError().matrix()(3,4)); 
-      mumuCovPxPz_.push_back(mumu_KP->currentState().kinematicParametersError().matrix()(3,5)); 
-      mumuCovPyPy_.push_back(mumu_KP->currentState().kinematicParametersError().matrix()(4,4)); 
-      mumuCovPyPz_.push_back(mumu_KP->currentState().kinematicParametersError().matrix()(4,5)); 
-      mumuCovPzPz_.push_back(mumu_KP->currentState().kinematicParametersError().matrix()(5,5)); 
-      mumuDR_.push_back(deltaR(mu,mu2));
-      
-      mumuVtxCL_.push_back(mu_mu_vtx_cl);
-      mumuVtxChi2_.push_back(mumu_KV->chiSquared());
-      mumuVtxNdof_.push_back(mumu_KV->degreesOfFreedom());
-      mumuVtxX_.push_back(mumu_KV->position().x());
-      mumuVtxY_.push_back(mumu_KV->position().y());
-      mumuVtxZ_.push_back(mumu_KV->position().z());
-      mumuVtxCovXX_.push_back(mumu_KV->error().cxx());
-      mumuVtxCovXY_.push_back(mumu_KV->error().cyx());
-      mumuVtxCovXZ_.push_back(mumu_KV->error().czx());
-      mumuVtxCovYY_.push_back(mumu_KV->error().cyy());
-      mumuVtxCovYZ_.push_back(mumu_KV->error().czy());
-      mumuVtxCovZZ_.push_back(mumu_KV->error().czz());
-      
-      mumuCosAlphaBS_.push_back(MuMuCosAlphaBS);
-      mumuCosAlphaBSE_.push_back(MuMuCosAlphaBSErr);
-      mumuLBS_.push_back(MuMuLSBS);
-      mumuLBSE_.push_back(MuMuLSBSErr);
-      mumuDCA_.push_back(mumuDCA);
-      
-      // std::cout << "2nd loop after continue:" <<  iEvent.id().event() <<  " i: " << i <<  " " << mu.charge() << " pt: " << mu.pt() << " eta:" << mu.eta() << std::endl;
-      // std::cout << "2nd loop cafter continue:" <<  iEvent.id().event() <<  " j: " << j <<  " " << mu2.charge() << " pt: " << mu2.pt() << " eta:" << mu2.eta() << std::endl << std::endl;
-    }
-  }
-
-} //fill muons
-
-*/
 
 void BsToMuMuGammaNTuplizer::fillPhotons(const edm::Event& e, const edm::EventSetup& es)
 {
@@ -1565,11 +803,11 @@ void BsToMuMuGammaNTuplizer::fillPhotons(const edm::Event& e, const edm::EventSe
 void BsToMuMuGammaNTuplizer::fillPFPhotons(const edm::Event& e, const edm::EventSetup& es)
 {
   // Fills tree branches with photons.
-  edm::Handle<edm::View<reco::PFCandidate> > pfPhotonsHandle;
-  e.getByToken(pfPhotonsCollection_, pfPhotonsHandle);
+ // edm::Handle<edm::View<reco::PFCandidate> > pfCandidateHandle;
+ // e.getByToken(pfPhotonsCollection_, pfCandidateHandle);
   
   // loop over photons
-  for (auto pf = pfPhotonsHandle->begin(); pf != pfPhotonsHandle->end(); ++pf) {
+  for (auto pf = pfCandidateHandle->begin(); pf != pfCandidateHandle->end(); ++pf) {
     if(pf->pdgId() !=22)continue;
     if(pf->et() < pTMinPFPhotons)continue;
     phoPFE_             .push_back(pf->energy());
@@ -1582,6 +820,7 @@ void BsToMuMuGammaNTuplizer::fillPFPhotons(const edm::Event& e, const edm::Event
 
 
 void BsToMuMuGammaNTuplizer::fillSC(edm::Event const& e, const edm::EventSetup& es, reco::Vertex& pv) {
+
   edm::Handle<reco::SuperClusterCollection> barrelSCHandle;
   e.getByToken(MustacheSCBarrelCollection_, barrelSCHandle);
 
@@ -1625,10 +864,7 @@ void BsToMuMuGammaNTuplizer::fillSC(edm::Event const& e, const edm::EventSetup& 
   full5x5_locCov_.clear();
   // for(const auto& iSuperCluster : *(superClusterEB.product())){  
   for (auto const& scs : { *barrelSCHandle.product(), *endcapSCHandle.product() }) {
-    //for (auto const& sc : *(barrelSCHandle.product())) {
     for (auto const& sc : scs) {
-      //if(abs(sc.eta())>2.4)continue;
-      //
 	
       edm::ESHandle<CaloTopology> caloTopology;
       es.get<CaloTopologyRecord>().get(caloTopology);
@@ -2102,9 +1338,6 @@ void BsToMuMuGammaNTuplizer::addParticleFlowBranches()
 
 void BsToMuMuGammaNTuplizer::fillPFCandiateCollection( const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {  
-  edm::Handle<reco::PFCandidateCollection>  pfCandidateHandle;
-  iEvent.getByToken(pfCandidateCollection_, pfCandidateHandle);
-  //std::cout<<"Size of pfColection = "<<pfCandidateHandle->size()<<"\n";
   Int_t i=0;
   storageMapInt["nPFCandidates"]=0;
   for (auto pfCd = pfCandidateHandle->begin();pfCd != pfCandidateHandle->end(); pfCd++) 
@@ -2652,8 +1885,26 @@ void BsToMuMuGammaNTuplizer::addDimuonBranches()
 
 void BsToMuMuGammaNTuplizer::fillDimuonBranches( const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
+    std::cout<<"New FillDimuonranches !\n";
     edm::Handle<std::vector<reco::Muon>> muonHandle;
     iEvent.getByToken(muonToken_, muonHandle);
+
+    // Fills tree branches with photons.
+    edm::Handle<std::vector<reco::Photon> > photonHandle;
+    edm::Handle<reco::SuperClusterCollection> barrelSCHandle;
+    //edm::Handle<edm::View<reco::PFCandidate> > pfCandidateHandle;
+    edm::Handle<reco::SuperClusterCollection> endcapSCHandle;
+
+    if(doSuperClusters_)
+    { 
+     iEvent.getByToken(MustacheSCBarrelCollection_, barrelSCHandle);
+     iEvent.getByToken(MustacheSCEndcapCollection_, endcapSCHandle);
+    }
+
+    if(doPhotons_) iEvent.getByToken(gedPhotonsCollection_, photonHandle);
+  
+
+
     
     AnalyticalImpactPointExtrapolator extrapolator(bFieldHandle_.product());
     
@@ -2668,8 +1919,26 @@ void BsToMuMuGammaNTuplizer::fillDimuonBranches( const edm::Event& iEvent, const
 
     
     auto nMuons   = muonHandle->size();
-    // auto nPhotons = photonHandle->size();
+    auto nPhotons = photonHandle->size();
     
+    //  setting the JPsi and Bmmg cands
+    if(doJPsiGamma) { 
+        storageMapInt["nJPsiGammaCands"]=0;
+        if(doPFPhotons_)
+        {
+            storageMapInt["nJPsiGammaPFCands"]=0;
+        }
+    }
+    if(doMuMuGamma) {
+        storageMapInt["nMMGCands"]=0;
+
+        if(doPFPhotons_)
+        {
+            storageMapInt["nMMGpfCands"]=0;
+        }
+    }
+    
+
     // Output collection
     auto dimuon  = std::make_unique<pat::CompositeCandidateCollection>();
     auto btommg  = std::make_unique<pat::CompositeCandidateCollection>();
@@ -2748,42 +2017,15 @@ void BsToMuMuGammaNTuplizer::fillDimuonBranches( const edm::Event& iEvent, const
 	  //     if (kinematicMuMuVertexFit.sigLxy < minBhhSigLxy_) continue;
 	  //   }
 
-	  // dimuon
-	  if (muon1.index() >= 0 and muon2.index() >= 0){
-	    
-	    // MuMuGamma
-        /*
-	    if (recoMuMuGamma_ && kinematicMuMuVertexFit.valid()){
-	      for (unsigned int k=0; k < nPhotons; ++k){
-		auto photon(photonHandle->at(k));
-		const auto & vtx_point = kinematicMuMuVertexFit.refitVertex->vertexState().position();
-		photon.setVertex(reco::Photon::Point(vtx_point.x(), vtx_point.y(), vtx_point.z()));
-		auto dimuon_p4(makeLorentzVectorFromPxPyPzM(kinematicMuMuVertexFit.p3().x(),
-							    kinematicMuMuVertexFit.p3().y(),
-							    kinematicMuMuVertexFit.p3().z(),
-							    kinematicMuMuVertexFit.mass()));
-		double mmg_mass = (dimuon_p4 + photon.p4()).mass();
-		if (mmg_mass >= minMuMuGammaMass_ and mmg_mass <= maxMuMuGammaMass_){
-		  // fill BtoMuMuPhoton candidate info
-	    
-		  pat::CompositeCandidate mmgCand;
-		  mmgCand.addUserInt("mm_index", imm);
-		  mmgCand.addUserInt("ph_index", k);
-		  mmgCand.addUserFloat("mass", mmg_mass);
-		  
-		  fillMuMuGammaInfo(mmgCand,iEvent,kinematicMuMuVertexFit,muon1,muon2,photon);
-		  // fillMvaInfoForMuMuGamma(mmgCand,dimuonCand,iEvent,kinematicMuMuVertexFit,muon1,muon2,photon);
-
-		  btommg->push_back(mmgCand);
-		}
-	      }
-	    }
-        */
-
+      auto fit = vertexMuonsWithKinematicFitter(muon1, muon2);
+      fit.postprocess(*beamSpot_);
+	  
+      // dimuon
+ 
 	    // mmK and mmKK
         /*
 	    for (unsigned int k = 0; k < nPFCands; ++k) {
-	      reco::PFCandidate kaonCand1((*pfCandHandle_)[k]);
+	      reco::PFCandidate kaonCand1((*pfCandidateHandle)[k]);
 	      kaonCand1.setMass(KaonMass_);
 	      if (deltaR(muon1, kaonCand1) < 0.01 || deltaR(muon2, kaonCand1) < 0.01) continue;
 	      if (kaonCand1.charge() == 0 ) continue;
@@ -2796,8 +2038,7 @@ void BsToMuMuGammaNTuplizer::fillDimuonBranches( const edm::Event& iEvent, const
 	      bool goodBtoMuMuK = true;
 	      if (kinematicMuMuVertexFit.mass() < 2.9) goodBtoMuMuK = false;
 	      if (abs(kaonCand1.pdgId()) != 211) goodBtoMuMuK = false; //Charged hadrons
-	      if (kaonCand1.pt() < ptMinKaon_ || abs(kaonCand1.eta()) > etaMaxKaon_)
-		goodBtoMuMuK = false;
+	      if (kaonCand1.pt() < ptMinKaon_ || abs(kaonCand1.eta()) > etaMaxKaon_) goodBtoMuMuK = false;
 	      if (maxTwoTrackDOCA_ > 0 and mu1_kaon_doca > maxTwoTrackDOCA_) goodBtoMuMuK = false;
 	      if (maxTwoTrackDOCA_ > 0 and mu2_kaon_doca > maxTwoTrackDOCA_) goodBtoMuMuK = false;
 	      
@@ -2809,22 +2050,20 @@ void BsToMuMuGammaNTuplizer::fillDimuonBranches( const edm::Event& iEvent, const
 	      if (kmm_mass < minBKmmMass_ || kmm_mass > maxBKmmMass_) goodBtoMuMuK = false;
 	    
 	      if (goodBtoMuMuK){
-		// fill BtoMuMuK candidate info
-	    
-		pat::CompositeCandidate btokmmCand;
-		btokmmCand.addUserInt("mm_index", imm);
-		btokmmCand.addUserFloat("kaon_mu1_doca", mu1_kaon_doca);
-		btokmmCand.addUserFloat("kaon_mu2_doca", mu2_kaon_doca);
-		
-		fillBtoMuMuKInfo(btokmmCand,iEvent,kinematicMuMuVertexFit,muon1,muon2,kaonCand1);
-		fillMvaInfoForBtoJpsiKCandidatesEmulatingBmm(btokmmCand,dimuonCand,iEvent,kinematicMuMuVertexFit,muon1,muon2,kaonCand1);
 
-		btokmm->push_back(btokmmCand);
+		      // fill BtoMuMuK candidate info
+		      pat::CompositeCandidate btokmmCand;
+		      btokmmCand.addUserInt("mm_index", imm);
+		      btokmmCand.addUserFloat("kaon_mu1_doca", mu1_kaon_doca);
+		      btokmmCand.addUserFloat("kaon_mu2_doca", mu2_kaon_doca);
+		      fillBtoMuMuKInfo(btokmmCand,iEvent,kinematicMuMuVertexFit,muon1,muon2,kaonCand1);
+		      fillMvaInfoForBtoJpsiKCandidatesEmulatingBmm(btokmmCand,dimuonCand,iEvent,kinematicMuMuVertexFit,muon1,muon2,kaonCand1);
+		      btokmm->push_back(btokmmCand);
 	      }
 
 	      if (goodBtoJpsiKK){ // good candidate to consider for JpsiKK
 		for (unsigned int k2 = k+1; k2 < nPFCands; ++k2) { // only works if selection requirements for both kaons are identical
-		  reco::PFCandidate kaonCand2((*pfCandHandle_)[k2]);
+		  reco::PFCandidate kaonCand2((*pfCandidateHandle)[k2]);
 		  kaonCand2.setMass(KaonMass_);
 		  if (deltaR(muon1, kaonCand2) < 0.01 || deltaR(muon2, kaonCand2) < 0.01) continue;
 		  if (kaonCand2.charge() == 0 ) continue;
@@ -2861,12 +2100,9 @@ void BsToMuMuGammaNTuplizer::fillDimuonBranches( const edm::Event& iEvent, const
 		  }
 		}
 	      }
-	    }
-        */
+	    }*/
+        
 
-    auto fit = vertexMuonsWithKinematicFitter(muon1, muon2);
-    fit.postprocess(*beamSpot_);
-  
     // printf("kinematicMuMuVertexFit (x,y,z): (%7.3f,%7.3f,%7.3f)\n", 
     auto displacement3d = compute3dDisplacement(fit, *pvHandle_.product(),true);
     
@@ -2964,51 +2200,214 @@ void BsToMuMuGammaNTuplizer::fillDimuonBranches( const edm::Event& iEvent, const
     storageMapFloatArray["dimuon_otherVtxMaxProb"][nDimu]   =   otherVertexMaxProb(muon1,muon2,0.5);
     storageMapFloatArray["dimuon_otherVtxMaxProb1"][nDimu]  =   otherVertexMaxProb(muon1,muon2,1.0);
     storageMapFloatArray["dimuon_otherVtxMaxProb2"][nDimu]  =   otherVertexMaxProb(muon1,muon2,2.0);
-  
-    // BDT
-    // bdtData_.fls3d    = dimuonCand.userFloat("kin_sl3d";
-    // bdtData_.alpha    = dimuonCand.userFloat("kin_alpha";
-    // bdtData_.pvips    = dimuonCand.userFloat("kin_pvipErr")>0?dimuonCand.userFloat("kin_pvip")/dimuonCand.userFloat("kin_pvipErr"):999.;
-    // bdtData_.iso      = dimuonCand.userFloat("iso";
-    // bdtData_.chi2dof  = dimuonCand.userFloat("kin_vtx_chi2dof";
-    // bdtData_.docatrk  = dimuonCand.userFloat("docatrk");
-    // bdtData_.closetrk = dimuonCand.userInt(  "closetrk");
-    // bdtData_.m1iso    = dimuonCand.userFloat("m1iso");
-    // bdtData_.m2iso    = dimuonCand.userFloat("m2iso");
-    // bdtData_.eta      = dimuonCand.userFloat("kin_eta");	  
-    // bdtData_.m        = dimuonCand.userFloat("kin_mass");	  
-  
-    // dimuonCand.addUserFloat("bdt",computeAnalysisBDT(iEvent.eventAuxiliary().event()%3));
-  
-    // XGBoost
-    // unsigned int xg_index = iEvent.eventAuxiliary().event()%3;
-  
-    // xgBoosters_.at(xg_index).set("mm_kin_alpha",       dimuonCand.userFloat("kin_alpha"));
-    // xgBoosters_.at(xg_index).set("mm_kin_alphaXY",     cos(dimuonCand.userFloat("kin_alphaBS"))); // FIXME - need new training
-    // xgBoosters_.at(xg_index).set("mm_kin_spvip",       dimuonCand.userFloat("kin_spvip"));
-    // xgBoosters_.at(xg_index).set("mm_kin_pvip",        dimuonCand.userFloat("kin_pvip"));
-    // xgBoosters_.at(xg_index).set("mm_iso",             dimuonCand.userFloat("iso"));
-    // xgBoosters_.at(xg_index).set("mm_m1iso",           dimuonCand.userFloat("m1iso"));
-    // xgBoosters_.at(xg_index).set("mm_m2iso",           dimuonCand.userFloat("m2iso"));
-    // xgBoosters_.at(xg_index).set("mm_kin_sl3d",        dimuonCand.userFloat("kin_sl3d"));
-    // xgBoosters_.at(xg_index).set("mm_kin_vtx_chi2dof", dimuonCand.userFloat("kin_vtx_chi2dof"));
-    // xgBoosters_.at(xg_index).set("mm_nBMTrks",         dimuonCand.userInt(  "nBMTrks"));
-    // xgBoosters_.at(xg_index).set("mm_otherVtxMaxProb1", dimuonCand.userFloat(  "otherVtxMaxProb1"));
-    // xgBoosters_.at(xg_index).set("mm_otherVtxMaxProb2", dimuonCand.userFloat(  "otherVtxMaxProb2"));
-  
-    // dimuonCand.addUserFloat("mva", xgBoosters_.at(xg_index).predict());
-  
+               
+    std::cout<<"  we have  : "<<fit.mass()<<"  mumu mass  | "<< muon2.index() << " " << muon1.index() <<" |\n ";
+	  if (muon1.index() >= 0 and muon2.index() >= 0){
+   		        auto dimuon_p4(makeLorentzVectorFromPxPyPzM(fit.p3().x(),
+		    					    fit.p3().y(),
+		    					    fit.p3().z(),
+		    					    fit.mass()));
+		    const auto & vtx_point = fit.refitVertex->vertexState().position();
+            math::XYZVectorF  secVtx(vtx_point.x(),vtx_point.y(),vtx_point.z());
+            auto isJpsiCand = ( fit.mass() >= minJPsiMass_ and fit.mass() <= maxJPsiMass_ );
+            std::cout<<" isJpsiCand = ( "<<fit.mass()<<" >= "<< minJPsiMass_ <<" and "<<fit.mass()<<" <= "<<maxJPsiGammaMass_ << " ===> "<<isJpsiCand<<"\n";;
+
+	        // MuMuGamma
+	        if (doMuMuGamma && fit.valid()){
+	        for (unsigned int k=0; k < nPhotons; ++k){
+                  
+                  
+		        auto photon(photonHandle->at(k));
+		        photon.setVertex(reco::Photon::Point(vtx_point.x(), vtx_point.y(), vtx_point.z()));
+		        
+                double mmg_mass = (dimuon_p4 + photon.p4()).mass();
+                
+                std::cout<<"\t Pho : "<<photon.energy() <<" | mass = "<<mmg_mass<<" [ "<<minBsMuMuGammaMass_<<","<<maxBsMuMuGammaMass_<<"] "<<"\n"; 
+		        
+                if (mmg_mass >= minBsMuMuGammaMass_ and mmg_mass <= maxBsMuMuGammaMass_){
+                     fillBmmgBranchs(nDimu,k,-1,mmg_mass);
+	  	         }
+                if( doJPsiGamma and isJpsiCand)
+                {
+                    if( mmg_mass >= minJPsiGammaMass_ and mmg_mass <= maxJPsiGammaMass_)
+                    {
+                        fillJPsiGammaBranches(nDimu,k,-1,mmg_mass);
+                    }
+                }
+	          }
+            //   make the mmg with SC
+            if(doSuperClusters_)
+            {
+             Int_t k=0;
+             for (auto const& scs : { *barrelSCHandle.product(), *endcapSCHandle.product() }) {
+                for (auto const& sc : scs) {
+                  
+                 math::XYZVectorF  scPos(sc.position().x(),sc.position().y(),sc.position().z());
+                 auto scP3 = (scPos - secVtx).unit()*sc.energy();
+                 auto scP4(makeLorentzVectorFromPxPyPzM(scP3.x(),scP3.y(),scP3.z(),0.0));
+		         double mmg_mass = (dimuon_p4 + scP4).mass();
+                 
+                 std::cout<<"\t Sc : "<<sc.energy()<<" p4E = "<<scP4.energy() <<" | mass = "<<mmg_mass<<" [ "<<minBsMuMuGammaMass_<<","<<maxBsMuMuGammaMass_<<"] "<<"\n"; 
+		        
+                if (mmg_mass >= minBsMuMuGammaMass_ and mmg_mass <= maxBsMuMuGammaMass_){
+                    fillBmmgBranchs(nDimu,-1,k,mmg_mass);
+	  	         }
+                if( doJPsiGamma and isJpsiCand)
+                  {
+                    if( mmg_mass >= minJPsiGammaMass_ and mmg_mass <= maxJPsiGammaMass_)
+                    {
+                       fillJPsiGammaBranches(nDimu,-1,k,mmg_mass);
+                    }
+                  }
+                  k++;
+                } // supercluster loop
+                }
+             }
+
+            //   make the mmg with PF
+            if(doPFPhotons_)
+            {
+             Int_t k=0;
+
+               for (auto pf = pfCandidateHandle->begin(); pf != pfCandidateHandle->end(); ++pf) {
+                  
+                  if(pf->pdgId() !=22)continue;
+                  if(pf->et() < pTMinPFPhotons)continue;
+                  
+                  math::XYZVectorF  candPos(pf->vx(),pf->vy(),pf->vz());
+                  auto candP3 = (candPos - secVtx).unit()*pf->energy();
+                  auto candP4(makeLorentzVectorFromPxPyPzM(candP3.x(),candP3.y(),candP3.z(),0.0));
+		          double mmg_mass = (dimuon_p4 + candP4).mass();
+                  
+                if (mmg_mass >= minBsMuMuGammaMass_ and mmg_mass <= maxBsMuMuGammaMass_){
+                       fillPF_BmmgBranchs(nDimu,k,mmg_mass);
+	  	         }
+                if( doJPsiGamma and isJpsiCand)
+                  {
+                    if( mmg_mass >= minJPsiGammaMass_ and mmg_mass <= maxJPsiGammaMass_)
+                    {
+                       fillPF_JPsiGammaBranches(nDimu,k,mmg_mass);
+                    }
+                  }
+                  k++;
+                }              
+               } // PF photons loop
+
+             }
+            
+
+            }
+
           nDimu++;
 	   }
       }
      }
-    }
     
     storageMapInt["nDimuons"]=nDimu;
+
+    std::cout<<" Obtained :  storageMapInt[\"nMMGCands\"] "<<storageMapInt["nMMGCands"]<<"\n";
+    std::cout<<" Obtained :  storageMapInt[\"nJPsiGammaCands\"] "<<storageMapInt["nJPsiGammaCands"]<<"\n";
+}
+
+void BsToMuMuGammaNTuplizer::addMMGBranches()
+{
+      storageMapInt["nMMGCands"]=0;
+      theTree->Branch("nMMGCands",   &storageMapInt["nMMGCands"]);
+      
+      storageMapIntArray["mmg_phoIdx"] = new Int_t[NMAX_MMG] ;
+      theTree->Branch("mmg_phoIdx",   storageMapIntArray["mmg_phoIdx"],"mmg_phoIdx[nMMGCands]/I");
+      storageMapIntArray["mmg_scIdx"] = new Int_t[NMAX_MMG] ;
+      theTree->Branch("mmg_scIdx",   storageMapIntArray["mmg_scIdx"],"mmg_scIdx[nMMGCands]/I");
+      storageMapFloatArray["mmg_mass"] = new Float_t[NMAX_MMG] ;
+      theTree->Branch("mmg_mass",   storageMapFloatArray["mmg_mass"],"mmg_mass[nMMGCands]/F");
+      storageMapFloatArray["mmg_diMuMass"] = new Float_t[NMAX_MMG] ;
+      theTree->Branch("mmg_diMuMass",   storageMapFloatArray["mmg_diMuMass"],"mmg_diMuMass[nMMGCands]/F");
 }
 
 
+void BsToMuMuGammaNTuplizer:: fillBmmgBranchs(Int_t nDimu,Int_t phoIdx,Int_t scIdx , Float_t mmg_mass)
+{
 
+      storageMapIntArray["mmg_phoIdx"][storageMapInt["nMMGCands"]]=phoIdx;
+      storageMapIntArray["mmg_scIdx"][storageMapInt["nMMGCands"]] =scIdx;
+      storageMapFloatArray["mmg_mass"][storageMapInt["nMMGCands"]]  =mmg_mass;
+      storageMapFloatArray["mmg_diMuMass"][storageMapInt["nMMGCands"]]  = storageMapFloatArray["dimuon_kin_mass"][nDimu];
+      storageMapInt["nMMGCands"]+=1;
+      std::cout<<" setting nMMGCands  "<<storageMapInt["nMMGCands"]<<"\n";
+}
+
+void BsToMuMuGammaNTuplizer::addJPsiGammaBranches()
+{
+      storageMapInt["nJPsiGammaCands"]=0;
+      theTree->Branch("nJPsiGammaCands",   &storageMapInt["nJPsiGammaCands"]);
+      storageMapIntArray["jPsiGamma_phoIdx"] = new Int_t[NMAX_MMG] ;
+      theTree->Branch("jPsiGamma_phoIdx",   storageMapIntArray["jPsiGamma_phoIdx"],"jPsiGamma_phoIdx[nJPsiGammaCands]/I");
+      storageMapIntArray["jPsiGamma_scIdx"] = new Int_t[NMAX_MMG] ;
+      theTree->Branch("jPsiGamma_scIdx",   storageMapIntArray["jPsiGamma_scIdx"],"jPsiGamma_scIdx[nJPsiGammaCands]/I");
+      storageMapFloatArray["jPsiGamma_mass"] = new Float_t[NMAX_MMG] ;
+      theTree->Branch("jPsiGamma_mass",   storageMapFloatArray["jPsiGamma_mass"],"jPsiGamma_phoIdx[nJPsiGammaCands]/f");
+      storageMapFloatArray["jPsiGamma_diMuMass"] = new Float_t[NMAX_MMG] ;
+      theTree->Branch("jPsiGamma_diMuMass",   storageMapFloatArray["jPsiGamma_diMuMass"],"jPsiGamma_diMuMass[nJPsiGammaCands]/f");
+
+}
+
+void BsToMuMuGammaNTuplizer:: fillJPsiGammaBranches(Int_t nDimu,Int_t phoIdx,Int_t scIdx , Float_t mmg_mass)
+{
+      storageMapIntArray["jPsiGamma_phoIdx"][storageMapInt["nJPsiGammaCands"]]=phoIdx;
+      storageMapIntArray["jPsiGamma_scIdx"][storageMapInt["nJPsiGammaCands"]] =scIdx;
+      storageMapFloatArray["jPsiGamma_mass"][storageMapInt["nJPsiGammaCands"]]  =mmg_mass;
+      storageMapFloatArray["jPsiGamma_diMuMass"][storageMapInt["nJPsiGammaCands"]]  = storageMapFloatArray["dimuon_kin_mass"][nDimu];
+      storageMapInt["nJPsiGammaCands"]+=1;
+}
+
+
+void BsToMuMuGammaNTuplizer::addPF_MMGBranches()
+{
+      storageMapInt["nMMGpfCands"]=0;
+      theTree->Branch("nMMGpfCands",   &storageMapInt["nMMGpfCands"]);
+      
+      storageMapIntArray["mmgPF_pfPhoIdx"] = new Int_t[NMAX_MMG] ;
+      theTree->Branch("mmgPF_pfPhoIdx",   storageMapIntArray["mmgPF_pfPhoIdx"],"mmgPF_pfPhoIdx[nMMGpfCands]/I");
+      storageMapFloatArray["mmgPF_mass"] = new Float_t[NMAX_MMG] ;
+      theTree->Branch("mmgPF_mass",   storageMapFloatArray["mmgPF_mass"],"mmgPF_mass[nMMGpfCands]/F");
+      storageMapFloatArray["mmgPF_diMuMass"] = new Float_t[NMAX_MMG] ;
+      theTree->Branch("mmgPF_diMuMass",   storageMapFloatArray["mmgPF_diMuMass"],"mmgPF_diMuMass[nMMGpfCands]/F");
+}
+
+void BsToMuMuGammaNTuplizer:: fillPF_BmmgBranchs(Int_t nDimu,Int_t phoIdx, Float_t mmg_mass)
+{
+
+      storageMapIntArray["mmgPF_pfPhoIdx"][storageMapInt["nMMGpfCands"]]=phoIdx;
+      storageMapFloatArray["mmgPF_mass"][storageMapInt["nMMGpfCands"]]  =mmg_mass;
+      storageMapFloatArray["mmgPF_diMuMass"][storageMapInt["nMMGpfCands"]]  = storageMapFloatArray["dimuon_kin_mass"][nDimu];
+      storageMapInt["nMMGpfCands"]+=1;
+}
+
+
+void BsToMuMuGammaNTuplizer::addPF_JPsiGammaBranches()
+{
+
+
+      storageMapInt["nJPsiGammaPFCands"]=0;
+      theTree->Branch("nJPsiGammaPFCands",   &storageMapInt["nJPsiGammaPFCands"]);
+      
+      storageMapIntArray["jPsiGammaPF_pfPhoIdx"] = new Int_t[NMAX_MMG] ;
+      theTree->Branch("jPsiGammaPF_pfPhoIdx",   storageMapIntArray["jPsiGammaPF_pfPhoIdx"],"jPsiGammaPF_pfPhoIdx[nJPsiGammaPFCands]/I");
+      storageMapFloatArray["jPsiGammaPF_mass"] = new Float_t[NMAX_MMG] ;
+      theTree->Branch("jPsiGammaPF_mass",   storageMapFloatArray["jPsiGammaPF_mass"],"jPsiGammaPF_mass[nJPsiGammaPFCands]/f");
+      storageMapFloatArray["jPsiGammaPF_diMuMass"] = new Float_t[NMAX_MMG] ;
+      theTree->Branch("jPsiGammaPF_diMuMass",   storageMapFloatArray["jPsiGammaPF_diMuMass"],"jPsiGammaPF_diMuMass[nJPsiGammaPFCands]/f");
+
+}
+
+void BsToMuMuGammaNTuplizer::fillPF_JPsiGammaBranches(Int_t nDimu,Int_t phoIdx , Float_t mmg_mass)
+{
+      storageMapIntArray["jPsiGammaPF_pfPhoIdx"][storageMapInt["nJPsiGammaPFCands"]]=phoIdx;
+      storageMapFloatArray["jPsiGammaPF_mass"][storageMapInt["nJPsiGammaPFCands"]]  =mmg_mass;
+      storageMapFloatArray["jPsiGammaPF_diMuMass"][storageMapInt["nJPsiGammaPFCands"]]  = storageMapFloatArray["dimuon_kin_mass"][nDimu];
+      storageMapInt["nJPsiGammaPFCands"]+=1;
+
+}
 
 
 
