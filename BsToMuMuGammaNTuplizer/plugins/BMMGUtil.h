@@ -447,7 +447,10 @@ BsToMuMuGammaNTuplizer::findTracksCompatibleWithTheVertex(const reco::Muon& muon
 {
   CloseTrackInfo result;
   result.pvHandle_ = pvHandle_;
-  if (not fit.valid()) return result;
+  if (not fit.valid()) { 
+    return result;
+    }
+
   for (const auto& pfCand: *pfCandidateHandle.product()){
     bool ignore_track = false;
     for (auto trk: ignoreTracks){
@@ -461,6 +464,7 @@ BsToMuMuGammaNTuplizer::findTracksCompatibleWithTheVertex(const reco::Muon& muon
     if (deltaR(muon1, pfCand) < 0.01 || deltaR(muon2, pfCand) < 0.01) continue;
     if (pfCand.charge() == 0 ) continue;
     if (not pfCand.trackRef()) continue;
+
     double mu1_kaon_doca = distanceOfClosestApproach(muon1.innerTrack().get(),
 						     pfCand.bestTrack());
     double mu2_kaon_doca = distanceOfClosestApproach(muon2.innerTrack().get(),
@@ -474,7 +478,7 @@ BsToMuMuGammaNTuplizer::findTracksCompatibleWithTheVertex(const reco::Muon& muon
     track.svDocaErr = doca.error();
 
     // add PV doca
-    if (not  pfCand.v0Ref()){
+    // if (not  pfCand.v0Ref()){
       //doca = distanceOfClosestApproach(pfCand.bestTrack(),pvHandle_->at(pfCand.vertexRef().key()) );a
       auto DrMin=1e9;
       auto pv_idx=-1;
@@ -499,7 +503,7 @@ BsToMuMuGammaNTuplizer::findTracksCompatibleWithTheVertex(const reco::Muon& muon
       doca = distanceOfClosestApproach(pfCand.bestTrack(),pvHandle_->at(pv_idx) );
       track.pvDoca = doca.value();
       track.pvDocaErr = doca.error();
-    }
+   // }
     
     auto fit_result = vertexWithKinematicFitter(muon1, muon2, pfCand);
     if (fit_result.valid()){

@@ -2478,7 +2478,7 @@ void BsToMuMuGammaNTuplizer::fillBtoMuMuKInfo(
     // int pvIndex = allDisplacements["muMuK"].pvIndex;
     std::vector<const reco::PFCandidate*>  ignoreTracks;
     ignoreTracks.push_back(&kaon);
-    auto closeTracks = findTracksCompatibleWithTheVertex(muon1,muon2,kinematicMuMuVertexFit,0.03,ignoreTracks);
+    allCloseTracks["muMuK"] = findTracksCompatibleWithTheVertex(muon1,muon2,kinematicMuMuVertexFit,0.03,ignoreTracks);
     Int_t idx=storageMapInt["nMuMuK"];
 
     storageMapIntArray["muMuK_dimuonIdx"][idx]   = mumuIdx;
@@ -2500,7 +2500,7 @@ void BsToMuMuGammaNTuplizer::fillBtoMuMuKInfo(
       allFits["jpsiK"] = fitBToKMuMu(kinematicMuMuVertexFit.refitTree, kaon, JPsiMass_);
       allFits["jpsiK"].postprocess(*beamSpot);
       allDisplacements["jpsiK"]=compute3dDisplacement(allFits["jpsiK"], *pvHandle_.product(),true);
-      closeTracks = findTracksCompatibleWithTheVertex(muon1,muon2,kinematicMuMuVertexFit,0.03,ignoreTracks);
+      allCloseTracks["jpsiK"] = findTracksCompatibleWithTheVertex(muon1,muon2,kinematicMuMuVertexFit,0.03,ignoreTracks);
       idx=storageMapInt["nJPsiK"];
 
         storageMapIntArray["jpsiK_dimuonIdx"][idx]   = mumuIdx;
@@ -2517,14 +2517,15 @@ void BsToMuMuGammaNTuplizer::fillBtoMuMuKInfo(
       fillCompositParticleBranches("jpsiK",idx,allFits["jpsiK"],allDisplacements["jpsiK"],allCloseTracks["jpsiK"]);
       storageMapInt["nJPsiK"]++;
     }
-
+    
+    // Psi2s
     auto goodBtoPsi2sK = true;
     if (fabs(kinematicMuMuVertexFit.mass()-3.68) > 0.2) goodBtoPsi2sK = false;
     if(doPsi2SK_ and goodBtoPsi2sK) {
       allFits["psi2sK"] = fitBToKMuMu(kinematicMuMuVertexFit.refitTree, kaon, JPsiMass_);
       allFits["psi2sK"].postprocess(*beamSpot);
       allDisplacements["psi2sK"]=compute3dDisplacement(allFits["psi2sK"], *pvHandle_.product(),true);
-      closeTracks = findTracksCompatibleWithTheVertex(muon1,muon2,kinematicMuMuVertexFit,0.03,ignoreTracks);
+      allCloseTracks["psi2sK"] = findTracksCompatibleWithTheVertex(muon1,muon2,kinematicMuMuVertexFit,0.03,ignoreTracks);
       idx=storageMapInt["nPsi2SK"];
 
         storageMapIntArray["psi2sK_dimuonIdx"][idx]   = mumuIdx;
@@ -2833,15 +2834,17 @@ void BsToMuMuGammaNTuplizer::fillCompositParticleBranches( std::string tag, Int_
     // Close Tracks
     auto pvIndex = displacement.pvIndex;
     const reco::Vertex *vertex(nullptr) ;
-    if(pvIndex >=0 ) vertex=&(pvHandle_->at(pvIndex));
-    storageMapFloatArray[tag+"_nTrks"][idx]  =        closeTracks.nTracksByVertexProbability(0.1, -1.0, vertex);
-    storageMapFloatArray[tag+"_nBMTrks"][idx]  =      closeTracks.nTracksByBetterMatch();
-    storageMapFloatArray[tag+"_nDisTrks"][idx]  =     closeTracks.nTracksByVertexProbability(0.1,  2.0 ,  vertex);
-    storageMapFloatArray[tag+"_closetrk"][idx]  =     closeTracks.nTracksByDisplacementSignificance(0.03 ,-1 ,   vertex);
+    if(pvIndex >=0 ){ 
+        vertex=&(pvHandle_->at(pvIndex)); 
+       }
+    storageMapFloatArray[tag+"_nTrks"][idx]       =   closeTracks.nTracksByVertexProbability(0.1, -1.0, vertex);
+    storageMapFloatArray[tag+"_nBMTrks"][idx]     =   closeTracks.nTracksByBetterMatch();
+    storageMapFloatArray[tag+"_nDisTrks"][idx]    =   closeTracks.nTracksByVertexProbability(0.1,  2.0 ,  vertex);
+    storageMapFloatArray[tag+"_closetrk"][idx]    =   closeTracks.nTracksByDisplacementSignificance(0.03 ,-1 ,   vertex);
     storageMapFloatArray[tag+"_closetrks1"][idx]  =   closeTracks.nTracksByDisplacementSignificance(0.03 , 1 ,   vertex);
     storageMapFloatArray[tag+"_closetrks2"][idx]  =   closeTracks.nTracksByDisplacementSignificance(0.03 , 2 ,   vertex);
     storageMapFloatArray[tag+"_closetrks3"][idx]  =   closeTracks.nTracksByDisplacementSignificance(0.03 , 3 ,   vertex);
-    storageMapFloatArray[tag+"_docatrk"][idx]  =      closeTracks.minDoca(0.03,vertex);
+    storageMapFloatArray[tag+"_docatrk"][idx]     =   closeTracks.minDoca(0.03,vertex);
 
     
 //   if (isMC_){
