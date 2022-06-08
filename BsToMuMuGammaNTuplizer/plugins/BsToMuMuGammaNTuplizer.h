@@ -2,6 +2,7 @@
 #define BsToMuMuGammaNTuplizer_h
 
 #include "DataFormats/HcalRecHit/interface/HcalRecHitCollections.h"
+#include "DataFormats/HLTReco/interface/TriggerEvent.h"
 #include "Geometry/CaloTopology/interface/CaloTowerConstituentsMap.h"
 #include "Geometry/CaloTopology/interface/CaloTopology.h"
 #include "Geometry/CaloEventSetup/interface/CaloTopologyRecord.h"
@@ -183,6 +184,8 @@
 #define N_DIMU_MAX 1000
 #define N_GEN_MAX 4000
 #define NMAX_MMG 1000
+#define N_COMPOSIT_PART_MAX 200
+#define N_L3MUON 100
 
 #include "BmmgInterface.h"
 
@@ -241,8 +244,8 @@ private:
 			bool closestIn3D = true);
 
   CloseTrackInfo 
-  findTracksCompatibleWithTheVertex(const pat::Muon& muon1,
-				    const pat::Muon& muon2,
+  findTracksCompatibleWithTheVertex(const reco::Muon& muon1,
+				    const reco::Muon& muon2,
 				    const KinematicFitResult& fit,
 				    double maxDoca=0.03,
 				    std::vector<const reco::PFCandidate*> ignoreTracks = 
@@ -285,9 +288,29 @@ private:
 //				     float max_doca,
 //				     std::vector<const reco::PFCandidate*> ignoreTracks);
 //
+    KinematicFitResult fitBToKJPsiMuMu( RefCountedKinematicParticle refitMuMu,
+				   const reco::PFCandidate &kaon,
+				   bool applyJpsiMassConstraint);
+    KinematicFitResult fitBToKMuMu( RefCountedKinematicTree tree,
+				  const reco::PFCandidate& kaon,
+				  float mass_constraint);
   
+    void fillBtoMuMuKInfo(Int_t mumuIdx ,
+					  const edm::Event& iEvent,
+					  const KinematicFitResult& kinematicMuMuVertexFit,
+					  const pat::Muon& muon1,
+					  const pat::Muon& muon2,
+					  const reco::PFCandidate & kaon
+					) ;
+
+
   void addDimuonBranches();
   void fillDimuonBranches      (const edm::Event&, const edm::EventSetup&);
+  
+  void  addMuMuKBranches();
+  void addCompositParticleBranches(TString tag,TString nTag);
+  void fillCompositParticleBranches( std::string tag, Int_t idx ,const KinematicFitResult &fit ,
+                        const DisplacementInformationIn3D &displacement , CloseTrackInfo &closeTracks );
   /////////////////////////////////////
 
 
@@ -298,9 +321,12 @@ private:
   void fillMuons        (const edm::Event&, const edm::EventSetup&);
   void fillPhotons      (const edm::Event&, const edm::EventSetup&);
   void fillPFPhotons    (const edm::Event&, const edm::EventSetup&);
+  std::vector<Float_t> getShowerShapes(reco::CaloCluster* caloBC, const EcalRecHitCollection* recHits, const CaloTopology *topology);
   void fillSC           (const edm::Event&, const edm::EventSetup&, reco::Vertex& pv);
   void fillHLT          (edm::Event const& );
-  std::vector<Float_t> getShowerShapes(reco::CaloCluster* caloBC, const EcalRecHitCollection* recHits, const CaloTopology *topology);
+  
+  void addHLTObjectBranches();
+  void fillHLTL3MuonBranches(  std::vector<Int_t> trigIdx, std::vector<Int_t> &Keys,const trigger::TriggerEvent & triggerObj );
   
   void fillMatchInfo(Int_t idxToFill, const reco::Muon &muon);
   void fillMatchInfoForStation(std::string prefix,Int_t idxToFill, const MatchPair& match);
@@ -346,6 +372,10 @@ private:
   Bool_t doGenParticles_;
   Bool_t doMuons_;
   Bool_t doDimuons_;
+  Bool_t doMuMuK_;
+  Bool_t doJPsiK_;
+  Bool_t doPsi2SK_;
+  Bool_t doMuMuKK_;
   Bool_t doMuMuGamma;
   Bool_t doJPsiGamma;
   Bool_t doPhotons_;
@@ -367,6 +397,7 @@ private:
   // ----------
 
   const AnalyticalImpactPointExtrapolator* impactPointExtrapolator_;
+  const reco::BeamSpot* beamSpot;
 
   // ----------member data ---------------------------
   edm::EDGetTokenT<reco::GenParticleCollection>     genParticlesCollection_;
@@ -381,7 +412,7 @@ private:
   edm::EDGetTokenT<reco::PFClusterCollection>       ecalClusterCollection_;
   edm::EDGetTokenT<reco::PFClusterCollection>       hcalClusterCollection_;
   edm::EDGetTokenT<edm::SortedCollection<HBHERecHit,edm::StrictWeakOrdering<HBHERecHit>>> hbheRechitToken_; 
-  
+  edm::EDGetTokenT<trigger::TriggerEvent> triggerEvent_token_;
   edm::EDGetTokenT<reco::PFCandidateCollection>     pfCandidateCollection_;
   edm::Handle<reco::PFCandidateCollection> pfCandidateHandle;
   //edm::Handle<edm::View<reco::PFCandidateCollection>> pfCandHandle_;
@@ -432,6 +463,11 @@ private:
   Float_t maxJPsiGammaMass_;
   Float_t maxBsMuMuGammaMass_;
   Float_t minBsMuMuGammaMass_;
+  Float_t ptMinKaon_;
+  Float_t etaMaxKaon_;
+  Float_t minBKmmMass_;
+  Float_t maxBKmmMass_;
+
   bool diMuonCharge_ ;
 
   // Utility 
@@ -480,14 +516,15 @@ private:
   std::vector<Float_t> primaryVertex_covXX,primaryVertex_covXY,primaryVertex_covXZ,primaryVertex_covYY,primaryVertex_covYZ,primaryVertex_covZZ;  
 
   // # Trigger #
+  std::vector<std::string>  triggerFilter;
   std::vector<std::string>  trigTable;
   std::vector<std::string>  trigNames;
   std::vector<Bool_t>         trigResult;
   std::vector<int>          trigPrescales;
   
-  std::vector<std::string>  *TrigTable_store;
-  std::vector<Bool_t>         *TrigResult_store;
-  std::vector<int>          *TrigPrescales_store;
+  std::string  *TrigTable_store;
+  Bool_t         *TrigResult_store;
+  Int_t          *TrigPrescales_store;
   
   std::vector<std::string>  l1Table;
   std::vector<int>          l1Prescales;

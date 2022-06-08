@@ -439,8 +439,8 @@ BsToMuMuGammaNTuplizer::vertexWithKinematicFitter(const pat::Muon& muon1,
 }
 
 CloseTrackInfo 
-BsToMuMuGammaNTuplizer::findTracksCompatibleWithTheVertex(const pat::Muon& muon1,
-						    const pat::Muon& muon2,
+BsToMuMuGammaNTuplizer::findTracksCompatibleWithTheVertex(const reco::Muon& muon1,
+						    const reco::Muon& muon2,
 						    const KinematicFitResult& fit, 
 						    double maxDoca,
 						    std::vector<const reco::PFCandidate*> ignoreTracks)
@@ -511,6 +511,143 @@ BsToMuMuGammaNTuplizer::findTracksCompatibleWithTheVertex(const pat::Muon& muon1
 
   return result;
 }
+
+
+
+KinematicFitResult
+BsToMuMuGammaNTuplizer::fitBToKMuMu( RefCountedKinematicTree tree,
+				  const reco::PFCandidate& kaon,
+				  float mass_constraint)
+{
+  KinematicFitResult result; 
+  if ( !tree->isValid()) return result;
+
+  KinematicConstraint* mc(0);
+  if (mass_constraint > 0){
+    ParticleMass mass = mass_constraint;
+    // mass constraint fit
+    KinematicParticleFitter csFitter;
+    float mass_sigma = JPsiMassErr_;
+    // FIXME: memory leak
+    mc = new MassKinematicConstraint(mass, mass_sigma);
+    try {
+      tree = csFitter.fit(mc, tree);
+    } catch (const std::exception& e) {
+      return result;
+    }
+  }
+
+  const reco::TransientTrack kaonTT = theTTBuilder_->build(kaon.bestTrack());
+
+  KinematicParticleFactoryFromTransientTrack partFactory;
+  KinematicParticleVertexFitter fitter;
+
+  std::vector<RefCountedKinematicParticle> BToKMuMuParticles;
+  double chi = 0.;
+  double ndf = 0.;
+
+  tree->movePointerToTheTop();
+  BToKMuMuParticles.push_back(tree->currentParticle());
+  float kaonMassErr(KaonMassErr_);
+  BToKMuMuParticles.push_back(partFactory.particle(kaonTT,KaonMass_,chi,ndf,kaonMassErr));
+
+  RefCountedKinematicTree vertexFitTree;
+  try {
+    vertexFitTree = fitter.fit(BToKMuMuParticles);
+  } catch (const std::exception& e) {
+    return result;
+  }
+
+  if ( !vertexFitTree->isValid()) return result;
+
+  result.treeIsValid = true;
+
+  vertexFitTree->movePointerToTheTop();
+  result.refitVertex = vertexFitTree->currentDecayVertex();
+  result.refitMother = vertexFitTree->currentParticle();
+  result.refitTree   = vertexFitTree;
+
+  if ( !result.refitVertex->vertexIsValid()) return result;
+
+  result.vertexIsValid = true;
+
+  // extract the re-fitted tracks
+  vertexFitTree->movePointerToTheTop();
+
+  if ( vertexFitTree->movePointerToTheFirstChild() ){
+    do {
+      result.refitDaughters.push_back(vertexFitTree->currentParticle());
+    } while (vertexFitTree->movePointerToTheNextChild());
+  }
+  return result;
+}
+
+
+
+
+
+
+KinematicFitResult BsToMuMuGammaNTuplizer::fitBToKJPsiMuMu( RefCountedKinematicParticle refitMuMu,
+				   const reco::PFCandidate &kaon,
+				   bool applyJpsiMassConstraint)
+{
+  const reco::TransientTrack mmTT = refitMuMu->refittedTransientTrack();
+  const reco::TransientTrack kaonTT = theTTBuilder_->build(kaon.bestTrack());
+
+  KinematicParticleFactoryFromTransientTrack partFactory;
+  KinematicParticleVertexFitter fitter;
+
+  std::vector<RefCountedKinematicParticle> BToKMuMuParticles;
+  double chi = 0.;
+  double ndf = 0.;
+
+  float MuMu_mass = refitMuMu->currentState().mass();
+  float MuMu_mass_err = sqrt(refitMuMu->currentState().kinematicParametersError().matrix()(6,6));
+
+  if ( applyJpsiMassConstraint ){
+    MuMu_mass = JPsiMass_;
+    MuMu_mass_err = JPsiMassErr_;
+  }
+
+  BToKMuMuParticles.push_back(partFactory.particle(mmTT,MuMu_mass,chi,ndf,MuMu_mass_err));
+  float kaonMassErr(KaonMassErr_);
+  BToKMuMuParticles.push_back(partFactory.particle(kaonTT,KaonMass_,chi,ndf,kaonMassErr));
+
+  KinematicFitResult result; 
+  RefCountedKinematicTree vertexFitTree;
+  try {
+    vertexFitTree = fitter.fit(BToKMuMuParticles);
+  } catch (const std::exception& e) {
+    return result;
+  }
+
+  if ( !vertexFitTree->isValid()) return result;
+
+  result.treeIsValid = true;
+
+  vertexFitTree->movePointerToTheTop();
+  result.refitVertex = vertexFitTree->currentDecayVertex();
+  result.refitMother = vertexFitTree->currentParticle();
+  result.refitTree   = vertexFitTree;
+
+  if ( !result.refitVertex->vertexIsValid()) return result;
+
+  result.vertexIsValid = true;
+
+  // extract the re-fitted tracks
+  vertexFitTree->movePointerToTheTop();
+
+  if ( vertexFitTree->movePointerToTheFirstChild() ){
+    do {
+      result.refitDaughters.push_back(vertexFitTree->currentParticle());
+    } while (vertexFitTree->movePointerToTheNextChild());
+  }
+  return result;
+}
+
+
+
+
 
 
 Float_t dX(const MatchPair& match){

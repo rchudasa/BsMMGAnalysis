@@ -299,22 +299,30 @@ struct CloseTrackInfo{
   std::vector<CloseTrack> tracks;
   unsigned int nTracksByVertexProbability(double minProb = 0.1, 
 					  double minIpSignificance = -1,
-					  int pvIndex = -1,
+                      const reco::Vertex* vertex=nullptr,
 					  const reco::PFCandidate* ignoreTrack1 = 0)
   {
-  const reco::VertexCollection& vertices = *pvHandle_.product();
-  auto pvIndex_=-1;
-  if( pvIndex >=0 ) pvIndex_=pvIndex;
-  const auto & vertex = vertices.at(pvIndex_);
-  Float_t vx(vertex.x());
-  Float_t vy(vertex.y());
-  Float_t vz(vertex.z());
+  //std::cout<<" pIndex = "<<pvIndex<<"\n";
+  //const reco::VertexCollection& vertices = *pvHandle_.product();
+  //auto pvIndex_=-1;
+  //if( pvIndex >=0 ) pvIndex_=pvIndex;
+  //const auto & vertex = vertices.at(pvIndex_);
+  Float_t vx(0.0);
+  Float_t vy(0.0);
+  Float_t vz(0.0);
+
+  if(vertex)
+  {
+     vx =    vertex->x()   ;
+     vy =    vertex->y()   ;
+     vz =    vertex->z()   ;
+  }
     unsigned int n = 0;
     for (auto track: tracks){
       if (ignoreTrack1 and track.pfCand==ignoreTrack1) continue;
       if (minIpSignificance>0 and track.impactParameterSignificanceBS<minIpSignificance) continue;
       if (track.svProb<minProb) continue;
-      if (pvIndex >= 0 )
+      if (vertex )
           if ((abs(track.pfCand->vz() - vz) < 0.01 ) and  (abs(track.pfCand->vy() - vy) < 0.01 ) and ( abs(track.pfCand->vx() - vx) < 0.01 ) ) continue;
       n++;
     }
@@ -322,23 +330,34 @@ struct CloseTrackInfo{
   }
   unsigned int nTracksByDisplacementSignificance(double max_svDoca = 0.03, 
 						 double maxSignificance = -1,
-						 int pvIndex = -1,
+                         const reco::Vertex* vertex=nullptr,
 						 const reco::PFCandidate* ignoreTrack1 = 0)
   {
-   const reco::VertexCollection& vertices = *pvHandle_.product();
-  auto pvIndex_=-1;
-  if( pvIndex >=0 ) pvIndex_=pvIndex;
-  const auto & vertex = vertices.at(pvIndex_);
-   Float_t vx(vertex.x());
-   Float_t vy(vertex.y());
-   Float_t vz(vertex.z());
+  // const reco::VertexCollection& vertices = *pvHandle_.product();
+  //auto pvIndex_=-1;
+  //if( pvIndex >=0 ) pvIndex_=pvIndex;
+  //const auto & vertex = vertices.at(pvIndex_);
+
+  Float_t vx(0.0);
+  Float_t vy(0.0);
+  Float_t vz(0.0);
+
+  if(vertex)
+  {
+     vx =    vertex->x()   ;
+     vy =    vertex->y()   ;
+     vz =    vertex->z()   ;
+  }
+//   Float_t vx(vertex->x());
+//   Float_t vy(vertex->y());
+//   Float_t vz(vertex->z());
     unsigned int n = 0;
     for (auto track: tracks){
       if (track.svDoca>max_svDoca) continue;
       if (ignoreTrack1 and track.pfCand==ignoreTrack1) continue;
       if (maxSignificance>0 and (track.svDocaErr<=0 or 
 				 track.svDoca/track.svDocaErr > maxSignificance) ) continue;
-      if (pvIndex >= 0 )
+      if ( vertex )
           if ((abs(track.pfCand->vz() - vz) < 0.01 ) and  (abs(track.pfCand->vy() - vy) < 0.01 ) and ( abs(track.pfCand->vx() - vx) < 0.01 ) ) continue;
       n++;
     }
@@ -346,16 +365,28 @@ struct CloseTrackInfo{
   }
   unsigned int nTracksByBetterMatch(double max_svDoca = 0.03, 
 				    double maxSignificance = 2,
-				    int pvIndex = -1,
+                    const reco::Vertex* vertex=nullptr,
 				    const reco::PFCandidate* ignoreTrack1 = 0)
   {
-  const reco::VertexCollection& vertices = *pvHandle_.product();
-  auto pvIndex_=0;
-  if( pvIndex >=0 ) pvIndex_=pvIndex;
-  const auto & vertex = vertices.at(pvIndex_);
-  Float_t vx(vertex.x());
-  Float_t vy(vertex.y());
-  Float_t vz(vertex.z());
+  //const reco::VertexCollection& vertices = *pvHandle_.product();
+  //auto pvIndex_=0;
+  //if( pvIndex >=0 ) pvIndex_=pvIndex;
+  //const auto & vertex = vertices.at(pvIndex_);
+//  Float_t vx(vertex->x());
+//  Float_t vy(vertex->y());
+//  Float_t vz(vertex->z());
+ 
+  Float_t vx(0.0);
+  Float_t vy(0.0);
+  Float_t vz(0.0);
+
+  if(vertex)
+  {
+     vx =    vertex->x()  ; 
+     vy =    vertex->y()  ;
+     vz =    vertex->z()  ;
+  } 
+
   unsigned int n = 0;
     for (auto track: tracks){
       if (track.svDoca>max_svDoca) continue;
@@ -363,28 +394,40 @@ struct CloseTrackInfo{
       if (maxSignificance>0 and (track.svDocaErr<=0 or 
 				 track.svDoca/track.svDocaErr > maxSignificance) ) continue;
       if (track.svDocaErr<=0 or (track.pvDocaErr>0 and track.svDoca/track.svDocaErr > track.pvDoca/track.pvDocaErr) ) continue;
-      if (pvIndex >= 0)
+      if (vertex )
           if ((abs(track.pfCand->vz() - vz) < 0.01 ) and  (abs(track.pfCand->vy() - vy) < 0.01 ) and ( abs(track.pfCand->vx() - vx) < 0.01 ) ) continue;
       n++;
     }
     return n;
   }
   float minDoca(double max_svDoca = 0.03, 
-		int pvIndex = -1,
+        const reco::Vertex* vertex=nullptr,
 		const reco::PFCandidate* ignoreTrack1 = 0)
   {
-  const reco::VertexCollection& vertices = *pvHandle_.product();
-  auto pvIndex_=0;
-  if( pvIndex >=0 ) pvIndex_=pvIndex;
-  const auto & vertex = vertices.at(pvIndex_);
-  Float_t vx(vertex.x());
-  Float_t vy(vertex.y());
-  Float_t vz(vertex.z());
+  //const reco::VertexCollection& vertices = *pvHandle_.product();
+  //auto pvIndex_=0;
+  //if( pvIndex >=0 ) pvIndex_=pvIndex;
+  //const auto & vertex = vertices.at(pvIndex_);
+//  Float_t vx(vertex->x());
+//  Float_t vy(vertex->y());
+//  Float_t vz(vertex->z());
+
+  Float_t vx(0.0);
+  Float_t vy(0.0);
+  Float_t vz(0.0);
+
+  if(vertex)
+  {
+     vx =    vertex->x() ;   
+     vy =    vertex->y() ;
+     vz =    vertex->z() ;
+  }
+
     float doca = 99.;
     for (auto track: tracks){
       if (track.svDoca>max_svDoca) continue;
       if (ignoreTrack1 and track.pfCand==ignoreTrack1) continue;
-      if (pvIndex >= 0 )
+      if ( vertex )
           if ((abs(track.pfCand->vz() - vz) < 0.01 ) and  (abs(track.pfCand->vy() - vy) < 0.01 ) and ( abs(track.pfCand->vx() - vx) < 0.01 ) ) continue;
       if (doca>track.svDoca) doca = track.svDoca;
     }
@@ -393,15 +436,15 @@ struct CloseTrackInfo{
 
   void fillCandInfo(pat::CompositeCandidate& cand, int pvIndex, std::string name)
   {
-    if (name!="") name += "_";
-    cand.addUserInt(   name + "nTrks",       nTracksByVertexProbability(0.1,-1.0,pvIndex) );
-    cand.addUserInt(   name + "nBMTrks",     nTracksByBetterMatch() );
-    cand.addUserInt(   name + "nDisTrks",    nTracksByVertexProbability(0.1, 2.0,pvIndex) );
-    cand.addUserInt(   name + "closetrk",    nTracksByDisplacementSignificance(0.03, -1, pvIndex) );
-    cand.addUserInt(   name + "closetrks1",  nTracksByDisplacementSignificance(0.03, 1, pvIndex) );
-    cand.addUserInt(   name + "closetrks2",  nTracksByDisplacementSignificance(0.03, 2, pvIndex) );
-    cand.addUserInt(   name + "closetrks3",  nTracksByDisplacementSignificance(0.03, 3, pvIndex) );
-    cand.addUserFloat( name + "docatrk",     minDoca(0.03, pvIndex) );
+   // if (name!="") name += "_";
+   // cand.addUserInt(   name + "nTrks",       nTracksByVertexProbability(0.1,-1.0,pvIndex) );
+   // cand.addUserInt(   name + "nBMTrks",     nTracksByBetterMatch() );
+   // cand.addUserInt(   name + "nDisTrks",    nTracksByVertexProbability(0.1, 2.0,pvIndex) );
+   // cand.addUserInt(   name + "closetrk",    nTracksByDisplacementSignificance(0.03, -1, pvIndex) );
+   // cand.addUserInt(   name + "closetrks1",  nTracksByDisplacementSignificance(0.03, 1, pvIndex) );
+   // cand.addUserInt(   name + "closetrks2",  nTracksByDisplacementSignificance(0.03, 2, pvIndex) );
+   // cand.addUserInt(   name + "closetrks3",  nTracksByDisplacementSignificance(0.03, 3, pvIndex) );
+   // cand.addUserFloat( name + "docatrk",     minDoca(0.03, pvIndex) );
   }
 };
 

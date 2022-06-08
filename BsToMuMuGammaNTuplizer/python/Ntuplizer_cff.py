@@ -1,3 +1,5 @@
+import trigDetails
+
 import FWCore.ParameterSet.Config as cms
 
 globaltag = cms.string('106X_upgrade2018_realistic_v15_L1v1')
@@ -31,6 +33,11 @@ decayfilter = cms.EDFilter("GenDecayKineFilter",
     ParticleID = cms.untracked.int32(531),
     verbose = cms.untracked.int32(20)
 )
+
+triggersOfInterest=trigDetails.triggersOfInterest;
+triggersOfInterest.extend(trigDetails.bParkTriglist)
+
+triggerFiltesrOfInterest=trigDetails.bParkTrigFilterModules
 
 Ntuples = cms.EDAnalyzer("BsToMuMuGammaNTuplizer",
 	isMC = cms.bool(False),
@@ -87,13 +94,23 @@ Ntuples = cms.EDAnalyzer("BsToMuMuGammaNTuplizer",
     
     doMuMuGamma        = cms.bool(True),
     doJPsiGamma        = cms.bool(True),
-    minJPsiGammaMass   = cms.double(3.50),
-    maxJPsiGammaMass   = cms.double(6.00),
+    minJPsiGammaMass   = cms.double(3.00),
+    maxJPsiGammaMass   = cms.double(8.00),
     minBsToMuMuGammaMass = cms.double(3.50),    
     maxBsToMuMuGammaMass = cms.double(6.00),    
+    
+    doMuMuK            = cms.bool(True), 
     minJPsiMass        = cms.double(2.90),
     maxJPsiMass        = cms.double(3.30),
+    ptMinKaon          = cms.double(1.00),
+    etaMaxKaon         = cms.double(2.4),
+    minBKmmMass        = cms.double(4.5),
+    maxBKmmMass        = cms.double(6.0),
+    doJPsiK            = cms.bool(True), 
+    doPsi2SK           = cms.bool(True), 
 
+    doMuMuKK            = cms.bool(False), 
+    
     doParticleFlow     = cms.bool(False),
     particlFlowSrc     = cms.InputTag("particleFlow"),
     
@@ -106,10 +123,12 @@ Ntuples = cms.EDAnalyzer("BsToMuMuGammaNTuplizer",
     doECALClusters     = cms.bool(False),
     ecalClusterSrc     = cms.InputTag("particleFlowClusterECAL"),
     
-    doHLT              = cms.bool(False),
-	TriggerNames = cms.vstring("HLT_DoubleMu4_3_Bs_v14"),
+    doHLT              = cms.bool(True),
+	TriggerNames = triggersOfInterest,
+    TriggerFilters = triggerFiltesrOfInterest,
 	HLTResult = cms.InputTag("TriggerResults","","HLT"),
-	verbose  = cms.bool(False),
+	TriggerEvent = cms.InputTag("hltTriggerSummaryAOD"),
+    verbose  = cms.bool(False),
     
     doCompression                   = cms.bool(True),  #do the compression of floats
     nBits                           = cms.int32(23)   #nbits for float compression (<=23)

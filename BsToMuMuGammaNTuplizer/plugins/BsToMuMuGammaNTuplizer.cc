@@ -109,6 +109,10 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
   doGenParticles_(iConfig.getParameter<Bool_t>("doGenParticles")),
   doMuons_(iConfig.getParameter<Bool_t>("doMuons")),
   doDimuons_(iConfig.getParameter<Bool_t>("doDimuons")),
+  doMuMuK_(iConfig.getParameter<Bool_t>("doMuMuK")),
+  doJPsiK_(iConfig.getParameter<Bool_t>("doJPsiK")),
+  doPsi2SK_(iConfig.getParameter<Bool_t>("doPsi2SK")),
+  doMuMuKK_(iConfig.getParameter<Bool_t>("doMuMuKK")),
   doMuMuGamma(iConfig.getParameter<Bool_t>("doMuMuGamma")),
   doJPsiGamma(iConfig.getParameter<Bool_t>("doJPsiGamma")),
   doPhotons_(iConfig.getParameter<Bool_t>("doPhotons")),
@@ -128,12 +132,30 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
   {
     doMuMuGamma=true;
   }
+
   if(doMuMuGamma)
   {
     doMuons_=true;
     doPhotons_=true;
     doSuperClusters_=true;
     doDimuons_=true;
+  }
+  if(doPsi2SK_)
+  {
+     doMuMuK_=true;
+  }
+  if(doJPsiK_)
+  {
+     doMuMuK_=true;
+  }
+  if(doMuMuKK_)
+  {
+      doMuMuK_=true;
+  }
+
+  if(doMuMuK_)
+  {
+      doDimuons_=true;   
   }
   
   energyMatrixSizeFull_=(2*energyMatrixSize_+1)*(2*energyMatrixSize_+1);
@@ -171,8 +193,10 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
 
 
   if(doHLT) {
-    trigTable    =iConfig.getParameter<std::vector<std::string>>("TriggerNames");
-    triggerBits_ =consumes<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("HLTResult"));
+    triggerFilter    = iConfig.getParameter<std::vector<std::string>>("TriggerFilters");
+    trigTable    = iConfig.getParameter<std::vector<std::string>>("TriggerNames");
+    triggerBits_ = consumes<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("HLTResult"));
+    triggerEvent_token_ = consumes<trigger::TriggerEvent>(iConfig.getParameter<edm::InputTag>("TriggerEvent"));
   }
 
 
@@ -208,6 +232,10 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
   minBsMuMuGammaMass_  =  iConfig.getParameter<double>("minBsToMuMuGammaMass")    ;
   maxBsMuMuGammaMass_    =  iConfig.getParameter<double>("maxBsToMuMuGammaMass")    ;
 
+  ptMinKaon_    = iConfig.getParameter<double>("ptMinKaon") ;
+  etaMaxKaon_   = iConfig.getParameter<double>("etaMaxKaon") ;
+  minBKmmMass_  = iConfig.getParameter<double>("minBKmmMass") ;
+  maxBKmmMass_  = iConfig.getParameter<double>("maxBKmmMass") ;
 
   printMsg=iConfig.getParameter<Bool_t>("verbose");
   doMuMuGamma=iConfig.getParameter<Bool_t>("doMuMuGamma");
@@ -256,14 +284,15 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
     TrigTable_store=nullptr;
     TrigResult_store=nullptr;
     TrigPrescales_store=nullptr;
-    theTree->Branch("trigResult",    &trigResult);
-    theTree->Branch("trigPrescales", &trigPrescales);
-    theTree->Branch("l1Table",       &l1Table);
-    theTree->Branch("l1Prescales",   &l1Prescales);
+    addHLTObjectBranches();
+
+    //theTree->Branch("trigResult",    &trigResult);
+    //theTree->Branch("trigPrescales", &trigPrescales);
+    //theTree->Branch("l1Table",       &l1Table);
+    //theTree->Branch("l1Prescales",   &l1Prescales);
   
     SetupTriggerStorageVectors();
     SetupTriggerBranches();
-
   }
 
 
@@ -410,6 +439,10 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
     theTree->Branch("scPFNeuIso4",             &scPFNeuIso4_);
     theTree->Branch("scPFNeuIso5",             &scPFNeuIso5_);
   }
+  if(doMuMuK_)
+  {
+        addMuMuKBranches();
+  }
   if(doJPsiGamma)
   {
     addJPsiGammaBranches();
@@ -435,7 +468,8 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
         addDimuonBranches();
   }
   if(doParticleFlow)
-  {
+  { 
+    std::cout<<" Particle Flow branches are added !! \n";
      addParticleFlowBranches();
   }
   if(doHCALClusters)
@@ -476,6 +510,7 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
   iEvent.getByToken(beamSpotToken_, beamSpotHandle);
   iEvent.getByToken(primaryVtxToken_, pvHandle_);
   iEvent.getByToken(pfCandidateCollection_, pfCandidateHandle);
+  beamSpot = beamSpotHandle.product();
 
 
   // ## BEAMSOPT STUFF  ## //
@@ -654,32 +689,32 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
   if(doBeamSpot)
   {
   
-  reco::BeamSpot beamSpot = *beamSpotHandle;
+  //reco::BeamSpot beamSpot = *beamSpotHandle;
 
   // adding  BEAMSOPT 
-  beamspot_x_			= beamSpot.x0();  ;
-  beamspot_y_			= beamSpot.y0();  ;
-  beamspot_z_			= beamSpot.z0();  ;
-  beamspot_x_error_		= beamSpot.x0Error();  ;
-  beamspot_y_error_		= beamSpot.y0Error();  ;
-  beamspot_z_error_		= beamSpot.z0Error();  ;
-  beamspot_covXX        = beamSpot.covariance()(0,0);
-  beamspot_covXY        = beamSpot.covariance()(0,1);
-  beamspot_covXZ        = beamSpot.covariance()(0,2);
-  beamspot_covYY        = beamSpot.covariance()(1,1);
-  beamspot_covYZ        = beamSpot.covariance()(1,2);
-  beamspot_covZZ        = beamSpot.covariance()(2,2);
+  beamspot_x_			= beamSpot->x0();  ;
+  beamspot_y_			= beamSpot->y0();  ;
+  beamspot_z_			= beamSpot->z0();  ;
+  beamspot_x_error_		= beamSpot->x0Error();  ;
+  beamspot_y_error_		= beamSpot->y0Error();  ;
+  beamspot_z_error_		= beamSpot->z0Error();  ;
+  beamspot_covXX        = beamSpot->covariance()(0,0);
+  beamspot_covXY        = beamSpot->covariance()(0,1);
+  beamspot_covXZ        = beamSpot->covariance()(0,2);
+  beamspot_covYY        = beamSpot->covariance()(1,1);
+  beamspot_covYZ        = beamSpot->covariance()(1,2);
+  beamspot_covZZ        = beamSpot->covariance()(2,2);
 
-  beamspot_dxdz_   		= beamSpot.dxdz();  ;
-  beamspot_dydz_         	= beamSpot.dydz();  ;
-  beamspot_sigmaZ_		= beamSpot.sigmaZ();  ;
-  beamspot_dxdz_error_		= beamSpot.dxdzError();  ;
-  beamspot_dydz_error_		= beamSpot.dydzError();  ;
-  beamspot_sigmaZError_		= beamSpot.sigmaZ0Error();  ;
-  beamspot_beamWidthX_		= beamSpot.BeamWidthX();  ;
-  beamspot_beamWidthY_		= beamSpot.BeamWidthY();  ;
-  beamspot_beamWidthX_error_	= beamSpot.BeamWidthXError();  ;
-  beamspot_beamWidthY_error_	= beamSpot.BeamWidthXError();  ;
+  beamspot_dxdz_   		= beamSpot->dxdz();  ;
+  beamspot_dydz_       	= beamSpot->dydz();  ;
+  beamspot_sigmaZ_		= beamSpot->sigmaZ();  ;
+  beamspot_dxdz_error_	= beamSpot->dxdzError();  ;
+  beamspot_dydz_error_	= beamSpot->dydzError();  ;
+  beamspot_sigmaZError_	= beamSpot->sigmaZ0Error();  ;
+  beamspot_beamWidthX_	= beamSpot->BeamWidthX();  ;
+  beamspot_beamWidthY_	= beamSpot->BeamWidthY();  ;
+  beamspot_beamWidthX_error_	= beamSpot->BeamWidthXError();  ;
+  beamspot_beamWidthY_error_	= beamSpot->BeamWidthXError();  ;
   }
 
   if(doPrimaryVetrices)
@@ -1010,16 +1045,16 @@ void BsToMuMuGammaNTuplizer::fillSC(edm::Event const& e, const edm::EventSetup& 
 void BsToMuMuGammaNTuplizer::SetupTriggerStorageVectors()
 {
   auto numTrigs = trigTable.size();
-  TrigPrescales_store = new std::vector<int> [numTrigs];
-  TrigResult_store    = new std::vector<Bool_t>[numTrigs];
+  TrigPrescales_store = new Int_t [numTrigs];
+  TrigResult_store    = new Bool_t[numTrigs];
 }
 
 void BsToMuMuGammaNTuplizer::ClearTrggerStorages()
 {
   for(uint32_t i=0;i<trigTable.size();i++)
     {
-      TrigResult_store[i].clear();
-      TrigPrescales_store[i].clear();
+      TrigResult_store[i]=false;
+      TrigPrescales_store[i]=1.0;
     }
 }
 
@@ -1038,16 +1073,15 @@ void BsToMuMuGammaNTuplizer::FillTrggerBranches()
 
       if(foundTrig >-1) 
 	{
-	  TrigResult_store[i].push_back(true);	
-	  TrigPrescales_store[i].push_back(trigPrescales[foundTrig]);	
+	  TrigResult_store[i]=true;	
+	  TrigPrescales_store[i]=trigPrescales[foundTrig];	
 	}
       else
 	{
-	  TrigResult_store[i].push_back(false);	
-	  TrigPrescales_store[i].push_back(-1);	
+	  TrigResult_store[i]=false;	
+	  TrigPrescales_store[i]=1.0;	
 	}
     }
-	
 }
 
 void BsToMuMuGammaNTuplizer::SetupTriggerBranches()
@@ -1065,9 +1099,23 @@ void BsToMuMuGammaNTuplizer::SetupTriggerBranches()
 void BsToMuMuGammaNTuplizer::fillHLT(edm::Event const& iEvent)
 {
 
+
+  // Get the trigger results
+  bool validTriggerEvent = true;
+  edm::Handle<trigger::TriggerEvent> triggerEventHandle;
+  const trigger::TriggerEvent dummyTE;
+  iEvent.getByToken(triggerEvent_token_, triggerEventHandle);
+  if (!triggerEventHandle.isValid()) {
+    std::cout<< "Error! Can't get the product: triggerEvent_" << endl;
+    validTriggerEvent = false;
+  }
+  
+  const trigger::TriggerEvent& triggerEvent(validTriggerEvent ? *(triggerEventHandle.product()) : dummyTE);
+
   edm::Handle<edm::TriggerResults>     hltTriggerResults;
   iEvent.getByToken(triggerBits_,      hltTriggerResults);
  
+
   HLTConfigProvider hltConfig_;
   if (hltTriggerResults.isValid()) {
     const edm::TriggerNames& triggerNames_ = iEvent.triggerNames(*hltTriggerResults);
@@ -1082,9 +1130,9 @@ void BsToMuMuGammaNTuplizer::fillHLT(edm::Event const& iEvent)
 	  for (unsigned int it=0; it<trigTable.size(); it++){
 	    if (triggername.find(trigTable[it]) != std::string::npos) 
 	      {
-		// save the no versioned case
-		trigNames.push_back(trigTable[it]);
-		trigPrescales.push_back(triggerprescale);
+	    	// save the no versioned case
+		      trigNames.push_back(trigTable[it]);
+		      trigPrescales.push_back(triggerprescale);
 	      }
 	  }
 	}
@@ -1095,7 +1143,24 @@ void BsToMuMuGammaNTuplizer::fillHLT(edm::Event const& iEvent)
       std::cout<<" Trigger result Not valid !!"<<"\n";
     }
   FillTrggerBranches();
-    
+
+  vector<int> trigIdx;
+  vector<int> Keys;
+  for (uint filterIndex = 0; filterIndex < triggerEvent.sizeFilters(); ++filterIndex) {  //loop over all trigger filters in event (i.e. filters passed)
+    string label = triggerEvent.filterTag(filterIndex).label();
+    for(unsigned int  tIdx=0;tIdx < triggerFilter.size() ; tIdx++)
+    {
+      if (label.find(triggerFilter[tIdx]) != string::npos) {  
+      for (uint filterKeyIndex = 0; filterKeyIndex < triggerEvent.filterKeys(filterIndex).size();
+           ++filterKeyIndex) {  //loop over keys to objects passing this filter
+        trigIdx.push_back(tIdx);  
+        Keys.push_back(triggerEvent.filterKeys(filterIndex)[filterKeyIndex]);  //add keys to a vector for later reference
+        }
+      }
+    }
+   }
+   fillHLTL3MuonBranches(  trigIdx, Keys, triggerEvent );
+
 }
 
 std::vector<Float_t> BsToMuMuGammaNTuplizer::getShowerShapes(reco::CaloCluster* caloBC, const EcalRecHitCollection* recHits, const CaloTopology *topology)
@@ -1742,6 +1807,7 @@ void BsToMuMuGammaNTuplizer::fillMuonBranches( const edm::Event& iEvent, const e
 }
 void BsToMuMuGammaNTuplizer::addDimuonBranches()
 {
+        std::cout<<"Initilizing Dimuon Branches !\n";
         storageMapInt["nDimuons"]=0;
         theTree->Branch("nDimuons",   &storageMapInt["nDimuons"]);
         
@@ -1767,6 +1833,18 @@ void BsToMuMuGammaNTuplizer::addDimuonBranches()
         theTree->Branch("dimuon_mu2_phi", storageMapFloatArray["dimuon_mu2_phi"],"dimuon_mu2_phi[nDimuons]/F");
         storageMapFloatArray["dimuon_doca"]   = new Float_t[N_DIMU_MAX];
         theTree->Branch("dimuon_doca", storageMapFloatArray["dimuon_doca"],"dimuon_doca[nDimuons]/F");
+        storageMapFloatArray["dimuon_kin_mu1pt"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_kin_mu1pt", storageMapFloatArray["dimuon_kin_mu1pt"],"dimuon_kin_mu1pt[nDimuons]/F");
+        storageMapFloatArray["dimuon_kin_mu1eta"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_kin_mu1eta", storageMapFloatArray["dimuon_kin_mu1eta"],"dimuon_kin_mu1eta[nDimuons]/F");
+        storageMapFloatArray["dimuon_kin_mu1phi"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_kin_mu1phi", storageMapFloatArray["dimuon_kin_mu1phi"],"dimuon_kin_mu1phi[nDimuons]/F");
+        storageMapFloatArray["dimuon_kin_mu2pt"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_kin_mu2pt", storageMapFloatArray["dimuon_kin_mu2pt"],"dimuon_kin_mu2pt[nDimuons]/F");
+        storageMapFloatArray["dimuon_kin_mu2eta"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_kin_mu2eta", storageMapFloatArray["dimuon_kin_mu2eta"],"dimuon_kin_mu2eta[nDimuons]/F");
+        storageMapFloatArray["dimuon_kin_mu2phi"]   = new Float_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_kin_mu2phi", storageMapFloatArray["dimuon_kin_mu2phi"],"dimuon_kin_mu2phi[nDimuons]/F");
         storageMapFloatArray["dimuon_kin_valid"]   = new Float_t[N_DIMU_MAX];
         theTree->Branch("dimuon_kin_valid", storageMapFloatArray["dimuon_kin_valid"],"dimuon_kin_valid[nDimuons]/F");
         storageMapFloatArray["dimuon_kin_vtx_prob"]   = new Float_t[N_DIMU_MAX];
@@ -1885,10 +1963,8 @@ void BsToMuMuGammaNTuplizer::addDimuonBranches()
 
 void BsToMuMuGammaNTuplizer::fillDimuonBranches( const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
-    std::cout<<"New FillDimuonranches !\n";
     edm::Handle<std::vector<reco::Muon>> muonHandle;
     iEvent.getByToken(muonToken_, muonHandle);
-
     // Fills tree branches with photons.
     edm::Handle<std::vector<reco::Photon> > photonHandle;
     edm::Handle<reco::SuperClusterCollection> barrelSCHandle;
@@ -1914,12 +1990,12 @@ void BsToMuMuGammaNTuplizer::fillDimuonBranches( const edm::Event& iEvent, const
         edm::LogError("BsToMuMuGammaNTuplizer") << "No beam spot available from EventSetup" ;
     }
     
-    auto beamSpot_ = beamSpotHandle.product();
     
 
     
     auto nMuons   = muonHandle->size();
     auto nPhotons = photonHandle->size();
+    auto nPFCands = pfCandidateHandle->size();
     
     //  setting the JPsi and Bmmg cands
     if(doJPsiGamma) { 
@@ -1937,7 +2013,9 @@ void BsToMuMuGammaNTuplizer::fillDimuonBranches( const edm::Event& iEvent, const
             storageMapInt["nMMGpfCands"]=0;
         }
     }
-    
+    storageMapInt["nMuMuK"]=0;
+    storageMapInt["nJPsiK"]=0;
+    storageMapInt["nPsi2SK"]=0;
 
     // Output collection
     auto dimuon  = std::make_unique<pat::CompositeCandidateCollection>();
@@ -2017,115 +2095,36 @@ void BsToMuMuGammaNTuplizer::fillDimuonBranches( const edm::Event& iEvent, const
 	  //     if (kinematicMuMuVertexFit.sigLxy < minBhhSigLxy_) continue;
 	  //   }
 
-      auto fit = vertexMuonsWithKinematicFitter(muon1, muon2);
-      fit.postprocess(*beamSpot_);
-	  
-      // dimuon
- 
-	    // mmK and mmKK
-        /*
-	    for (unsigned int k = 0; k < nPFCands; ++k) {
-	      reco::PFCandidate kaonCand1((*pfCandidateHandle)[k]);
-	      kaonCand1.setMass(KaonMass_);
-	      if (deltaR(muon1, kaonCand1) < 0.01 || deltaR(muon2, kaonCand1) < 0.01) continue;
-	      if (kaonCand1.charge() == 0 ) continue;
-	      if (!kaonCand1.hasTrackDetails()) continue;
-	      double mu1_kaon_doca = distanceOfClosestApproach(muon1.innerTrack().get(),
-							       kaonCand1.bestTrack());
-	      double mu2_kaon_doca = distanceOfClosestApproach(muon2.innerTrack().get(),
-							       kaonCand1.bestTrack());
-	      // BtoMuMuK
-	      bool goodBtoMuMuK = true;
-	      if (kinematicMuMuVertexFit.mass() < 2.9) goodBtoMuMuK = false;
-	      if (abs(kaonCand1.pdgId()) != 211) goodBtoMuMuK = false; //Charged hadrons
-	      if (kaonCand1.pt() < ptMinKaon_ || abs(kaonCand1.eta()) > etaMaxKaon_) goodBtoMuMuK = false;
-	      if (maxTwoTrackDOCA_ > 0 and mu1_kaon_doca > maxTwoTrackDOCA_) goodBtoMuMuK = false;
-	      if (maxTwoTrackDOCA_ > 0 and mu2_kaon_doca > maxTwoTrackDOCA_) goodBtoMuMuK = false;
-	      
-	      // BToJpsiKK
-	      bool goodBtoJpsiKK = goodBtoMuMuK;
-	      if (fabs(kinematicMuMuVertexFit.mass()-3.1) > 0.2) goodBtoJpsiKK = false;
-	  
-	      double kmm_mass = (muon1.p4() + muon2.p4() + kaonCand1.p4()).mass();
-	      if (kmm_mass < minBKmmMass_ || kmm_mass > maxBKmmMass_) goodBtoMuMuK = false;
-	    
-	      if (goodBtoMuMuK){
-
-		      // fill BtoMuMuK candidate info
-		      pat::CompositeCandidate btokmmCand;
-		      btokmmCand.addUserInt("mm_index", imm);
-		      btokmmCand.addUserFloat("kaon_mu1_doca", mu1_kaon_doca);
-		      btokmmCand.addUserFloat("kaon_mu2_doca", mu2_kaon_doca);
-		      fillBtoMuMuKInfo(btokmmCand,iEvent,kinematicMuMuVertexFit,muon1,muon2,kaonCand1);
-		      fillMvaInfoForBtoJpsiKCandidatesEmulatingBmm(btokmmCand,dimuonCand,iEvent,kinematicMuMuVertexFit,muon1,muon2,kaonCand1);
-		      btokmm->push_back(btokmmCand);
-	      }
-
-	      if (goodBtoJpsiKK){ // good candidate to consider for JpsiKK
-		for (unsigned int k2 = k+1; k2 < nPFCands; ++k2) { // only works if selection requirements for both kaons are identical
-		  reco::PFCandidate kaonCand2((*pfCandidateHandle)[k2]);
-		  kaonCand2.setMass(KaonMass_);
-		  if (deltaR(muon1, kaonCand2) < 0.01 || deltaR(muon2, kaonCand2) < 0.01) continue;
-		  if (kaonCand2.charge() == 0 ) continue;
-		  if (!kaonCand2.hasTrackDetails()) continue;
-		  double mu1_kaon2_doca = distanceOfClosestApproach(muon1.innerTrack().get(),
-								    kaonCand2.bestTrack());
-		  double mu2_kaon2_doca = distanceOfClosestApproach(muon2.innerTrack().get(),
-								    kaonCand2.bestTrack());
-	      
-		  if (abs(kaonCand2.pdgId())!=211) goodBtoJpsiKK = false; //Charged hadrons
-		  if (kaonCand2.pt()<ptMinKaon_ || abs(kaonCand2.eta())>etaMaxKaon_) goodBtoJpsiKK = false;
-		  if (maxTwoTrackDOCA_>0 and mu1_kaon2_doca> maxTwoTrackDOCA_) goodBtoJpsiKK = false;	      
-		  if (maxTwoTrackDOCA_>0 and mu2_kaon2_doca> maxTwoTrackDOCA_) goodBtoJpsiKK = false;	      
-		  
-		  double kkmm_mass = (muon1.p4()+muon2.p4()+kaonCand1.p4()+kaonCand2.p4()).mass();
-		  if ( kkmm_mass<minBKKmmMass_ || kkmm_mass>maxBKKmmMass_ ) goodBtoJpsiKK = false;
-		  
-		  if (goodBtoJpsiKK){
-		    // fill BtoJpsiKK candidate info
-		    
-		    pat::CompositeCandidate btokkmmCand;
-		    btokkmmCand.addUserInt("mm_index", imm);
-		    int ikmm = -1;
-		    if (goodBtoMuMuK) ikmm = btokmm->size()-1;
-		    btokkmmCand.addUserInt("kmm_index", ikmm);
-		    btokkmmCand.addUserFloat("kaon_mu1_doca", mu1_kaon2_doca);
-		    btokkmmCand.addUserFloat("kaon_mu2_doca", mu2_kaon2_doca);
-		    
-		    fillBstoJpsiKKInfo(btokkmmCand,iEvent,kinematicMuMuVertexFit,muon1,muon2,kaonCand1,kaonCand2);
-		    // FIXME
-		    // fillMvaInfoForBtoJpsiKCandidatesEmulatingBmm(btokkmmCand,dimuonCand,iEvent,kinematicMuMuVertexFit,muon1,muon2,kaonCand1);
-
-		    btokkmm->push_back(btokkmmCand);
-		  }
-		}
-	      }
-	    }*/
-        
-
-    // printf("kinematicMuMuVertexFit (x,y,z): (%7.3f,%7.3f,%7.3f)\n", 
-    auto displacement3d = compute3dDisplacement(fit, *pvHandle_.product(),true);
+      auto dimuFit = vertexMuonsWithKinematicFitter(muon1, muon2);
+      dimuFit.postprocess(*beamSpot);
+      auto displacement3d = compute3dDisplacement(dimuFit, *pvHandle_.product(),true);
     
     //addFitInfo(dimuonCand, kinematicMuMuVertexFit, "kin", displacement3D,0,1);
-    storageMapFloatArray["dimuon_kin_valid"][nDimu]  =        fit.valid() ;
-    storageMapFloatArray["dimuon_kin_vtx_prob"][nDimu]  =     fit.vtxProb() ;
-    storageMapFloatArray["dimuon_kin_vtx_chi2dof"][nDimu]  =  fit.chi2()>0?fit.chi2()/fit.ndof():-1;
-    storageMapFloatArray["dimuon_kin_mass"][nDimu]  =         fit.mass() ;
-    storageMapFloatArray["dimuon_kin_massErr"][nDimu]  =      fit.massErr() ;
-    storageMapFloatArray["dimuon_kin_lxy"][nDimu]  =          fit.lxy ;
-    storageMapFloatArray["dimuon_kin_sigLxy"][nDimu]  =       fit.sigLxy ;
-    storageMapFloatArray["dimuon_kin_alphaBS"][nDimu]  =      fit.alphaBS;
-    storageMapFloatArray["dimuon_kin_alphaBSErr"][nDimu]  =   fit.alphaBSErr;
-    storageMapFloatArray["dimuon_kin_vtx_x"][nDimu]  =        fit.valid()?fit.refitVertex->position().x():0 ;
-    storageMapFloatArray["dimuon_kin_vtx_xErr"][nDimu]  =     fit.valid()?sqrt(fit.refitVertex->error().cxx()):0 ;
-    storageMapFloatArray["dimuon_kin_vtx_y"][nDimu]  =        fit.valid()?fit.refitVertex->position().y():0 ;
-    storageMapFloatArray["dimuon_kin_vtx_yErr"][nDimu]  =     fit.valid()?sqrt(fit.refitVertex->error().cyy()):0 ;
-    storageMapFloatArray["dimuon_kin_vtx_z"][nDimu]  =        fit.valid()?fit.refitVertex->position().z():0 ;
-    storageMapFloatArray["dimuon_kin_vtx_zErr"][nDimu]  =     fit.valid()?sqrt(fit.refitVertex->error().czz()):0 ;
-    storageMapFloatArray["dimuon_kin_pt"][nDimu]  =           fit.p3().perp() ;
-    storageMapFloatArray["dimuon_kin_eta"][nDimu]  =          fit.p3().eta() ;
-    storageMapFloatArray["dimuon_kin_phi"][nDimu]  =          fit.p3().phi() ;
-    
+    storageMapFloatArray["dimuon_kin_valid"][nDimu]  =        dimuFit.valid() ;
+    storageMapFloatArray["dimuon_kin_vtx_prob"][nDimu]  =     dimuFit.vtxProb() ;
+    storageMapFloatArray["dimuon_kin_vtx_chi2dof"][nDimu]  =  dimuFit.chi2()>0?dimuFit.chi2()/dimuFit.ndof():-1;
+    storageMapFloatArray["dimuon_kin_mass"][nDimu]  =         dimuFit.mass() ;
+    storageMapFloatArray["dimuon_kin_massErr"][nDimu]  =      dimuFit.massErr() ;
+    storageMapFloatArray["dimuon_kin_lxy"][nDimu]  =          dimuFit.lxy ;
+    storageMapFloatArray["dimuon_kin_sigLxy"][nDimu]  =       dimuFit.sigLxy ;
+    storageMapFloatArray["dimuon_kin_alphaBS"][nDimu]  =      dimuFit.alphaBS;
+    storageMapFloatArray["dimuon_kin_alphaBSErr"][nDimu]  =   dimuFit.alphaBSErr;
+    storageMapFloatArray["dimuon_kin_vtx_x"][nDimu]  =        dimuFit.valid()?dimuFit.refitVertex->position().x():0 ;
+    storageMapFloatArray["dimuon_kin_vtx_xErr"][nDimu]  =     dimuFit.valid()?sqrt(dimuFit.refitVertex->error().cxx()):0 ;
+    storageMapFloatArray["dimuon_kin_vtx_y"][nDimu]  =        dimuFit.valid()?dimuFit.refitVertex->position().y():0 ;
+    storageMapFloatArray["dimuon_kin_vtx_yErr"][nDimu]  =     dimuFit.valid()?sqrt(dimuFit.refitVertex->error().cyy()):0 ;
+    storageMapFloatArray["dimuon_kin_vtx_z"][nDimu]  =        dimuFit.valid()?dimuFit.refitVertex->position().z():0 ;
+    storageMapFloatArray["dimuon_kin_vtx_zErr"][nDimu]  =     dimuFit.valid()?sqrt(dimuFit.refitVertex->error().czz()):0 ;
+    storageMapFloatArray["dimuon_kin_pt"][nDimu]  =           dimuFit.p3().perp() ;
+    storageMapFloatArray["dimuon_kin_eta"][nDimu]  =          dimuFit.p3().eta() ;
+    storageMapFloatArray["dimuon_kin_phi"][nDimu]  =          dimuFit.p3().phi() ;
+    storageMapFloatArray["dimuon_kin_mu1pt"][nDimu]   =       dimuFit.dau_p3(0).perp();
+    storageMapFloatArray["dimuon_kin_mu1eta"][nDimu]  =       dimuFit.dau_p3(0).eta() ;
+    storageMapFloatArray["dimuon_kin_mu1phi"][nDimu]  =       dimuFit.dau_p3(0).phi() ;
+    storageMapFloatArray["dimuon_kin_mu1pt"][nDimu]   =       dimuFit.dau_p3(1).perp();
+    storageMapFloatArray["dimuon_kin_mu1eta"][nDimu]  =       dimuFit.dau_p3(1).eta() ;
+    storageMapFloatArray["dimuon_kin_mu1phi"][nDimu]  =       dimuFit.dau_p3(1).phi() ;
+   
     // IP info
     storageMapFloatArray["dimuon_kin_alpha"][nDimu]  =        displacement3d.alpha;
     storageMapFloatArray["dimuon_kin_alphaErr"][nDimu]  =     displacement3d.alphaErr;
@@ -2152,77 +2151,45 @@ void BsToMuMuGammaNTuplizer::fillDimuonBranches( const edm::Event& iEvent, const
     storageMapFloatArray["dimuon_kin_taue"][nDimu]  =         displacement3d.decayTimeError;
     storageMapFloatArray["dimuon_kin_tauxy"][nDimu]  =        displacement3d.decayTimeXY;
     storageMapFloatArray["dimuon_kin_tauxye"][nDimu]  =       displacement3d.decayTimeXYError;
-
-    // Refitted daughter information
-    // if (firstMuonDaughterIndex>=0){
-    //   storageMapFloatArray["dimuon_kin_mu1pt"][nDimu]  =        fit.dau_p3(firstMuonDaughterIndex).perp() ;
-    //   storageMapFloatArray["dimuon_kin_mu1eta"][nDimu]  =       fit.dau_p3(firstMuonDaughterIndex).eta() ;
-    //   storageMapFloatArray["dimuon_kin_mu1phi"][nDimu]  =       fit.dau_p3(firstMuonDaughterIndex).phi() ;
-    // }
-    // if (secondMuonDaughterIndex>=0){
-    //   storageMapFloatArray["dimuon_kin_mu2pt"][nDimu]  =        fit.dau_p3(secondMuonDaughterIndex).perp() ;
-    //   storageMapFloatArray["dimuon_kin_mu2eta"][nDimu]  =       fit.dau_p3(secondMuonDaughterIndex).eta() ;
-    //   storageMapFloatArray["dimuon_kin_mu2phi"][nDimu]  =       fit.dau_p3(secondMuonDaughterIndex).phi() ;
-    // }
-    // if (firstKaonDaughterIndex>=0){
-    //   storageMapFloatArray["dimuon_kin_kaon1pt"][nDimu]  =      fit.dau_p3(firstKaonDaughterIndex).perp() ;
-    //   storageMapFloatArray["dimuon_kin_kaon1eta"][nDimu]  =     fit.dau_p3(firstKaonDaughterIndex).eta() ;
-    //   storageMapFloatArray["dimuon_kin_kaon1phi"][nDimu]  =     fit.dau_p3(firstKaonDaughterIndex).phi() ;
-    // }
-    // if (secondKaonDaughterIndex>=0){
-    //   storageMapFloatArray["dimuon_kin_kaon2pt"][nDimu]  =      fit.dau_p3(secondKaonDaughterIndex).perp() ;
-    //   storageMapFloatArray["dimuon_kin_kaon2eta"][nDimu]  =     fit.dau_p3(secondKaonDaughterIndex).eta() ;
-    //   storageMapFloatArray["dimuon_kin_kaon2phi"][nDimu]  =     fit.dau_p3(secondKaonDaughterIndex).phi() ;
-    // }
-
-
-    ////////////////////////////////////////////
-
-
-  
+ 
     int pvIndex = displacement3d.pvIndex;
+    const reco::Vertex *vertex(nullptr) ;
+    if(pvIndex >=0 ) vertex=&(pvHandle_->at(pvIndex));
     // Look for additional tracks compatible with the dimuon vertex
-    auto closeTracks = findTracksCompatibleWithTheVertex(muon1,muon2,fit);
+    auto closeTracks = findTracksCompatibleWithTheVertex(muon1,muon2,dimuFit);
     //closeTracks.fillCandInfo(dimuonCand, pvIndex, "");
-    storageMapFloatArray["dimuon_nTrks"][nDimu]  =        closeTracks.nTracksByVertexProbability(0.1, -1.0, pvIndex);
+    storageMapFloatArray["dimuon_nTrks"][nDimu]  =        closeTracks.nTracksByVertexProbability(0.1, -1.0, vertex);
     storageMapFloatArray["dimuon_nBMTrks"][nDimu]  =      closeTracks.nTracksByBetterMatch();
-    storageMapFloatArray["dimuon_nDisTrks"][nDimu]  =     closeTracks.nTracksByVertexProbability(0.1,  2.0 ,  pvIndex);
-    storageMapFloatArray["dimuon_closetrk"][nDimu]  =     closeTracks.nTracksByDisplacementSignificance(0.03 ,-1 ,  pvIndex);
-    storageMapFloatArray["dimuon_closetrks1"][nDimu]  =   closeTracks.nTracksByDisplacementSignificance(0.03 , 1 ,  pvIndex);
-    storageMapFloatArray["dimuon_closetrks2"][nDimu]  =   closeTracks.nTracksByDisplacementSignificance(0.03 , 2 ,  pvIndex);
-    storageMapFloatArray["dimuon_closetrks3"][nDimu]  =   closeTracks.nTracksByDisplacementSignificance(0.03 , 3 ,  pvIndex);
-    storageMapFloatArray["dimuon_docatrk"][nDimu]  =      closeTracks.minDoca(0.03,pvIndex);
-
+    storageMapFloatArray["dimuon_nDisTrks"][nDimu]  =     closeTracks.nTracksByVertexProbability(0.1,  2.0 ,  vertex);
+    storageMapFloatArray["dimuon_closetrk"][nDimu]  =     closeTracks.nTracksByDisplacementSignificance(0.03 ,-1 ,  vertex);
+    storageMapFloatArray["dimuon_closetrks1"][nDimu]  =   closeTracks.nTracksByDisplacementSignificance(0.03 , 1 ,  vertex);
+    storageMapFloatArray["dimuon_closetrks2"][nDimu]  =   closeTracks.nTracksByDisplacementSignificance(0.03 , 2 ,  vertex);
+    storageMapFloatArray["dimuon_closetrks3"][nDimu]  =   closeTracks.nTracksByDisplacementSignificance(0.03 , 3 ,  vertex);
+    storageMapFloatArray["dimuon_docatrk"][nDimu]  =      closeTracks.minDoca(0.03,vertex);
     storageMapFloatArray["dimuon_m1iso"][nDimu]             =   computeTrkMuonIsolation(muon1,muon2,pvIndex,0.5,0.5);
-
     storageMapFloatArray["dimuon_m2iso"][nDimu]             =   computeTrkMuonIsolation(muon2,muon1,pvIndex,0.5,0.5);
     storageMapFloatArray["dimuon_iso"][nDimu]               =   computeTrkMuMuIsolation(muon2,muon1,pvIndex,0.9,0.7);
     storageMapFloatArray["dimuon_otherVtxMaxProb"][nDimu]   =   otherVertexMaxProb(muon1,muon2,0.5);
     storageMapFloatArray["dimuon_otherVtxMaxProb1"][nDimu]  =   otherVertexMaxProb(muon1,muon2,1.0);
     storageMapFloatArray["dimuon_otherVtxMaxProb2"][nDimu]  =   otherVertexMaxProb(muon1,muon2,2.0);
-               
-    std::cout<<"  we have  : "<<fit.mass()<<"  mumu mass  | "<< muon2.index() << " " << muon1.index() <<" |\n ";
+    
 	  if (muon1.index() >= 0 and muon2.index() >= 0){
-   		        auto dimuon_p4(makeLorentzVectorFromPxPyPzM(fit.p3().x(),
-		    					    fit.p3().y(),
-		    					    fit.p3().z(),
-		    					    fit.mass()));
-		    const auto & vtx_point = fit.refitVertex->vertexState().position();
+   		        auto dimuon_p4(makeLorentzVectorFromPxPyPzM(dimuFit.p3().x(),
+		    					    dimuFit.p3().y(),
+		    					    dimuFit.p3().z(),
+		    					    dimuFit.mass()));
+		    const auto & vtx_point = dimuFit.refitVertex->vertexState().position();
             math::XYZVectorF  secVtx(vtx_point.x(),vtx_point.y(),vtx_point.z());
-            auto isJpsiCand = ( fit.mass() >= minJPsiMass_ and fit.mass() <= maxJPsiMass_ );
-            std::cout<<" isJpsiCand = ( "<<fit.mass()<<" >= "<< minJPsiMass_ <<" and "<<fit.mass()<<" <= "<<maxJPsiGammaMass_ << " ===> "<<isJpsiCand<<"\n";;
+            auto isJpsiCand = ( dimuFit.mass() >= minJPsiMass_ and dimuFit.mass() <= maxJPsiMass_ );
 
 	        // MuMuGamma
-	        if (doMuMuGamma && fit.valid()){
+	        if (doMuMuGamma && dimuFit.valid()){
 	        for (unsigned int k=0; k < nPhotons; ++k){
-                  
-                  
 		        auto photon(photonHandle->at(k));
 		        photon.setVertex(reco::Photon::Point(vtx_point.x(), vtx_point.y(), vtx_point.z()));
 		        
                 double mmg_mass = (dimuon_p4 + photon.p4()).mass();
                 
-                std::cout<<"\t Pho : "<<photon.energy() <<" | mass = "<<mmg_mass<<" [ "<<minBsMuMuGammaMass_<<","<<maxBsMuMuGammaMass_<<"] "<<"\n"; 
 		        
                 if (mmg_mass >= minBsMuMuGammaMass_ and mmg_mass <= maxBsMuMuGammaMass_){
                      fillBmmgBranchs(nDimu,k,-1,mmg_mass);
@@ -2247,8 +2214,6 @@ void BsToMuMuGammaNTuplizer::fillDimuonBranches( const edm::Event& iEvent, const
                  auto scP4(makeLorentzVectorFromPxPyPzM(scP3.x(),scP3.y(),scP3.z(),0.0));
 		         double mmg_mass = (dimuon_p4 + scP4).mass();
                  
-                 std::cout<<"\t Sc : "<<sc.energy()<<" p4E = "<<scP4.energy() <<" | mass = "<<mmg_mass<<" [ "<<minBsMuMuGammaMass_<<","<<maxBsMuMuGammaMass_<<"] "<<"\n"; 
-		        
                 if (mmg_mass >= minBsMuMuGammaMass_ and mmg_mass <= maxBsMuMuGammaMass_){
                     fillBmmgBranchs(nDimu,-1,k,mmg_mass);
 	  	         }
@@ -2295,7 +2260,90 @@ void BsToMuMuGammaNTuplizer::fillDimuonBranches( const edm::Event& iEvent, const
 
              }
             
-
+	  
+              // dimuon
+         
+        	    // mmK and mmKK
+                
+                if(doMuMuK_)
+                {
+        	        for (unsigned int k = 0; k < nPFCands; ++k) {
+        	          reco::PFCandidate kaonCand1((*pfCandidateHandle)[k]);
+        	          kaonCand1.setMass(KaonMass_);
+        	          if (deltaR(muon1, kaonCand1) < 0.01 || deltaR(muon2, kaonCand1) < 0.01) continue;
+        	          if (kaonCand1.charge() == 0 ) continue;
+        	          //if (!kaonCand1.hasTrackDetails()) continue;
+                      if (not kaonCand1.trackRef()) continue;
+        	          double mu1_kaon_doca = distanceOfClosestApproach(muon1.innerTrack().get(),
+        		    					       kaonCand1.bestTrack());
+        	          double mu2_kaon_doca = distanceOfClosestApproach(muon2.innerTrack().get(),
+        		    					       kaonCand1.bestTrack());
+        	          // BtoMuMuK
+        	          bool goodBtoMuMuK = true;
+        	          if (dimuFit.mass() < 2.9) goodBtoMuMuK = false;
+        	          if (abs(kaonCand1.pdgId()) != 211) goodBtoMuMuK = false; //Charged hadrons
+        	          if (kaonCand1.pt() < ptMinKaon_ || abs(kaonCand1.eta()) > etaMaxKaon_) goodBtoMuMuK = false;
+        	          if (maxTwoTrackDOCA_ > 0 and mu1_kaon_doca > maxTwoTrackDOCA_) goodBtoMuMuK = false;
+        	          if (maxTwoTrackDOCA_ > 0 and mu2_kaon_doca > maxTwoTrackDOCA_) goodBtoMuMuK = false;
+        	          
+        
+                      double kmm_mass = (muon1.p4() + muon2.p4() + kaonCand1.p4()).mass();
+        	          if (kmm_mass < minBKmmMass_ || kmm_mass > maxBKmmMass_) goodBtoMuMuK = false;
+        	        
+        	          if (goodBtoMuMuK){
+        		          // fill BtoMuMuK candidate info
+                          fillBtoMuMuKInfo(nDimu,iEvent,dimuFit,muon1,muon2,kaonCand1);
+        	          }
+         
+        	          // BToJpsiKK
+        	          // bool goodBtoJpsiKK = goodBtoMuMuK;
+        	          // if (fabs(dimuFit.mass()-3.1) > 0.2) goodBtoJpsiKK = false;
+        
+        	          // if (goodBtoJpsiKK){ // good candidate to consider for JpsiKK
+        		      //    for (unsigned int k2 = k+1; k2 < nPFCands; ++k2) { // only works if selection requirements for both kaons are identical
+        		      //    reco::PFCandidate kaonCand2((*pfCandidateHandle)[k2]);
+        		      //    kaonCand2.setMass(KaonMass_);
+        		      // if (deltaR(muon1, kaonCand2) < 0.01 || deltaR(muon2, kaonCand2) < 0.01) continue;
+        		      // if (kaonCand2.charge() == 0 ) continue;
+        		      // if (!kaonCand2.hasTrackDetails()) continue;
+        		      // double mu1_kaon2_doca = distanceOfClosestApproach(muon1.innerTrack().get(),
+        		      //   					    kaonCand2.bestTrack());
+        		      // double mu2_kaon2_doca = distanceOfClosestApproach(muon2.innerTrack().get(),
+        		      //   					    kaonCand2.bestTrack());
+        	          // 
+        		      // if (abs(kaonCand2.pdgId())!=211) goodBtoJpsiKK = false; //Charged hadrons
+        		      // if (kaonCand2.pt()<ptMinKaon_ || abs(kaonCand2.eta())>etaMaxKaon_) goodBtoJpsiKK = false;
+        		      // if (maxTwoTrackDOCA_>0 and mu1_kaon2_doca> maxTwoTrackDOCA_) goodBtoJpsiKK = false;	      
+        		      // if (maxTwoTrackDOCA_>0 and mu2_kaon2_doca> maxTwoTrackDOCA_) goodBtoJpsiKK = false;	      
+        		      // 
+        		      // double kkmm_mass = (muon1.p4()+muon2.p4()+kaonCand1.p4()+kaonCand2.p4()).mass();
+        		      // if ( kkmm_mass<minBKKmmMass_ || kkmm_mass>maxBKKmmMass_ ) goodBtoJpsiKK = false;
+        		      // 
+        		      // if (goodBtoJpsiKK){
+        		      //   // fill BtoJpsiKK candidate info
+        		      //   
+        		      //   pat::CompositeCandidate btokkmmCand;
+        		      //   btokkmmCand.addUserInt("mm_index", imm);
+        		      //   int ikmm = -1;
+        		      //   if (goodBtoMuMuK) ikmm = btokmm->size()-1;
+        		      //   btokkmmCand.addUserInt("kmm_index", ikmm);
+        		      //   btokkmmCand.addUserFloat("kaon_mu1_doca", mu1_kaon2_doca);
+        		      //   btokkmmCand.addUserFloat("kaon_mu2_doca", mu2_kaon2_doca);
+        		      //   
+        		      //   fillBstoJpsiKKInfo(btokkmmCand,iEvent,kinematicMuMuVertexFit,muon1,muon2,kaonCand1,kaonCand2);
+                      //   fillBtoMuMuKInfo(nDimu,btokkmmCand,iEvent,kinematicMuMuVertexFit,muon1,muon2,kaonCand1,kaonCand2);
+        		      //   // FIXME
+        		      //   // fillMvaInfoForBtoJpsiKCandidatesEmulatingBmm(btokkmmCand,dimuonCand,iEvent,kinematicMuMuVertexFit,muon1,muon2,kaonCand1);
+        
+        		      //   btokkmm->push_back(btokkmmCand);
+        		      //      }
+        		      //    }
+        	          // }
+        	        }
+                }
+        
+            // printf("kinematicMuMuVertexFit (x,y,z): (%7.3f,%7.3f,%7.3f)\n", 
+        
             }
 
           nDimu++;
@@ -2305,8 +2353,6 @@ void BsToMuMuGammaNTuplizer::fillDimuonBranches( const edm::Event& iEvent, const
     
     storageMapInt["nDimuons"]=nDimu;
 
-    std::cout<<" Obtained :  storageMapInt[\"nMMGCands\"] "<<storageMapInt["nMMGCands"]<<"\n";
-    std::cout<<" Obtained :  storageMapInt[\"nJPsiGammaCands\"] "<<storageMapInt["nJPsiGammaCands"]<<"\n";
 }
 
 void BsToMuMuGammaNTuplizer::addMMGBranches()
@@ -2333,7 +2379,6 @@ void BsToMuMuGammaNTuplizer:: fillBmmgBranchs(Int_t nDimu,Int_t phoIdx,Int_t scI
       storageMapFloatArray["mmg_mass"][storageMapInt["nMMGCands"]]  =mmg_mass;
       storageMapFloatArray["mmg_diMuMass"][storageMapInt["nMMGCands"]]  = storageMapFloatArray["dimuon_kin_mass"][nDimu];
       storageMapInt["nMMGCands"]+=1;
-      std::cout<<" setting nMMGCands  "<<storageMapInt["nMMGCands"]<<"\n";
 }
 
 void BsToMuMuGammaNTuplizer::addJPsiGammaBranches()
@@ -2408,6 +2453,454 @@ void BsToMuMuGammaNTuplizer::fillPF_JPsiGammaBranches(Int_t nDimu,Int_t phoIdx ,
       storageMapInt["nJPsiGammaPFCands"]+=1;
 
 }
+
+void BsToMuMuGammaNTuplizer::fillBtoMuMuKInfo(
+                      Int_t mumuIdx ,
+					  const edm::Event& iEvent,
+					  const KinematicFitResult& kinematicMuMuVertexFit,
+					  const pat::Muon& muon1,
+					  const pat::Muon& muon2,
+					  const reco::PFCandidate & kaon
+					) 
+{
+
+    std::map<std::string,KinematicFitResult> allFits;
+    std::map<std::string,DisplacementInformationIn3D> allDisplacements;
+    std::map<std::string,CloseTrackInfo> allCloseTracks;
+    
+    // MuMuK
+    // auto bToKJPsiMuMu_NoMassConstraint = fitBToKJPsiMuMu(kinematicMuMuVertexFit.refitMother, kaon, false);
+    allFits["muMuK"] = fitBToKJPsiMuMu(kinematicMuMuVertexFit.refitMother, kaon, false);
+    allFits["muMuK"].postprocess(*beamSpot);
+    allDisplacements["muMuK"]=compute3dDisplacement(allFits["muMuK"], *pvHandle_.product(),true);
+    
+    // Look for additional tracks compatible with the dimuon vertex
+    // int pvIndex = allDisplacements["muMuK"].pvIndex;
+    std::vector<const reco::PFCandidate*>  ignoreTracks;
+    ignoreTracks.push_back(&kaon);
+    auto closeTracks = findTracksCompatibleWithTheVertex(muon1,muon2,kinematicMuMuVertexFit,0.03,ignoreTracks);
+    Int_t idx=storageMapInt["nMuMuK"];
+
+    storageMapIntArray["muMuK_dimuonIdx"][idx]   = mumuIdx;
+    storageMapFloatArray["muMuK_kaonPt"][idx]      = kaon.pt();
+    storageMapFloatArray["muMuK_kaonEta"][idx]     = kaon.eta();
+    storageMapFloatArray["muMuK_kaonPhi"][idx]     = kaon.phi();
+    storageMapFloatArray["muMuK_kaonMass"][idx]    = kaon.mass();
+    storageMapFloatArray["muMuK_kaonCharge"][idx]  = kaon.charge();
+    storageMapFloatArray["muMuK_kaon_sdxy_bs"][idx]=  kaon.bestTrack()->dxyError()>0 ? fabs(kaon.bestTrack()->dxy(*beamSpot))/kaon.bestTrack()->dxyError():0.0;
+    storageMapFloatArray["muMuK_otherVtxMaxProb"][idx]   =   otherVertexMaxProb(muon1,muon2,0.5,0.1,ignoreTracks);
+    storageMapFloatArray["muMuK_otherVtxMaxProb1"][idx]  =   otherVertexMaxProb(muon1,muon2,1.0,0.1,ignoreTracks);
+    storageMapFloatArray["muMuK_otherVtxMaxProb2"][idx]  =   otherVertexMaxProb(muon1,muon2,2.0,0.1,ignoreTracks);
+    fillCompositParticleBranches("muMuK",idx,allFits["muMuK"],allDisplacements["muMuK"],allCloseTracks["muMuK"]);
+
+    // JPsiK
+    auto goodBtoJpsiK = true;
+    if (fabs(kinematicMuMuVertexFit.mass()-3.1) > 0.2) goodBtoJpsiK = false;
+    if(doJPsiK_ and goodBtoJpsiK) {
+      allFits["jpsiK"] = fitBToKMuMu(kinematicMuMuVertexFit.refitTree, kaon, JPsiMass_);
+      allFits["jpsiK"].postprocess(*beamSpot);
+      allDisplacements["jpsiK"]=compute3dDisplacement(allFits["jpsiK"], *pvHandle_.product(),true);
+      closeTracks = findTracksCompatibleWithTheVertex(muon1,muon2,kinematicMuMuVertexFit,0.03,ignoreTracks);
+      idx=storageMapInt["nJPsiK"];
+
+        storageMapIntArray["jpsiK_dimuonIdx"][idx]   = mumuIdx;
+        storageMapIntArray["jpsiK_muMuKIdx"][idx]    = storageMapInt["nMuMuK"];
+      storageMapFloatArray["jpsiK_kaonPt"][idx]      = kaon.pt();
+      storageMapFloatArray["jpsiK_kaonEta"][idx]     = kaon.eta();
+      storageMapFloatArray["jpsiK_kaonPhi"][idx]     = kaon.phi();
+      storageMapFloatArray["jpsiK_kaonMass"][idx]    = kaon.mass();
+      storageMapFloatArray["jpsiK_kaonCharge"][idx]  = kaon.charge();
+      storageMapFloatArray["jpsiK_kaon_sdxy_bs"][idx]=  kaon.bestTrack()->dxyError()>0 ? fabs(kaon.bestTrack()->dxy(*beamSpot))/kaon.bestTrack()->dxyError():0.0;
+      storageMapFloatArray["jpsiK_otherVtxMaxProb"][idx]   =   otherVertexMaxProb(muon1,muon2,0.5,0.1,ignoreTracks);
+      storageMapFloatArray["jpsiK_otherVtxMaxProb1"][idx]  =   otherVertexMaxProb(muon1,muon2,1.0,0.1,ignoreTracks);
+      storageMapFloatArray["jpsiK_otherVtxMaxProb2"][idx]  =   otherVertexMaxProb(muon1,muon2,2.0,0.1,ignoreTracks);
+      fillCompositParticleBranches("jpsiK",idx,allFits["jpsiK"],allDisplacements["jpsiK"],allCloseTracks["jpsiK"]);
+      storageMapInt["nJPsiK"]++;
+    }
+
+    auto goodBtoPsi2sK = true;
+    if (fabs(kinematicMuMuVertexFit.mass()-3.68) > 0.2) goodBtoPsi2sK = false;
+    if(doPsi2SK_ and goodBtoPsi2sK) {
+      allFits["psi2sK"] = fitBToKMuMu(kinematicMuMuVertexFit.refitTree, kaon, JPsiMass_);
+      allFits["psi2sK"].postprocess(*beamSpot);
+      allDisplacements["psi2sK"]=compute3dDisplacement(allFits["psi2sK"], *pvHandle_.product(),true);
+      closeTracks = findTracksCompatibleWithTheVertex(muon1,muon2,kinematicMuMuVertexFit,0.03,ignoreTracks);
+      idx=storageMapInt["nPsi2SK"];
+
+        storageMapIntArray["psi2sK_dimuonIdx"][idx]   = mumuIdx;
+        storageMapIntArray["psi2sK_muMuKIdx"][idx]    = storageMapInt["nMuMuK"];
+      storageMapFloatArray["psi2sK_kaonPt"][idx]      = kaon.pt();
+      storageMapFloatArray["psi2sK_kaonEta"][idx]     = kaon.eta();
+      storageMapFloatArray["psi2sK_kaonPhi"][idx]     = kaon.phi();
+      storageMapFloatArray["psi2sK_kaonMass"][idx]    = kaon.mass();
+      storageMapFloatArray["psi2sK_kaonCharge"][idx]  = kaon.charge();
+      storageMapFloatArray["psi2sK_kaon_sdxy_bs"][idx]=  kaon.bestTrack()->dxyError()>0 ? fabs(kaon.bestTrack()->dxy(*beamSpot))/kaon.bestTrack()->dxyError():0.0;
+      storageMapFloatArray["psi2sK_otherVtxMaxProb"][idx]   =   otherVertexMaxProb(muon1,muon2,0.5,0.1,ignoreTracks);
+      storageMapFloatArray["psi2sK_otherVtxMaxProb1"][idx]  =   otherVertexMaxProb(muon1,muon2,1.0,0.1,ignoreTracks);
+      storageMapFloatArray["psi2sK_otherVtxMaxProb2"][idx]  =   otherVertexMaxProb(muon1,muon2,2.0,0.1,ignoreTracks);
+      fillCompositParticleBranches("psi2sK",idx,allFits["psi2sK"],allDisplacements["psi2sK"],allCloseTracks["psi2sK"]);
+      storageMapInt["nPsi2SK"]++;
+    }
+
+
+    storageMapInt["nMuMuK"]++;
+
+    // // JpsiK
+    // KinematicFitResult bToKJPsiMuMu_MassConstraint;
+    // DisplacementInformationIn3D bToKJPsiMuMu_MassConstraint_displacement;
+    // if (fabs(kinematicMuMuVertexFit.mass()-3.1) < 0.2) {
+    //   bToKJPsiMuMu_MassConstraint = fitBToKMuMu(kinematicMuMuVertexFit.refitTree, kaon, JPsiMass_);
+    //   bToKJPsiMuMu_MassConstraint.postprocess(*beamSpot_);
+    //   bToKJPsiMuMu_MassConstraint_displacement = compute3dDisplacement(bToKJPsiMuMu_MassConstraint, *pvHandle_.product(),true);
+    // }
+    // addFitInfo(btokmmCand, bToKJPsiMuMu_MassConstraint, "jpsimc", bToKJPsiMuMu_MassConstraint_displacement,-1,-1,1);
+  
+    // // Psi(2S)K
+    // KinematicFitResult bToKPsi2SMuMu_MassConstraint;
+    // DisplacementInformationIn3D bToKPsi2SMuMu_MassConstraint_displacement;
+    // if (fabs(kinematicMuMuVertexFit.mass()-3.7) < 0.2) {
+    //   bToKPsi2SMuMu_MassConstraint = fitBToKMuMu(kinematicMuMuVertexFit.refitTree, kaon, Psi2SMass_);
+    //   bToKPsi2SMuMu_MassConstraint.postprocess(*beamSpot_);
+    //   bToKPsi2SMuMu_MassConstraint_displacement = compute3dDisplacement(bToKPsi2SMuMu_MassConstraint, *pvHandle_.product(),true);
+    // }
+    // addFitInfo(btokmmCand, bToKPsi2SMuMu_MassConstraint, "psimc", bToKPsi2SMuMu_MassConstraint_displacement,-1,-1,1);
+
+
+
+}
+
+void BsToMuMuGammaNTuplizer::addMuMuKBranches()
+{
+    addCompositParticleBranches("muMuK","nMuMuK");
+    storageMapIntArray["muMuK_dimuonIdx"]   =  new Int_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch("muMuK_dimuonIdx", storageMapIntArray["muMuK_dimuonIdx"],"muMuK_dimuonIdx[nMuMuK]/I");
+    storageMapFloatArray["muMuK_kaonPt"]      =  new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch("muMuK_kaonPt", storageMapFloatArray["muMuK_kaonPt"],"muMuK_kaonPt[nMuMuK]/F");
+    storageMapFloatArray["muMuK_kaonEta"]      =  new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch("muMuK_kaonEta", storageMapFloatArray["muMuK_kaonEta"],"muMuK_kaonEta[nMuMuK]/F");
+    storageMapFloatArray["muMuK_kaonPhi"]      =  new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch("muMuK_kaonPhi", storageMapFloatArray["muMuK_kaonPhi"],"muMuK_kaonPhi[nMuMuK]/F");
+    storageMapFloatArray["muMuK_kaonMass"]      =  new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch("muMuK_kaonMass", storageMapFloatArray["muMuK_kaonMass"],"muMuK_kaonMass[nMuMuK]/F");
+    storageMapFloatArray["muMuK_kaonCharge"]      =  new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch("muMuK_kaonCharge", storageMapFloatArray["muMuK_kaonCharge"],"muMuK_kaonCharge[nMuMuK]/F");
+    storageMapFloatArray["muMuK_kaon_sdxy_bs"]      =  new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch("muMuK_kaon_sdxy_bs", storageMapFloatArray["muMuK_kaon_sdxy_bs"],"muMuK_kaon_sdxy_bs[nMuMuK]/F");
+
+    // JPsiK
+    if(doJPsiK_)
+    {
+        addCompositParticleBranches("jpsiK","nJPsiK");
+        storageMapIntArray["jpsiK_muMuKIdx"]   =  new Int_t[N_COMPOSIT_PART_MAX];
+        theTree->Branch("jpsiK_muMuKIdx", storageMapIntArray["jpsiK_muMuKIdx"],"jpsiK_muMuKIdx[nJPsiK]/I");
+        storageMapIntArray["jpsiK_dimuonIdx"]   =  new Int_t[N_COMPOSIT_PART_MAX];
+        theTree->Branch("jpsiK_dimuonIdx", storageMapIntArray["jpsiK_dimuonIdx"],"jpsiK_dimuonIdx[nJPsiK]/I");
+        storageMapFloatArray["jpsiK_kaonPt"]      =  new Float_t[N_COMPOSIT_PART_MAX];
+        theTree->Branch("jpsiK_kaonPt", storageMapFloatArray["jpsiK_kaonPt"],"jpsiK_kaonPt[nJPsiK]/F");
+        storageMapFloatArray["jpsiK_kaonEta"]      =  new Float_t[N_COMPOSIT_PART_MAX];
+        theTree->Branch("jpsiK_kaonEta", storageMapFloatArray["jpsiK_kaonEta"],"jpsiK_kaonEta[nJPsiK]/F");
+        storageMapFloatArray["jpsiK_kaonPhi"]      =  new Float_t[N_COMPOSIT_PART_MAX];
+        theTree->Branch("jpsiK_kaonPhi", storageMapFloatArray["jpsiK_kaonPhi"],"jpsiK_kaonPhi[nJPsiK]/F");
+        storageMapFloatArray["jpsiK_kaonMass"]      =  new Float_t[N_COMPOSIT_PART_MAX];
+        theTree->Branch("jpsiK_kaonMass", storageMapFloatArray["jpsiK_kaonMass"],"jpsiK_kaonMass[nJPsiK]/F");
+        storageMapFloatArray["jpsiK_kaonCharge"]      =  new Float_t[N_COMPOSIT_PART_MAX];
+        theTree->Branch("jpsiK_kaonCharge", storageMapFloatArray["jpsiK_kaonCharge"],"jpsiK_kaonCharge[nJPsiK]/F");
+        storageMapFloatArray["jpsiK_kaon_sdxy_bs"]      =  new Float_t[N_COMPOSIT_PART_MAX];
+        theTree->Branch("jpsiK_kaon_sdxy_bs", storageMapFloatArray["jpsiK_kaon_sdxy_bs"],"jpsiK_kaon_sdxy_bs[nJPsiK]/F");
+    }
+
+    // Psi2sK
+    if(doPsi2SK_)
+    {
+        addCompositParticleBranches("psi2sK","nPsi2SK");
+        storageMapIntArray["psi2sK_muMuKIdx"]   =  new Int_t[N_COMPOSIT_PART_MAX];
+        theTree->Branch("psi2sK_muMuKIdx", storageMapIntArray["psi2sK_muMuKIdx"],"psi2sK_muMuKIdx[nPsi2SK]/I");
+        storageMapIntArray["psi2sK_dimuonIdx"]   =  new Int_t[N_COMPOSIT_PART_MAX];
+        theTree->Branch("psi2sK_dimuonIdx", storageMapIntArray["psi2sK_dimuonIdx"],"psi2sK_dimuonIdx[nPsi2SK]/I");
+        storageMapFloatArray["psi2sK_kaonPt"]      =  new Float_t[N_COMPOSIT_PART_MAX];
+        theTree->Branch("psi2sK_kaonPt", storageMapFloatArray["psi2sK_kaonPt"],"psi2sK_kaonPt[nPsi2SK]/F");
+        storageMapFloatArray["psi2sK_kaonEta"]      =  new Float_t[N_COMPOSIT_PART_MAX];
+        theTree->Branch("psi2sK_kaonEta", storageMapFloatArray["psi2sK_kaonEta"],"psi2sK_kaonEta[nPsi2SK]/F");
+        storageMapFloatArray["psi2sK_kaonPhi"]      =  new Float_t[N_COMPOSIT_PART_MAX];
+        theTree->Branch("psi2sK_kaonPhi", storageMapFloatArray["psi2sK_kaonPhi"],"psi2sK_kaonPhi[nPsi2SK]/F");
+        storageMapFloatArray["psi2sK_kaonMass"]      =  new Float_t[N_COMPOSIT_PART_MAX];
+        theTree->Branch("psi2sK_kaonMass", storageMapFloatArray["psi2sK_kaonMass"],"psi2sK_kaonMass[nPsi2SK]/F");
+        storageMapFloatArray["psi2sK_kaonCharge"]      =  new Float_t[N_COMPOSIT_PART_MAX];
+        theTree->Branch("psi2sK_kaonCharge", storageMapFloatArray["psi2sK_kaonCharge"],"psi2sK_kaonCharge[nPsi2SK]/F");
+        storageMapFloatArray["psi2sK_kaon_sdxy_bs"]      =  new Float_t[N_COMPOSIT_PART_MAX];
+        theTree->Branch("psi2sK_kaon_sdxy_bs", storageMapFloatArray["psi2sK_kaon_sdxy_bs"],"psi2sK_kaon_sdxy_bs[nPsi2SK]/F");
+    }
+
+
+
+
+
+}
+
+void BsToMuMuGammaNTuplizer::addCompositParticleBranches(TString tag,TString nTag)
+{
+    std::string sTag(tag) ;
+    std::string sNtag(nTag) ;
+    storageMapInt[sNtag]=0;
+    theTree->Branch(nTag,   &storageMapInt[sNtag]);
+    storageMapFloatArray[sTag+"_valid"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_valid", storageMapFloatArray[sTag+"_valid"],tag+"_valid["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_vtx_prob"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_vtx_prob", storageMapFloatArray[sTag+"_vtx_prob"],tag+"_vtx_prob["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_vtx_chi2dof"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_vtx_chi2dof", storageMapFloatArray[sTag+"_vtx_chi2dof"],tag+"_vtx_chi2dof["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_mass"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_mass", storageMapFloatArray[sTag+"_mass"],tag+"_mass["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_massErr"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_massErr", storageMapFloatArray[sTag+"_massErr"],tag+"_massErr["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_lxy"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_lxy", storageMapFloatArray[sTag+"_lxy"],tag+"_lxy["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_sigLxy"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_sigLxy", storageMapFloatArray[sTag+"_sigLxy"],tag+"_sigLxy["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_alphaBS"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_alphaBS", storageMapFloatArray[sTag+"_alphaBS"],tag+"_alphaBS["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_alphaBSErr"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_alphaBSErr", storageMapFloatArray[sTag+"_alphaBSErr"],tag+"_alphaBSErr["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_vtx_x"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_vtx_x", storageMapFloatArray[sTag+"_vtx_x"],tag+"_vtx_x["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_vtx_xErr"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_vtx_xErr", storageMapFloatArray[sTag+"_vtx_xErr"],tag+"_vtx_xErr["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_vtx_y"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_vtx_y", storageMapFloatArray[sTag+"_vtx_y"],tag+"_vtx_y["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_vtx_yErr"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_vtx_yErr", storageMapFloatArray[sTag+"_vtx_yErr"],tag+"_vtx_yErr["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_vtx_z"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_vtx_z", storageMapFloatArray[sTag+"_vtx_z"],tag+"_vtx_z["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_vtx_zErr"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_vtx_zErr", storageMapFloatArray[sTag+"_vtx_zErr"],tag+"_vtx_zErr["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_pt"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_pt", storageMapFloatArray[sTag+"_pt"],tag+"_pt["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_eta"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_eta", storageMapFloatArray[sTag+"_eta"],tag+"_eta["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_phi"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_phi", storageMapFloatArray[sTag+"_phi"],tag+"_phi["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_alpha"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_alpha", storageMapFloatArray[sTag+"_alpha"],tag+"_alpha["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_alphaErr"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_alphaErr", storageMapFloatArray[sTag+"_alphaErr"],tag+"_alphaErr["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_l3d"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_l3d", storageMapFloatArray[sTag+"_l3d"],tag+"_l3d["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_sl3d"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_sl3d", storageMapFloatArray[sTag+"_sl3d"],tag+"_sl3d["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_pv_z"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_pv_z", storageMapFloatArray[sTag+"_pv_z"],tag+"_pv_z["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_pv_zErr"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_pv_zErr", storageMapFloatArray[sTag+"_pv_zErr"],tag+"_pv_zErr["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_pvip"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_pvip", storageMapFloatArray[sTag+"_pvip"],tag+"_pvip["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_spvip"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_spvip", storageMapFloatArray[sTag+"_spvip"],tag+"_spvip["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_pvipErr"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_pvipErr", storageMapFloatArray[sTag+"_pvipErr"],tag+"_pvipErr["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_pv2ip"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_pv2ip", storageMapFloatArray[sTag+"_pv2ip"],tag+"_pv2ip["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_spv2ip"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_spv2ip", storageMapFloatArray[sTag+"_spv2ip"],tag+"_spv2ip["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_pv2ipErr"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_pv2ipErr", storageMapFloatArray[sTag+"_pv2ipErr"],tag+"_pv2ipErr["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_pvlip"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_pvlip", storageMapFloatArray[sTag+"_pvlip"],tag+"_pvlip["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_pvlipSig"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_pvlipSig", storageMapFloatArray[sTag+"_pvlipSig"],tag+"_pvlipSig["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_pvlipErr"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_pvlipErr", storageMapFloatArray[sTag+"_pvlipErr"],tag+"_pvlipErr["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_pv2lip"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_pv2lip", storageMapFloatArray[sTag+"_pv2lip"],tag+"_pv2lip["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_pv2lipSig"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_pv2lipSig", storageMapFloatArray[sTag+"_pv2lipSig"],tag+"_pv2lipSig["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_pv2lipErr"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_pv2lipErr", storageMapFloatArray[sTag+"_pv2lipErr"],tag+"_pv2lipErr["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_pvIndex"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_pvIndex", storageMapFloatArray[sTag+"_pvIndex"],tag+"_pvIndex["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_tau"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_tau", storageMapFloatArray[sTag+"_tau"],tag+"_tau["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_taue"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_taue", storageMapFloatArray[sTag+"_taue"],tag+"_taue["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_tauxy"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_tauxy", storageMapFloatArray[sTag+"_tauxy"],tag+"_tauxy["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_tauxye"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_tauxye", storageMapFloatArray[sTag+"_tauxye"],tag+"_tauxye["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_nTrks"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_nTrks", storageMapFloatArray[sTag+"_nTrks"],tag+"_nTrks["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_nBMTrks"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_nBMTrks", storageMapFloatArray[sTag+"_nBMTrks"],tag+"_nBMTrks["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_nDisTrks"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_nDisTrks", storageMapFloatArray[sTag+"_nDisTrks"],tag+"_nDisTrks["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_closetrk"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_closetrk", storageMapFloatArray[sTag+"_closetrk"],tag+"_closetrk["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_closetrks1"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_closetrks1", storageMapFloatArray[sTag+"_closetrks1"],tag+"_closetrks1["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_closetrks2"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_closetrks2", storageMapFloatArray[sTag+"_closetrks2"],tag+"_closetrks2["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_closetrks3"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_closetrks3", storageMapFloatArray[sTag+"_closetrks3"],tag+"_closetrks3["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_docatrk"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_docatrk", storageMapFloatArray[sTag+"_docatrk"],tag+"_docatrk["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_m1iso"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_m1iso", storageMapFloatArray[sTag+"_m1iso"],tag+"_m1iso["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_m2iso"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_m2iso", storageMapFloatArray[sTag+"_m2iso"],tag+"_m2iso["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_iso"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_iso", storageMapFloatArray[sTag+"_iso"],tag+"_iso["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_otherVtxMaxProb"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_otherVtxMaxProb", storageMapFloatArray[sTag+"_otherVtxMaxProb"],tag+"_otherVtxMaxProb["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_otherVtxMaxProb1"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_otherVtxMaxProb1", storageMapFloatArray[sTag+"_otherVtxMaxProb1"],tag+"_otherVtxMaxProb1["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_otherVtxMaxProb2"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_otherVtxMaxProb2", storageMapFloatArray[sTag+"_otherVtxMaxProb2"],tag+"_otherVtxMaxProb2["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_gen_kaon_pdgId"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_gen_kaon_pdgId", storageMapFloatArray[sTag+"_gen_kaon_pdgId"],tag+"_gen_kaon_pdgId["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_gen_kaon_mpdgId"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_gen_kaon_mpdgId", storageMapFloatArray[sTag+"_gen_kaon_mpdgId"],tag+"_gen_kaon_mpdgId["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_gen_kaon_pt"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_gen_kaon_pt", storageMapFloatArray[sTag+"_gen_kaon_pt"],tag+"_gen_kaon_pt["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_gen_mass"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_gen_mass", storageMapFloatArray[sTag+"_gen_mass"],tag+"_gen_mass["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_gen_pt"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_gen_pt", storageMapFloatArray[sTag+"_gen_pt"],tag+"_gen_pt["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_gen_pdgId"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_gen_pdgId", storageMapFloatArray[sTag+"_gen_pdgId"],tag+"_gen_pdgId["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_gen_prod_x"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_gen_prod_x", storageMapFloatArray[sTag+"_gen_prod_x"],tag+"_gen_prod_x["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_gen_prod_y"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_gen_prod_y", storageMapFloatArray[sTag+"_gen_prod_y"],tag+"_gen_prod_y["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_gen_prod_z"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_gen_prod_z", storageMapFloatArray[sTag+"_gen_prod_z"],tag+"_gen_prod_z["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_gen_l3d"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_gen_l3d", storageMapFloatArray[sTag+"_gen_l3d"],tag+"_gen_l3d["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_gen_lxy"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_gen_lxy", storageMapFloatArray[sTag+"_gen_lxy"],tag+"_gen_lxy["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_gen_tau"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_gen_tau", storageMapFloatArray[sTag+"_gen_tau"],tag+"_gen_tau["+nTag+"]/F");
+    storageMapFloatArray[sTag+"_gen_cpdgId"]   = new Float_t[N_COMPOSIT_PART_MAX];
+    theTree->Branch(tag+"_gen_cpdgId", storageMapFloatArray[sTag+"_gen_cpdgId"],tag+"_gen_cpdgId["+nTag+"]/F");
+}
+
+void BsToMuMuGammaNTuplizer::fillCompositParticleBranches( std::string tag, Int_t idx ,const KinematicFitResult &fit ,
+                const DisplacementInformationIn3D &displacement ,CloseTrackInfo &closeTracks)
+{
+    storageMapFloatArray[tag+"_valid"][idx]  =        fit.valid() ;
+    storageMapFloatArray[tag+"_vtx_prob"][idx]  =     fit.vtxProb() ;
+    storageMapFloatArray[tag+"_vtx_chi2dof"][idx]  =  fit.chi2()>0?fit.chi2()/fit.ndof():-1;
+    storageMapFloatArray[tag+"_mass"][idx]  =         fit.mass() ;
+    storageMapFloatArray[tag+"_massErr"][idx]  =      fit.massErr() ;
+    storageMapFloatArray[tag+"_lxy"][idx]  =          fit.lxy ;
+    storageMapFloatArray[tag+"_sigLxy"][idx]  =       fit.sigLxy ;
+    storageMapFloatArray[tag+"_alphaBS"][idx]  =      fit.alphaBS;
+    storageMapFloatArray[tag+"_alphaBSErr"][idx]  =   fit.alphaBSErr;
+    storageMapFloatArray[tag+"_vtx_x"][idx]  =        fit.valid()?fit.refitVertex->position().x():0 ;
+    storageMapFloatArray[tag+"_vtx_xErr"][idx]  =     fit.valid()?sqrt(fit.refitVertex->error().cxx()):0 ;
+    storageMapFloatArray[tag+"_vtx_y"][idx]  =        fit.valid()?fit.refitVertex->position().y():0 ;
+    storageMapFloatArray[tag+"_vtx_yErr"][idx]  =     fit.valid()?sqrt(fit.refitVertex->error().cyy()):0 ;
+    storageMapFloatArray[tag+"_vtx_z"][idx]  =        fit.valid()?fit.refitVertex->position().z():0 ;
+    storageMapFloatArray[tag+"_vtx_zErr"][idx]  =     fit.valid()?sqrt(fit.refitVertex->error().czz()):0 ;
+    storageMapFloatArray[tag+"_pt"][idx]  =           fit.p3().perp() ;
+    storageMapFloatArray[tag+"_eta"][idx]  =          fit.p3().eta() ;
+    storageMapFloatArray[tag+"_phi"][idx]  =          fit.p3().phi() ;
+    
+    // IP info
+    storageMapFloatArray[tag+"_alpha"][idx]  =        displacement.alpha;
+    storageMapFloatArray[tag+"_alphaErr"][idx]  =     displacement.alphaErr;
+    storageMapFloatArray[tag+"_l3d"][idx]  =          displacement.decayLength;
+    storageMapFloatArray[tag+"_sl3d"][idx]  =         displacement.decayLengthErr>0?displacement.decayLength/displacement.decayLengthErr:0;
+    storageMapFloatArray[tag+"_pv_z"][idx]  =         displacement.pv?displacement.pv->position().z():0;
+    storageMapFloatArray[tag+"_pv_zErr"][idx]  =      displacement.pv?displacement.pv->zError():0;
+    storageMapFloatArray[tag+"_pvip"][idx]  =         displacement.distaceOfClosestApproach;
+    storageMapFloatArray[tag+"_spvip"][idx]  =        displacement.distaceOfClosestApproachSig;
+    storageMapFloatArray[tag+"_pvipErr"][idx]  =      displacement.distaceOfClosestApproachErr;
+    storageMapFloatArray[tag+"_pv2ip"][idx]  =        displacement.distaceOfClosestApproach2;
+    storageMapFloatArray[tag+"_spv2ip"][idx]  =       displacement.distaceOfClosestApproach2Sig;
+    storageMapFloatArray[tag+"_pv2ipErr"][idx]  =     displacement.distaceOfClosestApproach2Err;
+    storageMapFloatArray[tag+"_pvlip"][idx]  =        displacement.longitudinalImpactParameter;
+    storageMapFloatArray[tag+"_pvlipSig"][idx]  =     displacement.longitudinalImpactParameterSig;
+    storageMapFloatArray[tag+"_pvlipErr"][idx]  =     displacement.longitudinalImpactParameterErr;
+    storageMapFloatArray[tag+"_pv2lip"][idx]  =       displacement.longitudinalImpactParameter2;
+    storageMapFloatArray[tag+"_pv2lipSig"][idx]  =    displacement.longitudinalImpactParameter2Sig;
+    storageMapFloatArray[tag+"_pv2lipErr"][idx]  =    displacement.longitudinalImpactParameter2Err;
+    storageMapFloatArray[tag+"_pvIndex"][idx]  =      displacement.pvIndex;
+
+    // DecayTime
+    storageMapFloatArray[tag+"_tau"][idx]  =          displacement.decayTime;
+    storageMapFloatArray[tag+"_taue"][idx]  =         displacement.decayTimeError;
+    storageMapFloatArray[tag+"_tauxy"][idx]  =        displacement.decayTimeXY;
+    storageMapFloatArray[tag+"_tauxye"][idx]  =       displacement.decayTimeXYError;
+ 
+    // Close Tracks
+    auto pvIndex = displacement.pvIndex;
+    const reco::Vertex *vertex(nullptr) ;
+    if(pvIndex >=0 ) vertex=&(pvHandle_->at(pvIndex));
+    storageMapFloatArray[tag+"_nTrks"][idx]  =        closeTracks.nTracksByVertexProbability(0.1, -1.0, vertex);
+    storageMapFloatArray[tag+"_nBMTrks"][idx]  =      closeTracks.nTracksByBetterMatch();
+    storageMapFloatArray[tag+"_nDisTrks"][idx]  =     closeTracks.nTracksByVertexProbability(0.1,  2.0 ,  vertex);
+    storageMapFloatArray[tag+"_closetrk"][idx]  =     closeTracks.nTracksByDisplacementSignificance(0.03 ,-1 ,   vertex);
+    storageMapFloatArray[tag+"_closetrks1"][idx]  =   closeTracks.nTracksByDisplacementSignificance(0.03 , 1 ,   vertex);
+    storageMapFloatArray[tag+"_closetrks2"][idx]  =   closeTracks.nTracksByDisplacementSignificance(0.03 , 2 ,   vertex);
+    storageMapFloatArray[tag+"_closetrks3"][idx]  =   closeTracks.nTracksByDisplacementSignificance(0.03 , 3 ,   vertex);
+    storageMapFloatArray[tag+"_docatrk"][idx]  =      closeTracks.minDoca(0.03,vertex);
+
+    
+//   if (isMC_){
+//    auto gen_kmm = getGenMatchInfo(muon1,muon2,&kaon);
+//    storageMapFloatArray[tag+"_gen_kaon_pdgId" ] = gen_kmm.kaon1_pdgId;
+//    storageMapFloatArray[tag+"_gen_kaon_mpdgId"] = gen_kmm.kaon1_motherPdgId;
+//    storageMapFloatArray[tag+"_gen_kaon_pt"    ] = gen_kmm.kaon1_pt;
+//    storageMapFloatArray[tag+"_gen_mass"       ] = gen_kmm.kmm_mass;
+//    storageMapFloatArray[tag+"_gen_pt"         ] = gen_kmm.kmm_pt;
+//    storageMapFloatArray[tag+"_gen_pdgId"      ] = gen_kmm.kmm_pdgId;
+//    storageMapFloatArray[tag+"_gen_prod_x"     ] = gen_kmm.kmm_prod_vtx.x();
+//    storageMapFloatArray[tag+"_gen_prod_y"     ] = gen_kmm.kmm_prod_vtx.y();
+//    storageMapFloatArray[tag+"_gen_prod_z"     ] = gen_kmm.kmm_prod_vtx.z();
+//    storageMapFloatArray[tag+"_gen_l3d"        ] = (gen_kmm.kmm_prod_vtx-gen_kmm.mm_vtx).r();
+//    storageMapFloatArray[tag+"_gen_lxy"        ] = (gen_kmm.kmm_prod_vtx-gen_kmm.mm_vtx).rho(;
+//    storageMapFloatArray[tag+"_gen_tau"        ] = computeDecayTime(gen_kmm);
+//    storageMapFloatArray[tag+"_gen_cpdgId"     ] = gen_kmm.common_mother?gen_kmm.common_mother->pdgId():0;
+//  }
+
+}
+
+
+void BsToMuMuGammaNTuplizer::addHLTObjectBranches()
+{
+      storageMapInt["nHLTObj"]=0;
+      theTree->Branch("nHLTObj", &storageMapInt["nHLTObj"]);
+      storageMapIntArray["hltObj_trigIdx"] = new Int_t[N_L3MUON];
+      theTree->Branch("hltObj_trigIdx",   storageMapIntArray["hltObj_trigIdx"],"hltObj_trigIdx[nHLTObj]/I");
+      storageMapIntArray["hltObj_idx"] = new Int_t[N_L3MUON];
+      theTree->Branch("hltObj_idx",   storageMapIntArray["hltObj_idx"],"hltObj_idx[nHLTObj]/I");
+      storageMapFloatArray["hltObj_pt"] = new Float_t[N_L3MUON];
+      theTree->Branch("hltObj_pt",   storageMapFloatArray["hltObj_pt"],"hltObj_pt[nHLTObj]/F");
+      storageMapFloatArray["hltObj_eta"] = new Float_t[N_L3MUON];
+      theTree->Branch("hltObj_eta",   storageMapFloatArray["hltObj_eta"],"hltObj_eta[nHLTObj]/F");
+      storageMapFloatArray["hltObj_phi"] = new Float_t[N_L3MUON];
+      theTree->Branch("hltObj_phi",   storageMapFloatArray["hltObj_phi"],"hltObj_phi[nHLTObj]/F");
+      storageMapFloatArray["hltObj_mass"] = new Float_t[N_L3MUON];
+      theTree->Branch("hltObj_mass",   storageMapFloatArray["hltObj_mass"],"hltObj_mass[nHLTObj]/F");
+}
+
+void BsToMuMuGammaNTuplizer::fillHLTL3MuonBranches(  std::vector<Int_t> trigIdx, std::vector<Int_t> &Keys,const trigger::TriggerEvent & triggerEvent )
+{
+    int idx=0;
+    storageMapInt["nHLTObj"]=0;
+    for( ; idx <int(trigIdx.size()) ; )
+    {  
+         auto objectKey = Keys[idx];
+         storageMapIntArray["hltObj_trigIdx"][idx] = trigIdx[idx];
+         storageMapIntArray["hltObj_idx"][idx]     = triggerEvent.getObjects()[objectKey].id(); 
+         storageMapFloatArray["hltObj_pt"][idx]    = triggerEvent.getObjects()[objectKey].pt(); 
+         storageMapFloatArray["hltObj_eta"][idx]   = triggerEvent.getObjects()[objectKey].eta(); 
+         storageMapFloatArray["hltObj_phi"][idx]   = triggerEvent.getObjects()[objectKey].phi(); 
+         storageMapFloatArray["hltObj_mass"][idx]  = triggerEvent.getObjects()[objectKey].mass(); 
+         idx++;
+    }
+     storageMapInt["nHLTObj"]=idx;
+}
+
+
 
 
 
