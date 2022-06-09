@@ -594,5 +594,110 @@ Double_t getDCALineAndPoint(
 }
 
 
+namespace{
+
+  bool dr_match(const LorentzVector& reco , const LorentzVector& gen){
+    if (fabs(reco.pt()-gen.pt())/gen.pt()<0.1 and deltaR(reco,gen)<0.02)
+      return true;
+    return false;
+  }
+
+  std::vector<unsigned int> 
+    get_depth_from_permutation(const std::vector<unsigned int>& elements){
+    std::vector<unsigned int> result;
+    unsigned int counter(0);
+    for (auto element: elements){
+      if (element==0){
+	counter++;
+      } else {
+	result.push_back(counter);
+	counter = 0;
+      }
+    }
+    result.push_back(counter);
+    return result;
+  }
+
+  bool is_acceptable(const reco::Candidate* cand){
+    if ( not cand) return false; 
+    // skip quarks
+    if ( abs(cand->pdgId())<10 ) return false;
+    // skip protons
+    if ( abs(cand->pdgId())==2212 ) return false;
+    // skip gluons
+    if ( abs(cand->pdgId())==21 ) return false;
+    return true;
+  }
+
+  // depth 0 - first mother
+
+  const reco::Candidate* get_mother(const reco::Candidate* cand, unsigned int depth){
+    if (not cand) return 0;
+    const reco::Candidate* mother = cand->mother();
+    unsigned int i = 0;
+    while ( is_acceptable(mother) and i<depth ){
+      i++;
+      mother = mother->mother();
+    }
+    if (is_acceptable(mother))
+      return mother;
+    else
+      return 0;
+  }
+
+  const reco::Candidate* 
+    find_common_ancestor(const std::vector<const reco::Candidate*>& particles, 
+			 unsigned int max_depth=10){
+    auto n = particles.size();
+    for (unsigned int depth=0; depth<max_depth; ++depth){
+      // make a list of elements (0) and separators (1) and
+      // find all possible permutations of the elements
+      std::vector<unsigned int> elements;
+      for (unsigned int i=0; i<depth; ++i)
+	elements.push_back(0);
+      for (unsigned int i=0; i<n-1; ++i)
+	elements.push_back(1);
+      do {
+	auto depth_vector = get_depth_from_permutation(elements);
+	const reco::Candidate* common_mother(0);
+	for (unsigned int i=0; i<n; ++i){
+	  auto mother = get_mother(particles[i],depth_vector[i]);
+	  if (not mother) {
+	    common_mother = 0;
+	    break;
+	  }
+	  if (not common_mother) common_mother = mother;
+	  if (common_mother != mother) {
+	    common_mother = 0;
+	    break;
+	  }	  
+	}
+	if (common_mother) return common_mother;
+      } while(std::next_permutation(elements.begin(), elements.end()));
+    }
+    return 0;
+  }
+
+}
+
+
+namespace {
+  math::XYZPoint getProductionVertex( const reco::Candidate* cand){
+    if (not cand) return math::XYZPoint();
+    const reco::Candidate* primary = cand;
+    // handle oscillation and radiation
+    while (primary->mother() and abs(primary->pdgId())==abs(primary->mother()->pdgId()))
+      primary = primary->mother();
+    return primary->vertex();
+  }
+
+  double computeDecayTime( const GenMatchInfo& info ){
+    if (not info.match) return -1.0;
+    auto prod_vtx = getProductionVertex(info.match);
+    if (prod_vtx.r()<1e-12) return -2.0;
+    return (prod_vtx-info.mm_vtx).r()/TMath::Ccgs()*info.match->mass()/info.match->p();
+  }
+}
+
 
 #endif

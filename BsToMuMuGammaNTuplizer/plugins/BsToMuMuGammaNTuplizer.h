@@ -183,6 +183,7 @@
 #define N_MUON_MAX 1000
 #define N_DIMU_MAX 1000
 #define N_GEN_MAX 4000
+#define N_GEN_PARTS_ALL 100        
 #define NMAX_MMG 1000
 #define N_COMPOSIT_PART_MAX 200
 #define N_L3MUON 100
@@ -277,6 +278,15 @@ private:
 
   void 
   injectBhhHadrons(std::vector<MuonCand>& good_muon_candidates);
+
+  const reco::Candidate* getGenParticle(const reco::Candidate* cand);
+  GenMatchInfo getGenMatchInfo( const reco::Muon& muon1,
+						const reco::Muon& muon2,
+						const reco::PFCandidate* kaon1=nullptr,
+						const reco::PFCandidate* kaon2=nullptr,
+						const reco::PFCandidate* photon=nullptr);
+
+  void addGenBranches(TString sTag,TString nTag);
 //  float computeTrkMuonIsolation(const pat::Muon& the_muon, 
 //                      const pat::Muon& the_other_muon, 
 //					  unsigned int primaryVertexIndex,
@@ -338,14 +348,14 @@ private:
   void fillMuonBranches( const edm::Event&, const edm::EventSetup& );
   
   void addMMGBranches();
-  void fillBmmgBranchs(Int_t nDimu,Int_t phoIdx,Int_t scIdx , Float_t mmg_mass);
+  void fillBmmgBranchs(Int_t nDimu,Int_t phoIdx,Int_t scIdx , Float_t mmg_mass, GenMatchInfo *pa=nullptr);
   void addJPsiGammaBranches();
-  void fillJPsiGammaBranches(Int_t nDimu,Int_t phoIdx,Int_t scIdx , Float_t mmg_mass);
+  void fillJPsiGammaBranches(Int_t nDimu,Int_t phoIdx,Int_t scIdx , Float_t mmg_mass,GenMatchInfo *d=nullptr);
 
   void addPF_MMGBranches();
-  void fillPF_BmmgBranchs(Int_t nDimu,Int_t phoIdx,Float_t mmg_mass);
+  void fillPF_BmmgBranchs(Int_t nDimu,Int_t phoIdx,Float_t mmg_mass, GenMatchInfo *genm=nullptr);
   void addPF_JPsiGammaBranches();
-  void fillPF_JPsiGammaBranches(Int_t nDimu,Int_t phoIdx, Float_t mmg_mass);
+  void fillPF_JPsiGammaBranches(Int_t nDimu,Int_t phoIdx, Float_t mmg_mass, GenMatchInfo *grnm=nullptr);
 
   void fillPFCandiateCollection( const edm::Event&, const edm::EventSetup& );
   void addParticleFlowBranches();
@@ -415,6 +425,8 @@ private:
   edm::EDGetTokenT<trigger::TriggerEvent> triggerEvent_token_;
   edm::EDGetTokenT<reco::PFCandidateCollection>     pfCandidateCollection_;
   edm::Handle<reco::PFCandidateCollection> pfCandidateHandle;
+  
+  edm::Handle<reco::GenParticleCollection> genParticleCollection;
   //edm::Handle<edm::View<reco::PFCandidateCollection>> pfCandHandle_;
   //edm::Handle<reco::PFCandidateCollection> pfCandHandle_;
   //edm::Handle<edm::View<reco::PFCandidate> > pfCandidateHandle;

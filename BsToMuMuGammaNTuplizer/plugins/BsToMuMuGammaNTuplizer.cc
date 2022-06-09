@@ -205,7 +205,7 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
   primaryVtxToken_       =consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"));
   pfCandidateCollection_        = consumes<reco::PFCandidateCollection>(iConfig.getParameter<edm::InputTag>("particlFlowSrc"));
   
-  if(doGenParticles_)   genParticlesCollection_          =consumes<reco::GenParticleCollection>(iConfig.getParameter<edm::InputTag>("genParticles"));
+  if(isMC)   genParticlesCollection_          =consumes<reco::GenParticleCollection>(iConfig.getParameter<edm::InputTag>("genParticles"));
   
   diMuonCharge_    =  iConfig.getUntrackedParameter<bool>("diMuonCharge")    ;
   
@@ -511,7 +511,8 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
   iEvent.getByToken(primaryVtxToken_, pvHandle_);
   iEvent.getByToken(pfCandidateCollection_, pfCandidateHandle);
   beamSpot = beamSpotHandle.product();
-
+  if(isMC) 
+       iEvent.getByToken(genParticlesCollection_, genParticleCollection);
 
   // ## BEAMSOPT STUFF  ## //
   beamspot_x_  = 0.0   ;
@@ -1547,8 +1548,6 @@ void BsToMuMuGammaNTuplizer::addGenBranches()
 
 void BsToMuMuGammaNTuplizer::fillGenBranches( const edm::Event& iEvent)
 {
-  edm::Handle<reco::GenParticleCollection> genParticleCollection;
-  iEvent.getByToken(genParticlesCollection_, genParticleCollection);
     Int_t nGen=0;
     for (auto p = genParticleCollection->begin(); p != genParticleCollection->end(); ++p) {
         storageMapFloatArray["gen_mcPID"][nGen]   = p->pdgId() ;
@@ -1811,20 +1810,20 @@ void BsToMuMuGammaNTuplizer::addDimuonBranches()
         storageMapInt["nDimuons"]=0;
         theTree->Branch("nDimuons",   &storageMapInt["nDimuons"]);
         
-        storageMapFloatArray["dimuon_mu1_index"]   = new Float_t[N_DIMU_MAX];
-        theTree->Branch("dimuon_mu1_index", storageMapFloatArray["dimuon_mu1_index"],"dimuon_mu1_index[nDimuons]/F");
-        storageMapFloatArray["dimuon_mu1_pdgId"]   = new Float_t[N_DIMU_MAX];
-        theTree->Branch("dimuon_mu1_pdgId", storageMapFloatArray["dimuon_mu1_pdgId"],"dimuon_mu1_pdgId[nDimuons]/F");
+        storageMapIntArray["dimuon_mu1_index"]   = new Int_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_mu1_index", storageMapIntArray["dimuon_mu1_index"],"dimuon_mu1_index[nDimuons]/I");
+        storageMapIntArray["dimuon_mu1_pdgId"]   = new Int_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_mu1_pdgId", storageMapIntArray["dimuon_mu1_pdgId"],"dimuon_mu1_pdgId[nDimuons]/I");
         storageMapFloatArray["dimuon_mu1_pt"]   = new Float_t[N_DIMU_MAX];
         theTree->Branch("dimuon_mu1_pt", storageMapFloatArray["dimuon_mu1_pt"],"dimuon_mu1_pt[nDimuons]/F");
         storageMapFloatArray["dimuon_mu1_eta"]   = new Float_t[N_DIMU_MAX];
         theTree->Branch("dimuon_mu1_eta", storageMapFloatArray["dimuon_mu1_eta"],"dimuon_mu1_eta[nDimuons]/F");
         storageMapFloatArray["dimuon_mu1_phi"]   = new Float_t[N_DIMU_MAX];
         theTree->Branch("dimuon_mu1_phi", storageMapFloatArray["dimuon_mu1_phi"],"dimuon_mu1_phi[nDimuons]/F");
-        storageMapFloatArray["dimuon_mu2_index"]   = new Float_t[N_DIMU_MAX];
-        theTree->Branch("dimuon_mu2_index", storageMapFloatArray["dimuon_mu2_index"],"dimuon_mu2_index[nDimuons]/F");
-        storageMapFloatArray["dimuon_mu2_pdgId"]   = new Float_t[N_DIMU_MAX];
-        theTree->Branch("dimuon_mu2_pdgId", storageMapFloatArray["dimuon_mu2_pdgId"],"dimuon_mu2_pdgId[nDimuons]/F");
+        storageMapIntArray["dimuon_mu2_index"]   = new Int_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_mu2_index", storageMapIntArray["dimuon_mu2_index"],"dimuon_mu2_index[nDimuons]/I");
+        storageMapIntArray["dimuon_mu2_pdgId"]   = new Int_t[N_DIMU_MAX];
+        theTree->Branch("dimuon_mu2_pdgId", storageMapIntArray["dimuon_mu2_pdgId"],"dimuon_mu2_pdgId[nDimuons]/I");
         storageMapFloatArray["dimuon_mu2_pt"]   = new Float_t[N_DIMU_MAX];
         theTree->Branch("dimuon_mu2_pt", storageMapFloatArray["dimuon_mu2_pt"],"dimuon_mu2_pt[nDimuons]/F");
         storageMapFloatArray["dimuon_mu2_eta"]   = new Float_t[N_DIMU_MAX];
@@ -1955,6 +1954,58 @@ void BsToMuMuGammaNTuplizer::addDimuonBranches()
         theTree->Branch("dimuon_otherVtxMaxProb1", storageMapFloatArray["dimuon_otherVtxMaxProb1"],"dimuon_otherVtxMaxProb1[nDimuons]/F");
         storageMapFloatArray["dimuon_otherVtxMaxProb2"]   = new Float_t[N_DIMU_MAX];
         theTree->Branch("dimuon_otherVtxMaxProb2", storageMapFloatArray["dimuon_otherVtxMaxProb2"],"dimuon_otherVtxMaxProb2[nDimuons]/F");
+
+        if(isMC)
+        {
+            storageMapIntArray["gen_mm_mu1_pdgId"]   = new Int_t[N_COMPOSIT_PART_MAX];
+            theTree->Branch("gen_mm_mu1_pdgId", storageMapIntArray["gen_mm_mu1_pdgId"],"gen_mm_mu1_pdgId[nDimuons]/I");
+            storageMapIntArray["gen_mm_mu1_mpdgId"]   = new Int_t[N_COMPOSIT_PART_MAX];
+            theTree->Branch("gen_mm_mu1_mpdgId", storageMapIntArray["gen_mm_mu1_mpdgId"],"gen_mm_mu1_mpdgId[nDimuons]/I");
+            storageMapFloatArray["gen_mm_mu1_pt"]   = new Float_t[N_COMPOSIT_PART_MAX];
+            theTree->Branch("gen_mm_mu1_pt", storageMapFloatArray["gen_mm_mu1_pt"],"gen_mm_mu1_pt[nDimuons]/F");
+            storageMapIntArray["gen_mm_mu2_pdgId"]   = new Int_t[N_COMPOSIT_PART_MAX];
+            theTree->Branch("gen_mm_mu2_pdgId", storageMapIntArray["gen_mm_mu2_pdgId"],"gen_mm_mu2_pdgId[nDimuons]/I");
+            storageMapIntArray["gen_mm_mu2_mpdgId"]   = new Int_t[N_COMPOSIT_PART_MAX];
+            theTree->Branch("gen_mm_mu2_mpdgId", storageMapIntArray["gen_mm_mu2_mpdgId"],"gen_mm_mu2_mpdgId[nDimuons]/I");
+            storageMapFloatArray["gen_mm_mu2_pt"]   = new Float_t[N_COMPOSIT_PART_MAX];
+            theTree->Branch("gen_mm_mu2_pt", storageMapFloatArray["gen_mm_mu2_pt"],"gen_mm_mu2_pt[nDimuons]/F");
+            storageMapFloatArray["gen_mm_mass"]   = new Float_t[N_COMPOSIT_PART_MAX];
+            theTree->Branch("gen_mm_mass", storageMapFloatArray["gen_mm_mass"],"gen_mm_mass[nDimuons]/F");
+            storageMapFloatArray["gen_mm_pt"]   = new Float_t[N_COMPOSIT_PART_MAX];
+            theTree->Branch("gen_mm_pt", storageMapFloatArray["gen_mm_pt"],"gen_mm_pt[nDimuons]/F");
+            storageMapIntArray["gen_mm_pdgId"]   = new Int_t[N_COMPOSIT_PART_MAX];
+            theTree->Branch("gen_mm_pdgId", storageMapIntArray["gen_mm_pdgId"],"gen_mm_pdgId[nDimuons]/I");
+            storageMapIntArray["gen_mm_mpdgId"]   = new Int_t[N_COMPOSIT_PART_MAX];
+            theTree->Branch("gen_mm_mpdgId", storageMapIntArray["gen_mm_mpdgId"],"gen_mm_mpdgId[nDimuons]/I");
+            storageMapIntArray["gen_mm_cpdgId"]   = new Int_t[N_COMPOSIT_PART_MAX];
+            theTree->Branch("gen_mm_cpdgId", storageMapIntArray["gen_mm_cpdgId"],"gen_mm_cpdgId[nDimuons]/I");
+            storageMapFloatArray["gen_mm_prod_x"]   = new Float_t[N_COMPOSIT_PART_MAX];
+            theTree->Branch("gen_mm_prod_x", storageMapFloatArray["gen_mm_prod_x"],"gen_mm_prod_x[nDimuons]/F");
+            storageMapFloatArray["gen_mm_prod_y"]   = new Float_t[N_COMPOSIT_PART_MAX];
+            theTree->Branch("gen_mm_prod_y", storageMapFloatArray["gen_mm_prod_y"],"gen_mm_prod_y[nDimuons]/F");
+            storageMapFloatArray["gen_mm_prod_z"]   = new Float_t[N_COMPOSIT_PART_MAX];
+            theTree->Branch("gen_mm_prod_z", storageMapFloatArray["gen_mm_prod_z"],"gen_mm_prod_z[nDimuons]/F");
+            storageMapFloatArray["gen_mm_vtx_x"]   = new Float_t[N_COMPOSIT_PART_MAX];
+            theTree->Branch("gen_mm_vtx_x", storageMapFloatArray["gen_mm_vtx_x"],"gen_mm_vtx_x[nDimuons]/F");
+            storageMapFloatArray["gen_mm_vtx_y"]   = new Float_t[N_COMPOSIT_PART_MAX];
+            theTree->Branch("gen_mm_vtx_y", storageMapFloatArray["gen_mm_vtx_y"],"gen_mm_vtx_y[nDimuons]/F");
+            storageMapFloatArray["gen_mm_vtx_z"]   = new Float_t[N_COMPOSIT_PART_MAX];
+            theTree->Branch("gen_mm_vtx_z", storageMapFloatArray["gen_mm_vtx_z"],"gen_mm_vtx_z[nDimuons]/F");
+            storageMapFloatArray["gen_mm_l3d"]   = new Float_t[N_COMPOSIT_PART_MAX];
+            theTree->Branch("gen_mm_l3d", storageMapFloatArray["gen_mm_l3d"],"gen_mm_l3d[nDimuons]/F");
+            storageMapFloatArray["gen_mm_lxy"]   = new Float_t[N_COMPOSIT_PART_MAX];
+            theTree->Branch("gen_mm_lxy", storageMapFloatArray["gen_mm_lxy"],"gen_mm_lxy[nDimuons]/F");
+            storageMapFloatArray["gen_mm_tau"]   = new Float_t[N_COMPOSIT_PART_MAX];
+            theTree->Branch("gen_mm_tau", storageMapFloatArray["gen_mm_tau"],"gen_mm_tau[nDimuons]/F");
+            storageMapFloatArray["gen_mm_alpha_p_phi"]   = new Float_t[N_COMPOSIT_PART_MAX];
+            theTree->Branch("gen_mm_alpha_p_phi", storageMapFloatArray["gen_mm_alpha_p_phi"],"gen_mm_alpha_p_phi[nDimuons]/F");
+            storageMapFloatArray["gen_mm_alpha_p_theta"]   = new Float_t[N_COMPOSIT_PART_MAX];
+            theTree->Branch("gen_mm_alpha_p_theta", storageMapFloatArray["gen_mm_alpha_p_theta"],"gen_mm_alpha_p_theta[nDimuons]/F");
+            storageMapFloatArray["gen_mm_alpha_ip"]   = new Float_t[N_COMPOSIT_PART_MAX];
+            theTree->Branch("gen_mm_alpha_ip", storageMapFloatArray["gen_mm_alpha_ip"],"gen_mm_alpha_ip[nDimuons]/F");
+            storageMapFloatArray["gen_mm_alpha_vtx"]   = new Float_t[N_COMPOSIT_PART_MAX];
+            theTree->Branch("gen_mm_alpha_vtx", storageMapFloatArray["gen_mm_alpha_vtx"],"gen_mm_alpha_vtx[nDimuons]/F");
+        }
 }
 
 
@@ -2070,14 +2121,13 @@ void BsToMuMuGammaNTuplizer::fillDimuonBranches( const edm::Event& iEvent, const
 	  //    if (dimuonCand.mass() < minBhhMass_) continue;
 	  //    if (dimuonCand.mass() > maxBhhMass_) continue;
 	  //  }
-	  	  
-	storageMapFloatArray["dimuon_mu1_index"][nDimu]  =  muon1.index();
-	storageMapFloatArray["dimuon_mu1_pdgId"][nDimu]  =  muon1.pdgId();
+	storageMapIntArray["dimuon_mu1_index"][nDimu]  =  muon1.index();
+	storageMapIntArray["dimuon_mu1_pdgId"][nDimu]  =  muon1.pdgId();
 	storageMapFloatArray["dimuon_mu1_pt"][nDimu]  =   muon1.pt();
 	storageMapFloatArray["dimuon_mu1_eta"][nDimu]  =  muon1.eta();
 	storageMapFloatArray["dimuon_mu1_phi"][nDimu]  =  muon1.phi();
-	storageMapFloatArray["dimuon_mu2_index"][nDimu]  =  muon2.index();
-	storageMapFloatArray["dimuon_mu2_pdgId"][nDimu]  =  muon2.pdgId();
+	storageMapIntArray["dimuon_mu2_index"][nDimu]  =  muon2.index();
+	storageMapIntArray["dimuon_mu2_pdgId"][nDimu]  =  muon2.pdgId();
 	storageMapFloatArray["dimuon_mu2_pt"][nDimu]  =   muon2.pt();
 	storageMapFloatArray["dimuon_mu2_eta"][nDimu]  =  muon2.eta();
 	storageMapFloatArray["dimuon_mu2_phi"][nDimu]  =  muon2.phi();
@@ -2172,6 +2222,54 @@ void BsToMuMuGammaNTuplizer::fillDimuonBranches( const edm::Event& iEvent, const
     storageMapFloatArray["dimuon_otherVtxMaxProb"][nDimu]   =   otherVertexMaxProb(muon1,muon2,0.5);
     storageMapFloatArray["dimuon_otherVtxMaxProb1"][nDimu]  =   otherVertexMaxProb(muon1,muon2,1.0);
     storageMapFloatArray["dimuon_otherVtxMaxProb2"][nDimu]  =   otherVertexMaxProb(muon1,muon2,2.0);
+
+    if(isMC)
+    {
+        auto gen_mm = getGenMatchInfo(muon1,muon2);
+        storageMapIntArray["gen_mm_mu1_pdgId"][nDimu]    = gen_mm.mu1_pdgId                                    		;
+        storageMapIntArray["gen_mm_mu1_mpdgId"][nDimu]   = gen_mm.mu1_motherPdgId                               		;
+        storageMapFloatArray["gen_mm_mu1_pt"][nDimu]   	  = gen_mm.mu1_pt                                          	;
+        storageMapIntArray["gen_mm_mu2_pdgId"][nDimu]    = gen_mm.mu2_pdgId                                    		;
+        storageMapIntArray["gen_mm_mu2_mpdgId"][nDimu]   = gen_mm.mu2_motherPdgId                               		;
+        storageMapFloatArray["gen_mm_mu2_pt"][nDimu]   	  = gen_mm.mu2_pt                                          ;
+        storageMapFloatArray["gen_mm_mass"][nDimu]   	  = gen_mm.mm_mass                                         ;
+        storageMapFloatArray["gen_mm_pt"][nDimu]   	      = gen_mm.mm_pt                                           ;
+        storageMapIntArray["gen_mm_pdgId"][nDimu]   	  = gen_mm.mm_pdgId                                        ;
+        storageMapIntArray["gen_mm_mpdgId"][nDimu]   	  = gen_mm.mm_motherPdgId                                  ;
+        storageMapIntArray["gen_mm_cpdgId"][nDimu]   	  = gen_mm.common_mother?gen_mm.common_mother->pdgId():0   ;
+        storageMapFloatArray["gen_mm_prod_x"][nDimu]   	  = gen_mm.mm_prod_vtx.x()                                 ;
+        storageMapFloatArray["gen_mm_prod_y"][nDimu]   	  = gen_mm.mm_prod_vtx.y()                                 ;
+        storageMapFloatArray["gen_mm_prod_z"][nDimu]   	  = gen_mm.mm_prod_vtx.z()                                 ;
+        storageMapFloatArray["gen_mm_vtx_x"][nDimu]   	  = gen_mm.mm_vtx.x()                                      ;
+        storageMapFloatArray["gen_mm_vtx_y"][nDimu]   	  = gen_mm.mm_vtx.y()                                      ;
+        storageMapFloatArray["gen_mm_vtx_z"][nDimu]   	  = gen_mm.mm_vtx.z()                                      ;
+        storageMapFloatArray["gen_mm_l3d"][nDimu]   		  = (gen_mm.mm_prod_vtx-gen_mm.mm_vtx).r()                 ;
+        storageMapFloatArray["gen_mm_lxy"][nDimu]   		  = (gen_mm.mm_prod_vtx-gen_mm.mm_vtx).rho()               ;
+        storageMapFloatArray["gen_mm_tau"][nDimu]   		  = computeDecayTime(gen_mm)                               ;
+        if (gen_mm.match and dimuFit.valid()){
+          storageMapFloatArray["gen_mm_alpha_p_phi"][nDimu]  = dimuFit.refitMother->currentState().globalMomentum().phi() - gen_mm.match->phi();
+          storageMapFloatArray["gen_mm_alpha_p_theta"][nDimu]= dimuFit.refitMother->currentState().globalMomentum().phi() - gen_mm.match->theta();
+          TVector3 p_gen(gen_mm.match->px(), gen_mm.match->py(),   gen_mm.match->pz());
+          TVector3 ip_reco(displacement3d.pv->x(),  displacement3d.pv->y(),    displacement3d.pv->z());
+          TVector3 ip_gen(gen_mm.mm_prod_vtx.x(),   gen_mm.mm_prod_vtx.y(),    gen_mm.mm_prod_vtx.z());
+          TVector3 vtx_reco(dimuFit.refitVertex->vertexState().position().x(), 
+    			dimuFit.refitVertex->vertexState().position().y(), 
+    			dimuFit.refitVertex->vertexState().position().z());
+          TVector3 vtx_gen(gen_mm.mm_vtx.x(),
+    		       gen_mm.mm_vtx.y(),
+    		       gen_mm.mm_vtx.z());
+          float cosAlpha_ip  = p_gen.Dot(vtx_gen - ip_reco) / (p_gen.Mag() * (vtx_gen - ip_reco).Mag());
+          float cosAlpha_vtx = p_gen.Dot(vtx_reco - ip_gen) / (p_gen.Mag() * (vtx_reco - ip_gen).Mag());
+          
+          storageMapFloatArray["gen_mm_alpha_ip"][nDimu]  = acos(cosAlpha_ip);
+          storageMapFloatArray["gen_mm_alpha_vtx"][nDimu] = acos(cosAlpha_vtx);
+        } else {
+          storageMapFloatArray["gen_mm_alpha_p_phi"][nDimu]  = 999;
+          storageMapFloatArray["gen_mm_alpha_p_theta"][nDimu]= 999;
+          storageMapFloatArray["gen_mm_alpha_ip"][nDimu]     = 999;
+          storageMapFloatArray["gen_mm_alpha_vtx"][nDimu]    = 999;
+        }
+    }
     
 	  if (muon1.index() >= 0 and muon2.index() >= 0){
    		        auto dimuon_p4(makeLorentzVectorFromPxPyPzM(dimuFit.p3().x(),
@@ -2190,15 +2288,22 @@ void BsToMuMuGammaNTuplizer::fillDimuonBranches( const edm::Event& iEvent, const
 		        
                 double mmg_mass = (dimuon_p4 + photon.p4()).mass();
                 
+                 GenMatchInfo *gen_mmg(nullptr) ;
+                 if(isMC) {
+                            reco::PFCandidate pf;
+                            pf.setP4(photon.p4());
+                           auto gen_mmg_ = getGenMatchInfo(muon1,muon2,nullptr,nullptr,&pf);
+                           gen_mmg=&gen_mmg_;
+                         }
 		        
                 if (mmg_mass >= minBsMuMuGammaMass_ and mmg_mass <= maxBsMuMuGammaMass_){
-                     fillBmmgBranchs(nDimu,k,-1,mmg_mass);
+                     fillBmmgBranchs(nDimu,k,-1,mmg_mass,gen_mmg);
 	  	         }
                 if( doJPsiGamma and isJpsiCand)
                 {
                     if( mmg_mass >= minJPsiGammaMass_ and mmg_mass <= maxJPsiGammaMass_)
                     {
-                        fillJPsiGammaBranches(nDimu,k,-1,mmg_mass);
+                        fillJPsiGammaBranches(nDimu,k,-1,mmg_mass,gen_mmg);
                     }
                 }
 	          }
@@ -2214,14 +2319,22 @@ void BsToMuMuGammaNTuplizer::fillDimuonBranches( const edm::Event& iEvent, const
                  auto scP4(makeLorentzVectorFromPxPyPzM(scP3.x(),scP3.y(),scP3.z(),0.0));
 		         double mmg_mass = (dimuon_p4 + scP4).mass();
                  
+                 GenMatchInfo *gen_mmg(nullptr) ;
+                 if(isMC) {
+                            reco::PFCandidate pf;
+                            pf.setP4(scP4);
+                           auto gen_mmg_ = getGenMatchInfo(muon1,muon2,nullptr,nullptr,&pf);
+                           gen_mmg=&gen_mmg_;
+                         }
+                 
                 if (mmg_mass >= minBsMuMuGammaMass_ and mmg_mass <= maxBsMuMuGammaMass_){
-                    fillBmmgBranchs(nDimu,-1,k,mmg_mass);
+                    fillBmmgBranchs(nDimu,-1,k,mmg_mass,gen_mmg);
 	  	         }
                 if( doJPsiGamma and isJpsiCand)
                   {
                     if( mmg_mass >= minJPsiGammaMass_ and mmg_mass <= maxJPsiGammaMass_)
                     {
-                       fillJPsiGammaBranches(nDimu,-1,k,mmg_mass);
+                       fillJPsiGammaBranches(nDimu,-1,k,mmg_mass,gen_mmg);
                     }
                   }
                   k++;
@@ -2244,14 +2357,21 @@ void BsToMuMuGammaNTuplizer::fillDimuonBranches( const edm::Event& iEvent, const
                   auto candP4(makeLorentzVectorFromPxPyPzM(candP3.x(),candP3.y(),candP3.z(),0.0));
 		          double mmg_mass = (dimuon_p4 + candP4).mass();
                   
+               GenMatchInfo *gen_mmg(nullptr) ;
+               if(isMC) 
+               {
+                   auto gen_mmg_ = getGenMatchInfo(muon1,muon2,nullptr,nullptr,&(*pf));
+                   gen_mmg=&gen_mmg_;
+               }
+
                 if (mmg_mass >= minBsMuMuGammaMass_ and mmg_mass <= maxBsMuMuGammaMass_){
-                       fillPF_BmmgBranchs(nDimu,k,mmg_mass);
+                       fillPF_BmmgBranchs(nDimu,k,mmg_mass,gen_mmg);
 	  	         }
                 if( doJPsiGamma and isJpsiCand)
                   {
                     if( mmg_mass >= minJPsiGammaMass_ and mmg_mass <= maxJPsiGammaMass_)
                     {
-                       fillPF_JPsiGammaBranches(nDimu,k,mmg_mass);
+                        fillPF_JPsiGammaBranches(nDimu,k,mmg_mass,gen_mmg);
                     }
                   }
                   k++;
@@ -2294,7 +2414,7 @@ void BsToMuMuGammaNTuplizer::fillDimuonBranches( const edm::Event& iEvent, const
         		          // fill BtoMuMuK candidate info
                           fillBtoMuMuKInfo(nDimu,iEvent,dimuFit,muon1,muon2,kaonCand1);
         	          }
-         
+        
         	          // BToJpsiKK
         	          // bool goodBtoJpsiKK = goodBtoMuMuK;
         	          // if (fabs(dimuFit.mass()-3.1) > 0.2) goodBtoJpsiKK = false;
@@ -2355,6 +2475,42 @@ void BsToMuMuGammaNTuplizer::fillDimuonBranches( const edm::Event& iEvent, const
 
 }
 
+
+void BsToMuMuGammaNTuplizer::addGenBranches(TString sTag,TString nTag)
+{
+       std::string  tag(sTag);
+
+       storageMapIntArray["gen_"+tag+"_cpdgId"]   = new Int_t[N_GEN_PARTS_ALL];
+       theTree->Branch("gen_"+sTag+"_cpdgId", storageMapIntArray["gen_"+tag+"_cpdgId"],"gen_"+sTag+"_cpdgId[nMuMuK]/I");
+       storageMapFloatArray["gen_"+tag+"_l3d"]   = new Float_t[N_GEN_PARTS_ALL];
+       theTree->Branch("gen_"+sTag+"_l3d", storageMapFloatArray["gen_"+tag+"_l3d"],"gen_"+sTag+"_l3d["+nTag+"]/F");
+       storageMapFloatArray["gen_"+tag+"_lxy"]   = new Float_t[N_GEN_PARTS_ALL];
+       theTree->Branch("gen_"+sTag+"_lxy", storageMapFloatArray["gen_"+tag+"_lxy"],"gen_"+sTag+"_lxy["+nTag+"]/F");
+       storageMapFloatArray["gen_"+tag+"_mass"]   = new Float_t[N_GEN_PARTS_ALL];
+       theTree->Branch("gen_"+sTag+"_mass", storageMapFloatArray["gen_"+tag+"_mass"],"gen_"+sTag+"_mass["+nTag+"]/F");
+       storageMapIntArray["gen_"+tag+"_pdgId"]   = new Int_t[N_GEN_PARTS_ALL];
+       theTree->Branch("gen_"+sTag+"_pdgId", storageMapIntArray["gen_"+tag+"_pdgId"],"gen_"+sTag+"_pdgId["+nTag+"]/I");
+       storageMapFloatArray["gen_"+tag+"_prod_x"]   = new Float_t[N_GEN_PARTS_ALL];
+       theTree->Branch("gen_"+sTag+"_prod_x", storageMapFloatArray["gen_"+tag+"_prod_x"],"gen_"+sTag+"_prod_x["+nTag+"]/F");
+       storageMapFloatArray["gen_"+tag+"_prod_y"]   = new Float_t[N_GEN_PARTS_ALL];
+       theTree->Branch("gen_"+sTag+"_prod_y", storageMapFloatArray["gen_"+tag+"_prod_y"],"gen_"+sTag+"_prod_y["+nTag+"]/F");
+       storageMapFloatArray["gen_"+tag+"_prod_z"]   = new Float_t[N_GEN_PARTS_ALL];
+       theTree->Branch("gen_"+sTag+"_prod_z", storageMapFloatArray["gen_"+tag+"_prod_z"],"gen_"+sTag+"_prod_z["+nTag+"]/F");
+       storageMapFloatArray["gen_"+tag+"_pt"]   = new Float_t[N_GEN_PARTS_ALL];
+       theTree->Branch("gen_"+sTag+"_pt", storageMapFloatArray["gen_"+tag+"_pt"],"gen_"+sTag+"_pt["+nTag+"]/F");
+       storageMapFloatArray["gen_"+tag+"_tau"]   = new Float_t[N_GEN_PARTS_ALL];
+       theTree->Branch("gen_"+sTag+"_tau", storageMapFloatArray["gen_"+tag+"_tau"],"gen_"+sTag+"_tau["+nTag+"]/F");
+       storageMapFloatArray["gen_"+tag+"_alpha_p_phi"]   = new Float_t[N_GEN_PARTS_ALL];
+       theTree->Branch("gen_"+sTag+"_alpha_p_phi", storageMapFloatArray["gen_"+tag+"_alpha_p_phi"],"gen_"+sTag+"_alpha_p_phi["+nTag+"]/F");
+       storageMapFloatArray["gen_"+tag+"_alpha_p_theta"]   = new Float_t[N_GEN_PARTS_ALL];
+       theTree->Branch("gen_"+sTag+"_alpha_p_theta", storageMapFloatArray["gen_"+tag+"_alpha_p_theta"],"gen_"+sTag+"_alpha_p_theta["+nTag+"]/F");
+       storageMapFloatArray["gen_"+tag+"_alpha_ip"]   = new Float_t[N_GEN_PARTS_ALL];
+       theTree->Branch("gen_"+sTag+"_alpha_ip", storageMapFloatArray["gen_"+tag+"_alpha_ip"],"gen_"+sTag+"_alpha_ip["+nTag+"]/F");
+       storageMapFloatArray["gen_"+tag+"_alpha_vtx"]   = new Float_t[N_COMPOSIT_PART_MAX];
+       theTree->Branch("gen_"+sTag+"_alpha_vtx", storageMapFloatArray["gen_"+tag+"_alpha_vtx"],"gen_"+sTag+"_alpha_vtx["+nTag+"]/F");
+}
+
+
 void BsToMuMuGammaNTuplizer::addMMGBranches()
 {
       storageMapInt["nMMGCands"]=0;
@@ -2368,16 +2524,47 @@ void BsToMuMuGammaNTuplizer::addMMGBranches()
       theTree->Branch("mmg_mass",   storageMapFloatArray["mmg_mass"],"mmg_mass[nMMGCands]/F");
       storageMapFloatArray["mmg_diMuMass"] = new Float_t[NMAX_MMG] ;
       theTree->Branch("mmg_diMuMass",   storageMapFloatArray["mmg_diMuMass"],"mmg_diMuMass[nMMGCands]/F");
+
+      if(isMC)
+      {
+        addGenBranches("mmg","nMMGCands");
+        storageMapIntArray["gen_mmg_photon_mpdgId"]   = new Int_t[N_GEN_PARTS_ALL];
+        theTree->Branch("gen_mmg_photon_mpdgId", storageMapIntArray["gen_mmg_photon_mpdgId"],"gen_mmg_photon_mpdgId[nMMGCands]/I");
+        storageMapIntArray["gen_mmg_photon_pdgId"]   = new Int_t[N_GEN_PARTS_ALL];
+        theTree->Branch("gen_mmg_photon_pdgId", storageMapIntArray["gen_mmg_photon_pdgId"],"gen_mmg_photon_pdgId[nMMGCands]/I");
+        storageMapFloatArray["gen_mmg_photon_pt"]   = new Float_t[N_GEN_PARTS_ALL];
+        theTree->Branch("gen_mmg_photon_pt", storageMapFloatArray["gen_mmg_photon_pt"],"gen_mmg_photon_pt[nMMGCands]/F");
+      }
+
 }
 
 
-void BsToMuMuGammaNTuplizer:: fillBmmgBranchs(Int_t nDimu,Int_t phoIdx,Int_t scIdx , Float_t mmg_mass)
-{
 
-      storageMapIntArray["mmg_phoIdx"][storageMapInt["nMMGCands"]]=phoIdx;
-      storageMapIntArray["mmg_scIdx"][storageMapInt["nMMGCands"]] =scIdx;
-      storageMapFloatArray["mmg_mass"][storageMapInt["nMMGCands"]]  =mmg_mass;
-      storageMapFloatArray["mmg_diMuMass"][storageMapInt["nMMGCands"]]  = storageMapFloatArray["dimuon_kin_mass"][nDimu];
+void BsToMuMuGammaNTuplizer:: fillBmmgBranchs(Int_t nDimu,Int_t phoIdx,Int_t scIdx , Float_t mmg_mass, GenMatchInfo *gen_mmg_)
+{
+      auto idx= storageMapInt["nMMGCands"];
+      storageMapIntArray["mmg_phoIdx"][idx]=phoIdx;
+      storageMapIntArray["mmg_scIdx"][idx] =scIdx;
+      storageMapFloatArray["mmg_mass"][idx]  =mmg_mass;
+      storageMapFloatArray["mmg_diMuMass"][idx]  = storageMapFloatArray["dimuon_kin_mass"][nDimu];
+      if(isMC)
+      {
+        //auto gen_mmg = getGenMatchInfo(muon1,muon2,nullptr,nullptr,&photon);
+        auto &gen_mmg = *gen_mmg_;
+        storageMapIntArray[  "gen_mmg_photon_pdgId" ][idx] =     gen_mmg.photon_pdgId;
+        storageMapIntArray[  "gen_mmg_photon_mpdgId"][idx] =     gen_mmg.photon_motherPdgId;
+        storageMapFloatArray["gen_mmg_photon_pt"    ][idx] =     gen_mmg.photon_pt;
+        storageMapFloatArray["gen_mmg_mass"       ][idx] =     gen_mmg.mmg_mass;
+        storageMapFloatArray["gen_mmg_pt"         ][idx] =     gen_mmg.mmg_pt;
+        storageMapIntArray[  "gen_mmg_pdgId"      ][idx] =     gen_mmg.mmg_pdgId;
+        storageMapFloatArray["gen_mmg_prod_x"     ][idx] =     gen_mmg.mmg_prod_vtx.x();
+        storageMapFloatArray["gen_mmg_prod_y"     ][idx] =     gen_mmg.mmg_prod_vtx.y();
+        storageMapFloatArray["gen_mmg_prod_z"     ][idx] =     gen_mmg.mmg_prod_vtx.z();
+        storageMapFloatArray["gen_mmg_l3d"        ][idx] =     (gen_mmg.mmg_prod_vtx-gen_mmg.mm_vtx).r();
+        storageMapFloatArray["gen_mmg_lxy"        ][idx] =     (gen_mmg.mmg_prod_vtx-gen_mmg.mm_vtx).rho();
+        storageMapFloatArray["gen_mmg_tau"        ][idx] =     computeDecayTime(gen_mmg);
+        storageMapIntArray["gen_mmg_cpdgId"     ][idx] =     gen_mmg.common_mother?gen_mmg.common_mother->pdgId():0;
+      }
       storageMapInt["nMMGCands"]+=1;
 }
 
@@ -2392,16 +2579,44 @@ void BsToMuMuGammaNTuplizer::addJPsiGammaBranches()
       storageMapFloatArray["jPsiGamma_mass"] = new Float_t[NMAX_MMG] ;
       theTree->Branch("jPsiGamma_mass",   storageMapFloatArray["jPsiGamma_mass"],"jPsiGamma_phoIdx[nJPsiGammaCands]/f");
       storageMapFloatArray["jPsiGamma_diMuMass"] = new Float_t[NMAX_MMG] ;
-      theTree->Branch("jPsiGamma_diMuMass",   storageMapFloatArray["jPsiGamma_diMuMass"],"jPsiGamma_diMuMass[nJPsiGammaCands]/f");
+      if(isMC)
+      {
+        addGenBranches("jpsiGamma","nJPsiGammaCands");
+        storageMapIntArray["gen_jpsiGamma_photon_mpdgId"]   = new Int_t[N_GEN_PARTS_ALL];
+        theTree->Branch("gen_jpsiGamma_photon_mpdgId", storageMapIntArray["gen_jpsiGamma_photon_mpdgId"],"gen_jpsiGamma_photon_mpdgId[nJPsiGammaCands]/I");
+        storageMapIntArray["gen_jpsiGamma_photon_pdgId"]   = new Int_t[N_GEN_PARTS_ALL];
+        theTree->Branch("gen_jpsiGamma_photon_pdgId", storageMapIntArray["gen_jpsiGamma_photon_pdgId"],"gen_jpsiGamma_photon_pdgId[nJPsiGammaCands]/I");
+        storageMapFloatArray["gen_jpsiGamma_photon_pt"]   = new Float_t[N_GEN_PARTS_ALL];
+        theTree->Branch("gen_jpsiGamma_photon_pt", storageMapFloatArray["gen_jpsiGamma_photon_pt"],"gen_jpsiGamma_photon_pt[nJPsiGammaCands]/F");
+      }
 
+     theTree->Branch("jPsiGamma_diMuMass",   storageMapFloatArray["jPsiGamma_diMuMass"],"jPsiGamma_diMuMass[nJPsiGammaCands]/f");
 }
 
-void BsToMuMuGammaNTuplizer:: fillJPsiGammaBranches(Int_t nDimu,Int_t phoIdx,Int_t scIdx , Float_t mmg_mass)
+void BsToMuMuGammaNTuplizer::fillJPsiGammaBranches(Int_t nDimu,Int_t phoIdx,Int_t scIdx , Float_t mmg_mass, GenMatchInfo *gen_mmg_)
 {
       storageMapIntArray["jPsiGamma_phoIdx"][storageMapInt["nJPsiGammaCands"]]=phoIdx;
       storageMapIntArray["jPsiGamma_scIdx"][storageMapInt["nJPsiGammaCands"]] =scIdx;
       storageMapFloatArray["jPsiGamma_mass"][storageMapInt["nJPsiGammaCands"]]  =mmg_mass;
       storageMapFloatArray["jPsiGamma_diMuMass"][storageMapInt["nJPsiGammaCands"]]  = storageMapFloatArray["dimuon_kin_mass"][nDimu];
+      auto idx=storageMapInt["nJPsiGammaCands"];
+      if(isMC)
+      {
+        auto &gen_mmg = *gen_mmg_;
+        storageMapIntArray[  "gen_jpsiGamma_photon_pdgId" ][idx] =     gen_mmg.photon_pdgId;
+        storageMapIntArray[  "gen_jpsiGamma_photon_mpdgId"][idx] =     gen_mmg.photon_motherPdgId;
+        storageMapFloatArray["gen_jpsiGamma_photon_pt"    ][idx] =     gen_mmg.photon_pt;
+        storageMapFloatArray["gen_jpsiGamma_mass"       ][idx] =     gen_mmg.mmg_mass;
+        storageMapFloatArray["gen_jpsiGamma_pt"         ][idx] =     gen_mmg.mmg_pt;
+        storageMapIntArray[  "gen_jpsiGamma_pdgId"      ][idx] =     gen_mmg.mmg_pdgId;
+        storageMapFloatArray["gen_jpsiGamma_prod_x"     ][idx] =     gen_mmg.mmg_prod_vtx.x();
+        storageMapFloatArray["gen_jpsiGamma_prod_y"     ][idx] =     gen_mmg.mmg_prod_vtx.y();
+        storageMapFloatArray["gen_jpsiGamma_prod_z"     ][idx] =     gen_mmg.mmg_prod_vtx.z();
+        storageMapFloatArray["gen_jpsiGamma_l3d"        ][idx] =     (gen_mmg.mmg_prod_vtx-gen_mmg.mm_vtx).r();
+        storageMapFloatArray["gen_jpsiGamma_lxy"        ][idx] =     (gen_mmg.mmg_prod_vtx-gen_mmg.mm_vtx).rho();
+        storageMapFloatArray["gen_jpsiGamma_tau"        ][idx] =     computeDecayTime(gen_mmg);
+        storageMapIntArray["gen_jpsiGamma_cpdgId"     ][idx] =     gen_mmg.common_mother?gen_mmg.common_mother->pdgId():0;
+      }
       storageMapInt["nJPsiGammaCands"]+=1;
 }
 
@@ -2417,15 +2632,49 @@ void BsToMuMuGammaNTuplizer::addPF_MMGBranches()
       theTree->Branch("mmgPF_mass",   storageMapFloatArray["mmgPF_mass"],"mmgPF_mass[nMMGpfCands]/F");
       storageMapFloatArray["mmgPF_diMuMass"] = new Float_t[NMAX_MMG] ;
       theTree->Branch("mmgPF_diMuMass",   storageMapFloatArray["mmgPF_diMuMass"],"mmgPF_diMuMass[nMMGpfCands]/F");
+
+      if(isMC)
+      {
+        addGenBranches("mmgPF","nMMGCands");
+        storageMapIntArray["gen_mmgPF_photon_mpdgId"]   = new Int_t[N_GEN_PARTS_ALL];
+        theTree->Branch("gen_mmgPF_photon_mpdgId", storageMapIntArray["gen_mmgPF_photon_mpdgId"],"gen_mmgPF_photon_mpdgId[nMMGCands]/I");
+        storageMapIntArray["gen_mmgPF_photon_pdgId"]   = new Int_t[N_GEN_PARTS_ALL];
+        theTree->Branch("gen_mmgPF_photon_pdgId", storageMapIntArray["gen_mmgPF_photon_pdgId"],"gen_mmgPF_photon_pdgId[nMMGCands]/I");
+        storageMapFloatArray["gen_mmgPF_photon_pt"]   = new Float_t[N_GEN_PARTS_ALL];
+        theTree->Branch("gen_mmgPF_photon_pt", storageMapFloatArray["gen_mmgPF_photon_pt"],"gen_mmgPF_photon_pt[nMMGCands]/F");
+      }
+
+
 }
 
-void BsToMuMuGammaNTuplizer:: fillPF_BmmgBranchs(Int_t nDimu,Int_t phoIdx, Float_t mmg_mass)
+void BsToMuMuGammaNTuplizer:: fillPF_BmmgBranchs(Int_t nDimu,Int_t phoIdx, Float_t mmg_mass, GenMatchInfo* gen_mmg_)
 {
 
-      storageMapIntArray["mmgPF_pfPhoIdx"][storageMapInt["nMMGpfCands"]]=phoIdx;
-      storageMapFloatArray["mmgPF_mass"][storageMapInt["nMMGpfCands"]]  =mmg_mass;
-      storageMapFloatArray["mmgPF_diMuMass"][storageMapInt["nMMGpfCands"]]  = storageMapFloatArray["dimuon_kin_mass"][nDimu];
+      auto idx=storageMapInt["nMMGpfCands"];
+      storageMapIntArray["mmgPF_pfPhoIdx"][idx]=phoIdx;
+      storageMapFloatArray["mmgPF_mass"][idx]  =mmg_mass;
+      storageMapFloatArray["mmgPF_diMuMass"][idx]  = storageMapFloatArray["dimuon_kin_mass"][nDimu];
+
+      if(isMC)
+      {
+        auto& gen_mmg= *gen_mmg_;
+        storageMapIntArray[  "gen_mmgPF_photon_pdgId" ][idx] =     gen_mmg.photon_pdgId;
+        storageMapIntArray[  "gen_mmgPF_photon_mpdgId"][idx] =     gen_mmg.photon_motherPdgId;
+        storageMapFloatArray["gen_mmgPF_photon_pt"    ][idx] =     gen_mmg.photon_pt;
+        storageMapFloatArray["gen_mmgPF_mass"       ][idx] =     gen_mmg.mmg_mass;
+        storageMapFloatArray["gen_mmgPF_pt"         ][idx] =     gen_mmg.mmg_pt;
+        storageMapIntArray[  "gen_mmgPF_pdgId"      ][idx] =     gen_mmg.mmg_pdgId;
+        storageMapFloatArray["gen_mmgPF_prod_x"     ][idx] =     gen_mmg.mmg_prod_vtx.x();
+        storageMapFloatArray["gen_mmgPF_prod_y"     ][idx] =     gen_mmg.mmg_prod_vtx.y();
+        storageMapFloatArray["gen_mmgPF_prod_z"     ][idx] =     gen_mmg.mmg_prod_vtx.z();
+        storageMapFloatArray["gen_mmgPF_l3d"        ][idx] =     (gen_mmg.mmg_prod_vtx-gen_mmg.mm_vtx).r();
+        storageMapFloatArray["gen_mmgPF_lxy"        ][idx] =     (gen_mmg.mmg_prod_vtx-gen_mmg.mm_vtx).rho();
+        storageMapFloatArray["gen_mmgPF_tau"        ][idx] =     computeDecayTime(gen_mmg);
+        storageMapIntArray["gen_mmgPF_cpdgId"     ][idx] =     gen_mmg.common_mother?gen_mmg.common_mother->pdgId():0;
+      }
+
       storageMapInt["nMMGpfCands"]+=1;
+
 }
 
 
@@ -2436,20 +2685,54 @@ void BsToMuMuGammaNTuplizer::addPF_JPsiGammaBranches()
       storageMapInt["nJPsiGammaPFCands"]=0;
       theTree->Branch("nJPsiGammaPFCands",   &storageMapInt["nJPsiGammaPFCands"]);
       
+      storageMapIntArray["jPsiGammaPF_mumuIdx"] = new Int_t[NMAX_MMG] ;
+      theTree->Branch("jPsiGammaPF_mumuIdx",   storageMapIntArray["jPsiGammaPF_mumuIdx"],"jPsiGammaPF_mumuIdx[nJPsiGammaPFCands]/I");
       storageMapIntArray["jPsiGammaPF_pfPhoIdx"] = new Int_t[NMAX_MMG] ;
       theTree->Branch("jPsiGammaPF_pfPhoIdx",   storageMapIntArray["jPsiGammaPF_pfPhoIdx"],"jPsiGammaPF_pfPhoIdx[nJPsiGammaPFCands]/I");
       storageMapFloatArray["jPsiGammaPF_mass"] = new Float_t[NMAX_MMG] ;
       theTree->Branch("jPsiGammaPF_mass",   storageMapFloatArray["jPsiGammaPF_mass"],"jPsiGammaPF_mass[nJPsiGammaPFCands]/f");
       storageMapFloatArray["jPsiGammaPF_diMuMass"] = new Float_t[NMAX_MMG] ;
       theTree->Branch("jPsiGammaPF_diMuMass",   storageMapFloatArray["jPsiGammaPF_diMuMass"],"jPsiGammaPF_diMuMass[nJPsiGammaPFCands]/f");
+      
+      if(isMC)
+      {
+        addGenBranches("jpsiGammaPF","nJPsiGammaCands");
+        storageMapIntArray["gen_jpsiGammaPF_photon_mpdgId"]   = new Int_t[N_GEN_PARTS_ALL];
+        theTree->Branch("gen_jpsiGammaPF_photon_mpdgId", storageMapIntArray["gen_jpsiGammaPF_photon_mpdgId"],"gen_jpsiGammaPF_photon_mpdgId[nJPsiGammaCands]/I");
+        storageMapIntArray["gen_jpsiGammaPF_photon_pdgId"]   = new Int_t[N_GEN_PARTS_ALL];
+        theTree->Branch("gen_jpsiGammaPF_photon_pdgId", storageMapIntArray["gen_jpsiGammaPF_photon_pdgId"],"gen_jpsiGammaPF_photon_pdgId[nJPsiGammaCands]/I");
+        storageMapFloatArray["gen_jpsiGammaPF_photon_pt"]   = new Float_t[N_GEN_PARTS_ALL];
+        theTree->Branch("gen_jpsiGammaPF_photon_pt", storageMapFloatArray["gen_jpsiGammaPF_photon_pt"],"gen_jpsiGammaPF_photon_pt[nJPsiGammaCands]/F");
+      }
+
 
 }
 
-void BsToMuMuGammaNTuplizer::fillPF_JPsiGammaBranches(Int_t nDimu,Int_t phoIdx , Float_t mmg_mass)
+void BsToMuMuGammaNTuplizer::fillPF_JPsiGammaBranches(Int_t nDimu,Int_t phoIdx , Float_t mmg_mass, GenMatchInfo * gen_mmg_)
 {
-      storageMapIntArray["jPsiGammaPF_pfPhoIdx"][storageMapInt["nJPsiGammaPFCands"]]=phoIdx;
-      storageMapFloatArray["jPsiGammaPF_mass"][storageMapInt["nJPsiGammaPFCands"]]  =mmg_mass;
-      storageMapFloatArray["jPsiGammaPF_diMuMass"][storageMapInt["nJPsiGammaPFCands"]]  = storageMapFloatArray["dimuon_kin_mass"][nDimu];
+      auto idx=storageMapInt["nJPsiGammaPFCands"];
+      storageMapIntArray["jPsiGammaPF_mumuIdx"][idx]= nDimu;
+      storageMapIntArray["jPsiGammaPF_pfPhoIdx"][idx]=phoIdx;
+      storageMapFloatArray["jPsiGammaPF_mass"][idx]  =mmg_mass;
+      storageMapFloatArray["jPsiGammaPF_diMuMass"][idx]  = storageMapFloatArray["dimuon_kin_mass"][nDimu];
+      
+      if(isMC)
+      {
+        auto& gen_mmg= *gen_mmg_;
+        storageMapIntArray[  "gen_jpsiGammaPF_photon_pdgId" ][idx] =     gen_mmg.photon_pdgId;
+        storageMapIntArray[  "gen_jpsiGammaPF_photon_mpdgId"][idx] =     gen_mmg.photon_motherPdgId;
+        storageMapFloatArray["gen_jpsiGammaPF_photon_pt"    ][idx] =     gen_mmg.photon_pt;
+        storageMapFloatArray["gen_jpsiGammaPF_mass"       ][idx] =     gen_mmg.mmg_mass;
+        storageMapFloatArray["gen_jpsiGammaPF_pt"         ][idx] =     gen_mmg.mmg_pt;
+        storageMapIntArray[  "gen_jpsiGammaPF_pdgId"      ][idx] =     gen_mmg.mmg_pdgId;
+        storageMapFloatArray["gen_jpsiGammaPF_prod_x"     ][idx] =     gen_mmg.mmg_prod_vtx.x();
+        storageMapFloatArray["gen_jpsiGammaPF_prod_y"     ][idx] =     gen_mmg.mmg_prod_vtx.y();
+        storageMapFloatArray["gen_jpsiGammaPF_prod_z"     ][idx] =     gen_mmg.mmg_prod_vtx.z();
+        storageMapFloatArray["gen_jpsiGammaPF_l3d"        ][idx] =     (gen_mmg.mmg_prod_vtx-gen_mmg.mm_vtx).r();
+        storageMapFloatArray["gen_jpsiGammaPF_lxy"        ][idx] =     (gen_mmg.mmg_prod_vtx-gen_mmg.mm_vtx).rho();
+        storageMapFloatArray["gen_jpsiGammaPF_tau"        ][idx] =     computeDecayTime(gen_mmg);
+        storageMapIntArray["gen_jpsiGammaPF_cpdgId"     ][idx] =     gen_mmg.common_mother?gen_mmg.common_mother->pdgId():0;
+      }
       storageMapInt["nJPsiGammaPFCands"]+=1;
 
 }
@@ -2463,7 +2746,6 @@ void BsToMuMuGammaNTuplizer::fillBtoMuMuKInfo(
 					  const reco::PFCandidate & kaon
 					) 
 {
-
     std::map<std::string,KinematicFitResult> allFits;
     std::map<std::string,DisplacementInformationIn3D> allDisplacements;
     std::map<std::string,CloseTrackInfo> allCloseTracks;
@@ -2492,7 +2774,47 @@ void BsToMuMuGammaNTuplizer::fillBtoMuMuKInfo(
     storageMapFloatArray["muMuK_otherVtxMaxProb1"][idx]  =   otherVertexMaxProb(muon1,muon2,1.0,0.1,ignoreTracks);
     storageMapFloatArray["muMuK_otherVtxMaxProb2"][idx]  =   otherVertexMaxProb(muon1,muon2,2.0,0.1,ignoreTracks);
     fillCompositParticleBranches("muMuK",idx,allFits["muMuK"],allDisplacements["muMuK"],allCloseTracks["muMuK"]);
+   if(isMC) {   
+        auto gen_kmm = getGenMatchInfo(muon1,muon2,&kaon);
+        storageMapIntArray[  "gen_mmk_kaon_pdgId" ][idx] =  gen_kmm.kaon1_pdgId;
+        storageMapIntArray[  "gen_mmk_kaon_mpdgId"][idx] =  gen_kmm.kaon1_motherPdgId;
+        storageMapFloatArray["gen_mmk_kaon_pt"    ][idx] =  gen_kmm.kaon1_pt;
+        storageMapFloatArray["gen_mmk_mass"       ][idx] =  gen_kmm.kmm_mass;
+        storageMapFloatArray["gen_mmk_pt"         ][idx] =  gen_kmm.kmm_pt;
+        storageMapIntArray[  "gen_mmk_pdgId"      ][idx] =  gen_kmm.kmm_pdgId;
+        storageMapFloatArray["gen_mmk_prod_x"     ][idx] =  gen_kmm.kmm_prod_vtx.x();
+        storageMapFloatArray["gen_mmk_prod_y"     ][idx] =  gen_kmm.kmm_prod_vtx.y();
+        storageMapFloatArray["gen_mmk_prod_z"     ][idx] =  gen_kmm.kmm_prod_vtx.z();
+        storageMapFloatArray["gen_mmk_l3d"        ][idx] =  (gen_kmm.kmm_prod_vtx-gen_kmm.mm_vtx).r();
+        storageMapFloatArray["gen_mmk_lxy"        ][idx] =  (gen_kmm.kmm_prod_vtx-gen_kmm.mm_vtx).rho();
+        storageMapFloatArray["gen_mmk_tau"        ][idx] =  computeDecayTime(gen_kmm);
+        storageMapIntArray["gen_mmk_cpdgId"     ][idx] =  gen_kmm.common_mother?gen_kmm.common_mother->pdgId():0;
 
+        if (gen_kmm.match and kinematicMuMuVertexFit.valid()){
+          storageMapFloatArray["gen_mmk_alpha_p_phi"][idx]= allFits["muMuK"].refitMother->currentState().globalMomentum().phi() - gen_kmm.match->phi();
+          storageMapFloatArray["gen_mmk_alpha_p_theta"][idx]= allFits["muMuK"].refitMother->currentState().globalMomentum().phi() - gen_kmm.match->theta();
+          TVector3 p_gen(gen_kmm.match->px(), gen_kmm.match->py(),   gen_kmm.match->pz());
+          TVector3 ip_reco(allDisplacements["muMuK"].pv->x(),  allDisplacements["muMuK"].pv->y(),    allDisplacements["muMuK"].pv->z());
+          TVector3 ip_gen(gen_kmm.mm_prod_vtx.x(),   gen_kmm.mm_prod_vtx.y(),    gen_kmm.mm_prod_vtx.z());
+          TVector3 vtx_reco(allFits["muMuK"].refitVertex->vertexState().position().x(), 
+    			allFits["muMuK"].refitVertex->vertexState().position().y(), 
+    			allFits["muMuK"].refitVertex->vertexState().position().z());
+          TVector3 vtx_gen(gen_kmm.mm_vtx.x(),
+    		       gen_kmm.mm_vtx.y(),
+    		       gen_kmm.mm_vtx.z());
+          float cosAlpha_ip  = p_gen.Dot(vtx_gen - ip_reco) / (p_gen.Mag() * (vtx_gen - ip_reco).Mag());
+          float cosAlpha_vtx = p_gen.Dot(vtx_reco - ip_gen) / (p_gen.Mag() * (vtx_reco - ip_gen).Mag());
+          
+          storageMapFloatArray["gen_mmk_alpha_ip"][idx]  = acos(cosAlpha_ip);
+          storageMapFloatArray["gen_mmk_alpha_vtx"][idx] = acos(cosAlpha_vtx);
+        } else {
+          storageMapFloatArray["gen_mmk_alpha_p_phi"][idx]  = 999;
+          storageMapFloatArray["gen_mmk_alpha_p_theta"][idx]= 999;
+          storageMapFloatArray["gen_mmk_alpha_ip"][idx]     = 999;
+          storageMapFloatArray["gen_mmk_alpha_vtx"][idx]    = 999;
+        }
+    }
+ 
     // JPsiK
     auto goodBtoJpsiK = true;
     if (fabs(kinematicMuMuVertexFit.mass()-3.1) > 0.2) goodBtoJpsiK = false;
@@ -2587,7 +2909,44 @@ void BsToMuMuGammaNTuplizer::addMuMuKBranches()
     theTree->Branch("muMuK_kaonCharge", storageMapFloatArray["muMuK_kaonCharge"],"muMuK_kaonCharge[nMuMuK]/F");
     storageMapFloatArray["muMuK_kaon_sdxy_bs"]      =  new Float_t[N_COMPOSIT_PART_MAX];
     theTree->Branch("muMuK_kaon_sdxy_bs", storageMapFloatArray["muMuK_kaon_sdxy_bs"],"muMuK_kaon_sdxy_bs[nMuMuK]/F");
-
+    
+    if(isMC)
+    {
+       storageMapIntArray["gen_mmk_cpdgId"]   = new Int_t[N_COMPOSIT_PART_MAX];
+       theTree->Branch("gen_mmk_cpdgId", storageMapIntArray["gen_mmk_cpdgId"],"gen_mmk_cpdgId[nMuMuK]/I");
+       storageMapIntArray["gen_mmk_kaon_mpdgId"]   = new Int_t[N_COMPOSIT_PART_MAX];
+       theTree->Branch("gen_mmk_kaon_mpdgId", storageMapIntArray["gen_mmk_kaon_mpdgId"],"gen_mmk_kaon_mpdgId[nMuMuK]/I");
+       storageMapIntArray["gen_mmk_kaon_pdgId"]   = new Int_t[N_COMPOSIT_PART_MAX];
+       theTree->Branch("gen_mmk_kaon_pdgId", storageMapIntArray["gen_mmk_kaon_pdgId"],"gen_mmk_kaon_pdgId[nMuMuK]/I");
+       storageMapFloatArray["gen_mmk_kaon_pt"]   = new Float_t[N_COMPOSIT_PART_MAX];
+       theTree->Branch("gen_mmk_kaon_pt", storageMapFloatArray["gen_mmk_kaon_pt"],"gen_mmk_kaon_pt[nMuMuK]/F");
+       storageMapFloatArray["gen_mmk_l3d"]   = new Float_t[N_COMPOSIT_PART_MAX];
+       theTree->Branch("gen_mmk_l3d", storageMapFloatArray["gen_mmk_l3d"],"gen_mmk_l3d[nMuMuK]/F");
+       storageMapFloatArray["gen_mmk_lxy"]   = new Float_t[N_COMPOSIT_PART_MAX];
+       theTree->Branch("gen_mmk_lxy", storageMapFloatArray["gen_mmk_lxy"],"gen_mmk_lxy[nMuMuK]/F");
+       storageMapFloatArray["gen_mmk_mass"]   = new Float_t[N_COMPOSIT_PART_MAX];
+       theTree->Branch("gen_mmk_mass", storageMapFloatArray["gen_mmk_mass"],"gen_mmk_mass[nMuMuK]/F");
+       storageMapIntArray["gen_mmk_pdgId"]   = new Int_t[N_COMPOSIT_PART_MAX];
+       theTree->Branch("gen_mmk_pdgId", storageMapIntArray["gen_mmk_pdgId"],"gen_mmk_pdgId[nMuMuK]/I");
+       storageMapFloatArray["gen_mmk_prod_x"]   = new Float_t[N_COMPOSIT_PART_MAX];
+       theTree->Branch("gen_mmk_prod_x", storageMapFloatArray["gen_mmk_prod_x"],"gen_mmk_prod_x[nMuMuK]/F");
+       storageMapFloatArray["gen_mmk_prod_y"]   = new Float_t[N_COMPOSIT_PART_MAX];
+       theTree->Branch("gen_mmk_prod_y", storageMapFloatArray["gen_mmk_prod_y"],"gen_mmk_prod_y[nMuMuK]/F");
+       storageMapFloatArray["gen_mmk_prod_z"]   = new Float_t[N_COMPOSIT_PART_MAX];
+       theTree->Branch("gen_mmk_prod_z", storageMapFloatArray["gen_mmk_prod_z"],"gen_mmk_prod_z[nMuMuK]/F");
+       storageMapFloatArray["gen_mmk_pt"]   = new Float_t[N_COMPOSIT_PART_MAX];
+       theTree->Branch("gen_mmk_pt", storageMapFloatArray["gen_mmk_pt"],"gen_mmk_pt[nMuMuK]/F");
+       storageMapFloatArray["gen_mmk_tau"]   = new Float_t[N_COMPOSIT_PART_MAX];
+       theTree->Branch("gen_mmk_tau", storageMapFloatArray["gen_mmk_tau"],"gen_mmk_tau[nMuMuK]/F");
+       storageMapFloatArray["gen_mmk_alpha_p_phi"]   = new Float_t[N_COMPOSIT_PART_MAX];
+       theTree->Branch("gen_mmk_alpha_p_phi", storageMapFloatArray["gen_mmk_alpha_p_phi"],"gen_mmk_alpha_p_phi[nMuMuK]/F");
+       storageMapFloatArray["gen_mmk_alpha_p_theta"]   = new Float_t[N_COMPOSIT_PART_MAX];
+       theTree->Branch("gen_mmk_alpha_p_theta", storageMapFloatArray["gen_mmk_alpha_p_theta"],"gen_mmk_alpha_p_theta[nMuMuK]/F");
+       storageMapFloatArray["gen_mmk_alpha_ip"]   = new Float_t[N_COMPOSIT_PART_MAX];
+       theTree->Branch("gen_mmk_alpha_ip", storageMapFloatArray["gen_mmk_alpha_ip"],"gen_mmk_alpha_ip[nMuMuK]/F");
+       storageMapFloatArray["gen_mmk_alpha_vtx"]   = new Float_t[N_COMPOSIT_PART_MAX];
+       theTree->Branch("gen_mmk_alpha_vtx", storageMapFloatArray["gen_mmk_alpha_vtx"],"gen_mmk_alpha_vtx[nMuMuK]/F");
+    }
     // JPsiK
     if(doJPsiK_)
     {
@@ -2608,6 +2967,7 @@ void BsToMuMuGammaNTuplizer::addMuMuKBranches()
         theTree->Branch("jpsiK_kaonCharge", storageMapFloatArray["jpsiK_kaonCharge"],"jpsiK_kaonCharge[nJPsiK]/F");
         storageMapFloatArray["jpsiK_kaon_sdxy_bs"]      =  new Float_t[N_COMPOSIT_PART_MAX];
         theTree->Branch("jpsiK_kaon_sdxy_bs", storageMapFloatArray["jpsiK_kaon_sdxy_bs"],"jpsiK_kaon_sdxy_bs[nJPsiK]/F");
+
     }
 
     // Psi2sK
@@ -2630,11 +2990,8 @@ void BsToMuMuGammaNTuplizer::addMuMuKBranches()
         theTree->Branch("psi2sK_kaonCharge", storageMapFloatArray["psi2sK_kaonCharge"],"psi2sK_kaonCharge[nPsi2SK]/F");
         storageMapFloatArray["psi2sK_kaon_sdxy_bs"]      =  new Float_t[N_COMPOSIT_PART_MAX];
         theTree->Branch("psi2sK_kaon_sdxy_bs", storageMapFloatArray["psi2sK_kaon_sdxy_bs"],"psi2sK_kaon_sdxy_bs[nPsi2SK]/F");
+
     }
-
-
-
-
 
 }
 
@@ -2754,32 +3111,6 @@ void BsToMuMuGammaNTuplizer::addCompositParticleBranches(TString tag,TString nTa
     theTree->Branch(tag+"_otherVtxMaxProb1", storageMapFloatArray[sTag+"_otherVtxMaxProb1"],tag+"_otherVtxMaxProb1["+nTag+"]/F");
     storageMapFloatArray[sTag+"_otherVtxMaxProb2"]   = new Float_t[N_COMPOSIT_PART_MAX];
     theTree->Branch(tag+"_otherVtxMaxProb2", storageMapFloatArray[sTag+"_otherVtxMaxProb2"],tag+"_otherVtxMaxProb2["+nTag+"]/F");
-    storageMapFloatArray[sTag+"_gen_kaon_pdgId"]   = new Float_t[N_COMPOSIT_PART_MAX];
-    theTree->Branch(tag+"_gen_kaon_pdgId", storageMapFloatArray[sTag+"_gen_kaon_pdgId"],tag+"_gen_kaon_pdgId["+nTag+"]/F");
-    storageMapFloatArray[sTag+"_gen_kaon_mpdgId"]   = new Float_t[N_COMPOSIT_PART_MAX];
-    theTree->Branch(tag+"_gen_kaon_mpdgId", storageMapFloatArray[sTag+"_gen_kaon_mpdgId"],tag+"_gen_kaon_mpdgId["+nTag+"]/F");
-    storageMapFloatArray[sTag+"_gen_kaon_pt"]   = new Float_t[N_COMPOSIT_PART_MAX];
-    theTree->Branch(tag+"_gen_kaon_pt", storageMapFloatArray[sTag+"_gen_kaon_pt"],tag+"_gen_kaon_pt["+nTag+"]/F");
-    storageMapFloatArray[sTag+"_gen_mass"]   = new Float_t[N_COMPOSIT_PART_MAX];
-    theTree->Branch(tag+"_gen_mass", storageMapFloatArray[sTag+"_gen_mass"],tag+"_gen_mass["+nTag+"]/F");
-    storageMapFloatArray[sTag+"_gen_pt"]   = new Float_t[N_COMPOSIT_PART_MAX];
-    theTree->Branch(tag+"_gen_pt", storageMapFloatArray[sTag+"_gen_pt"],tag+"_gen_pt["+nTag+"]/F");
-    storageMapFloatArray[sTag+"_gen_pdgId"]   = new Float_t[N_COMPOSIT_PART_MAX];
-    theTree->Branch(tag+"_gen_pdgId", storageMapFloatArray[sTag+"_gen_pdgId"],tag+"_gen_pdgId["+nTag+"]/F");
-    storageMapFloatArray[sTag+"_gen_prod_x"]   = new Float_t[N_COMPOSIT_PART_MAX];
-    theTree->Branch(tag+"_gen_prod_x", storageMapFloatArray[sTag+"_gen_prod_x"],tag+"_gen_prod_x["+nTag+"]/F");
-    storageMapFloatArray[sTag+"_gen_prod_y"]   = new Float_t[N_COMPOSIT_PART_MAX];
-    theTree->Branch(tag+"_gen_prod_y", storageMapFloatArray[sTag+"_gen_prod_y"],tag+"_gen_prod_y["+nTag+"]/F");
-    storageMapFloatArray[sTag+"_gen_prod_z"]   = new Float_t[N_COMPOSIT_PART_MAX];
-    theTree->Branch(tag+"_gen_prod_z", storageMapFloatArray[sTag+"_gen_prod_z"],tag+"_gen_prod_z["+nTag+"]/F");
-    storageMapFloatArray[sTag+"_gen_l3d"]   = new Float_t[N_COMPOSIT_PART_MAX];
-    theTree->Branch(tag+"_gen_l3d", storageMapFloatArray[sTag+"_gen_l3d"],tag+"_gen_l3d["+nTag+"]/F");
-    storageMapFloatArray[sTag+"_gen_lxy"]   = new Float_t[N_COMPOSIT_PART_MAX];
-    theTree->Branch(tag+"_gen_lxy", storageMapFloatArray[sTag+"_gen_lxy"],tag+"_gen_lxy["+nTag+"]/F");
-    storageMapFloatArray[sTag+"_gen_tau"]   = new Float_t[N_COMPOSIT_PART_MAX];
-    theTree->Branch(tag+"_gen_tau", storageMapFloatArray[sTag+"_gen_tau"],tag+"_gen_tau["+nTag+"]/F");
-    storageMapFloatArray[sTag+"_gen_cpdgId"]   = new Float_t[N_COMPOSIT_PART_MAX];
-    theTree->Branch(tag+"_gen_cpdgId", storageMapFloatArray[sTag+"_gen_cpdgId"],tag+"_gen_cpdgId["+nTag+"]/F");
 }
 
 void BsToMuMuGammaNTuplizer::fillCompositParticleBranches( std::string tag, Int_t idx ,const KinematicFitResult &fit ,
@@ -2846,24 +3177,7 @@ void BsToMuMuGammaNTuplizer::fillCompositParticleBranches( std::string tag, Int_
     storageMapFloatArray[tag+"_closetrks3"][idx]  =   closeTracks.nTracksByDisplacementSignificance(0.03 , 3 ,   vertex);
     storageMapFloatArray[tag+"_docatrk"][idx]     =   closeTracks.minDoca(0.03,vertex);
 
-    
-//   if (isMC_){
-//    auto gen_kmm = getGenMatchInfo(muon1,muon2,&kaon);
-//    storageMapFloatArray[tag+"_gen_kaon_pdgId" ] = gen_kmm.kaon1_pdgId;
-//    storageMapFloatArray[tag+"_gen_kaon_mpdgId"] = gen_kmm.kaon1_motherPdgId;
-//    storageMapFloatArray[tag+"_gen_kaon_pt"    ] = gen_kmm.kaon1_pt;
-//    storageMapFloatArray[tag+"_gen_mass"       ] = gen_kmm.kmm_mass;
-//    storageMapFloatArray[tag+"_gen_pt"         ] = gen_kmm.kmm_pt;
-//    storageMapFloatArray[tag+"_gen_pdgId"      ] = gen_kmm.kmm_pdgId;
-//    storageMapFloatArray[tag+"_gen_prod_x"     ] = gen_kmm.kmm_prod_vtx.x();
-//    storageMapFloatArray[tag+"_gen_prod_y"     ] = gen_kmm.kmm_prod_vtx.y();
-//    storageMapFloatArray[tag+"_gen_prod_z"     ] = gen_kmm.kmm_prod_vtx.z();
-//    storageMapFloatArray[tag+"_gen_l3d"        ] = (gen_kmm.kmm_prod_vtx-gen_kmm.mm_vtx).r();
-//    storageMapFloatArray[tag+"_gen_lxy"        ] = (gen_kmm.kmm_prod_vtx-gen_kmm.mm_vtx).rho(;
-//    storageMapFloatArray[tag+"_gen_tau"        ] = computeDecayTime(gen_kmm);
-//    storageMapFloatArray[tag+"_gen_cpdgId"     ] = gen_kmm.common_mother?gen_kmm.common_mother->pdgId():0;
-//  }
-
+   
 }
 
 
@@ -2903,6 +3217,170 @@ void BsToMuMuGammaNTuplizer::fillHLTL3MuonBranches(  std::vector<Int_t> trigIdx,
      storageMapInt["nHLTObj"]=idx;
 }
 
+
+///  GEN MATCH Stuff
+
+const reco::Candidate* BsToMuMuGammaNTuplizer::getGenParticle(const reco::Candidate* cand)
+{
+  if (not cand) return nullptr;
+  auto muon = dynamic_cast<const pat::Muon*>(cand);
+  if (muon and muon->genParticle()) return muon->genParticle();
+  for (auto const & genParticle: *genParticleCollection){
+      if (dr_match(cand->p4(), genParticle.p4()))
+	return &genParticle;
+  }
+  return nullptr;
+}
+
+GenMatchInfo BsToMuMuGammaNTuplizer::getGenMatchInfo( const reco::Muon& muon1,
+						const reco::Muon& muon2,
+						const reco::PFCandidate* kaon1,
+						const reco::PFCandidate* kaon2,
+						const reco::PFCandidate* photon)
+{
+  auto result = GenMatchInfo();
+  const reco::Candidate*   mm_mother(0);
+  //assert(prunedGenParticles_);
+  //assert(genParticleCollection);
+  std::vector<const reco::Candidate*> daughters;
+
+  result.mc_mu1 = getGenParticle(&muon1);
+  if (result.mc_mu1){
+    result.mu1_pdgId = result.mc_mu1->pdgId();
+    result.mu1_pt    = result.mc_mu1->pt();
+    if (result.mc_mu1->mother()){
+      result.mu1_motherPdgId = result.mc_mu1->mother()->pdgId();
+    }
+    daughters.push_back(result.mc_mu1);
+  }
+
+  result.mc_mu2 = getGenParticle(&muon2);
+  if (result.mc_mu2){
+    result.mu2_pdgId = result.mc_mu2->pdgId();
+    result.mu2_pt    = result.mc_mu2->pt();
+    if (result.mc_mu2->mother()){
+      result.mu2_motherPdgId = result.mc_mu2->mother()->pdgId();
+    }
+    daughters.push_back(result.mc_mu2);
+  }
+
+  if ( result.mc_mu1 and result.mc_mu2 ){
+    if ( (result.mc_mu1->vertex()-result.mc_mu2->vertex()).r() < 1e-4)
+      result.mm_vtx    = result.mc_mu1->vertex();
+    if ( result.mc_mu1->mother() and result.mc_mu1->mother() == result.mc_mu2->mother() ){
+      mm_mother = result.mc_mu1->mother();
+      result.match = result.mc_mu1->mother();
+      result.mm_mass      = mm_mother->mass();
+      result.mm_pt        = mm_mother->pt();
+      result.mm_pdgId     = mm_mother->pdgId();
+      if (mm_mother->mother()) result.mm_motherPdgId = mm_mother->mother()->pdgId();
+      result.mm_prod_vtx = getProductionVertex(mm_mother);
+    }
+  }
+  
+  if (kaon1){
+    for (auto const & genParticle: *genParticleCollection){
+      if (dr_match(kaon1->p4(),genParticle.p4())){
+	result.mc_kaon1 = &genParticle;
+	daughters.push_back(result.mc_kaon1);
+	result.kaon1_pdgId = genParticle.pdgId();
+	result.kaon1_pt    = genParticle.pt();
+	if (genParticle.mother(0)){
+	  result.kaon1_motherPdgId = genParticle.mother(0)->pdgId();
+	}
+	break;
+      }
+    }
+    if (daughters.size()==3){
+      const auto* mother = find_common_ancestor(daughters);
+      if (mother){
+	result.match        = mother;
+	result.kmm_pdgId    = mother->pdgId();
+	result.kmm_mass     = mother->mass();
+	result.kmm_pt       = mother->pt();
+	result.kmm_prod_vtx = getProductionVertex(mother);
+      }
+    }
+  }
+  if (kaon2){
+    for (auto const & genParticle: *genParticleCollection){
+      if (dr_match(kaon2->p4(),genParticle.p4())){
+	result.mc_kaon2 = &genParticle;
+	daughters.push_back(result.mc_kaon2);
+	result.kaon2_pdgId = genParticle.pdgId();
+	result.kaon2_pt    = genParticle.pt();
+	if (genParticle.mother(0)){
+	  result.kaon2_motherPdgId = genParticle.mother(0)->pdgId();
+	}
+	break;
+      }
+    }
+    if (daughters.size()==4){
+      const auto* mother = find_common_ancestor(daughters);
+      if (mother){
+	result.match         = mother;
+	result.kkmm_pdgId    = mother->pdgId();
+	result.kkmm_mass     = mother->mass();
+	result.kkmm_pt       = mother->pt();
+	result.kkmm_prod_vtx = getProductionVertex(mother);
+      }
+    }
+  }
+  
+  if (photon){
+    for (auto const & genParticle: *genParticleCollection){
+      if (dr_match(photon->p4(),genParticle.p4())){
+	result.mc_photon = &genParticle;
+	daughters.push_back(result.mc_photon);
+	result.photon_pdgId = genParticle.pdgId();
+	result.photon_pt    = genParticle.pt();
+	if (genParticle.mother(0)){
+	  result.photon_motherPdgId = genParticle.mother(0)->pdgId();
+	}
+	break;
+      }
+    }
+    if (daughters.size()==3){
+      const auto* mother = find_common_ancestor(daughters);
+      if (mother){
+	result.match        = mother;
+	result.mmg_pdgId    = mother->pdgId();
+	result.mmg_mass     = mother->mass();
+	result.mmg_pt       = mother->pt();
+	result.mmg_prod_vtx = getProductionVertex(mother);
+      }
+    }
+  }
+
+  if (daughters.size() > 1){
+    const auto* mother = find_common_ancestor(daughters); 
+    if (mother){ 
+      result.common_mother = mother;
+    }
+  }
+
+  return result;
+}
+
+float BsToMuMuGammaNTuplizer::distanceOfClosestApproach( const reco::GenParticle* track1,
+						   const reco::GenParticle* track2)
+{
+  TwoTrackMinimumDistance md;
+  GlobalPoint trk1_pos(track1->vertex().x(), 
+		       track1->vertex().y(), 
+		       track1->vertex().z());
+  GlobalVector trk1_mom(track1->px(),track1->py(),track1->pz());
+
+  GlobalTrajectoryParameters trk1(trk1_pos,trk1_mom,track1->charge(),bFieldHandle_.product());
+  GlobalPoint trk2_pos(track2->vertex().x(), 
+		       track2->vertex().y(), 
+		       track2->vertex().z());
+  GlobalVector trk2_mom(track2->px(),track2->py(),track2->pz());
+
+  GlobalTrajectoryParameters trk2(trk2_pos,trk2_mom,track2->charge(),bFieldHandle_.product());
+  if ( not md.calculate( trk1, trk2 ) ) return -1.0;
+  return md.distance();
+}
 
 
 

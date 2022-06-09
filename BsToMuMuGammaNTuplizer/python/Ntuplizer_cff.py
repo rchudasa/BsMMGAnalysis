@@ -180,7 +180,8 @@ def getDefaultWorkflow( testFileName = ''  ):
 def customizedProcessForMC(process=None, minPtOfGen=2.0):
     if process==None:
         process=getDefaultWorkflow()
-    process.Ntuples.doGenParticles = True
+    process.Ntuples.doGenParticles = False
+    process.Ntuples.isMC = True
     
     return process
 
