@@ -28,4 +28,13 @@ process.source.fileNames =cms.untracked.vstring(
 #    'file:/grid_mnt/t3storage3/athachay/bs2mumug/store/data/bParking/AOD/Run2018A/ParkingBPH3/AOD/20Jun2021_UL2018-v1/2510001/17A231BA-4B20-A648-A06D-B0E2A253ED85.root',
    )
 
+## If the process needs to be done on MC
 process=customizedProcessForMC(process)
+
+
+## Switch on Individual branches 
+switchOnMuMuK(process,ptMinKaon=0.98,etaMaxKaon=2.5,minBKmmMass=4.5,maxBKmmMass=6.5)
+switchOnJPsiK(process,ptMinKaon=0.98,etaMaxKaon=2.5,minBKmmMass=4.5,maxBKmmMass=6.5)
+switchOnPsi2SK(process,ptMinKaon=0.98,etaMaxKaon=2.5,minBKmmMass=4.5,maxBKmmMass=6.5)
+switchOnJPsiGamma(process)
+switchOnMuMuGamma(process)

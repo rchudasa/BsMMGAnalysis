@@ -6,6 +6,9 @@ triggersOfInterest=cms.vstring(
                                 "HLT_DoubleMu4_JpsiTrk_Displaced_v15",
                               )
 bParkTriglist=cms.vstring( 
+    "HLT_DoubleMu4_3_Bs",
+    "HLT_DoubleMu4_Jpsi_Displaced",
+    "HLT_DoubleMu4_JpsiTrk_Displaced_v15",
     'HLT_Mu10p5_IP3p5',
     'HLT_Mu12_IP6',
     'HLT_Mu7_IP4',
@@ -14,6 +17,9 @@ bParkTriglist=cms.vstring(
     'HLT_Mu8p5_IP3p5',
     'HLT_Mu9_IP5',
     'HLT_Mu9_IP6',
+    )
+
+bParkTriglist_full=cms.vstring( 
     'HLT_Mu12_IP6_ToCSCS_v1',
 	'HLT_Mu12_IP6_part0_v2',
 	'HLT_Mu12_IP6_part1_v2',
@@ -64,7 +70,8 @@ bParkTriglist=cms.vstring(
 	'HLT_Mu8_IP3_part4_v3',
 	'HLT_Mu9_IP0_part0_v2',
 	'HLT_Mu9_IP3_part0_v2'
-    )
+)
+
 bParkTrigFilterModules=cms.vstring(
     'hltL3fL1sMu22OrParkL1f0L2f10QL3Filtered12Q',
 	'hltL3fL1sMu22OrParkL1f0L2f10QL3Filtered7IP4Q',

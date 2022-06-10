@@ -9,7 +9,6 @@ options = cms.untracked.PSet( numberOfConcurrentLuminosityBlocks = cms.untracked
     numberOfThreads = cms.untracked.uint32(1),
     throwIfIllegalParameter = cms.untracked.bool(True),
     wantSummary = cms.untracked.bool(True),
-
    )
 source = cms.Source("PoolSource",
      duplicateCheckMode=cms.untracked.string("noDuplicateCheck"),
@@ -88,28 +87,32 @@ Ntuples = cms.EDAnalyzer("BsToMuMuGammaNTuplizer",
     doPhotons          = cms.bool(True),
     gedPhotonSrc       = cms.untracked.InputTag("gedPhotons"),
     
-    doPFPhotons        = cms.bool(True),
+    doPFPhotons        = cms.bool(False),
     pfPhotonSrc        = cms.untracked.InputTag("particleFlow"),
 	PFPhoton_minPt     = cms.untracked.double(2.5),	
     
-    doMuMuGamma        = cms.bool(True),
-    doJPsiGamma        = cms.bool(True),
+    doMuMuGamma        = cms.bool(False),
+    doJPsiGamma        = cms.bool(False),
+    
     minJPsiGammaMass   = cms.double(3.00),
     maxJPsiGammaMass   = cms.double(8.00),
+    
     minBsToMuMuGammaMass = cms.double(3.50),    
     maxBsToMuMuGammaMass = cms.double(6.00),    
     
-    doMuMuK            = cms.bool(True), 
+    doMuMuK            = cms.bool(False), 
     minJPsiMass        = cms.double(2.90),
     maxJPsiMass        = cms.double(3.30),
+    
     ptMinKaon          = cms.double(1.00),
     etaMaxKaon         = cms.double(2.4),
     minBKmmMass        = cms.double(4.5),
     maxBKmmMass        = cms.double(6.0),
-    doJPsiK            = cms.bool(True), 
-    doPsi2SK           = cms.bool(True), 
-
+    
     doMuMuKK            = cms.bool(False), 
+    doJPsiK            = cms.bool(False), 
+    doPsi2SK           = cms.bool(False), 
+
     
     doParticleFlow     = cms.bool(False),
     particlFlowSrc     = cms.InputTag("particleFlow"),
@@ -133,7 +136,6 @@ Ntuples = cms.EDAnalyzer("BsToMuMuGammaNTuplizer",
     doCompression                   = cms.bool(True),  #do the compression of floats
     nBits                           = cms.int32(23)   #nbits for float compression (<=23)
 )
-
 
 def getDefaultWorkflow( testFileName = ''  ):
     
@@ -194,3 +196,38 @@ def customizedProcessForRECO(process=None, minPtOfGen=2.0):
     if process==None:
         process=getDefaultWorkflow()
     process.isRECO= True
+
+def switchOnMuMuGamma(process):
+    process.Ntuples.doJPsiGamma = True
+
+def switchOnJPsiGamma(process):
+    process.Ntuples.doJPsiGamma = True
+
+
+def switchOnPFPhotons(process):
+    process.Ntuples.doPFPhotons = True
+    process.Ntuples.PFPhoton_minPt  = 	pTMin
+
+def switchOnMuMuK(process,ptMinKaon=0.98,etaMaxKaon=2.5,minBKmmMass=4.5,maxBKmmMass=6.5):
+    process.Ntuples.doMuMuKK      = True
+    process.Ntuples.ptMinKaon     = ptMinKaon     
+    process.Ntuples.etaMaxKaon    = etaMaxKaon    
+    process.Ntuples.minBKmmMass   = minBKmmMass   
+    process.Ntuples.maxBKmmMass   = maxBKmmMass   
+
+def switchOnJPsiK(process,ptMinKaon=0.98,etaMaxKaon=2.5,minBKmmMass=4.5,maxBKmmMass=6.5):
+    process.Ntuples.doJPsiK = True
+    process.Ntuples.ptMinKaon     = ptMinKaon     
+    process.Ntuples.etaMaxKaon    = etaMaxKaon    
+    process.Ntuples.minBKmmMass   = minBKmmMass   
+    process.Ntuples.maxBKmmMass   = maxBKmmMass   
+
+def switchOnPsi2SK(process,ptMinKaon=0.98,etaMaxKaon=2.5,minBKmmMass=4.5,maxBKmmMass=6.5):
+    process.Ntuples.doPsi2SK = True
+    process.Ntuples.ptMinKaon     = ptMinKaon     
+    process.Ntuples.etaMaxKaon    = etaMaxKaon    
+    process.Ntuples.minBKmmMass   = minBKmmMass   
+    process.Ntuples.maxBKmmMass   = maxBKmmMass   
+
+
+
