@@ -1,6 +1,17 @@
 import trigDetails
 
 import FWCore.ParameterSet.Config as cms
+from   FWCore.PythonUtilities.LumiList import LumiList
+from   os import environ
+from   os.path import exists, join
+
+def findFileInPath(theFile):
+    for s in environ["CMSSW_SEARCH_PATH"].split(":"):
+        attempt = join(s,theFile)
+        if exists(attempt):
+            return attempt                                                 
+    return None
+
 
 globaltag = cms.string('106X_upgrade2018_realistic_v15_L1v1')
 options = cms.untracked.PSet( numberOfConcurrentLuminosityBlocks = cms.untracked.uint32(1),
@@ -37,6 +48,16 @@ triggersOfInterest=trigDetails.triggersOfInterest;
 triggersOfInterest.extend(trigDetails.bParkTriglist)
 
 triggerFiltesrOfInterest=trigDetails.bParkTrigFilterModules
+
+jsonPickEvents = cms.EDFilter( "PickEvents",
+      # the file listrunev is unused, in this example
+       RunEventList = cms.untracked.string('DPGAnalysis/Skims/data/listrunev'),
+      # the format of the json.txt file is the one of the CMS certification ("Compact list" according to LumiList)
+       IsRunLsBased  = cms.bool(True),
+       LuminositySectionsBlockRange = LumiList(findFileInPath("BsMMGAnalysis/BsToMuMuGammaNTuplizer/data/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt")).getVLuminosityBlockRange()
+    )
+
+
 
 Ntuples = cms.EDAnalyzer("BsToMuMuGammaNTuplizer",
 	isMC = cms.bool(False),
@@ -94,11 +115,11 @@ Ntuples = cms.EDAnalyzer("BsToMuMuGammaNTuplizer",
     doMuMuGamma        = cms.bool(False),
     doJPsiGamma        = cms.bool(False),
     
-    minJPsiGammaMass   = cms.double(3.00),
-    maxJPsiGammaMass   = cms.double(8.00),
+    minJPsiGammaMass   = cms.double(3.50),
+    maxJPsiGammaMass   = cms.double(7.50),
     
     minBsToMuMuGammaMass = cms.double(3.50),    
-    maxBsToMuMuGammaMass = cms.double(6.00),    
+    maxBsToMuMuGammaMass = cms.double(7.50),    
     
     doMuMuK            = cms.bool(False), 
     minJPsiMass        = cms.double(2.90),
@@ -175,7 +196,7 @@ def getDefaultWorkflow( testFileName = ''  ):
     process.Ntuples = Ntuples
 
 
-    process.p = cms.Path(process.Ntuples)
+    process.ntuplizationPath = cms.Path(process.Ntuples)
     
     return process
 
@@ -187,9 +208,11 @@ def customizedProcessForMC(process=None, minPtOfGen=2.0):
     
     return process
 
-def customizedProcessForData(process=None, minPtOfGen=2.0):
+def customizedProcessForData(process=None, addJson=True):
     if process==None:
         process=getDefaultWorkflow()
+    process.jsonPickEvents = jsonPickEvents
+    process.ntuplizationPath.insert(0,process.jsonPickEvents)
     return process
     
 def customizedProcessForRECO(process=None, minPtOfGen=2.0):
@@ -197,14 +220,18 @@ def customizedProcessForRECO(process=None, minPtOfGen=2.0):
         process=getDefaultWorkflow()
     process.isRECO= True
 
-def switchOnMuMuGamma(process):
+def switchOnMuMuGamma(process,minMass=3.5,maxMass=7.5):
+    process.Ntuples.minBsToMuMuGammaMass = minMass
+    process.Ntuples.maxBsToMuMuGammaMass = maxMass
+    process.Ntuples.doMuMuGamma = True
+
+def switchOnJPsiGamma(process,minMass=3.5,maxMass=7.5):
+    process.Ntuples.minJPsiMass = minMass
+    process.Ntuples.maxJPsiMass = maxMass
     process.Ntuples.doJPsiGamma = True
 
-def switchOnJPsiGamma(process):
-    process.Ntuples.doJPsiGamma = True
 
-
-def switchOnPFPhotons(process):
+def switchOnPFPhotons(process, pTMin=2.5):
     process.Ntuples.doPFPhotons = True
     process.Ntuples.PFPhoton_minPt  = 	pTMin
 
