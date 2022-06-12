@@ -32,6 +32,14 @@ TFileService = cms.Service("TFileService",
     fileName = cms.string("ntuple.root")
  )
 
+dimuonFilter = cms.EDFilter("DimuonMassFilter",
+    muons = cms.InputTag("muons"),
+    MinPt = cms.untracked.double(3.5),
+    MaxAbsEta = cms.untracked.double(2.5),
+    MinDimuonMass = cms.untracked.double(0.0),
+    MaxDimuonMass = cms.untracked.double(8.5)
+)
+
 
 decayfilter = cms.EDFilter("GenDecayKineFilter",
     SimGenParticle = cms.InputTag("genParticles"),
@@ -60,103 +68,103 @@ jsonPickEvents = cms.EDFilter( "PickEvents",
 
 
 Ntuples = cms.EDAnalyzer("BsToMuMuGammaNTuplizer",
-	isMC = cms.bool(False),
-	isRECO = cms.bool(True),
-	isMiniAOD = cms.bool(False),
-    Run2_2018               = cms.bool(True),
-    
-    doBeamSpot = cms.bool(False),
-	beamSpot = cms.InputTag("offlineBeamSpot"),
-    
-    doPrimaryVetrices = cms.bool(False),
-	vertices = cms.InputTag("offlinePrimaryVertices"),
-    
-    doMuons                 = cms.bool(True),
-	muons   =cms.InputTag("muons"),
-	muon_EtaMax      	    = cms.untracked.double(2.5),	 
-	muon_dcaMAX 		    = cms.untracked.double(1e3),	
-	muon_minPt  		    = cms.untracked.double(3.0),	
-	muon_zIPMax 		    = cms.untracked.double(1e4),	
-	muon_rIPMax 		    = cms.untracked.double(1e4),	
-	
-    doDimuons               = cms.bool(True),  
-    diMuonCharge            = cms.untracked.bool(True),
-    maxTwoTrackDOCA         = cms.untracked.double(0.1),
-    dimuon_minPt		    = cms.untracked.double(0.0),
-	dimuon_minInvMass 	    = cms.untracked.double(-1e3),	
-	dimuon_maxInvMass 	    = cms.untracked.double(1e5),	
-	dimuon_minVtxCL   	    = cms.untracked.double(0.0),	
-	dimuon_maxLStoBS  	    = cms.untracked.double(1e5),	
-	dimuon_maxDCAMuMu 	    = cms.untracked.double(1e5),	
-	dimuon_maxCosAlphaToBS 	= cms.untracked.double(1e5),	
-    
-    genParticles       = cms.InputTag("genParticles"),
-    doGenParticles     = cms.bool(False),
-	doBsToMuMuGamma = cms.bool(False),
-    doFlatPt           = cms.bool(True),
-   	
-    doSuperClusters       = cms.bool(True),
-    
-    MustacheSCBarrelSrc= cms.InputTag("particleFlowSuperClusterECAL:particleFlowSuperClusterECALBarrel"),
-    MustacheSCEndcapSrc= cms.InputTag("particleFlowSuperClusterECAL:particleFlowSuperClusterECALEndcapWithPreshower"),
-	GsfElectronSrc     = cms.InputTag("gedGsfElectrons"),
- 	hbheRechitCollection  = cms.InputTag("reducedHcalRecHits","hbhereco","RECO"),
- 	ebRechitCollection    = cms.InputTag("reducedEcalRecHitsEB","","RECO"),
-   	eeRechitCollection    = cms.InputTag("reducedEcalRecHitsEE","","RECO"),
-    pfRechitCollection    = cms.InputTag("particleFlowRecHitECAL","","RECO"),
-   	
-    doPhotons          = cms.bool(True),
-    gedPhotonSrc       = cms.untracked.InputTag("gedPhotons"),
-    
-    doPFPhotons        = cms.bool(False),
-    pfPhotonSrc        = cms.untracked.InputTag("particleFlow"),
-	PFPhoton_minPt     = cms.untracked.double(2.5),	
-    
-    doMuMuGamma        = cms.bool(False),
-    doJPsiGamma        = cms.bool(False),
-    
-    minJPsiGammaMass   = cms.double(3.50),
-    maxJPsiGammaMass   = cms.double(7.50),
-    
-    minBsToMuMuGammaMass = cms.double(3.50),    
-    maxBsToMuMuGammaMass = cms.double(7.50),    
-    
-    doMuMuK            = cms.bool(False), 
-    minJPsiMass        = cms.double(2.90),
-    maxJPsiMass        = cms.double(3.30),
-    
-    ptMinKaon          = cms.double(1.00),
-    etaMaxKaon         = cms.double(2.4),
-    minBKmmMass        = cms.double(4.5),
-    maxBKmmMass        = cms.double(6.0),
-    
-    doMuMuKK            = cms.bool(False), 
-    doJPsiK            = cms.bool(False), 
-    doPsi2SK           = cms.bool(False), 
+	    isMC = cms.bool(False),
+	    isRECO = cms.bool(True),
+	    isMiniAOD = cms.bool(False),
+        Run2_2018               = cms.bool(True),
+        
+        doBeamSpot = cms.bool(False),
+	    beamSpot = cms.InputTag("offlineBeamSpot"),
+        
+        doPrimaryVetrices = cms.bool(False),
+	    vertices = cms.InputTag("offlinePrimaryVertices"),
+        
+        doMuons                 = cms.bool(True),
+	    muons   =cms.InputTag("muons"),
+	    muon_EtaMax      	    = cms.untracked.double(2.5),	 
+	    muon_dcaMAX 		    = cms.untracked.double(1e3),	
+	    muon_minPt  		    = cms.untracked.double(3.0),	
+	    muon_zIPMax 		    = cms.untracked.double(1e4),	
+	    muon_rIPMax 		    = cms.untracked.double(1e4),	
+	    
+        doDimuons               = cms.bool(True),  
+        diMuonCharge            = cms.untracked.bool(True),
+        maxTwoTrackDOCA         = cms.untracked.double(0.1),
+        dimuon_minPt		    = cms.untracked.double(0.0),
+	    dimuon_minInvMass 	    = cms.untracked.double(-1e3),	
+	    dimuon_maxInvMass 	    = cms.untracked.double(1e5),	
+	    dimuon_minVtxCL   	    = cms.untracked.double(0.0),	
+	    dimuon_maxLStoBS  	    = cms.untracked.double(1e5),	
+	    dimuon_maxDCAMuMu 	    = cms.untracked.double(1e5),	
+	    dimuon_maxCosAlphaToBS 	= cms.untracked.double(1e5),	
+        
+        genParticles       = cms.InputTag("genParticles"),
+        doGenParticles     = cms.bool(False),
+	    doBsToMuMuGamma = cms.bool(False),
+        doFlatPt           = cms.bool(True),
+   	    
+        doSuperClusters       = cms.bool(True),
+        
+        MustacheSCBarrelSrc= cms.InputTag("particleFlowSuperClusterECAL:particleFlowSuperClusterECALBarrel"),
+        MustacheSCEndcapSrc= cms.InputTag("particleFlowSuperClusterECAL:particleFlowSuperClusterECALEndcapWithPreshower"),
+	    GsfElectronSrc     = cms.InputTag("gedGsfElectrons"),
+ 	    hbheRechitCollection  = cms.InputTag("reducedHcalRecHits","hbhereco","RECO"),
+ 	    ebRechitCollection    = cms.InputTag("reducedEcalRecHitsEB","","RECO"),
+   	    eeRechitCollection    = cms.InputTag("reducedEcalRecHitsEE","","RECO"),
+        pfRechitCollection    = cms.InputTag("particleFlowRecHitECAL","","RECO"),
+   	    
+        doPhotons          = cms.bool(True),
+        gedPhotonSrc       = cms.untracked.InputTag("gedPhotons"),
+        
+        doPFPhotons        = cms.bool(False),
+        pfPhotonSrc        = cms.untracked.InputTag("particleFlow"),
+	    PFPhoton_minPt     = cms.untracked.double(2.5),	
+        
+        doMuMuGamma        = cms.bool(False),
+        doJPsiGamma        = cms.bool(False),
+        
+        minJPsiGammaMass   = cms.double(3.50),
+        maxJPsiGammaMass   = cms.double(7.50),
+        
+        minBsToMuMuGammaMass = cms.double(3.50),    
+        maxBsToMuMuGammaMass = cms.double(7.50),    
+        
+        doMuMuK            = cms.bool(False), 
+        minJPsiMass        = cms.double(2.90),
+        maxJPsiMass        = cms.double(3.30),
+        
+        ptMinKaon          = cms.double(1.00),
+        etaMaxKaon         = cms.double(2.4),
+        minBKmmMass        = cms.double(4.5),
+        maxBKmmMass        = cms.double(6.0),
+        
+        doMuMuKK            = cms.bool(False), 
+        doJPsiK            = cms.bool(False), 
+        doPsi2SK           = cms.bool(False), 
 
-    
-    doParticleFlow     = cms.bool(False),
-    particlFlowSrc     = cms.InputTag("particleFlow"),
-    
-    doGeneralTracks    = cms.bool(False),
-    generalTrackSrc    = cms.InputTag("generalTracks"),
-    
-    doHCALClusters     = cms.bool(False),
-    hcalClusterSrc     = cms.InputTag("particleFlowClusterHCAL"),
-    
-    doECALClusters     = cms.bool(False),
-    ecalClusterSrc     = cms.InputTag("particleFlowClusterECAL"),
-    
-    doHLT              = cms.bool(True),
-	TriggerNames = triggersOfInterest,
-    TriggerFilters = triggerFiltesrOfInterest,
-	HLTResult = cms.InputTag("TriggerResults","","HLT"),
-	TriggerEvent = cms.InputTag("hltTriggerSummaryAOD"),
-    verbose  = cms.bool(False),
-    
-    doCompression                   = cms.bool(True),  #do the compression of floats
-    nBits                           = cms.int32(23)   #nbits for float compression (<=23)
-)
+        
+        doParticleFlow     = cms.bool(False),
+        particlFlowSrc     = cms.InputTag("particleFlow"),
+        
+        doGeneralTracks    = cms.bool(False),
+        generalTrackSrc    = cms.InputTag("generalTracks"),
+        
+        doHCALClusters     = cms.bool(False),
+        hcalClusterSrc     = cms.InputTag("particleFlowClusterHCAL"),
+        
+        doECALClusters     = cms.bool(False),
+        ecalClusterSrc     = cms.InputTag("particleFlowClusterECAL"),
+        
+        doHLT              = cms.bool(False),
+	    TriggerNames = triggersOfInterest,
+        TriggerFilters = triggerFiltesrOfInterest,
+	    HLTResult = cms.InputTag("TriggerResults","","HLT"),
+	    TriggerEvent = cms.InputTag("hltTriggerSummaryAOD"),
+        verbose  = cms.bool(False),
+        
+        doCompression                   = cms.bool(True),  #do the compression of floats
+        nBits                           = cms.int32(23)   #nbits for float compression (<=23)
+    )
 
 def getDefaultWorkflow( testFileName = ''  ):
     
@@ -193,6 +201,7 @@ def getDefaultWorkflow( testFileName = ''  ):
     process.options = options
     process.source = source
     process.TFileService = TFileService
+    
     process.Ntuples = Ntuples
 
 
@@ -200,36 +209,19 @@ def getDefaultWorkflow( testFileName = ''  ):
     
     return process
 
-def customizedProcessForMC(process=None, minPtOfGen=2.0):
-    if process==None:
-        process=getDefaultWorkflow()
-    process.Ntuples.doGenParticles = False
-    process.Ntuples.isMC = True
-    
-    return process
-
-def customizedProcessForData(process=None, addJson=True):
-    if process==None:
-        process=getDefaultWorkflow()
-    process.jsonPickEvents = jsonPickEvents
-    process.ntuplizationPath.insert(0,process.jsonPickEvents)
-    return process
-    
-def customizedProcessForRECO(process=None, minPtOfGen=2.0):
-    if process==None:
-        process=getDefaultWorkflow()
-    process.isRECO= True
-
 def switchOnMuMuGamma(process,minMass=3.5,maxMass=7.5):
     process.Ntuples.minBsToMuMuGammaMass = minMass
     process.Ntuples.maxBsToMuMuGammaMass = maxMass
     process.Ntuples.doMuMuGamma = True
 
 def switchOnJPsiGamma(process,minMass=3.5,maxMass=7.5):
-    process.Ntuples.minJPsiMass = minMass
-    process.Ntuples.maxJPsiMass = maxMass
+    process.Ntuples.minJPsiGammaMass = minMass
+    process.Ntuples.maxJPsiGammaMass = maxMass
     process.Ntuples.doJPsiGamma = True
 
+
+def switchOnHLT(process, status=True):
+    process.Ntuples.doHLT = False
 
 def switchOnPFPhotons(process, pTMin=2.5):
     process.Ntuples.doPFPhotons = True
@@ -256,5 +248,49 @@ def switchOnPsi2SK(process,ptMinKaon=0.98,etaMaxKaon=2.5,minBKmmMass=4.5,maxBKmm
     process.Ntuples.minBKmmMass   = minBKmmMass   
     process.Ntuples.maxBKmmMass   = maxBKmmMass   
 
+def customizedProcessForMC(process=None, minPtOfGen=2.0,doHLT=True):
+    if process==None:
+        process=getDefaultWorkflow()
+    process.Ntuples.doGenParticles = False
+    process.Ntuples.isMC = True
+    process.Ntuples.minJPsiGammaMass   = cms.double(-1e1)
+    process.Ntuples.maxJPsiGammaMass   = cms.double(1e6)
+    
+    process.Ntuples.minBsToMuMuGammaMass = cms.double(-1e1)
+    process.Ntuples.maxBsToMuMuGammaMass = cms.double(1e6)    
 
+    switchOnMuMuK(process,ptMinKaon=0.98,etaMaxKaon=2.5,minBKmmMass=4.5,maxBKmmMass=6.5)
+    switchOnJPsiK(process,ptMinKaon=0.98,etaMaxKaon=2.5,minBKmmMass=4.5,maxBKmmMass=6.5)
+    switchOnPsi2SK(process,ptMinKaon=0.98,etaMaxKaon=2.5,minBKmmMass=4.5,maxBKmmMass=6.5)
+    switchOnJPsiGamma(process)
+    switchOnMuMuGamma(process)
+    switchOnPFPhotons(process)
+    switchOnHLT(process,doHLT)
+    
+    return process
+
+def customizedProcessForData(process=None, doHLT=True,addJson=True):
+    if process==None:
+        process=getDefaultWorkflow()
+    process.dimuonFilter = dimuonFilter
+    process.ntuplizationPath.insert(0,process.dimuonFilter)
+    
+    if addJson:
+        process.jsonPickEvents = jsonPickEvents
+        process.ntuplizationPath.insert(0,process.jsonPickEvents)
+    switchOnMuMuK(process,ptMinKaon=0.98,etaMaxKaon=2.5,minBKmmMass=4.5,maxBKmmMass=6.5)
+    switchOnJPsiK(process,ptMinKaon=0.98,etaMaxKaon=2.5,minBKmmMass=4.5,maxBKmmMass=6.5)
+    switchOnPsi2SK(process,ptMinKaon=0.98,etaMaxKaon=2.5,minBKmmMass=4.5,maxBKmmMass=6.5)
+    switchOnJPsiGamma(process)
+    switchOnMuMuGamma(process)
+    switchOnPFPhotons(process)
+    switchOnHLT(process,doHLT)
+    switchOnHLT(process)
+    
+    return process
+    
+def customizedProcessForRECO(process=None, minPtOfGen=2.0):
+    if process==None:
+        process=getDefaultWorkflow()
+    process.isRECO= True
 
