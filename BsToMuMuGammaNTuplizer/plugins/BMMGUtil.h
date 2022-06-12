@@ -19,6 +19,7 @@ BsToMuMuGammaNTuplizer::computeTrkMuonIsolation(const pat::Muon& the_muon, const
 {
   float sumPt(0);
   const reco::VertexCollection& vertices = *pvHandle_.product();
+  if( primaryVertexIndex >= vertices.size()) return 0.0;
   const auto & vertex = vertices.at(primaryVertexIndex);
   Float_t vx(vertex.x());
   Float_t vy(vertex.y());
@@ -149,6 +150,7 @@ BsToMuMuGammaNTuplizer::computeTrkMuMuIsolation(const pat::Muon& muon1, const pa
   float sumPt(0);
   auto b_p4 = muon1.p4()+muon2.p4();
   const reco::VertexCollection& vertices = *pvHandle_.product();
+  if( primaryVertexIndex >= vertices.size()) return 0.0;
   const auto & vertex = vertices.at(primaryVertexIndex);
   Float_t vx(vertex.x());
   Float_t vy(vertex.y());
@@ -802,5 +804,16 @@ Float_t BsToMuMuGammaNTuplizer::getMinEnergyHCAL_(HcalDetId id) const {
     return 9999.0;
 }
 
+void BsToMuMuGammaNTuplizer::compressAllFloatStorage()
+{
+
+    for(std::map<string,Float_t*>::iterator it=storageMapFloatArray.begin() ; it!=storageMapFloatArray.end(); ++it)
+    {
+        auto Name=it->first;
+        auto array = it->second; 
+        for(int i=0;i<N_COMPRESS_MAX;i++)
+            array[i]=reduceFloat(array[i],nBits_);
+   }     
+}
 
 #endif

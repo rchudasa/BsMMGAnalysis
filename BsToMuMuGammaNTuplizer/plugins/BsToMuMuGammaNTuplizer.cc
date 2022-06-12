@@ -251,6 +251,8 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
   theTree->Branch("lumis",  &lumis_);
   theTree->Branch("isData", &isData_);
  
+
+   nCountErr=0;
   if(doBeamSpot)
   {
     theTree->Branch("beamspot_x",         		 &beamspot_x_);
@@ -743,6 +745,11 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
         fillHCALClusterCollection(iEvent,iSetup);
   }
   if (isRECO and doECALClusters)   fillECALClusterCollection(iEvent,iSetup);
+  
+  if(doCompression_)
+  {
+    compressAllFloatStorage();
+  }
   theTree->Fill();
   
 }
@@ -899,7 +906,9 @@ void BsToMuMuGammaNTuplizer::fillSC(edm::Event const& e, const edm::EventSetup& 
   locCov_.clear();
   full5x5_locCov_.clear();
   // for(const auto& iSuperCluster : *(superClusterEB.product())){  
+  Int_t isECAP=-1;
   for (auto const& scs : { *barrelSCHandle.product(), *endcapSCHandle.product() }) {
+    isECAP+=1; 
     for (auto const& sc : scs) {
 	
       edm::ESHandle<CaloTopology> caloTopology;
@@ -920,8 +929,11 @@ void BsToMuMuGammaNTuplizer::fillSC(edm::Event const& e, const edm::EventSetup& 
 	
       reco::CaloCluster caloBC(*sc.seed());  
       showerShapes_.clear();
-      if(abs(sc.eta()) <= 1.442)showerShapes_ = getShowerShapes(&caloBC, &(*(recHitsEB.product())), topology);  
-      if(abs(sc.eta()) >= 1.566)showerShapes_ = getShowerShapes(&caloBC, &(*(recHitsEE.product())), topology);  
+      //if(abs(sc.eta()) <= 1.442)showerShapes_ = getShowerShapes(&caloBC, &(*(recHitsEB.product())), topology);  
+      //if(abs(sc.eta()) >= 1.566)showerShapes_ = getShowerShapes(&caloBC, &(*(recHitsEE.product())), topology);  
+      if(isECAP==0)showerShapes_ = getShowerShapes(&caloBC, &(*(recHitsEB.product())), topology);  
+      if(isECAP==1)showerShapes_ = getShowerShapes(&caloBC, &(*(recHitsEE.product())), topology);  
+
        scE5x5_.push_back(reduceFloat(showerShapes_[0],nBits_));
        scE2x2Ratio_.push_back(reduceFloat(showerShapes_[1],nBits_));
        scE3x3Ratio_.push_back(reduceFloat(showerShapes_[2],nBits_));
@@ -1106,9 +1118,10 @@ void BsToMuMuGammaNTuplizer::fillHLT(edm::Event const& iEvent)
   edm::Handle<trigger::TriggerEvent> triggerEventHandle;
   const trigger::TriggerEvent dummyTE;
   iEvent.getByToken(triggerEvent_token_, triggerEventHandle);
-  if (!triggerEventHandle.isValid()) {
+  if (!triggerEventHandle.isValid() and nCountErr< 10)  {
     std::cout<< "Error! Can't get the product: triggerEvent_" << endl;
     validTriggerEvent = false;
+    nCountErr++;
   }
   
   const trigger::TriggerEvent& triggerEvent(validTriggerEvent ? *(triggerEventHandle.product()) : dummyTE);
@@ -1244,7 +1257,6 @@ void BsToMuMuGammaNTuplizer::addPrimaryVertexBranches()
 {
     storageMapInt["nPrimaryVertex"]  = 0 ;
     theTree->Branch("nPrimaryVertex",   &storageMapInt["nPrimaryVertex"]);
-    
     storageMapFloatArray["primaryVertex_isFake"        ] = new Float_t[N_PV_MAX];
     storageMapFloatArray["primaryVertex_x"             ] = new Float_t[N_PV_MAX];
     storageMapFloatArray["primaryVertex_y"             ] = new Float_t[N_PV_MAX];
@@ -2146,6 +2158,7 @@ void BsToMuMuGammaNTuplizer::fillDimuonBranches( const edm::Event& iEvent, const
 	  //   }
 
       auto dimuFit = vertexMuonsWithKinematicFitter(muon1, muon2);
+      if( not dimuFit.valid() ) continue;
       dimuFit.postprocess(*beamSpot);
       auto displacement3d = compute3dDisplacement(dimuFit, *pvHandle_.product(),true);
     
@@ -2279,7 +2292,6 @@ void BsToMuMuGammaNTuplizer::fillDimuonBranches( const edm::Event& iEvent, const
 		    const auto & vtx_point = dimuFit.refitVertex->vertexState().position();
             math::XYZVectorF  secVtx(vtx_point.x(),vtx_point.y(),vtx_point.z());
             auto isJpsiCand = ( dimuFit.mass() >= minJPsiMass_ and dimuFit.mass() <= maxJPsiMass_ );
-
 	        // MuMuGamma
 	        if (doMuMuGamma && dimuFit.valid()){
 	        for (unsigned int k=0; k < nPhotons; ++k){
@@ -2299,6 +2311,7 @@ void BsToMuMuGammaNTuplizer::fillDimuonBranches( const edm::Event& iEvent, const
                 if (mmg_mass >= minBsMuMuGammaMass_ and mmg_mass <= maxBsMuMuGammaMass_){
                      fillBmmgBranchs(nDimu,k,-1,mmg_mass,gen_mmg);
 	  	         }
+
                 if( doJPsiGamma and isJpsiCand)
                 {
                     if( mmg_mass >= minJPsiGammaMass_ and mmg_mass <= maxJPsiGammaMass_)
@@ -2332,6 +2345,7 @@ void BsToMuMuGammaNTuplizer::fillDimuonBranches( const edm::Event& iEvent, const
 	  	         }
                 if( doJPsiGamma and isJpsiCand)
                   {
+
                     if( mmg_mass >= minJPsiGammaMass_ and mmg_mass <= maxJPsiGammaMass_)
                     {
                        fillJPsiGammaBranches(nDimu,-1,k,mmg_mass,gen_mmg);
@@ -2577,7 +2591,7 @@ void BsToMuMuGammaNTuplizer::addJPsiGammaBranches()
       storageMapIntArray["jPsiGamma_scIdx"] = new Int_t[NMAX_MMG] ;
       theTree->Branch("jPsiGamma_scIdx",   storageMapIntArray["jPsiGamma_scIdx"],"jPsiGamma_scIdx[nJPsiGammaCands]/I");
       storageMapFloatArray["jPsiGamma_mass"] = new Float_t[NMAX_MMG] ;
-      theTree->Branch("jPsiGamma_mass",   storageMapFloatArray["jPsiGamma_mass"],"jPsiGamma_phoIdx[nJPsiGammaCands]/f");
+      theTree->Branch("jPsiGamma_mass",   storageMapFloatArray["jPsiGamma_mass"],"jPsiGamma_mass[nJPsiGammaCands]/F");
       storageMapFloatArray["jPsiGamma_diMuMass"] = new Float_t[NMAX_MMG] ;
       if(isMC)
       {
@@ -2595,11 +2609,11 @@ void BsToMuMuGammaNTuplizer::addJPsiGammaBranches()
 
 void BsToMuMuGammaNTuplizer::fillJPsiGammaBranches(Int_t nDimu,Int_t phoIdx,Int_t scIdx , Float_t mmg_mass, GenMatchInfo *gen_mmg_)
 {
+      auto idx=storageMapInt["nJPsiGammaCands"];
       storageMapIntArray["jPsiGamma_phoIdx"][storageMapInt["nJPsiGammaCands"]]=phoIdx;
       storageMapIntArray["jPsiGamma_scIdx"][storageMapInt["nJPsiGammaCands"]] =scIdx;
       storageMapFloatArray["jPsiGamma_mass"][storageMapInt["nJPsiGammaCands"]]  =mmg_mass;
       storageMapFloatArray["jPsiGamma_diMuMass"][storageMapInt["nJPsiGammaCands"]]  = storageMapFloatArray["dimuon_kin_mass"][nDimu];
-      auto idx=storageMapInt["nJPsiGammaCands"];
       if(isMC)
       {
         auto &gen_mmg = *gen_mmg_;
@@ -2746,6 +2760,7 @@ void BsToMuMuGammaNTuplizer::fillBtoMuMuKInfo(
 					  const reco::PFCandidate & kaon
 					) 
 {
+    
     std::map<std::string,KinematicFitResult> allFits;
     std::map<std::string,DisplacementInformationIn3D> allDisplacements;
     std::map<std::string,CloseTrackInfo> allCloseTracks;
@@ -2790,7 +2805,7 @@ void BsToMuMuGammaNTuplizer::fillBtoMuMuKInfo(
         storageMapFloatArray["gen_mmk_tau"        ][idx] =  computeDecayTime(gen_kmm);
         storageMapIntArray["gen_mmk_cpdgId"     ][idx] =  gen_kmm.common_mother?gen_kmm.common_mother->pdgId():0;
 
-        if (gen_kmm.match and kinematicMuMuVertexFit.valid()){
+        if (gen_kmm.match and allFits["muMuK"].valid()){
           storageMapFloatArray["gen_mmk_alpha_p_phi"][idx]= allFits["muMuK"].refitMother->currentState().globalMomentum().phi() - gen_kmm.match->phi();
           storageMapFloatArray["gen_mmk_alpha_p_theta"][idx]= allFits["muMuK"].refitMother->currentState().globalMomentum().phi() - gen_kmm.match->theta();
           TVector3 p_gen(gen_kmm.match->px(), gen_kmm.match->py(),   gen_kmm.match->pz());

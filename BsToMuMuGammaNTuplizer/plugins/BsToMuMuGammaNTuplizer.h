@@ -183,10 +183,12 @@
 #define N_MUON_MAX 1000
 #define N_DIMU_MAX 1000
 #define N_GEN_MAX 4000
-#define N_GEN_PARTS_ALL 100        
+#define N_GEN_PARTS_ALL 500        
 #define NMAX_MMG 1000
 #define N_COMPOSIT_PART_MAX 200
-#define N_L3MUON 100
+#define N_L3MUON 500
+
+#define N_COMPRESS_MAX 100  
 
 #include "BmmgInterface.h"
 
@@ -371,7 +373,8 @@ private:
   static int calDIEta(int iEta1, int iEta2);
   static int calDIPhi(int iPhi1, int iPhi2);
   Float_t getMinEnergyHCAL_(HcalDetId id) const;
-
+ 
+  void  compressAllFloatStorage();
   // master switches
   Bool_t         isMC;
   Bool_t         isRECO;
@@ -403,7 +406,7 @@ private:
   Bool_t doHLT;
   int maxDIEta_=5;
   int maxDIPhi_=5;
-  
+  Int_t nCountErr;
   // ----------
 
   const AnalyticalImpactPointExtrapolator* impactPointExtrapolator_;
@@ -550,6 +553,7 @@ private:
 
   std::map<std::string,Int_t > storageMapInt;
   std::map<std::string,Int_t *> storageMapIntArray;
+  std::map<std::string,std::string > storageMapFloatArrayLengthTags;
   std::map<std::string,Float_t * > storageMapFloatArray;
   std::map<std::string,Bool_t * > storageMapBoolArray;
   std::map<std::string,uint64_t * > storageMapUint64Array;
