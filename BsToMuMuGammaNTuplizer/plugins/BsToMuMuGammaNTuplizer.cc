@@ -116,6 +116,7 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
   doMuMuGamma(iConfig.getParameter<Bool_t>("doMuMuGamma")),
   doJPsiGamma(iConfig.getParameter<Bool_t>("doJPsiGamma")),
   doPhotons_(iConfig.getParameter<Bool_t>("doPhotons")),
+  doPhotonID_(iConfig.getParameter<Bool_t>("doPhotonID")),
   doPFPhotons_(iConfig.getParameter<Bool_t>("doPFPhotons")),
   doSuperClusters_(iConfig.getParameter<Bool_t>("doSuperClusters")),
   doParticleFlow(iConfig.getParameter<Bool_t>("doParticleFlow")),
@@ -160,11 +161,15 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
   
   energyMatrixSizeFull_=(2*energyMatrixSize_+1)*(2*energyMatrixSize_+1);
   Utility= new Utils();
-  
+  if(doPhotonID_)
+  {
+    mvaValMapTag_=iConfig.getParameter<std::string>("phoMVAValMaps");
+    valMapToken_=consumes<edm::ValueMap<float>>(edm::InputTag(mvaValMapTag_));
+  }
  // if(doMuons_ or do doDimuons ) 
   track_builder_token_=esConsumes<TransientTrackBuilder, TransientTrackRecord>(edm::ESInputTag("", "TransientTrackBuilder"));
   muonToken_     = consumes<reco::MuonCollection>(iConfig.getParameter<edm::InputTag>("muons"));
-  if(doPhotons_)    gedPhotonsCollection_       = consumes<std::vector<reco::Photon>>(iConfig.getUntrackedParameter<edm::InputTag>("gedPhotonSrc"));
+  if(doPhotons_)    gedPhotonsCollection_       = consumes<edm::View<reco::Photon>>(iConfig.getUntrackedParameter<edm::InputTag>("gedPhotonSrc"));
   
   if(doPFPhotons_ or doSuperClusters_){
     pfPhotonsCollection_        = consumes<edm::View<reco::PFCandidate>>(iConfig.getUntrackedParameter<edm::InputTag>("pfPhotonSrc"));
@@ -303,63 +308,33 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
   }
   
   if (doPhotons_) {
-    theTree->Branch("nPho",                  &nPho_);
-    theTree->Branch("phoE",                  &phoE_);
-    theTree->Branch("phoEt",                 &phoEt_);
-    theTree->Branch("phoEta",                &phoEta_);
-    theTree->Branch("phoPhi",                &phoPhi_);
-    theTree->Branch("phoSigmaE",               &phoSigmaE_);
-    theTree->Branch("phoCalibE",               &phoCalibE_);
-    theTree->Branch("phoCalibEt",              &phoCalibEt_);
-    theTree->Branch("phoSCE",                  &phoSCE_);
-    theTree->Branch("phoSCEt",                 &phoSCEt_);
-    //theTree->Branch("phoSCRawE",               &phoSCRawE_);
-    //theTree->Branch("phoESEnP1",               &phoESEnP1_);
-    //theTree->Branch("phoESEnP2",               &phoESEnP2_);
-    //theTree->Branch("phoSCEta",                &phoSCEta_);
-    //theTree->Branch("phoSCPhi",                &phoSCPhi_);
-    //theTree->Branch("phoSCEtaWidth",           &phoSCEtaWidth_);
-    //theTree->Branch("phoSCPhiWidth",           &phoSCPhiWidth_);
-    //theTree->Branch("phoSCBrem",               &phoSCBrem_);
-    //theTree->Branch("phohasPixelSeed",         &phohasPixelSeed_);
-    //theTree->Branch("phoEleVeto",              &phoEleVeto_);
-    //theTree->Branch("phoR9",                   &phoR9_);
-    //theTree->Branch("phoHoverE",               &phoHoverE_);
-    //theTree->Branch("phoESEffSigmaRR",         &phoESEffSigmaRR_);
-    //theTree->Branch("phoSigmaIEtaIEtaFull5x5", &phoSigmaIEtaIEtaFull5x5_);
-    //theTree->Branch("phoSigmaIEtaIPhiFull5x5", &phoSigmaIEtaIPhiFull5x5_);
-    //theTree->Branch("phoSigmaIPhiIPhiFull5x5", &phoSigmaIPhiIPhiFull5x5_);
-    //theTree->Branch("phoE2x2Full5x5",          &phoE2x2Full5x5_);
-    //theTree->Branch("phoE5x5Full5x5",          &phoE5x5Full5x5_);
-    //theTree->Branch("phoR9Full5x5",            &phoR9Full5x5_);
-    
-    theTree->Branch("phoPFChIso",              &phoPFChIso_);
-    theTree->Branch("phoPFPhoIso",             &phoPFPhoIso_);
-    theTree->Branch("phoPFNeuIso",             &phoPFNeuIso_);
-    theTree->Branch("phoEcalPFClusterIso",     &phoEcalPFClusterIso_);
-    theTree->Branch("phoHcalPFClusterIso",     &phoHcalPFClusterIso_);
-    theTree->Branch("phoIDMVA",                &phoIDMVA_);
-   
-    //theTree->Branch("phoSeedTime",             &phoSeedTime_);
-    //theTree->Branch("phoSeedEnergy",           &phoSeedEnergy_);
-    //theTree->Branch("phoMIPTotEnergy",         &phoMIPTotEnergy_);
-    //theTree->Branch("phoMIPChi2",                      &phoMIPChi2_);
-    //theTree->Branch("phoMIPSlope",                     &phoMIPSlope_);
-    //theTree->Branch("phoMIPIntercept",                 &phoMIPIntercept_);
-    //theTree->Branch("phoMIPNhitCone",                  &phoMIPNhitCone_);
-    //theTree->Branch("phoMIPIsHalo",                    &phoMIPIsHalo_);
-
+    addPhotonBranches();
+     // theTree->Branch("nPho",                  &nPho_);
+     // theTree->Branch("phoE",                  &phoE_);
+     // theTree->Branch("phoEt",                 &phoEt_);
+     // theTree->Branch("phoEta",                &phoEta_);
+     // theTree->Branch("phoPhi",                &phoPhi_);
+     // theTree->Branch("phoSigmaE",               &phoSigmaE_);
+     // theTree->Branch("phoCalibE",               &phoCalibE_);
+     // theTree->Branch("phoCalibEt",              &phoCalibEt_);
+     // theTree->Branch("phoSCE",                  &phoSCE_);
+     // theTree->Branch("phoSCEt",                 &phoSCEt_);
+     // theTree->Branch("phoPFChIso",              &phoPFChIso_);
+     // theTree->Branch("phoPFPhoIso",             &phoPFPhoIso_);
+     // theTree->Branch("phoPFNeuIso",             &phoPFNeuIso_);
+     // theTree->Branch("phoEcalPFClusterIso",     &phoEcalPFClusterIso_);
+     // theTree->Branch("phoHcalPFClusterIso",     &phoHcalPFClusterIso_);
+     // theTree->Branch("phoIDMVA",                &phoIDMVA_);
   }
 
   if (doPFPhotons_) {
-    theTree->Branch("nPFPho",                  &nPFPho_);
-    theTree->Branch("phoPFE",                  &phoPFE_);
-    theTree->Branch("phoPFEt",                 &phoPFEt_);
-    theTree->Branch("phoPFEta",                &phoPFEta_);
-    theTree->Branch("phoPFPhi",                &phoPFPhi_);
-  }
+        addPFPhotonBranches();
+    }
 
   if (doSuperClusters_) {
+
+    addSCBranches();
+
     theTree->Branch("nSC",                  &nSC_);
     theTree->Branch("scE",                  &scE_);
     theTree->Branch("scEt",                 &scEt_);
@@ -412,12 +387,6 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
     theTree->Branch("scFull5x5_sigmaIetaIeta",   &scFull5x5_sigmaIetaIeta_);
     theTree->Branch("scFull5x5_sigmaIetaIphi",   &scFull5x5_sigmaIetaIphi_);
     theTree->Branch("scFull5x5_sigmaIphiIphi",   &scFull5x5_sigmaIphiIphi_);
-  
-    //theTree->Branch("nhcalRechit",      &nhcalRechit_);
-    //theTree->Branch("hcalRechitIEta",   &hcalRechitIEta_);
-    //theTree->Branch("hcalRechitIPhi",   &hcalRechitIPhi_);
-    //theTree->Branch("hcalRechitEnergy", &hcalRechitEnergy_);
-
     theTree->Branch("scNHcalRecHitInDIEta5IPhi5",              &scNHcalRecHitInDIEta5IPhi5);
     theTree->Branch("scEFromHcalRecHitInDIEta5IPhi5",              &scEFromHcalRecHitInDIEta5IPhi5);
     theTree->Branch("scNHcalRecHitInDIEta2IPhi2",              &scNHcalRecHitInDIEta2IPhi2);
@@ -757,8 +726,9 @@ BsToMuMuGammaNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
 void BsToMuMuGammaNTuplizer::fillPhotons(const edm::Event& e, const edm::EventSetup& es)
 {
   // Fills tree branches with photons.
-  edm::Handle<std::vector<reco::Photon> > gedPhotonsHandle;
-  e.getByToken(gedPhotonsCollection_, gedPhotonsHandle);
+  // edm::Handle<std::vector<reco::Photon> > gedPhotonsHandle;
+  // e.getByToken(gedPhotonsCollection_, gedPhotonsHandle);
+   auto gedPhotonsHandle = e.getHandle(gedPhotonsCollection_);
 
   edm::Handle<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit>>> recHitsEB;
   e.getByToken(ebRechitToken_, recHitsEB);
@@ -768,80 +738,164 @@ void BsToMuMuGammaNTuplizer::fillPhotons(const edm::Event& e, const edm::EventSe
   
   EcalClusterLazyTools       lazyTool    (e, es, ebRechitToken_, eeRechitToken_);
   noZS::EcalClusterLazyTools lazyToolnoZS(e, es, ebRechitToken_, eeRechitToken_);
+  
+  edm::Handle<edm::ValueMap<float>> photonMVAValues;
+ if(doPhotonID_)     e.getByToken(valMapToken_, photonMVAValues);
 
   //EcalClusterLazyTools::ESGetTokens ecalClusterToolsESGetTokens_(consumesCollector());
   //EcalClusterLazyTools       lazyTool    (e,ecalClusterToolsESGetTokens_.get(es), ebRechitToken_, eeRechitToken_);
   //noZS::EcalClusterLazyTools lazyToolnoZS(e,ecalClusterToolsESGetTokens_.get(es), ebRechitToken_, eeRechitToken_);
 
   // loop over photons
-  for (auto pho = gedPhotonsHandle->begin(); pho != gedPhotonsHandle->end(); ++pho) {
-    phoE_             .push_back(pho->energy());
-    phoEt_            .push_back(pho->et());
-    phoEta_           .push_back(pho->eta());
-    phoPhi_           .push_back(pho->phi());
+  storageMapInt["nPhotons"]=0;
+  Int_t idx=0;
+  //for (auto pho = gedPhotonsHandle->begin(); pho != gedPhotonsHandle->end(); ++pho) {
     
-    //phoSigmaE_          .push_back(pho->userFloat("ecalEnergyErrPostCorr"));
-    //phoCalibE_          .push_back(pho->userFloat("ecalEnergyPostCorr"));
-    //phoCalibEt_         .push_back(pho->et()*pho->userFloat("ecalEnergyPostCorr")/pho->energy());
-    phoSCE_             .push_back((*pho).superCluster()->energy());
-    phoSCEt_            .push_back(pho->superCluster()->energy()/cosh(pho->superCluster()->eta()));
-    phoSCRawE_          .push_back((*pho).superCluster()->rawEnergy());
-    phoESEnP1_          .push_back((*pho).superCluster()->preshowerEnergyPlane1());
-    phoESEnP2_          .push_back((*pho).superCluster()->preshowerEnergyPlane2());
-    phoSCEta_           .push_back((*pho).superCluster()->eta());
-    phoSCPhi_           .push_back((*pho).superCluster()->phi());
-    phoSCEtaWidth_      .push_back((*pho).superCluster()->etaWidth());
-    phoSCPhiWidth_      .push_back((*pho).superCluster()->phiWidth());
-    phoSCBrem_          .push_back((*pho).superCluster()->phiWidth()/(*pho).superCluster()->etaWidth());
-    phohasPixelSeed_    .push_back((Int_t)pho->hasPixelSeed());
-    phoR9_              .push_back(pho->r9());
-    phoHoverE_          .push_back(pho->hadTowOverEm());
-    phoESEffSigmaRR_    .push_back(lazyTool.eseffsirir(*((*pho).superCluster())));
-    
-    phoPFChIso_         .push_back(pho->chargedHadronIso()); 
-    phoPFPhoIso_        .push_back(pho->photonIso());
-    phoPFNeuIso_        .push_back(pho->neutralHadronIso());
-    phoEcalPFClusterIso_.push_back(pho->ecalPFClusterIso());
-    phoHcalPFClusterIso_.push_back(pho->hcalPFClusterIso());
-
-    // phoEleVeto_         .push_back((Int_t)pho->passElectronVeto());
+  for (auto const& pho : gedPhotonsHandle->ptrs()){
+    storageMapFloatArray["phoE"][idx]      =               pho->energy();
+    storageMapFloatArray["phoEt"][idx]      =              pho->et();
+    storageMapFloatArray["phoEta"][idx]      =             pho->eta();
+    storageMapFloatArray["phoPhi"][idx]      =             pho->phi();
+    storageMapFloatArray["phoSCE"][idx]      =             pho->superCluster()->energy();
+    storageMapFloatArray["phoSCEt"][idx]      =            pho->superCluster()->energy()/cosh(pho->superCluster()->eta());
+    storageMapFloatArray["phoSCRawE"][idx]      =          pho->superCluster()->rawEnergy();
+    storageMapFloatArray["phoESEnP1"][idx]      =          pho->superCluster()->preshowerEnergyPlane1();
+    storageMapFloatArray["phoESEnP2"][idx]      =          pho->superCluster()->preshowerEnergyPlane2();
+    storageMapFloatArray["phoSCEta"][idx]      =           pho->superCluster()->eta();
+    storageMapFloatArray["phoSCPhi"][idx]      =           pho->superCluster()->phi();
+    storageMapFloatArray["phoSCEtaWidth"][idx]      =      pho->superCluster()->etaWidth();
+    storageMapFloatArray["phoSCPhiWidth"][idx]      =      pho->superCluster()->phiWidth();
+    storageMapFloatArray["phoSCBrem"][idx]      =          pho->superCluster()->phiWidth()/(*pho).superCluster()->etaWidth();
+    storageMapFloatArray["phohasPixelSeed"][idx]      =    (Int_t)pho->hasPixelSeed();
+    storageMapFloatArray["phoR9"][idx]      =              pho->r9();
+    storageMapFloatArray["phoHoverE"][idx]      =          pho->hadTowOverEm();
+    storageMapFloatArray["phoESEffSigmaRR"][idx]      =    lazyTool.eseffsirir(*((*pho).superCluster()));
+    storageMapFloatArray["phoPFChIso"][idx]      =         pho->chargedHadronIso(); 
+    storageMapFloatArray["phoPFPhoIso"][idx]      =        pho->photonIso();
+    storageMapFloatArray["phoPFNeuIso"][idx]      =        pho->neutralHadronIso();
+    storageMapFloatArray["phoEcalPFClusterIso"][idx]    =  pho->ecalPFClusterIso();
+    storageMapFloatArray["phoHcalPFClusterIso"][idx]    =  pho->hcalPFClusterIso();
+    if (doPhotonID_)
+       storageMapFloatArray["phoIDMVA"][idx]    = (*photonMVAValues)[pho];
+    else 
+       storageMapFloatArray["phoIDMVA"][idx]   = -2.0;
+    // phoEleVeto_        ((Int_t)pho->passElectronVeto());
     // phoIDMVA_           .push_back(pho->userFloat("PhotonMVAEstimatorRunIIFall17v2Values"));  
-    
-    phoSigmaIEtaIEtaFull5x5_ .push_back(pho->full5x5_sigmaIetaIeta());
-    phoSigmaIEtaIPhiFull5x5_ .push_back(pho->full5x5_showerShapeVariables().sigmaIetaIphi);
-    phoSigmaIPhiIPhiFull5x5_ .push_back(pho->full5x5_showerShapeVariables().sigmaIphiIphi);
-    phoE2x2Full5x5_          .push_back(lazyToolnoZS.e2x2(*((*pho).superCluster()->seed())));
-    phoE5x5Full5x5_          .push_back(pho->full5x5_e5x5());
-    phoR9Full5x5_            .push_back(pho->full5x5_r9());
-    phoMIPTotEnergy_         .push_back(pho->mipTotEnergy());
-    phoMIPChi2_        .push_back(pho->mipChi2());
-    phoMIPSlope_       .push_back(pho->mipSlope());
-    phoMIPIntercept_   .push_back(pho->mipIntercept());
-    phoMIPNhitCone_    .push_back(pho->mipNhitCone());
-    phoMIPIsHalo_      .push_back(pho->mipIsHalo());    
-    
-    ///////////////////////////////SATURATED/UNSATURATED ///from ggFlash////
-    DetId seed = (pho->superCluster()->seed()->hitsAndFractions())[0].first;
-    Bool_t isBarrel = seed.subdetId() == EcalBarrel;
-    const EcalRecHitCollection * rechits = (isBarrel?lazyTool.getEcalEBRecHitCollection():lazyTool.getEcalEERecHitCollection());
-    
-    EcalRecHitCollection::const_iterator theSeedHit = rechits->find(seed);
-    if (theSeedHit != rechits->end()) {
-      //std::cout<<"(*theSeedHit).time()"<<(*theSeedHit).time()<<"seed energy: "<<(*theSeedHit).energy()<<std::endl;  
-      
-      phoSeedTime_  .push_back((*theSeedHit).time());
-      phoSeedEnergy_.push_back((*theSeedHit).energy());
-
-      
-    } else{
-      phoSeedTime_  .push_back(-99.);
-      phoSeedEnergy_.push_back(-99.);
-      
-    }
- 
-    nPho_++;
+    storageMapFloatArray["phoSigmaIEtaIEtaFull5x"][idx]      =  pho->full5x5_sigmaIetaIeta();
+    storageMapFloatArray["phoSigmaIEtaIPhiFull5x"][idx]      =  pho->full5x5_showerShapeVariables().sigmaIetaIphi;
+    storageMapFloatArray["phoSigmaIPhiIPhiFull5x"][idx]      =  pho->full5x5_showerShapeVariables().sigmaIphiIphi;
+    storageMapFloatArray["phoE2x2Full5x5"][idx]             = lazyToolnoZS.e2x2(*((*pho).superCluster()->seed()));
+    storageMapFloatArray["phoE5x5Full5x5"][idx]      =         pho->full5x5_e5x5();
+    storageMapFloatArray["phoR9Full5x5"][idx]      =           pho->full5x5_r9();
+    storageMapFloatArray["phoMIPTotEnergy"][idx]      =        pho->mipTotEnergy();
+    storageMapFloatArray["phoMIPChi2"][idx]      =             pho->mipChi2();
+    storageMapFloatArray["phoMIPSlope"][idx]      =            pho->mipSlope();
+    storageMapFloatArray["phoMIPIntercept"][idx]      =        pho->mipIntercept();
+    storageMapFloatArray["phoMIPNhitCone"][idx]      =         pho->mipNhitCone();
+    storageMapFloatArray["phoMIPIsHalo"][idx]      =           pho->mipIsHalo();    
+    idx++;
   } // photons loop
+
+  storageMapInt["nPhotons"]=idx;
 }
+
+void BsToMuMuGammaNTuplizer::addPFPhotonBranches()
+{
+      storageMapInt["nPFPhotons"]=0;
+      theTree->Branch("nPFPhotons",   &storageMapInt["nPFPhotons"]);
+      
+      storageMapFloatArray["phoPFE"]   = new Float_t[N_PF_PHOTONS];
+      theTree->Branch("phoPFE", storageMapFloatArray["phoPFE"],"phoPFE[nPFPhotons]/F");
+      storageMapFloatArray["phoPFEt"]   = new Float_t[N_PF_PHOTONS];
+      theTree->Branch("phoPFEt", storageMapFloatArray["phoPFEt"],"phoPFEt[nPFPhotons]/F");
+      storageMapFloatArray["phoPFEta"]   = new Float_t[N_PF_PHOTONS];
+      theTree->Branch("phoPFEta", storageMapFloatArray["phoPFEta"],"phoPFEta[nPFPhotons]/F");
+      storageMapFloatArray["phoPFPhi"]   = new Float_t[N_PF_PHOTONS];
+      theTree->Branch("phoPFPhi", storageMapFloatArray["phoPFPhi"],"phoPFPhi[nPFPhotons]/F");
+}
+
+
+void BsToMuMuGammaNTuplizer::addPhotonBranches()
+{
+      storageMapInt["nPhotons"]=0;
+      theTree->Branch("nPhotons",   &storageMapInt["nPhotons"]);
+      
+      storageMapFloatArray["phoE"]   = new Float_t[N_PHOTONS_MAX];
+      theTree->Branch("phoE", storageMapFloatArray["phoE"],"phoE[nPhotons]/F");
+      storageMapFloatArray["phoEt"]   = new Float_t[N_PHOTONS_MAX];
+      theTree->Branch("phoEt", storageMapFloatArray["phoEt"],"phoEt[nPhotons]/F");
+      storageMapFloatArray["phoEta"]   = new Float_t[N_PHOTONS_MAX];
+      theTree->Branch("phoEta", storageMapFloatArray["phoEta"],"phoEta[nPhotons]/F");
+      storageMapFloatArray["phoPhi"]   = new Float_t[N_PHOTONS_MAX];
+      theTree->Branch("phoPhi", storageMapFloatArray["phoPhi"],"phoPhi[nPhotons]/F");
+      storageMapFloatArray["phoSCE"]   = new Float_t[N_PHOTONS_MAX];
+      theTree->Branch("phoSCE", storageMapFloatArray["phoSCE"],"phoSCE[nPhotons]/F");
+      storageMapFloatArray["phoSCEt"]   = new Float_t[N_PHOTONS_MAX];
+      theTree->Branch("phoSCEt", storageMapFloatArray["phoSCEt"],"phoSCEt[nPhotons]/F");
+      storageMapFloatArray["phoSCRawE"]   = new Float_t[N_PHOTONS_MAX];
+      theTree->Branch("phoSCRawE", storageMapFloatArray["phoSCRawE"],"phoSCRawE[nPhotons]/F");
+      storageMapFloatArray["phoESEnP1"]   = new Float_t[N_PHOTONS_MAX];
+      theTree->Branch("phoESEnP1", storageMapFloatArray["phoESEnP1"],"phoESEnP1[nPhotons]/F");
+      storageMapFloatArray["phoESEnP2"]   = new Float_t[N_PHOTONS_MAX];
+      theTree->Branch("phoESEnP2", storageMapFloatArray["phoESEnP2"],"phoESEnP2[nPhotons]/F");
+      storageMapFloatArray["phoSCEta"]   = new Float_t[N_PHOTONS_MAX];
+      theTree->Branch("phoSCEta", storageMapFloatArray["phoSCEta"],"phoSCEta[nPhotons]/F");
+      storageMapFloatArray["phoSCPhi"]   = new Float_t[N_PHOTONS_MAX];
+      theTree->Branch("phoSCPhi", storageMapFloatArray["phoSCPhi"],"phoSCPhi[nPhotons]/F");
+      storageMapFloatArray["phoSCEtaWidth"]   = new Float_t[N_PHOTONS_MAX];
+      theTree->Branch("phoSCEtaWidth", storageMapFloatArray["phoSCEtaWidth"],"phoSCEtaWidth[nPhotons]/F");
+      storageMapFloatArray["phoSCPhiWidth"]   = new Float_t[N_PHOTONS_MAX];
+      theTree->Branch("phoSCPhiWidth", storageMapFloatArray["phoSCPhiWidth"],"phoSCPhiWidth[nPhotons]/F");
+      storageMapFloatArray["phoSCBrem"]   = new Float_t[N_PHOTONS_MAX];
+      theTree->Branch("phoSCBrem", storageMapFloatArray["phoSCBrem"],"phoSCBrem[nPhotons]/F");
+      storageMapFloatArray["phohasPixelSeed"]   = new Float_t[N_PHOTONS_MAX];
+      theTree->Branch("phohasPixelSeed", storageMapFloatArray["phohasPixelSeed"],"phohasPixelSeed[nPhotons]/F");
+      storageMapFloatArray["phoR9"]   = new Float_t[N_PHOTONS_MAX];
+      theTree->Branch("phoR9", storageMapFloatArray["phoR9"],"phoR9[nPhotons]/F");
+      storageMapFloatArray["phoHoverE"]   = new Float_t[N_PHOTONS_MAX];
+      theTree->Branch("phoHoverE", storageMapFloatArray["phoHoverE"],"phoHoverE[nPhotons]/F");
+      storageMapFloatArray["phoESEffSigmaRR"]   = new Float_t[N_PHOTONS_MAX];
+      theTree->Branch("phoESEffSigmaRR", storageMapFloatArray["phoESEffSigmaRR"],"phoESEffSigmaRR[nPhotons]/F");
+      storageMapFloatArray["phoPFChIso"]   = new Float_t[N_PHOTONS_MAX];
+      theTree->Branch("phoPFChIso", storageMapFloatArray["phoPFChIso"],"phoPFChIso[nPhotons]/F");
+      storageMapFloatArray["phoPFPhoIso"]   = new Float_t[N_PHOTONS_MAX];
+      theTree->Branch("phoPFPhoIso", storageMapFloatArray["phoPFPhoIso"],"phoPFPhoIso[nPhotons]/F");
+      storageMapFloatArray["phoPFNeuIso"]   = new Float_t[N_PHOTONS_MAX];
+      theTree->Branch("phoPFNeuIso", storageMapFloatArray["phoPFNeuIso"],"phoPFNeuIso[nPhotons]/F");
+      storageMapFloatArray["phoEcalPFClusterIso"]   = new Float_t[N_PHOTONS_MAX];
+      theTree->Branch("phoEcalPFClusterIso", storageMapFloatArray["phoEcalPFClusterIso"],"phoEcalPFClusterIso[nPhotons]/F");
+      storageMapFloatArray["phoHcalPFClusterIso"]   = new Float_t[N_PHOTONS_MAX];
+      theTree->Branch("phoHcalPFClusterIso", storageMapFloatArray["phoHcalPFClusterIso"],"phoHcalPFClusterIso[nPhotons]/F");
+      storageMapFloatArray["phoEleVeto"]   = new Float_t[N_PHOTONS_MAX];
+      theTree->Branch("phoEleVeto", storageMapFloatArray["phoEleVeto"],"phoEleVeto[nPhotons]/F");
+      storageMapFloatArray["phoIDMVA"]   = new Float_t[N_PHOTONS_MAX];
+      theTree->Branch("phoIDMVA", storageMapFloatArray["phoIDMVA"],"phoIDMVA[nPhotons]/F");
+      storageMapFloatArray["phoSigmaIEtaIEtaFull5x"]   = new Float_t[N_PHOTONS_MAX];
+      theTree->Branch("phoSigmaIEtaIEtaFull5x", storageMapFloatArray["phoSigmaIEtaIEtaFull5x"],"phoSigmaIEtaIEtaFull5x[nPhotons]/F");
+      storageMapFloatArray["phoSigmaIEtaIPhiFull5x"]   = new Float_t[N_PHOTONS_MAX];
+      theTree->Branch("phoSigmaIEtaIPhiFull5x", storageMapFloatArray["phoSigmaIEtaIPhiFull5x"],"phoSigmaIEtaIPhiFull5x[nPhotons]/F");
+      storageMapFloatArray["phoSigmaIPhiIPhiFull5x"]   = new Float_t[N_PHOTONS_MAX];
+      theTree->Branch("phoSigmaIPhiIPhiFull5x", storageMapFloatArray["phoSigmaIPhiIPhiFull5x"],"phoSigmaIPhiIPhiFull5x[nPhotons]/F");
+      storageMapFloatArray["phoE2x2Full5x5"]   = new Float_t[N_PHOTONS_MAX];
+      theTree->Branch("phoE2x2Full5x5", storageMapFloatArray["phoE2x2Full5x5"],"phoE2x2Full5x5[nPhotons]/F");
+      storageMapFloatArray["phoE5x5Full5x5"]   = new Float_t[N_PHOTONS_MAX];
+      theTree->Branch("phoE5x5Full5x5", storageMapFloatArray["phoE5x5Full5x5"],"phoE5x5Full5x5[nPhotons]/F");
+      storageMapFloatArray["phoR9Full5x5"]   = new Float_t[N_PHOTONS_MAX];
+      theTree->Branch("phoR9Full5x5", storageMapFloatArray["phoR9Full5x5"],"phoR9Full5x5[nPhotons]/F");
+      storageMapFloatArray["phoMIPTotEnergy"]   = new Float_t[N_PHOTONS_MAX];
+      theTree->Branch("phoMIPTotEnergy", storageMapFloatArray["phoMIPTotEnergy"],"phoMIPTotEnergy[nPhotons]/F");
+      storageMapFloatArray["phoMIPChi2"]   = new Float_t[N_PHOTONS_MAX];
+      theTree->Branch("phoMIPChi2", storageMapFloatArray["phoMIPChi2"],"phoMIPChi2[nPhotons]/F");
+      storageMapFloatArray["phoMIPSlope"]   = new Float_t[N_PHOTONS_MAX];
+      theTree->Branch("phoMIPSlope", storageMapFloatArray["phoMIPSlope"],"phoMIPSlope[nPhotons]/F");
+      storageMapFloatArray["phoMIPIntercept"]   = new Float_t[N_PHOTONS_MAX];
+      theTree->Branch("phoMIPIntercept", storageMapFloatArray["phoMIPIntercept"],"phoMIPIntercept[nPhotons]/F");
+      storageMapFloatArray["phoMIPNhitCone"]   = new Float_t[N_PHOTONS_MAX];
+      theTree->Branch("phoMIPNhitCone", storageMapFloatArray["phoMIPNhitCone"],"phoMIPNhitCone[nPhotons]/F");
+      storageMapFloatArray["phoMIPIsHalo"]   = new Float_t[N_PHOTONS_MAX];
+      theTree->Branch("phoMIPIsHalo", storageMapFloatArray["phoMIPIsHalo"],"phoMIPIsHalo[nPhotons]/F");
+}
+
 
 void BsToMuMuGammaNTuplizer::fillPFPhotons(const edm::Event& e, const edm::EventSetup& es)
 {
@@ -850,15 +904,164 @@ void BsToMuMuGammaNTuplizer::fillPFPhotons(const edm::Event& e, const edm::Event
  // e.getByToken(pfPhotonsCollection_, pfCandidateHandle);
   
   // loop over photons
+  auto idx=0;
+  storageMapInt["nPFPhotons"]=idx;
   for (auto pf = pfCandidateHandle->begin(); pf != pfCandidateHandle->end(); ++pf) {
     if(pf->pdgId() !=22)continue;
     if(pf->et() < pTMinPFPhotons)continue;
-    phoPFE_             .push_back(pf->energy());
-    phoPFEt_            .push_back(pf->et());
-    phoPFEta_           .push_back(pf->eta());
-    phoPFPhi_           .push_back(pf->phi());
-    nPFPho_++;
+    storageMapFloatArray["phoPFE"][idx]  =  pf->energy();
+    storageMapFloatArray["phoPFEt"][idx]  =  pf->et();
+    storageMapFloatArray["phoPFEta"][idx]  =  pf->eta();
+    storageMapFloatArray["phoPFPhi"][idx]  =  pf->phi();
+    idx++;
   } // PF photons loop
+  storageMapInt["nPFPhotons"]=idx;
+}
+
+void BsToMuMuGammaNTuplizer::addSCBranches()
+{
+      storageMapInt["nSC"]=0;
+      theTree->Branch("nSC",   &storageMapInt["nSC"]);
+    storageMapFloatArray["scE"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scE", storageMapFloatArray["scE"],"scE[nSC]/F");
+    storageMapFloatArray["scEt"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scEt", storageMapFloatArray["scEt"],"scEt[nSC]/F");
+    storageMapFloatArray["scRawE"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scRawE", storageMapFloatArray["scRawE"],"scRawE[nSC]/F");
+    storageMapFloatArray["scRawEt"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scRawEt", storageMapFloatArray["scRawEt"],"scRawEt[nSC]/F");
+    storageMapFloatArray["scEta"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scEta", storageMapFloatArray["scEta"],"scEta[nSC]/F");
+    storageMapFloatArray["scPhi"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scPhi", storageMapFloatArray["scPhi"],"scPhi[nSC]/F");
+    storageMapFloatArray["scX"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scX", storageMapFloatArray["scX"],"scX[nSC]/F");
+    storageMapFloatArray["scY"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scY", storageMapFloatArray["scY"],"scY[nSC]/F");
+    storageMapFloatArray["scZ"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scZ", storageMapFloatArray["scZ"],"scZ[nSC]/F");
+    storageMapFloatArray["scEtaWidth"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scEtaWidth", storageMapFloatArray["scEtaWidth"],"scEtaWidth[nSC]/F");
+    storageMapFloatArray["scPhiWidth"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scPhiWidth", storageMapFloatArray["scPhiWidth"],"scPhiWidth[nSC]/F");
+    storageMapFloatArray["scE5x5"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scE5x5", storageMapFloatArray["scE5x5"],"scE5x5[nSC]/F");
+    storageMapFloatArray["scE2x2Ratio"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scE2x2Ratio", storageMapFloatArray["scE2x2Ratio"],"scE2x2Ratio[nSC]/F");
+    storageMapFloatArray["scE3x3Ratio"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scE3x3Ratio", storageMapFloatArray["scE3x3Ratio"],"scE3x3Ratio[nSC]/F");
+    storageMapFloatArray["scEMaxRatio"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scEMaxRatio", storageMapFloatArray["scEMaxRatio"],"scEMaxRatio[nSC]/F");
+    storageMapFloatArray["scE2ndRatio"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scE2ndRatio", storageMapFloatArray["scE2ndRatio"],"scE2ndRatio[nSC]/F");
+    storageMapFloatArray["scETopRatio"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scETopRatio", storageMapFloatArray["scETopRatio"],"scETopRatio[nSC]/F");
+    storageMapFloatArray["scERightRatio"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scERightRatio", storageMapFloatArray["scERightRatio"],"scERightRatio[nSC]/F");
+    storageMapFloatArray["scEBottomRatio"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scEBottomRatio", storageMapFloatArray["scEBottomRatio"],"scEBottomRatio[nSC]/F");
+    storageMapFloatArray["scELeftRatio"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scELeftRatio", storageMapFloatArray["scELeftRatio"],"scELeftRatio[nSC]/F");
+    storageMapFloatArray["scE2x5MaxRatio"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scE2x5MaxRatio", storageMapFloatArray["scE2x5MaxRatio"],"scE2x5MaxRatio[nSC]/F");
+    storageMapFloatArray["scE2x5TopRatio"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scE2x5TopRatio", storageMapFloatArray["scE2x5TopRatio"],"scE2x5TopRatio[nSC]/F");
+    storageMapFloatArray["scE2x5RightRatio"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scE2x5RightRatio", storageMapFloatArray["scE2x5RightRatio"],"scE2x5RightRatio[nSC]/F");
+    storageMapFloatArray["scE2x5BottomRatio"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scE2x5BottomRatio", storageMapFloatArray["scE2x5BottomRatio"],"scE2x5BottomRatio[nSC]/F");
+    storageMapFloatArray["scE2x5LeftRatio"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scE2x5LeftRatio", storageMapFloatArray["scE2x5LeftRatio"],"scE2x5LeftRatio[nSC]/F");
+    storageMapFloatArray["scSwissCross"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scSwissCross", storageMapFloatArray["scSwissCross"],"scSwissCross[nSC]/F");
+    storageMapFloatArray["scR9"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scR9", storageMapFloatArray["scR9"],"scR9[nSC]/F");
+    storageMapFloatArray["scSigmaIetaIeta"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scSigmaIetaIeta", storageMapFloatArray["scSigmaIetaIeta"],"scSigmaIetaIeta[nSC]/F");
+    storageMapFloatArray["scSigmaIetaIphi"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scSigmaIetaIphi", storageMapFloatArray["scSigmaIetaIphi"],"scSigmaIetaIphi[nSC]/F");
+    storageMapFloatArray["scSigmaIphiIphi"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scSigmaIphiIphi", storageMapFloatArray["scSigmaIphiIphi"],"scSigmaIphiIphi[nSC]/F");
+    storageMapFloatArray["scFull5x5"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scFull5x5", storageMapFloatArray["scFull5x5"],"scFull5x5[nSC]/F");
+    storageMapFloatArray["scFull5x5"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scFull5x5", storageMapFloatArray["scFull5x5"],"scFull5x5[nSC]/F");
+    storageMapFloatArray["scFull5x5"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scFull5x5", storageMapFloatArray["scFull5x5"],"scFull5x5[nSC]/F");
+    storageMapFloatArray["scFull5x5"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scFull5x5", storageMapFloatArray["scFull5x5"],"scFull5x5[nSC]/F");
+    storageMapFloatArray["scFull5x5"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scFull5x5", storageMapFloatArray["scFull5x5"],"scFull5x5[nSC]/F");
+    storageMapFloatArray["scFull5x5"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scFull5x5", storageMapFloatArray["scFull5x5"],"scFull5x5[nSC]/F");
+    storageMapFloatArray["scFull5x5"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scFull5x5", storageMapFloatArray["scFull5x5"],"scFull5x5[nSC]/F");
+    storageMapFloatArray["scFull5x5"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scFull5x5", storageMapFloatArray["scFull5x5"],"scFull5x5[nSC]/F");
+    storageMapFloatArray["scFull5x5"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scFull5x5", storageMapFloatArray["scFull5x5"],"scFull5x5[nSC]/F");
+    storageMapFloatArray["scFull5x5"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scFull5x5", storageMapFloatArray["scFull5x5"],"scFull5x5[nSC]/F");
+    storageMapFloatArray["scFull5x5"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scFull5x5", storageMapFloatArray["scFull5x5"],"scFull5x5[nSC]/F");
+    storageMapFloatArray["scFull5x5"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scFull5x5", storageMapFloatArray["scFull5x5"],"scFull5x5[nSC]/F");
+    storageMapFloatArray["scFull5x5"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scFull5x5", storageMapFloatArray["scFull5x5"],"scFull5x5[nSC]/F");
+    storageMapFloatArray["scFull5x5"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scFull5x5", storageMapFloatArray["scFull5x5"],"scFull5x5[nSC]/F");
+    storageMapFloatArray["scFull5x5"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scFull5x5", storageMapFloatArray["scFull5x5"],"scFull5x5[nSC]/F");
+    storageMapFloatArray["scFull5x5"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scFull5x5", storageMapFloatArray["scFull5x5"],"scFull5x5[nSC]/F");
+    storageMapFloatArray["scFull5x5"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scFull5x5", storageMapFloatArray["scFull5x5"],"scFull5x5[nSC]/F");
+    storageMapFloatArray["scFull5x5"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scFull5x5", storageMapFloatArray["scFull5x5"],"scFull5x5[nSC]/F");
+    storageMapFloatArray["scFull5x5"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scFull5x5", storageMapFloatArray["scFull5x5"],"scFull5x5[nSC]/F");
+    storageMapFloatArray["scMinDrWithGsfElectornSC"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scMinDrWithGsfElectornSC", storageMapFloatArray["scMinDrWithGsfElectornSC"],"scMinDrWithGsfElectornSC[nSC]/F");
+    storageMapFloatArray["scFoundGsfMatch"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scFoundGsfMatch", storageMapFloatArray["scFoundGsfMatch"],"scFoundGsfMatch[nSC]/F");
+    storageMapFloatArray["scEFromHcalRecHitInDIEta5IPhi5"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scEFromHcalRecHitInDIEta5IPhi5", storageMapFloatArray["scEFromHcalRecHitInDIEta5IPhi5"],"scEFromHcalRecHitInDIEta5IPhi5[nSC]/F");
+    storageMapFloatArray["scNHcalRecHitInDIEta5IPhi5"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scNHcalRecHitInDIEta5IPhi5", storageMapFloatArray["scNHcalRecHitInDIEta5IPhi5"],"scNHcalRecHitInDIEta5IPhi5[nSC]/F");
+    storageMapFloatArray["scEFromHcalRecHitInDIEta2IPhi2"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scEFromHcalRecHitInDIEta2IPhi2", storageMapFloatArray["scEFromHcalRecHitInDIEta2IPhi2"],"scEFromHcalRecHitInDIEta2IPhi2[nSC]/F");
+    storageMapFloatArray["scNHcalRecHitInDIEta2IPhi2"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scNHcalRecHitInDIEta2IPhi2", storageMapFloatArray["scNHcalRecHitInDIEta2IPhi2"],"scNHcalRecHitInDIEta2IPhi2[nSC]/F");
+    storageMapFloatArray["scPFChIso1"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scPFChIso1", storageMapFloatArray["scPFChIso1"],"scPFChIso1[nSC]/F");
+    storageMapFloatArray["scPFChIso2"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scPFChIso2", storageMapFloatArray["scPFChIso2"],"scPFChIso2[nSC]/F");
+    storageMapFloatArray["scPFChIso3"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scPFChIso3", storageMapFloatArray["scPFChIso3"],"scPFChIso3[nSC]/F");
+    storageMapFloatArray["scPFChIso4"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scPFChIso4", storageMapFloatArray["scPFChIso4"],"scPFChIso4[nSC]/F");
+    storageMapFloatArray["scPFChIso5"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scPFChIso5", storageMapFloatArray["scPFChIso5"],"scPFChIso5[nSC]/F");
+    storageMapFloatArray["scPFPhoIso1"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scPFPhoIso1", storageMapFloatArray["scPFPhoIso1"],"scPFPhoIso1[nSC]/F");
+    storageMapFloatArray["scPFPhoIso2"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scPFPhoIso2", storageMapFloatArray["scPFPhoIso2"],"scPFPhoIso2[nSC]/F");
+    storageMapFloatArray["scPFPhoIso3"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scPFPhoIso3", storageMapFloatArray["scPFPhoIso3"],"scPFPhoIso3[nSC]/F");
+    storageMapFloatArray["scPFPhoIso4"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scPFPhoIso4", storageMapFloatArray["scPFPhoIso4"],"scPFPhoIso4[nSC]/F");
+    storageMapFloatArray["scPFPhoIso5"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scPFPhoIso5", storageMapFloatArray["scPFPhoIso5"],"scPFPhoIso5[nSC]/F");
+    storageMapFloatArray["scPFNeuIso1"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scPFNeuIso1", storageMapFloatArray["scPFNeuIso1"],"scPFNeuIso1[nSC]/F");
+    storageMapFloatArray["scPFNeuIso2"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scPFNeuIso2", storageMapFloatArray["scPFNeuIso2"],"scPFNeuIso2[nSC]/F");
+    storageMapFloatArray["scPFNeuIso3"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scPFNeuIso3", storageMapFloatArray["scPFNeuIso3"],"scPFNeuIso3[nSC]/F");
+    storageMapFloatArray["scPFNeuIso4"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scPFNeuIso4", storageMapFloatArray["scPFNeuIso4"],"scPFNeuIso4[nSC]/F");
+    storageMapFloatArray["scPFNeuIso5"]   = new Float_t[N_SC_MAX];
+    theTree->Branch("scPFNeuIso5", storageMapFloatArray["scPFNeuIso5"],"scPFNeuIso5[nSC]/F");     
 }
 
 
@@ -905,8 +1108,9 @@ void BsToMuMuGammaNTuplizer::fillSC(edm::Event const& e, const edm::EventSetup& 
 
   locCov_.clear();
   full5x5_locCov_.clear();
-  // for(const auto& iSuperCluster : *(superClusterEB.product())){  
   Int_t isECAP=-1;
+  Int_t idx=0;
+  storageMapInt["nSC"]=0;
   for (auto const& scs : { *barrelSCHandle.product(), *endcapSCHandle.product() }) {
     isECAP+=1; 
     for (auto const& sc : scs) {
@@ -915,66 +1119,12 @@ void BsToMuMuGammaNTuplizer::fillSC(edm::Event const& e, const edm::EventSetup& 
       es.get<CaloTopologyRecord>().get(caloTopology);
       const CaloTopology* topology = caloTopology.product();
 	
-      scE_.push_back(sc.correctedEnergy());
-      scEt_.push_back(sc.correctedEnergy()/cosh(sc.eta()));
-      scRawE_.push_back(sc.rawEnergy());
-      scRawEt_.push_back(sc.rawEnergy()/cosh(sc.eta()));
-      scEta_.push_back(sc.eta());
-      scPhi_.push_back(sc.phi());
-      scX_.push_back(sc.x());
-      scY_.push_back(sc.y());
-      scZ_.push_back(sc.z());
-      scEtaWidth_.push_back(sc.etaWidth());
-      scPhiWidth_.push_back(sc.phiWidth());
-	
       reco::CaloCluster caloBC(*sc.seed());  
       showerShapes_.clear();
-      //if(abs(sc.eta()) <= 1.442)showerShapes_ = getShowerShapes(&caloBC, &(*(recHitsEB.product())), topology);  
       //if(abs(sc.eta()) >= 1.566)showerShapes_ = getShowerShapes(&caloBC, &(*(recHitsEE.product())), topology);  
       if(isECAP==0)showerShapes_ = getShowerShapes(&caloBC, &(*(recHitsEB.product())), topology);  
       if(isECAP==1)showerShapes_ = getShowerShapes(&caloBC, &(*(recHitsEE.product())), topology);  
 
-       scE5x5_.push_back(reduceFloat(showerShapes_[0],nBits_));
-       scE2x2Ratio_.push_back(reduceFloat(showerShapes_[1],nBits_));
-       scE3x3Ratio_.push_back(reduceFloat(showerShapes_[2],nBits_));
-       scEMaxRatio_.push_back(reduceFloat(showerShapes_[3],nBits_));
-       scE2ndRatio_.push_back(reduceFloat(showerShapes_[4],nBits_));
-       scETopRatio_.push_back(reduceFloat(showerShapes_[5],nBits_));
-       scERightRatio_.push_back(reduceFloat(showerShapes_[6],nBits_));
-       scEBottomRatio_.push_back(reduceFloat(showerShapes_[7],nBits_));
-       scELeftRatio_.push_back(reduceFloat(showerShapes_[8],nBits_));
-       scE2x5MaxRatio_.push_back(reduceFloat(showerShapes_[9],nBits_));
-       scE2x5TopRatio_.push_back(reduceFloat(showerShapes_[10],nBits_));
-       scE2x5RightRatio_.push_back(reduceFloat(showerShapes_[11],nBits_));
-       scE2x5BottomRatio_.push_back(reduceFloat(showerShapes_[12],nBits_));
-       scE2x5LeftRatio_.push_back(reduceFloat(showerShapes_[13],nBits_));
-       scSwissCross_.push_back(reduceFloat(showerShapes_[14],nBits_));
-       scR9_.push_back(reduceFloat(showerShapes_[2]*showerShapes_[0]/sc.rawEnergy(),nBits_));
-       scSigmaIetaIeta_.push_back(reduceFloat(showerShapes_[16],nBits_)); 
-       scSigmaIetaIphi_.push_back(reduceFloat(showerShapes_[17],nBits_)); 
-       scSigmaIphiIphi_.push_back(reduceFloat(showerShapes_[18],nBits_)); 
-       scFull5x5_e5x5_.push_back(reduceFloat(showerShapes_[19],nBits_));
-       scFull5x5_e2x2Ratio_.push_back(reduceFloat(showerShapes_[20],nBits_));
-       scFull5x5_e3x3Ratio_.push_back(reduceFloat(showerShapes_[21],nBits_));
-       scFull5x5_eMaxRatio_.push_back(reduceFloat(showerShapes_[22],nBits_));
-       scFull5x5_e2ndRatio_.push_back(reduceFloat(showerShapes_[23],nBits_));
-       scFull5x5_eTopRatio_.push_back(reduceFloat(showerShapes_[24],nBits_));
-       scFull5x5_eRightRatio_.push_back(reduceFloat(showerShapes_[25],nBits_));
-       scFull5x5_eBottomRatio_.push_back(reduceFloat(showerShapes_[26],nBits_));
-       scFull5x5_eLeftRatio_.push_back(reduceFloat(showerShapes_[27],nBits_));
-       scFull5x5_e2x5MaxRatio_.push_back(reduceFloat(showerShapes_[28],nBits_));
-       scFull5x5_e2x5TopRatio_.push_back(reduceFloat(showerShapes_[29],nBits_));
-       scFull5x5_e2x5RightRatio_.push_back(reduceFloat(showerShapes_[30],nBits_));
-       scFull5x5_e2x5BottomRatio_.push_back(reduceFloat(showerShapes_[31],nBits_));
-       scFull5x5_e2x5LeftRatio_.push_back(reduceFloat(showerShapes_[32],nBits_));
-       scFull5x5_swissCross_.push_back(reduceFloat(showerShapes_[33],nBits_));
-       scFull5x5_r9_.push_back(reduceFloat(showerShapes_[21]*showerShapes_[19]/sc.rawEnergy(),nBits_));
-       scFull5x5_sigmaIetaIeta_.push_back(reduceFloat(showerShapes_[35],nBits_)); 
-       scFull5x5_sigmaIetaIphi_.push_back(reduceFloat(showerShapes_[36],nBits_)); 
-       scFull5x5_sigmaIphiIphi_.push_back(reduceFloat(showerShapes_[37],nBits_)); 
-
-
-      ++nSC_;
       double dRmin=1e9;
       Bool_t foundGsfEleMatch=false;
       for(auto const& ele : *gsfElectronHandle)
@@ -992,8 +1142,6 @@ void BsToMuMuGammaNTuplizer::fillSC(edm::Event const& e, const edm::EventSetup& 
 	  foundGsfEleMatch=true;
 	}
 
-      scMinDrWithGsfElectornSC_.push_back(dRmin);
-      scFoundGsfMatch_.push_back(foundGsfEleMatch);
       
       // fill H/E variable
       const reco::CaloCluster &seedCluster = *sc.seed();
@@ -1023,34 +1171,82 @@ void BsToMuMuGammaNTuplizer::fillSC(edm::Event const& e, const edm::EventSetup& 
       }
 	} // HCAL rec hits
         
-        scEFromHcalRecHitInDIEta5IPhi5.push_back(hcalEnergy);
-        scNHcalRecHitInDIEta5IPhi5.push_back(Float_t(nhcalRechit_));
-        scEFromHcalRecHitInDIEta2IPhi2.push_back(hcal2Energy);
-        scNHcalRecHitInDIEta2IPhi2.push_back(Float_t(nhcal2Rechit_));
-        
-
-        pfIsoCalculator pfIso(e, pfPhotonsCollection_, pv.position());
- 
-        scPFChIso1_          .push_back(pfIso.getPfIso(sc, reco::PFCandidate::h, 0.1, 0.02, 0.));
-        scPFChIso2_          .push_back(pfIso.getPfIso(sc, reco::PFCandidate::h, 0.2, 0.02, 0.));
-        scPFChIso3_          .push_back(pfIso.getPfIso(sc, reco::PFCandidate::h, 0.3, 0.02, 0.));
-        scPFChIso4_          .push_back(pfIso.getPfIso(sc, reco::PFCandidate::h, 0.4, 0.02, 0.));
-        scPFChIso5_          .push_back(pfIso.getPfIso(sc, reco::PFCandidate::h, 0.5, 0.02, 0.));
- 
-        scPFPhoIso1_          .push_back(pfIso.getPfIso(sc, reco::PFCandidate::gamma, 0.1, 0.02, 0.));
-        scPFPhoIso2_          .push_back(pfIso.getPfIso(sc, reco::PFCandidate::gamma, 0.2, 0.02, 0.));
-        scPFPhoIso3_          .push_back(pfIso.getPfIso(sc, reco::PFCandidate::gamma, 0.3, 0.02, 0.));
-        scPFPhoIso4_          .push_back(pfIso.getPfIso(sc, reco::PFCandidate::gamma, 0.4, 0.02, 0.));
-        scPFPhoIso5_          .push_back(pfIso.getPfIso(sc, reco::PFCandidate::gamma, 0.5, 0.02, 0.)); 
-        
-        scPFNeuIso1_          .push_back(pfIso.getPfIso(sc, reco::PFCandidate::h0, 0.1, 0.0, 0.));
-        scPFNeuIso2_          .push_back(pfIso.getPfIso(sc, reco::PFCandidate::h0, 0.2, 0.0, 0.));
-        scPFNeuIso3_          .push_back(pfIso.getPfIso(sc, reco::PFCandidate::h0, 0.3, 0.0, 0.));
-        scPFNeuIso4_          .push_back(pfIso.getPfIso(sc, reco::PFCandidate::h0, 0.4, 0.0, 0.));
-        scPFNeuIso5_          .push_back(pfIso.getPfIso(sc, reco::PFCandidate::h0, 0.5, 0.0, 0.));
-    	
+    pfIsoCalculator pfIso(e, pfPhotonsCollection_, pv.position());
+        	
+      storageMapFloatArray["scE"][idx]         =                          sc.correctedEnergy();
+      storageMapFloatArray["scEt"][idx]         =                         sc.correctedEnergy()/cosh(sc.eta());
+      storageMapFloatArray["scRawE"][idx]         =                       sc.rawEnergy();
+      storageMapFloatArray["scRawEt"][idx]         =                      sc.rawEnergy()/cosh(sc.eta());
+      storageMapFloatArray["scEta"][idx]         =                        sc.eta();
+      storageMapFloatArray["scPhi"][idx]         =                        sc.phi();
+      storageMapFloatArray["scX"][idx]         =                          sc.x();
+      storageMapFloatArray["scY"][idx]         =                          sc.y();
+      storageMapFloatArray["scZ"][idx]         =                          sc.z();
+      storageMapFloatArray["scEtaWidth"][idx]         =                   sc.etaWidth();
+      storageMapFloatArray["scPhiWidth"][idx]         =                   sc.phiWidth();
+      storageMapFloatArray["scE5x5"][idx]         =                       reduceFloat(showerShapes_[0],nBits_);
+      storageMapFloatArray["scE2x2Ratio"][idx]         =                  reduceFloat(showerShapes_[1],nBits_);
+      storageMapFloatArray["scE3x3Ratio"][idx]         =                  reduceFloat(showerShapes_[2],nBits_);
+      storageMapFloatArray["scEMaxRatio"][idx]         =                  reduceFloat(showerShapes_[3],nBits_);
+      storageMapFloatArray["scE2ndRatio"][idx]         =                  reduceFloat(showerShapes_[4],nBits_);
+      storageMapFloatArray["scETopRatio"][idx]         =                  reduceFloat(showerShapes_[5],nBits_);
+      storageMapFloatArray["scERightRatio"][idx]         =                reduceFloat(showerShapes_[6],nBits_);
+      storageMapFloatArray["scEBottomRatio"][idx]         =               reduceFloat(showerShapes_[7],nBits_);
+      storageMapFloatArray["scELeftRatio"][idx]         =                 reduceFloat(showerShapes_[8],nBits_);
+      storageMapFloatArray["scE2x5MaxRatio"][idx]         =               reduceFloat(showerShapes_[9],nBits_);
+      storageMapFloatArray["scE2x5TopRatio"][idx]         =               reduceFloat(showerShapes_[10],nBits_);
+      storageMapFloatArray["scE2x5RightRatio"][idx]         =             reduceFloat(showerShapes_[11],nBits_);
+      storageMapFloatArray["scE2x5BottomRatio"][idx]         =            reduceFloat(showerShapes_[12],nBits_);
+      storageMapFloatArray["scE2x5LeftRatio"][idx]         =              reduceFloat(showerShapes_[13],nBits_);
+      storageMapFloatArray["scSwissCross"][idx]         =                 reduceFloat(showerShapes_[14],nBits_);
+      storageMapFloatArray["scR9"][idx]         =                         reduceFloat(showerShapes_[2]*showerShapes_[0]/sc.rawEnergy(),nBits_);
+      storageMapFloatArray["scSigmaIetaIeta"][idx]         =              reduceFloat(showerShapes_[16],nBits_); 
+      storageMapFloatArray["scSigmaIetaIphi"][idx]         =              reduceFloat(showerShapes_[17],nBits_); 
+      storageMapFloatArray["scSigmaIphiIphi"][idx]         =              reduceFloat(showerShapes_[18],nBits_); 
+      storageMapFloatArray["scFull5x5"][idx]         =                    reduceFloat(showerShapes_[19],nBits_);
+      storageMapFloatArray["scFull5x5"][idx]         =                    reduceFloat(showerShapes_[20],nBits_);
+      storageMapFloatArray["scFull5x5"][idx]         =                    reduceFloat(showerShapes_[21],nBits_);
+      storageMapFloatArray["scFull5x5"][idx]         =                    reduceFloat(showerShapes_[22],nBits_);
+      storageMapFloatArray["scFull5x5"][idx]         =                    reduceFloat(showerShapes_[23],nBits_);
+      storageMapFloatArray["scFull5x5"][idx]         =                    reduceFloat(showerShapes_[24],nBits_);
+      storageMapFloatArray["scFull5x5"][idx]         =                    reduceFloat(showerShapes_[25],nBits_);
+      storageMapFloatArray["scFull5x5"][idx]         =                    reduceFloat(showerShapes_[26],nBits_);
+      storageMapFloatArray["scFull5x5"][idx]         =                    reduceFloat(showerShapes_[27],nBits_);
+      storageMapFloatArray["scFull5x5"][idx]         =                    reduceFloat(showerShapes_[28],nBits_);
+      storageMapFloatArray["scFull5x5"][idx]         =                    reduceFloat(showerShapes_[29],nBits_);
+      storageMapFloatArray["scFull5x5"][idx]         =                    reduceFloat(showerShapes_[30],nBits_);
+      storageMapFloatArray["scFull5x5"][idx]         =                    reduceFloat(showerShapes_[31],nBits_);
+      storageMapFloatArray["scFull5x5"][idx]         =                    reduceFloat(showerShapes_[32],nBits_);
+      storageMapFloatArray["scFull5x5"][idx]         =                    reduceFloat(showerShapes_[33],nBits_);
+      storageMapFloatArray["scFull5x5"][idx]         =                    reduceFloat(showerShapes_[21]*showerShapes_[19]/sc.rawEnergy(),nBits_);
+      storageMapFloatArray["scFull5x5"][idx]         =                    reduceFloat(showerShapes_[35],nBits_); 
+      storageMapFloatArray["scFull5x5"][idx]         =                    reduceFloat(showerShapes_[36],nBits_); 
+      storageMapFloatArray["scFull5x5"][idx]         =                    reduceFloat(showerShapes_[37],nBits_); 
+      storageMapFloatArray["scMinDrWithGsfElectornSC"][idx]         =     dRmin;
+      storageMapFloatArray["scFoundGsfMatch"][idx]         =              foundGsfEleMatch;
+      storageMapFloatArray["scEFromHcalRecHitInDIEta5IPhi5"][idx]         =hcalEnergy;
+      storageMapFloatArray["scNHcalRecHitInDIEta5IPhi5"][idx]         =    Float_t(nhcalRechit_);
+      storageMapFloatArray["scEFromHcalRecHitInDIEta2IPhi2"][idx]         =hcal2Energy;
+      storageMapFloatArray["scNHcalRecHitInDIEta2IPhi2"][idx]         =    Float_t(nhcal2Rechit_);
+      storageMapFloatArray["scPFChIso1"][idx]         =                   pfIso.getPfIso(sc, reco::PFCandidate::h, 0.1, 0.02, 0.);
+      storageMapFloatArray["scPFChIso2"][idx]         =                   pfIso.getPfIso(sc, reco::PFCandidate::h, 0.2, 0.02, 0.);
+      storageMapFloatArray["scPFChIso3"][idx]         =                   pfIso.getPfIso(sc, reco::PFCandidate::h, 0.3, 0.02, 0.);
+      storageMapFloatArray["scPFChIso4"][idx]         =                   pfIso.getPfIso(sc, reco::PFCandidate::h, 0.4, 0.02, 0.);
+      storageMapFloatArray["scPFChIso5"][idx]         =                   pfIso.getPfIso(sc, reco::PFCandidate::h, 0.5, 0.02, 0.);
+      storageMapFloatArray["scPFPhoIso1"][idx]         =                  pfIso.getPfIso(sc, reco::PFCandidate::gamma, 0.1, 0.02, 0.);
+      storageMapFloatArray["scPFPhoIso2"][idx]         =                  pfIso.getPfIso(sc, reco::PFCandidate::gamma, 0.2, 0.02, 0.);
+      storageMapFloatArray["scPFPhoIso3"][idx]         =                  pfIso.getPfIso(sc, reco::PFCandidate::gamma, 0.3, 0.02, 0.);
+      storageMapFloatArray["scPFPhoIso4"][idx]         =                  pfIso.getPfIso(sc, reco::PFCandidate::gamma, 0.4, 0.02, 0.);
+      storageMapFloatArray["scPFPhoIso5"][idx]         =                  pfIso.getPfIso(sc, reco::PFCandidate::gamma, 0.5, 0.02, 0.); 
+      storageMapFloatArray["scPFNeuIso1"][idx]         =                  pfIso.getPfIso(sc, reco::PFCandidate::h0, 0.1, 0.0, 0.);
+      storageMapFloatArray["scPFNeuIso2"][idx]         =                  pfIso.getPfIso(sc, reco::PFCandidate::h0, 0.2, 0.0, 0.);
+      storageMapFloatArray["scPFNeuIso3"][idx]         =                  pfIso.getPfIso(sc, reco::PFCandidate::h0, 0.3, 0.0, 0.);
+      storageMapFloatArray["scPFNeuIso4"][idx]         =                  pfIso.getPfIso(sc, reco::PFCandidate::h0, 0.4, 0.0, 0.);
+      storageMapFloatArray["scPFNeuIso5"][idx]         =                  pfIso.getPfIso(sc, reco::PFCandidate::h0, 0.5, 0.0, 0.);
+        idx++;
     } // supercluster loop
   }
+  storageMapInt["nSC"]=idx;
 }
 
 
@@ -2029,7 +2225,8 @@ void BsToMuMuGammaNTuplizer::fillDimuonBranches( const edm::Event& iEvent, const
     edm::Handle<std::vector<reco::Muon>> muonHandle;
     iEvent.getByToken(muonToken_, muonHandle);
     // Fills tree branches with photons.
-    edm::Handle<std::vector<reco::Photon> > photonHandle;
+    //edm::Handle<std::vector<reco::Photon> > photonHandle;
+    edm::Handle<edm::View<reco::Photon> > photonHandle;
     edm::Handle<reco::SuperClusterCollection> barrelSCHandle;
     //edm::Handle<edm::View<reco::PFCandidate> > pfCandidateHandle;
     edm::Handle<reco::SuperClusterCollection> endcapSCHandle;

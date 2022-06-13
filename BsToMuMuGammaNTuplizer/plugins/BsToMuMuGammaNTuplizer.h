@@ -182,6 +182,9 @@
 #define N_HCAL_CLUSTERS 1000
 #define N_MUON_MAX 1000
 #define N_DIMU_MAX 1000
+#define N_PF_PHOTONS 300
+#define N_PHOTONS_MAX 300
+#define N_SC_MAX 400
 #define N_GEN_MAX 4000
 #define N_GEN_PARTS_ALL 500        
 #define NMAX_MMG 1000
@@ -314,7 +317,14 @@ private:
 					  const pat::Muon& muon2,
 					  const reco::PFCandidate & kaon
 					) ;
-
+  void addPhotonBranches();
+  void fillPhotons      (const edm::Event&, const edm::EventSetup&);
+  
+  void addPFPhotonBranches();
+  void fillPFPhotons      (const edm::Event&, const edm::EventSetup&);
+  
+  void addSCBranches();
+  void fillSC           (const edm::Event&, const edm::EventSetup&, reco::Vertex& pv);
 
   void addDimuonBranches();
   void fillDimuonBranches      (const edm::Event&, const edm::EventSetup&);
@@ -331,10 +341,7 @@ private:
   
   void fillGenParticles (const edm::Event&);
   void fillMuons        (const edm::Event&, const edm::EventSetup&);
-  void fillPhotons      (const edm::Event&, const edm::EventSetup&);
-  void fillPFPhotons    (const edm::Event&, const edm::EventSetup&);
   std::vector<Float_t> getShowerShapes(reco::CaloCluster* caloBC, const EcalRecHitCollection* recHits, const CaloTopology *topology);
-  void fillSC           (const edm::Event&, const edm::EventSetup&, reco::Vertex& pv);
   void fillHLT          (edm::Event const& );
   
   void addHLTObjectBranches();
@@ -392,6 +399,7 @@ private:
   Bool_t doMuMuGamma;
   Bool_t doJPsiGamma;
   Bool_t doPhotons_;
+  Bool_t doPhotonID_;
   Bool_t doPFPhotons_;
   Bool_t doSuperClusters_;
   Bool_t doBsToMuMuGamma;
@@ -414,7 +422,7 @@ private:
 
   // ----------member data ---------------------------
   edm::EDGetTokenT<reco::GenParticleCollection>     genParticlesCollection_;
-  edm::EDGetTokenT<std::vector<reco::Photon>>       gedPhotonsCollection_;
+  edm::EDGetTokenT<edm::View<reco::Photon>>       gedPhotonsCollection_;
   edm::EDGetTokenT<edm::View<reco::PFCandidate>>    pfPhotonsCollection_;
   edm::EDGetTokenT<std::vector<reco::SuperCluster>> MustacheSCBarrelCollection_;
   edm::EDGetTokenT<std::vector<reco::SuperCluster>> MustacheSCEndcapCollection_;
@@ -430,6 +438,8 @@ private:
   edm::Handle<reco::PFCandidateCollection> pfCandidateHandle;
   
   edm::Handle<reco::GenParticleCollection> genParticleCollection;
+  
+
   //edm::Handle<edm::View<reco::PFCandidateCollection>> pfCandHandle_;
   //edm::Handle<reco::PFCandidateCollection> pfCandHandle_;
   //edm::Handle<edm::View<reco::PFCandidate> > pfCandidateHandle;
@@ -448,6 +458,12 @@ private:
   Int_t energyMatrixSizeFull_;
   edm::EDGetTokenT<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit>>> ebRechitToken_; 
   edm::EDGetTokenT<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit>>> eeRechitToken_; 
+
+  // Photon MVA
+
+  std::string mvaValMapTag_;
+  edm::EDGetTokenT<edm::ValueMap<float>> valMapToken_;
+
 
   // input tags 
   edm::InputTag gedPhotonSrc_;

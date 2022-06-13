@@ -4,6 +4,8 @@ import FWCore.ParameterSet.Config as cms
 from   FWCore.PythonUtilities.LumiList import LumiList
 from   os import environ
 from   os.path import exists, join
+from PhysicsTools.SelectorUtils.tools.vid_id_tools import *
+
 
 def findFileInPath(theFile):
     for s in environ["CMSSW_SEARCH_PATH"].split(":"):
@@ -114,7 +116,9 @@ Ntuples = cms.EDAnalyzer("BsToMuMuGammaNTuplizer",
         pfRechitCollection    = cms.InputTag("particleFlowRecHitECAL","","RECO"),
    	    
         doPhotons          = cms.bool(True),
+        doPhotonID         = cms.bool(False),
         gedPhotonSrc       = cms.untracked.InputTag("gedPhotons"),
+        phoMVAValMaps      = cms.string(""),
         
         doPFPhotons        = cms.bool(False),
         pfPhotonSrc        = cms.untracked.InputTag("particleFlow"),
@@ -162,9 +166,25 @@ Ntuples = cms.EDAnalyzer("BsToMuMuGammaNTuplizer",
 	    TriggerEvent = cms.InputTag("hltTriggerSummaryAOD"),
         verbose  = cms.bool(False),
         
+
         doCompression                   = cms.bool(True),  #do the compression of floats
         nBits                           = cms.int32(23)   #nbits for float compression (<=23)
     )
+
+def setupPhotonIDPaths(process):
+    dataFormat = DataFormat.MiniAOD
+    switchOnVIDPhotonIdProducer(process, dataFormat)
+    my_phoid_modules = [
+                  'RecoEgamma.PhotonIdentification.Identification.cutBasedPhotonID_Fall17_94X_V1_TrueVtx_cff',
+                  'RecoEgamma.PhotonIdentification.Identification.mvaPhotonID_Fall17_94X_V1_cff',
+                  'RecoEgamma.PhotonIdentification.Identification.mvaPhotonID_Fall17_94X_V2_cff'
+                  ]
+    #add them to the VID producer
+    for idmod in my_phoid_modules:
+        setupAllVIDIdsInModule(process,idmod,setupVIDPhotonSelection)
+    process.Ntuples.phoMVAValMaps = cms.string('photonMVAValueMapProducer:PhotonMVAEstimatorRunIIFall17v2Values')
+    process.Ntuples.doPhotonID = True
+    process.ntuplizationPath.insert(0,process.egmPhotonIDSequence)
 
 def getDefaultWorkflow( testFileName = ''  ):
     
@@ -207,6 +227,7 @@ def getDefaultWorkflow( testFileName = ''  ):
 
     process.ntuplizationPath = cms.Path(process.Ntuples)
     
+    setupPhotonIDPaths(process)
     return process
 
 def switchOnMuMuGamma(process,minMass=3.5,maxMass=7.5):
