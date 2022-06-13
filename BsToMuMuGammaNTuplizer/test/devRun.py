@@ -41,5 +41,5 @@ switchOnJPsiK(process,ptMinKaon=0.98,etaMaxKaon=2.5,minBKmmMass=4.5,maxBKmmMass=
 switchOnPsi2SK(process,ptMinKaon=0.98,etaMaxKaon=2.5,minBKmmMass=4.5,maxBKmmMass=6.5)
 switchOnPFPhotons(process)
 switchOnJPsiGamma(process)
-switchOnMuMuGamma(process)
 switchOnHLT(process,True)
+switchOnMuMuGamma(process)

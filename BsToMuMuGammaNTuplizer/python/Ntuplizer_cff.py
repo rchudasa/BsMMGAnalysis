@@ -242,7 +242,7 @@ def switchOnJPsiGamma(process,minMass=3.5,maxMass=7.5):
 
 
 def switchOnHLT(process, status=True):
-    process.Ntuples.doHLT = False
+    process.Ntuples.doHLT = status
 
 def switchOnPFPhotons(process, pTMin=2.5):
     process.Ntuples.doPFPhotons = True

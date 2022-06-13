@@ -36,7 +36,7 @@ switchOnPsi2SK(process,ptMinKaon=0.98,etaMaxKaon=2.5,minBKmmMass=4.5,maxBKmmMass
 switchOnJPsiGamma(process)
 switchOnMuMuGamma(process)
 switchOnPFPhotons(process)
-
+switchOnHLT(process,True)
 
 f=open("flist.cfg")
 txt=f.readlines()
