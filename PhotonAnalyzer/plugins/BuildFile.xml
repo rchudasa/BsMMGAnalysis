@@ -1,7 +1,6 @@
 <use name="clhep"/>
 <use   name="root"/>
 <use   name="rootcore"/>
-<use name="rootunfold"/>
 <use name="FWCore/Framework"/>
 <use name="FWCore/PluginManager"/>
 <use name="FWCore/ParameterSet"/>
@@ -60,7 +59,6 @@
 <use   name="JetMETCorrections/Objects"/>
 <use   name="JetMETCorrections/Algorithms"/>
 <use   name="JetMETCorrections/JetCorrector"/>
-<use   name="CondCore/DBCommon"/>
 <use   name="CondCore/DBOutputService"/>
 <use   name="JetMETCorrections/Modules"/>
 <use   name="PhysicsTools/Utilities"/>
