@@ -131,41 +131,42 @@ bool DimuonMassFilter::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
     bool accepted=false;
     
-    std::cout<<"nMuons : "<<muons->size()<<"\n";
+    //std::cout<<"nMuons : "<<muons->size()<<"\n";
     if(muons->size()<2) return accepted;
-
+    
   for (uint32_t i=0;i<muons->size();i++){
       auto &mu1 = muons->at(i);
-      std::cout<<"mu1 pt eta  : "<<mu1.pt()<<" , "<<mu1.eta()<<" ch : "<<mu1.charge()<<"\n";
+      // std::cout<<"mu1 pt eta  : "<<mu1.pt()<<" , "<<mu1.eta()<<" ch : "<<mu1.charge()<<"\n";
       
       if(mu1.pt() < minptcut) continue;
       if(abs(mu1.eta()) > maxAbsEta) continue;
       
-      auto e1= sqrt(mu1.px()*mu1.px() + mu1.py()*mu1.py()+mu1.pz()*mu1.pz() + MU_MASS*MU_MASS);
-      mu1_lv.SetPxPyPzE( mu1.px(),mu1.py(), mu1.pz(),e1);
+     // auto e1= sqrt(mu1.px()*mu1.px() + mu1.py()*mu1.py()+mu1.pz()*mu1.pz() + MU_MASS*MU_MASS);
+    //  mu1_lv.SetPxPyPzE( mu1.px(),mu1.py(), mu1.pz(),e1);
       
-      for (uint32_t j=0;j<muons->size();j++){
+      for (uint32_t j=i+1;j<muons->size();j++){
+        Float_t dimu_mass=0.0;
         auto &mu2 = muons->at(j);
-        std::cout<<"\t mu2 pt eta  : "<<mu2.pt()<<" , "<<mu2.eta()<<" ch : "<<mu2.charge()<<"\n";
+        // std::cout<<"\t mu2 pt eta  : "<<mu2.pt()<<" , "<<mu2.eta()<<" ch : "<<mu2.charge()<<"\n";
         
         if(mu2.charge()*mu2.charge() != chargeProd) continue;
         if(mu2.pt() < minptcut) continue;
         if(abs(mu2.eta()) > maxAbsEta) continue;
         
-        auto e2= sqrt(mu2.px()*mu2.px() + mu2.py()*mu2.py()+mu2.pz()*mu2.pz() + MU_MASS*MU_MASS);
-        mu2_lv.SetPxPyPzE( mu2.px(),mu2.py(), mu2.pz(),e2);
+      //  auto e2= sqrt(mu2.px()*mu2.px() + mu2.py()*mu2.py()+mu2.pz()*mu2.pz() + MU_MASS*MU_MASS);
+     //   mu2_lv.SetPxPyPzE( mu2.px(),mu2.py(), mu2.pz(),e2);
         
-        dimu_lv=mu2_lv+mu1_lv;
-        std::cout<<"\t\t Mass : "<<dimu_lv.M()<<"\n";
-        if(dimu_lv.M() < minDimuonMass ) continue;
-        if(dimu_lv.M() > maxDimuonMass ) continue;
+        dimu_mass=(mu1.p4() + mu2.p4()).mass() ;
+        // std::cout<<"\t\t Mass : "<<dimu_mass<<"\n";
+        if(dimu_mass < minDimuonMass ) continue;
+        if(dimu_mass > maxDimuonMass ) continue;
 
         accepted= true;
         if(accepted) break;
       }
         if(accepted) break;
     }
-    std::cout<<"Result : "<<accepted<<"\n";
+   // std::cout<<"Result : "<<accepted<<"\n";
     return accepted;
 }
 
