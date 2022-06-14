@@ -27,6 +27,11 @@ if len(sys.argv) > 5:
     tag=sys.argv[5]
 
 
+print("Source  : ",FileSource)
+print("Destn : ",destination)
+print("Files Per Job : ",FILES_PER_JOB)
+print("NJOBS : ",NJOBS)
+
 pwd=os.environ['PWD']
 proxy_path=os.environ['X509_USER_PROXY']
 HOME=os.environ['HOME']
@@ -99,10 +104,10 @@ rm  Bmm5Ntuple* \n\
 head = "Condor/JobsBmm5" + tag
 if not os.path.exists(head):
     os.system('mkdir -p '+ head)
+
 condorScriptName=head+'/subCondorBMM5'+tag+'.sub'
 condorScript=open(condorScriptName,'w')
 condorScript.write(condorScriptString)
-
 
 
 n = int( len(sourceFileList)/FILES_PER_JOB ) + 1
