@@ -70,7 +70,7 @@ if(not os.path.exists(destination)):
     os.system("mkdir -p "+destination)
 destination=os.path.abspath(destination)
 
-head='condor/Jobs'+tag
+head='Condor/Jobs'+tag
 if not os.path.exists(head ):
     os.system('mkdir -p '+head)
 
@@ -101,8 +101,7 @@ error = $Fp(filename)run.$(Cluster).stderr\n\
 log = $Fp(filename)run.$(Cluster).log\n\
 +JobFlavour = \"espresso\"\n\
 "
-
-condorScriptName='condor/job'+tag+'.sub'
+condorScriptName=head+'/job'+tag+'.sub'
 condorScript=open(condorScriptName,'w')
 condorScript.write(condorScriptString)
 
@@ -124,6 +123,7 @@ mv @@RUNSCRIPT @@RUNSCRIPT.busy \n\
 if [ $? -eq 0 ]; then \n\
     mv *.root "+destination+"\n\
     if [ $? -eq 0 ] ; then \n\
+        mv *.json "+destination+"\n\
         mv @@CFGFILENAME " + destination + "\n\
         mv @@RUNSCRIPT.busy @@RUNSCRIPT.sucess \n\
         echo OK\n\

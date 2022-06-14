@@ -7,11 +7,12 @@ echo NJOBS : $NJOBS
 echo FILES_PER_JOB : $FILES_PER_JOB
 echo MAXEVENTS : $MAXEVENTS
 echo ""
-EXECUTABLE=analysisMVA.exe
 
-declare -a SourceFiles=(\
-#"fileList/mc_sig_BsTMMG_v2.files" \
-#"fileList/mc_sig_BsTMMG_v2.files" \
+EXECUTABLE=mvaDataMakerMC.exe
+
+declare -a SourceFiles=( \
+"fileList/mc_sig_BsTMMG_v2.files" \
+"fileList/mc_sig_BsTMMG_v2.files" \
 "fileList/mc_bkg_bdToKK.files" \
 "fileList/mc_bkg_bdToKPi.files" \
 "fileList/mc_bkg_bdToPiMuNu.files" \
@@ -22,43 +23,43 @@ declare -a SourceFiles=(\
 "fileList/mc_bkg_bsToPiPi.files" \
 )
 
-declare -a tagArr=(\
-#"mc_sig_bs2mmg_genAnalysisV2" \
-#"mc_sig_bs2mmV2" \
-"mc_bkg_bdToKKV2" \
-"mc_bkg_bdToKPiV2" \
-"mc_bkg_bdToPiMuNuV2" \
-"mc_bkg_bdToPiPiV2" \
-"mc_bkg_bsToKKV2" \
-"mc_bkg_bsToKMuNuV2" \
-"mc_bkg_bsToKPiV2" \
-"mc_bkg_bsToPiPiV2" \
+declare -a tagArr=( \
+"dimuonSkimmed_mc_sig_bs2mmg_genAnalysis" \
+"dimuonSkimmed_mc_sig_bs2mmg" \
+"dimuonSkimmed_mc_bkg_bdToKKg" \
+"dimuonSkimmed_mc_bkg_bdToKPig" \
+"dimuonSkimmed_mc_bkg_bdToPiMuNug" \
+"dimuonSkimmed_mc_bkg_bdToPiPig" \
+"dimuonSkimmed_mc_bkg_bsToKKg" \
+"dimuonSkimmed_mc_bkg_bsToKMuNug" \
+"dimuonSkimmed_mc_bkg_bsToKPig" \
+"dimuonSkimmed_mc_bkg_bsToPiPig" \
 )
 
 declare -a AnalysisOption=(\
-#0 \
-#2 \
-2 \
-2 \
-2 \
-2 \
-2 \
-2 \
-2 \
-2 \
+1 \
+0 \
+0 \
+0 \
+0 \
+0 \
+0 \
+0 \
+0 \
+0 \
 )
 
 declare -a CfgTemplate=(\
-#"configs/analysisMC.tpl.cfg" \
-#"configs/analysis.tpl.cfg" \
-"configs/analysis.tpl.cfg" \
-"configs/analysis.tpl.cfg" \
-"configs/analysis.tpl.cfg" \
-"configs/analysis.tpl.cfg" \
-"configs/analysis.tpl.cfg" \
-"configs/analysis.tpl.cfg" \
-"configs/analysis.tpl.cfg" \
-"configs/analysis.tpl.cfg" \
+"configs/MCSampleDimuons.tpl.cfg" \
+"configs/DataDimuonSkimmer.tpl.cfg" \
+"configs/DataDimuonSkimmer.tpl.cfg" \
+"configs/DataDimuonSkimmer.tpl.cfg" \
+"configs/DataDimuonSkimmer.tpl.cfg" \
+"configs/DataDimuonSkimmer.tpl.cfg" \
+"configs/DataDimuonSkimmer.tpl.cfg" \
+"configs/DataDimuonSkimmer.tpl.cfg" \
+"configs/DataDimuonSkimmer.tpl.cfg" \
+"configs/DataDimuonSkimmer.tpl.cfg" \
 )
 
 # ./makeCondorJobForAnalysis.py mvaDataMaker.exe configs/QcdSample.tpl 1 /home/athachay/t3store3/bs2mumug/photonID/analysis/CMSSW_10_6_29/src/BsMMGAnalysis/PhotonID/test/results/MC/mc_bkg_qcd30To50EMEnriched 5 1 -1 mc_bkg_qcd30To50EMEnriched
@@ -68,8 +69,8 @@ for i in "${!tagArr[@]}"; do
     TAG=${tagArr[$i]}
     ANALYSIS_OPT=${AnalysisOption[$i]}
     CFG_TEMPLATE=${CfgTemplate[$i]}
-    set -x
-    ./misc/makeCondorJobForAnalysis.py \
+ #   set -x
+    ./makeCondorJobForAnalysis.py \
         $EXECUTABLE \
         $src \
         $CFG_TEMPLATE \
@@ -79,5 +80,5 @@ for i in "${!tagArr[@]}"; do
         $FILES_PER_JOB \
         $MAXEVENTS \
         $TAG
-    set +x
+  #  set +x
 done

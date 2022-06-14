@@ -5,7 +5,9 @@ import json
 
 ##################
 
-
+splitTag="xnslklsnanlval"
+#splitTag="store"
+inputPrefix=""
 NJOBS=-1
 NEVENTS_PER_JOB = -1
 ZERO_OFFSET=0
@@ -52,16 +54,19 @@ print("Njobs : ",NJOBS)
 print("Files per Merge : ",FILES_PER_MERGE)
 print("Merges per job : ",MERGE_PER_JOB)
 
-if not os.path.exists(destination):
-    os.system('mkdir -p '+destination)
+#if not os.path.exists(destination) and not (destination.split(":")[0]=='root'):
+#    os.system('mkdir -p '+destination)
+#if not os.path.exists(destination):
+#    print("Unable to make path !! [ ",destination," ]")
+#    exit(1)
 
-if not os.path.exists(destination):
-    print("Unable to make path !! [ ",destination," ]")
-    exit(1)
 ## For seeding jobs 
 print("Reading the master filelist to sed the jobs !! ")
 Fnames=open(FileSource,'r')
 sourceFileList=Fnames.readlines()
+for i in range(len(sourceFileList)):
+    sourceFileList[i]=sourceFileList[i].split(splitTag)[-1]
+
 print("Read ",len(sourceFileList)," seed files")
 Fnames.close()
 n=int(len(sourceFileList)/MERGE_PER_JOB/FILES_PER_MERGE) + 1
@@ -97,7 +102,7 @@ if  True or not os.path.exists(cacheName):
                 items=l[1:-1].split(',')
                 run=int(items[0])
                 lumi=int(items[1])
-                fname=items[2]
+                fname=items[2].split(splitTag)[-1]
                 if fname not in motherFMap:
                     motherFMap[fname]={'run':[],'lumi':[]}
                 motherFMap[fname]['run'].append(run)
@@ -112,18 +117,18 @@ if  True or not os.path.exists(cacheName):
 
             l=motherFList.readline()
         motherFList.close()
-    print("cache does not exist ! making one : ",cacheName)
-    os.system('mkdir -p .cache')
-    f=open(cacheName,'w')
-    json.dump(motherFMap,f,indent=4)
-    f.close()
+    #print("cache does not exist ! making one : ",cacheName)
+    #os.system('mkdir -p .cache')
+    #f=open(cacheName,'w')
+    #json.dump(motherFMap,f,indent=4)
+    #f.close()
 else:
     print()
     print("Loading mfile from cache : ",cacheName)
     f=open(cacheName,'r')
     motherFMap=json.load(f)
     #f.close()
-print("Mother Map made with ",len(motherFMap)," entries")
+print("\nMother Map made with ",len(motherFMap)," entries")
 #for ky in motherFMap:
 #    print("\tfor ",ky," we have #runlumi = ",len(motherFMap[ky]['run']))
 print()
@@ -154,7 +159,7 @@ if True or not os.path.exists(cacheName):
                 items=l[1:-1].split(',')
                 run=int(items[0])
                 lumi=int(items[1])
-                fname=items[2]
+                fname=items[2].split(splitTag)[-1]
                 if run not in sonFMap:
                     sonFMap[run]={lumi:[]}
                 if lumi not in sonFMap[run]:
@@ -173,11 +178,11 @@ if True or not os.path.exists(cacheName):
 
     print()
     print("cache does not exist ! making one ")
-    if not os.path.exists('.cache'):
-        os.system('mkdir -p .cache')
-    f=open(cacheName,'w')
-    json.dump(sonFMap,f,indent=4)
-    f.close()
+    #if not os.path.exists('.cache'):
+    #    os.system('mkdir -p .cache')
+    #f=open(cacheName,'w')
+    #json.dump(sonFMap,f,indent=4)
+    #f.close()
 else:
     print("Loading sfile from cache : ",cacheName)
     f=open(cacheName,'r')
@@ -190,14 +195,25 @@ f.close()
 print(" ================== Peparatory Summary ================== \n")
 
 print("Mother Map made with ",len(motherRunLumiMap)," runs")
+runTotM=0
+lumiTotM=0
 for ky in motherRunLumiMap:
     print("\t r = ",ky," has ",len(motherRunLumiMap[ky]), " lumis ")
-print()
+    runTotM+=1
+    lumiTotM+=len(motherRunLumiMap[ky])
+print("Total Runs  : ",runTotM," , Total Number of Lumis : ",lumiTotM )
 
 print("Son Map made with ",len(sonFMap)," runs")
+runTot=0
+lumiTot=0
 for ky in sonFMap:
     print("\t r = ",ky," has ",len(sonFMap[ky]), " lumis ")
-print("======================================================== \n")
+    runTot+=1
+    lumiTot+=len(sonFMap[ky])
+print("Total Runs  : ",runTot," , Total Number of Lumis : ",lumiTot )
+print(" Mother N Runs - son N Runs : ", runTot-runTotM  )
+print(" Mother N Lumi - son N Lumi : ", lumiTot-lumiTotM )
+print("\n======================================================== \n")
 
 cfgTxt="\
 #PARAMS_BEG\n\
@@ -222,16 +238,12 @@ error = $Fp(filename)cdr.stderr\n\
 log = $Fp(filename)cdr.log\n\
 +JobFlavour = \"microcentury\"\n\
 "
-condorScriptName='subMergerJobs'+tag+'.sub'
-condorScript=open(condorScriptName,'w')
-condorScript.write(condorScriptString)
-
 
 exitCheckScript="\
 if [ $? -eq 0 ]; then \n\
     xrdcp *.root "+destination+"\n\
     if [ $? -ne 0 ] ; then\n\
-        mv *.root "+bkpDestination+"\n\
+        cp *.root "+bkpDestination+"\n\
         if [ $? -ne 0 ] ; then\n\
             echo FAIL\n\
             SUCCESS=0\n\
@@ -252,6 +264,7 @@ date\n\
 runScriptTxt="\
 #!/bin/bash\n\
 source /cvmfs/cms.cern.ch/cmsset_default.sh \n\
+source /grid_mnt/t3home/athachay/.bashrc\n\
 export HOME=/home/athachay\n\
 export X509_USER_PROXY="+proxy_path+"\n\
 cd "+pwd+"\n\
@@ -285,9 +298,14 @@ root -b -q 'mergeBmmXTrees.cc(\"@@CFGFILENAME\")' \n"
 #    for l in sonFMap[r]:
 #        print( l , end=" , ")
 
-head = pwd+'/Jobs'+tag
+head = pwd+'/Condor/Jobs'+tag
 if not os.path.exists(head):
     os.system('mkdir -p '+head)
+
+condorScriptName=head.replace(pwd+"/","")+'/subMergerJobs'+tag+'.sub'
+condorScript=open(condorScriptName,'w')
+condorScript.write(condorScriptString)
+
 
 lostLumis=0
 foundLumi={}
@@ -314,12 +332,11 @@ for ii in range(NJOBS):
     else:
         os.system('mkdir '+dirName)
     rootCMDtemp=""
-    runScriptBareName='run'+str(i)+'.sh'
     hasAtleastAMerge=False
     for jj in range(MERGE_PER_JOB):
         if len(sourceFileList)<FILES_PER_MERGE:
             FILES_PER_MERGE=len(sourceFileList)
-            print("fname count less than required .. stoping after seting final script to  have ",FILES_PER_MERGE," files ")
+            print("\n  fname count less than required .. stoping after seting final script to  have ",FILES_PER_MERGE," files \n ")
         if FILES_PER_MERGE==0:
             print("Filelist empty exiting")
             break
@@ -391,6 +408,7 @@ for ii in range(NJOBS):
         jobsSkipped+=1
         continue
     jobsMade+=1
+    runScriptBareName='run'+str(i)+"_"+tag+'.sh'
     runScriptName=dirName+'/'+runScriptBareName
     runScript=open(runScriptName,'w')
     tmp=runScriptTxt.replace("@@DIRNAME",dirName)
@@ -408,9 +426,9 @@ for r in foundLumi:
     print("\t in run : ",r," found ",len(foundLumi[r])," lumis ")
     lumiF+=len(foundLumi[r])
 print("\n")
-print("\t Total  found runs : ",len(foundLumi),"  ,  total found lumis : ", lumiF)
+print("Total found runs : ",len(foundLumi),"  ,  total found lumis : ", lumiF)
 
-print("Lost Lumis : " , lostLumis," Number of files left : ", len(sourceFileList) )
+print("Total  lost runs : ",len(motherRunLumiMap) - len(foundLumi),"   Lost Lumis : " , lostLumis," Number of files left : ", len(sourceFileList) )
 condorScript.close()
  
 print("Njbs : ",njbs, "Jobs Made : ",jobsMade," Jobs Skipped : " ,jobsSkipped)

@@ -41,6 +41,17 @@ Fnames=open(FileSource,'r')
 sourceFileList=Fnames.readlines()
 Fnames.close()
 
+if not os.path.exists(destination):
+    os.system('mkdir -p '+destination)    
+
+print("TAG         : ",tag)
+print("N Fnames    : ",len(sourceFileList))
+print("File source : ",FileSource)
+print("FILES_PER_JOB : ",FILES_PER_JOB)
+print("NJobs : ",NJOBS )
+print("Destination : ",destination)
+
+
 
 configurationTxt="\
 #FLIST_BEG\n\
@@ -96,6 +107,11 @@ rm  BmmGNtuple* \n\
 head = "Condor/JobsBmmG" + tag
 if not os.path.exists(head):
     os.system('mkdir '+ head)
+condorScriptName=head+'/subCondorBMMG'+tag+'.sub'
+condorScript=open(condorScriptName,'w')
+condorScript.write(condorScriptString)
+
+
 
 condorScriptName=head+'/subCondorBMMG'+tag+'.sub'
 condorScript=open(condorScriptName,'w')

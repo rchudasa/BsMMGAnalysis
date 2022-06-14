@@ -10,18 +10,34 @@ echo ""
 EXECUTABLE=analysis.exe
 
 declare -a SourceFiles=(\
-"fileList/bph6A.fls" \
+"fileList/bph2Ap1.fls" \
+"fileList/bph3Ap1.fls" \
+"fileList/bph4Ap1.fls" \
+"fileList/bph5Ap1.fls" \
+"fileList/bph6Ap1.fls" \
 )
 
 declare -a tagArr=(\
-"bph6Ap0" \
+"bph2Ap1" \
+"bph3Ap1" \
+"bph4Ap1" \
+"bph5Ap1" \
+"bph6Ap1" \
 )
 
 declare -a AnalysisOption=(\
 1 \
+1 \
+1 \
+1 \
+1 \
 )
 
 declare -a CfgTemplate=(\
+"configs/analysis.tpl.cfg" \
+"configs/analysis.tpl.cfg" \
+"configs/analysis.tpl.cfg" \
+"configs/analysis.tpl.cfg" \
 "configs/analysis.tpl.cfg" \
 )
 

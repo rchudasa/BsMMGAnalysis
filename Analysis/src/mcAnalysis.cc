@@ -12,13 +12,14 @@
 
 int  main(int argc,char *argv[])
 {
-
+    
     if(argc<2)
     {
         std::cout<<" Usage : \n"
                  <<"         ./main.exe <configfile.cfg> <option>\n"
                  <<" Option 0 : GenAnalysis \n"
                  <<" Option 1 : DataAnalysis \n"
+                 <<" Option 3 : MVA Analysis \n"
                  <<endl;
         exit(1);
     }
@@ -48,6 +49,11 @@ int  main(int argc,char *argv[])
     if(val==1) {
         std::cout<<" Doing Data Analysis "<<"\n";
         analyzer2018.Analyze();
+    }
+
+    if(val==2) {
+        std::cout<<" Doing MVA Analysis "<<"\n";
+        analyzer2018.MVAAnalyze();
     }
 
     analyzer2018.SaveFile();

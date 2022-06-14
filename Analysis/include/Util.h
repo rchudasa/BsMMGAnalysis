@@ -72,5 +72,82 @@ Double_t getDCALineAndPoint(
 
 }
 
+void getTStringFromTag(string tag,std::istringstream &strStream, string inputStr  , TString &var)
+{   
+    std::string field;
+    if(inputStr.compare(tag)==0){
+           getline(strStream, field);
+           var =  field;
+           cout<<" SETTING  "<<tag<<" = "<<var<<"\n";
+       }
+}
 
+
+void getBoolFromTag(string tag,std::istringstream &strStream, string inputStr  , Bool_t &var)
+{   
+    std::string field;
+    if(inputStr.compare(tag)==0){
+           getline(strStream, field);
+           var =  std::atoi(field.c_str()) > 0 ? 1 : 0;
+           cout<<" SETTING  "<<tag<<" = "<<var<<"\n";
+       }
+}
+
+void getFloatFromTag(string tag,std::istringstream &strStream, string inputStr  , Float_t &var)
+{   
+    std::string field;
+    if(inputStr.compare(tag)==0){
+             getline(strStream, field);
+             var=std::atof(field.c_str());
+             cout<<" SETTING  "<<tag<<" = "<<var<<"\n";
+       }
+}
+
+void getIntFromTag(string tag,std::istringstream &strStream, string inputStr  , Int_t &var)
+{   
+    std::string field;
+    if(inputStr.compare(tag)==0){
+             getline(strStream, field);
+             var=std::atoi(field.c_str());
+             cout<<" SETTING  "<<tag<<" = "<<var<<"\n";
+       }
+}
+
+
+
+void getVetorFillledFromConfigFile( fstream &cfgFile , std::vector<string> &vecList, string beginTag,string endTag, bool verbose)
+{
+	
+    bool cfgModeFlag=false;
+    cfgModeFlag=false;
+    std::istringstream strStream;
+    std::string field;
+	string line;
+    
+    // getting flists
+    cfgFile.clear();
+	cfgFile.seekp(ios::beg);
+    cfgModeFlag=false;
+	int nItems(0);
+    while(std::getline(cfgFile,line))
+	{
+	   if(line==beginTag) {cfgModeFlag=true;continue;}
+	   if(line==endTag) {cfgModeFlag=false;continue;}
+	   if(not cfgModeFlag) continue;
+	   if(line=="") continue;
+	   if(line=="#END") break;
+	   vecList.push_back(line);
+	   nItems++;
+    }
+
+    if(verbose)
+    {
+       std::cout<<" Added "<<nItems<<" between "<<beginTag<<" and "<< endTag<<"\n";
+       for( auto &name : vecList)
+       {
+           std::cout<<"\t"<<name<<"\n";
+       }
+    }
+
+}
 #endif
