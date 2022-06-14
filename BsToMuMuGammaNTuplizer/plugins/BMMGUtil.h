@@ -1,6 +1,7 @@
 #ifndef __BMMGUtil_H__
 #define __BMMGUtil_H__
-
+//  Many of these function are obtained from the Bmm groups ntuplizer codebase
+//  see here https://github.com/drkovalskyi/Bmm5
 
 bool BsToMuMuGammaNTuplizer::isGoodMuon(const pat::Muon& muon){
   if ( not muon.isLooseMuon() ) return false;

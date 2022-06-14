@@ -1,6 +1,7 @@
 #ifndef __BMMGINTERFACE__H__
 #define __BMMGINTERFACE__H__
-
+//  Many of these function are obtained from the Bmm groups ntuplizer codebase
+//  see here https://github.com/drkovalskyi/Bmm5
 namespace {
   const float MuonMass_    = 0.10565837;
   const float MuonMassErr_ = 3.5*1e-9;
