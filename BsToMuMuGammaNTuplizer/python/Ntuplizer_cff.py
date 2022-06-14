@@ -1,5 +1,5 @@
 import trigDetails
-
+from  BmmMuonID_cff import *
 import FWCore.ParameterSet.Config as cms
 from   FWCore.PythonUtilities.LumiList import LumiList
 from   os import environ
@@ -82,23 +82,25 @@ Ntuples = cms.EDAnalyzer("BsToMuMuGammaNTuplizer",
 	    vertices = cms.InputTag("offlinePrimaryVertices"),
         
         doMuons                 = cms.bool(True),
-	    muons   =cms.InputTag("muons"),
-	    muon_EtaMax      	    = cms.untracked.double(2.5),	 
-	    muon_dcaMAX 		    = cms.untracked.double(1e3),	
-	    muon_minPt  		    = cms.untracked.double(3.0),	
-	    muon_zIPMax 		    = cms.untracked.double(1e4),	
-	    muon_rIPMax 		    = cms.untracked.double(1e4),	
+        muonsMVAVals            = cms.InputTag("BmmMuonId"),
+        muonSimInfo            = cms.InputTag("muonSimClassifier"),
+	    muons                   = cms.InputTag("muons"),
+	    muon_EtaMax      	    = cms.untracked.double(2.5),	 # depricated
+	    muon_dcaMAX 		    = cms.untracked.double(1e3),     # depricated 
+	    muon_minPt  		    = cms.untracked.double(3.0),	 # depricated
+	    muon_zIPMax 		    = cms.untracked.double(1e4),	 # depricated
+	    muon_rIPMax 		    = cms.untracked.double(1e4),	 # depricated
 	    
         doDimuons               = cms.bool(True),  
-        diMuonCharge            = cms.untracked.bool(True),
-        maxTwoTrackDOCA         = cms.untracked.double(0.1),
-        dimuon_minPt		    = cms.untracked.double(0.0),
-	    dimuon_minInvMass 	    = cms.untracked.double(-1e3),	
-	    dimuon_maxInvMass 	    = cms.untracked.double(1e5),	
-	    dimuon_minVtxCL   	    = cms.untracked.double(0.0),	
-	    dimuon_maxLStoBS  	    = cms.untracked.double(1e5),	
-	    dimuon_maxDCAMuMu 	    = cms.untracked.double(1e5),	
-	    dimuon_maxCosAlphaToBS 	= cms.untracked.double(1e5),	
+        diMuonCharge            = cms.untracked.bool(True),     # depricated    
+        maxTwoTrackDOCA         = cms.untracked.double(0.1),    # depricated
+        dimuon_minPt		    = cms.untracked.double(0.0),    # depricated
+	    dimuon_minInvMass 	    = cms.untracked.double(-1e3),	# depricated
+	    dimuon_maxInvMass 	    = cms.untracked.double(1e5),	# depricated
+	    dimuon_minVtxCL   	    = cms.untracked.double(0.0),	# depricated
+	    dimuon_maxLStoBS  	    = cms.untracked.double(1e5),	# depricated
+	    dimuon_maxDCAMuMu 	    = cms.untracked.double(1e5),	# depricated
+	    dimuon_maxCosAlphaToBS 	= cms.untracked.double(1e5),	# depricated
         
         genParticles       = cms.InputTag("genParticles"),
         doGenParticles     = cms.bool(False),
@@ -171,6 +173,11 @@ Ntuples = cms.EDAnalyzer("BsToMuMuGammaNTuplizer",
         nBits                           = cms.int32(23)   #nbits for float compression (<=23)
     )
 
+
+def addMuonID(process):
+    customizeForMuonID(process,['ntuplizationPath'])
+    process.Ntuples.muonsMVAVals=cms.InputTag('BmmMuonId')
+
 def setupPhotonIDPaths(process):
     dataFormat = DataFormat.MiniAOD
     switchOnVIDPhotonIdProducer(process, dataFormat)
@@ -228,6 +235,7 @@ def getDefaultWorkflow( testFileName = ''  ):
     process.ntuplizationPath = cms.Path(process.Ntuples)
     
     setupPhotonIDPaths(process)
+    addMuonID(process)
     return process
 
 def switchOnMuMuGamma(process,minMass=3.5,maxMass=7.5):
@@ -269,9 +277,16 @@ def switchOnPsi2SK(process,ptMinKaon=0.98,etaMaxKaon=2.5,minBKmmMass=4.5,maxBKmm
     process.Ntuples.minBKmmMass   = minBKmmMass   
     process.Ntuples.maxBKmmMass   = maxBKmmMass   
 
-def customizedProcessForMC(process=None, minPtOfGen=2.0,doHLT=True):
+
+def addDimuonFilter(process):
+    process.dimuonFilter = dimuonFilter
+    process.ntuplizationPath.insert(0,process.dimuonFilter)
+
+def customizedProcessForMC(process=None, minPtOfGen=2.0,doHLT=True,doDimuonFilter=False):
     if process==None:
         process=getDefaultWorkflow()
+    if doDimuonFilter:
+        addDimuonFilter(process)
     process.Ntuples.doGenParticles = False
     process.Ntuples.isMC = True
     process.Ntuples.minJPsiGammaMass   = cms.double(-1e1)
@@ -290,15 +305,16 @@ def customizedProcessForMC(process=None, minPtOfGen=2.0,doHLT=True):
     
     return process
 
-def customizedProcessForData(process=None, doHLT=True,addJson=True):
+def customizedProcessForData(process=None, doHLT=True,doJson=True,doDimuonFilter=True):
     if process==None:
         process=getDefaultWorkflow()
-    process.dimuonFilter = dimuonFilter
-    process.ntuplizationPath.insert(0,process.dimuonFilter)
     
-    if addJson:
+    if doDimuonFilter:
+        addDimuonFilter(process)
+    if doJson:
         process.jsonPickEvents = jsonPickEvents
         process.ntuplizationPath.insert(0,process.jsonPickEvents)
+    
     switchOnMuMuK(process,ptMinKaon=0.98,etaMaxKaon=2.5,minBKmmMass=4.5,maxBKmmMass=6.5)
     switchOnJPsiK(process,ptMinKaon=0.98,etaMaxKaon=2.5,minBKmmMass=4.5,maxBKmmMass=6.5)
     switchOnPsi2SK(process,ptMinKaon=0.98,etaMaxKaon=2.5,minBKmmMass=4.5,maxBKmmMass=6.5)
@@ -315,3 +331,4 @@ def customizedProcessForRECO(process=None, minPtOfGen=2.0):
         process=getDefaultWorkflow()
     process.isRECO= True
 
+    

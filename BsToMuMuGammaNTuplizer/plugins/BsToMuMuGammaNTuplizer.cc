@@ -128,7 +128,9 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
   doFlatPt_(iConfig.getParameter<Bool_t>("doFlatPt")),
   doHLT(iConfig.getParameter<Bool_t>("doHLT")),
   energyMatrixSize_(2)
-{  
+{ 
+  doMuons_=true;
+
   if(doJPsiGamma)
   {
     doMuMuGamma=true;
@@ -167,8 +169,19 @@ BsToMuMuGammaNTuplizer::BsToMuMuGammaNTuplizer(const edm::ParameterSet& iConfig)
     valMapToken_=consumes<edm::ValueMap<float>>(edm::InputTag(mvaValMapTag_));
   }
  // if(doMuons_ or do doDimuons ) 
+  
   track_builder_token_=esConsumes<TransientTrackBuilder, TransientTrackRecord>(edm::ESInputTag("", "TransientTrackBuilder"));
-  muonToken_     = consumes<reco::MuonCollection>(iConfig.getParameter<edm::InputTag>("muons"));
+  muonToken_     =   consumes<edm::View<reco::Muon>>(iConfig.getParameter<edm::InputTag>("muons"));
+  muonMVAValsTocken   = consumes<std::vector<float>>(iConfig.getParameter<edm::InputTag>("muonsMVAVals"));
+  
+  if(isMC)
+  {
+   // MC info
+
+  muonSimInfoTocken =  consumes<edm::ValueMap<reco::MuonSimInfo>>(iConfig.getParameter<edm::InputTag>("muonSimInfo"));
+  }
+
+
   if(doPhotons_)    gedPhotonsCollection_       = consumes<edm::View<reco::Photon>>(iConfig.getUntrackedParameter<edm::InputTag>("gedPhotonSrc"));
   
   if(doPFPhotons_ or doSuperClusters_){
@@ -1071,8 +1084,6 @@ void BsToMuMuGammaNTuplizer::SetupTriggerBranches()
 
 void BsToMuMuGammaNTuplizer::fillHLT(edm::Event const& iEvent)
 {
-
-
   // Get the trigger results
   bool validTriggerEvent = true;
   edm::Handle<trigger::TriggerEvent> triggerEventHandle;
@@ -1670,6 +1681,7 @@ void BsToMuMuGammaNTuplizer::addMuonBranches()
       theTree->Branch("muon_trkLostLayersOuter", storageMapFloatArray["muon_trkLostLayersOuter"],"muon_trkLostLayersOuter[nMuons]F");
       storageMapFloatArray["muon_highPurity"]   = new Float_t[N_MUON_MAX];
       theTree->Branch("muon_highPurity", storageMapFloatArray["muon_highPurity"],"muon_highPurity[nMuons]/F");
+      
       storageMapFloatArray["muon_match1_dX"]   = new Float_t[N_MUON_MAX];
       theTree->Branch("muon_match1_dX", storageMapFloatArray["muon_match1_dX"],"muon_match1_dX[nMuons]/F");
       storageMapFloatArray["muon_match1_dY"]   = new Float_t[N_MUON_MAX];
@@ -1682,8 +1694,11 @@ void BsToMuMuGammaNTuplizer::addMuonBranches()
       theTree->Branch("muon_match1_pullX", storageMapFloatArray["muon_match1_pullX"],"muon_match1_pullX[nMuons]/F");
       storageMapFloatArray["muon_match1_pullY"]   = new Float_t[N_MUON_MAX];
       theTree->Branch("muon_match1_pullY", storageMapFloatArray["muon_match1_pullY"],"muon_match1_pullY[nMuons]/F");
+      
       storageMapFloatArray["muon_match2_dX"]   = new Float_t[N_MUON_MAX];
       theTree->Branch("muon_match2_dX", storageMapFloatArray["muon_match2_dX"],"muon_match2_dX[nMuons]/F");
+      storageMapFloatArray["muon_match2_dY"]   = new Float_t[N_MUON_MAX];
+      theTree->Branch("muon_match2_dY", storageMapFloatArray["muon_match2_dY"],"muon_match2_dY[nMuons]/F");
       storageMapFloatArray["muon_match2_pullDxDz"]   = new Float_t[N_MUON_MAX];
       theTree->Branch("muon_match2_pullDxDz", storageMapFloatArray["muon_match2_pullDxDz"],"muon_match2_pullDxDz[nMuons]/F");
       storageMapFloatArray["muon_match2_pullDyDz"]   = new Float_t[N_MUON_MAX];
@@ -1692,16 +1707,42 @@ void BsToMuMuGammaNTuplizer::addMuonBranches()
       theTree->Branch("muon_match2_pullX", storageMapFloatArray["muon_match2_pullX"],"muon_match2_pullX[nMuons]/F");
       storageMapFloatArray["muon_match2_pullY"]   = new Float_t[N_MUON_MAX];
       theTree->Branch("muon_match2_pullY", storageMapFloatArray["muon_match2_pullY"],"muon_match2_pullY[nMuons]/F");
+      
+      storageMapFloatArray["muon_newSoftMVAScore"]   = new Float_t[N_MUON_MAX];
+      theTree->Branch("muon_newSoftMVAScore", storageMapFloatArray["muon_newSoftMVAScore"],"muon_newSoftMVAScore[nMuons]/F");
+
+      if(isMC)
+      {
+             storageMapFloatArray["muon_simType"]   = new Float_t[N_MUON_MAX];
+             theTree->Branch("muon_simType", storageMapFloatArray["muon_simType"],"muon_simType[nMuons]/F");
+             storageMapFloatArray["muon_simExtType"]   = new Float_t[N_MUON_MAX];
+             theTree->Branch("muon_simExtType", storageMapFloatArray["muon_simExtType"],"muon_simExtType[nMuons]/F");
+             storageMapFloatArray["muon_simPdgId"]   = new Float_t[N_MUON_MAX];
+             theTree->Branch("muon_simPdgId", storageMapFloatArray["muon_simPdgId"],"muon_simPdgId[nMuons]/F");
+             storageMapFloatArray["muon_simMotherPdgId"]   = new Float_t[N_MUON_MAX];
+             theTree->Branch("muon_simMotherPdgId", storageMapFloatArray["muon_simMotherPdgId"],"muon_simMotherPdgId[nMuons]/F");
+             storageMapFloatArray["muon_simProdRho"]   = new Float_t[N_MUON_MAX];
+             theTree->Branch("muon_simProdRho", storageMapFloatArray["muon_simProdRho"],"muon_simProdRho[nMuons]/F");
+             storageMapFloatArray["muon_simProdZ"]   = new Float_t[N_MUON_MAX];
+             theTree->Branch("muon_simProdZ", storageMapFloatArray["muon_simProdZ"],"muon_simProdZ[nMuons]/F");
+      }
 
 }
 
 void BsToMuMuGammaNTuplizer::fillMuonBranches( const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
 
-  edm::Handle<std::vector<reco::Muon>> muons;
+  edm::Handle<edm::View<reco::Muon>> muons;
   iEvent.getByToken(muonToken_, muons);
+    
+  iEvent.getByToken(muonMVAValsTocken,muonMVAValsHandle);
+  const std::vector<float> &muonMVAVals = (*muonMVAValsHandle);
+    
+  edm::Handle<edm::ValueMap<reco::MuonSimInfo>> simInfo;
+  if(isMC)
+    iEvent.getByToken(muonSimInfoTocken, simInfo);
    
-  //std::cout << " muon size:" << muons->size() << std::endl; 
+  //std::cout << " muon size:" << muons->size() <<" mvaVals size = "<<muonMVAVals.size() << std::endl; 
   //start loop on first muon 
   
   int nMu=0;
@@ -1756,6 +1797,10 @@ void BsToMuMuGammaNTuplizer::fillMuonBranches( const edm::Event& iEvent, const e
 	 storageMapFloatArray["muon_trkLostLayersOn"][nMu]    = muTrack->hitPattern().trackerLayersWithoutMeasurement(reco::HitPattern::TRACK_HITS);
 	 storageMapFloatArray["muon_trkLostLayersOuter"][nMu] = muTrack->hitPattern().trackerLayersWithoutMeasurement(reco::HitPattern::MISSING_OUTER_HITS);
 	 storageMapFloatArray["muon_highPurity"][nMu]         = muTrack->quality(reco::Track::highPurity);
+     storageMapFloatArray["muon_dxyBS"][nMu]   = muTrack->dxy(*beamSpot);
+     storageMapFloatArray["muon_dzBS"][nMu]    = muTrack->dxy(*beamSpot);
+     
+       fillMatchInfo(nMu, mu);
 
       if (mu.isTrackerMuon() or mu.isGlobalMuon()){
 	     storageMapFloatArray["muon_trkValidFrac"][nMu]  = muTrack->validFraction() ;
@@ -1766,6 +1811,25 @@ void BsToMuMuGammaNTuplizer::fillMuonBranches( const edm::Event& iEvent, const e
       }
 
       storageMapUint64Array["muon_selectors"][nMu] = mu.selectors(); 
+      // Filling the MVA
+      storageMapFloatArray["muon_newSoftMVAScore"][nMu] = muonMVAVals[i];
+      
+
+      if(isMC)
+      {
+        
+        MuonBaseRef muonRef = muons->refAt(nMu);
+        reco::CandidateBaseRef muonBaseRef(muonRef);
+        const auto& muSim = (*simInfo)[muonBaseRef];
+        storageMapFloatArray["muon_simType"][nMu]         =  muSim.primaryClass ;
+        storageMapFloatArray["muon_simExtType"][nMu]      =  muSim.extendedClass ;
+        storageMapFloatArray["muon_simPdgId"][nMu]        =  muSim.pdgId;
+        storageMapFloatArray["muon_simMotherPdgId"][nMu]  =  muSim.motherPdgId ;
+        storageMapFloatArray["muon_simProdRho"][nMu]      =  muSim.vertex.Rho() ;
+        storageMapFloatArray["muon_simProdZ"][nMu]        =  muSim.vertex.Z() ;
+      }
+
+
       nMu++; 
       if(nMu>= N_MUON_MAX) 
       {
@@ -1986,7 +2050,7 @@ void BsToMuMuGammaNTuplizer::addDimuonBranches()
 
 void BsToMuMuGammaNTuplizer::fillDimuonBranches( const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
-    edm::Handle<std::vector<reco::Muon>> muonHandle;
+    edm::Handle<edm::View<reco::Muon>> muonHandle;
     iEvent.getByToken(muonToken_, muonHandle);
     // Fills tree branches with photons.
     //edm::Handle<std::vector<reco::Photon> > photonHandle;

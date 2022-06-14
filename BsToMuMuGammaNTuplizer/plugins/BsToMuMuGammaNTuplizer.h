@@ -133,6 +133,7 @@
 #include "CommonTools/CandUtils/interface/AddFourMomenta.h"
 
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
+#include "DataFormats/Common/interface/RefToBase.h"
 #include "DataFormats/DetId/interface/DetId.h"
 #include "DataFormats/EcalDetId/interface/EBDetId.h"
 #include "DataFormats/EcalDetId/interface/EEDetId.h"
@@ -198,6 +199,7 @@
 using namespace std;
 
 typedef std::pair<const reco::MuonChamberMatch*, const reco::MuonSegmentMatch*> MatchPair;
+typedef edm::RefToBase<reco::Muon> MuonBaseRef;
 
 class BsToMuMuGammaNTuplizer : public edm::EDAnalyzer {
 
@@ -428,7 +430,7 @@ private:
   edm::EDGetTokenT<std::vector<reco::SuperCluster>> MustacheSCEndcapCollection_;
   edm::EDGetTokenT<reco::GsfElectronCollection>     gsfElectronToken_;
   edm::EDGetTokenT<edm::TriggerResults>             triggerBits_;
-  edm::EDGetTokenT<std::vector<reco::Muon>>         muonToken_;
+  edm::EDGetTokenT<edm::View<reco::Muon>>           muonToken_;
   edm::EDGetTokenT<reco::TrackCollection>           generalTracksCollection_;
   edm::EDGetTokenT<reco::PFClusterCollection>       ecalClusterCollection_;
   edm::EDGetTokenT<reco::PFClusterCollection>       hcalClusterCollection_;
@@ -437,6 +439,10 @@ private:
   edm::EDGetTokenT<reco::PFCandidateCollection>     pfCandidateCollection_;
   edm::Handle<reco::PFCandidateCollection> pfCandidateHandle;
   
+  edm::EDGetTokenT<std::vector<float>> muonMVAValsTocken;
+  edm::Handle<std::vector<float>> muonMVAValsHandle;
+  
+  edm::EDGetTokenT<edm::ValueMap<reco::MuonSimInfo>> muonSimInfoTocken;
   edm::Handle<reco::GenParticleCollection> genParticleCollection;
   
 
