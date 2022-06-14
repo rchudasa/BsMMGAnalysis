@@ -52,3 +52,9 @@
 <use   name="DataFormats/EcalRecHit"/>
 <use   name="DataFormats/DetId"/>
 <flags EDM_PLUGIN="1"/>
+<use name="xgboost"/>
+<export>
+  <lib   name="1"/>
+</export>
+
+
