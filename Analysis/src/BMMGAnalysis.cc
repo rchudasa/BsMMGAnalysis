@@ -1,3 +1,339 @@
+void BMMGAnalysis::MVAAnalyze()
+{
+    /************************************************************************************
+     Make sure the branches used here are not turned off to 0 by BMMGAnalysis::setupBranchStatus()
+    *************************************************************************************/
+    
+    Double_t dr;
+    
+    std::cout<<"\nBegining Analysis Script !";
+    if (maxEvents >0 ) maxEvents = nentries > maxEvents ? maxEvents : nentries;
+    cout<<"\nProcessing total "<<maxEvents<<" events \n\n";
+   
+    Long64_t EventCount=0;
+    Long64_t EventCountWith2GoodMuons=0;
+    Long64_t EventCountWithCand=0;
+    Long64_t EventCountWithBMMGPassCand=0;
+    Long64_t EventCountWithDimuCand=0;
+    Long64_t EventCountWithDimuVertexCand=0;
+    Long64_t nb = 0,nbytes=0 ;
+    Int_t eventLostAt(0);
+    auto t_start = std::chrono::high_resolution_clock::now();
+    auto t_end = std::chrono::high_resolution_clock::now();
+    auto nDiMuNoVertexCandidates=0;
+    Int_t prevRun(-1),prevLumi(-1);
+    bool goodRunLumi = false;
+    Int_t n2GoodMuonInDimuon;
+    th1fStore["ProcessingSummary"]->Fill("DataAnalysis",1);
+
+    int rslt;
+    Int_t nBMMGPrePassCandidates;
+    for (Long64_t jentry=0; jentry<maxEvents; jentry++)
+    {   
+
+       eventLostAt=0; 
+       rslt=0;
+       nDiMuCandidates=0;
+       isTriggerd=false;
+       n2GoodMuonInDimuon =0;
+       nDiMuNoVertexCandidates =0;
+       nDiMuCandidates =0;
+       nBMMGCandidates =0;
+ 	
+       Long64_t ientry_evt = ntupleRawTree.LoadTree(jentry);
+
+       if (ientry_evt < 0) break;
+
+       th1fStore["ProcessingSummary"]->Fill("TotalEvents",1);
+       nb = ntupleRawTree.fChain->GetEntry(jentry);   nbytes += nb;
+       
+       if(jentry%reportEvery == 0 )
+       {
+             t_end = std::chrono::high_resolution_clock::now();
+             std::cout<<"Processing Entry in event loop : "<<jentry<<" / "<<maxEvents<<"  [ "<<100.0*jentry/maxEvents<<"  % ]  "
+                      << " Elapsed time : "<< std::chrono::duration<double, std::milli>(t_end-t_start).count()/1000.0
+                      <<"  Estimated time left : "<< std::chrono::duration<double, std::milli>(t_end-t_start).count()*( maxEvents - jentry)/(1e-9 + jentry)* 0.001
+                      <<std::endl;
+       
+       }
+        
+       if(doRunLumiLog) { runLumiLogger.addRunLumi(ntupleRawTree.b5_run,ntupleRawTree.b5_luminosityBlock); }
+
+
+       if(doRunLumiMask)
+       {
+        if( (prevRun != ntupleRawTree.b5_run) or (prevLumi != ntupleRawTree.b5_luminosityBlock) )
+        {
+             prevRun  = ntupleRawTree.b5_run;
+             prevLumi = ntupleRawTree.b5_luminosityBlock;
+
+             goodRunLumi =  runLumiMask.checkRunLumi(prevRun,prevLumi);
+
+             if(not goodRunLumi)
+             {
+                 std::cout<<"Masking : ( "<<prevRun<<" , "<<prevLumi<<" ) \n";
+             }
+        }
+
+        if(not goodRunLumi) rslt++;
+       }
+
+       th1fStore["ProcessingSummary"]->Fill("GoodLumiEvents",1);
+       // std::cout<<"Processing Entry in event loop : "<<jentry<<" / "<<maxEvents<<"  [ "<<100.0*jentry/maxEvents<<"  % ]  "<<"\n";
+       // Checks if atleast 1 PV is there .. by default there will always be  one pV , the beamspot
+       if(ntupleRawTree.bG_nPrimaryVertex < 1 ) rslt++;
+       
+       // Trigger Selection
+       
+       isTriggerd = doTriggerSelection();
+       if( ntupleRawTree.b5_HLT_DoubleMu4_3_Bs ) isTriggerd=true;
+       if( ntupleRawTree.b5_HLT_DoubleMu4_3_Jpsi ) isTriggerd=true;
+       if( ntupleRawTree.b5_HLT_Dimuon0_Jpsi_NoVertexing ) isTriggerd=true;
+       //if( ntupleRawTree.b5_HLT_Dimuon0_Jpsi_NoVertexing_L1_4R_0er1p5R ) isTriggerd=true;
+    
+       if( (not isTriggerd) and doTriggerFiltering ) rslt++;
+
+
+       th1fStore["ProcessingSummary"]->Fill("TriggerPassEvents",1);
+
+       for(Int_t i=0;i<NSTORAGE_ARRAY_MAX;i++)
+            storageArrayDouble[i]=0;
+
+       for(int phoSCIdx=0;phoSCIdx < ntupleRawTree.bG_nSC ; phoSCIdx++)
+            photonSelectionCheck[phoSCIdx]=-1;
+
+       if(doPhotonMVA)
+       {
+            doPhotonMVAScores();
+       }
+       if(doDimuonMVA)
+       {
+            doDimuonMVAScores();
+       }
+        
+                
+       nBMMGPrePassCandidates=0;
+       nBMMGCandidates=0;
+
+       fill_muonHists();
+       fill_scHists();
+       fill_photonHists();
+       nDiMuNoVertexCandidates=0;
+       
+       if(rslt > 0 )
+       {
+            eventLostAt=cutFlowOffsets["evtSelection"]+2;
+       }
+       else { 
+       eventLostAt=cutFlowOffsets["basicCuts"];
+       }
+       //std::cout<<"Setiing eventLostAt = "<<eventLostAt<<"\n";
+       rslt=0;
+       if(ntupleRawTree.b5_nmm <1 ) 
+       { 
+            if(eventLostAt < ( 1 + cutFlowOffsets["basicCuts"]) )   eventLostAt=cutFlowOffsets["basicCuts"]+1;
+       }
+       if(ntupleRawTree.bG_nSC<1)
+       {
+              if(eventLostAt < ( 2 + cutFlowOffsets["basicCuts"]) )   eventLostAt=cutFlowOffsets["basicCuts"]+2;
+       }
+
+       n2GoodMuonInDimuon=0;
+
+       for(UInt_t mumuIdx=0; mumuIdx < ntupleRawTree.b5_nmm;mumuIdx++)
+       {    
+
+                if(ntupleRawTree.b5_mm_mu1_index[mumuIdx] < 0 or ntupleRawTree.b5_mm_mu2_index[mumuIdx] <0 ) 
+	            {
+                    if(eventLostAt < ( 3 + cutFlowOffsets["basicCuts"]) )   eventLostAt=cutFlowOffsets["basicCuts"]+3;
+                    continue;
+                }
+                if(ntupleRawTree.b5_mm_mu1_index[mumuIdx] >= ntupleRawTree.b5_nMuon ) 
+	            {
+                    if(eventLostAt < ( 4 + cutFlowOffsets["basicCuts"]) )   eventLostAt=cutFlowOffsets["basicCuts"]+4;
+                    continue;
+	            }
+                if(ntupleRawTree.b5_mm_mu2_index[mumuIdx] >= ntupleRawTree.b5_nMuon ) 
+	            {
+                    if(eventLostAt < ( 5 + cutFlowOffsets["basicCuts"]) )   eventLostAt=cutFlowOffsets["basicCuts"]+5;
+                    continue;
+	            }
+           
+           // Muon Selection
+		   rslt=doMuonSelection( ntupleRawTree.b5_mm_mu1_index[mumuIdx], true);
+           if(eventLostAt < rslt) eventLostAt=rslt;
+           if(rslt > 0) continue;
+		   rslt=doMuonSelection( ntupleRawTree.b5_mm_mu2_index[mumuIdx], false);
+           if(eventLostAt < rslt) eventLostAt=rslt;
+           if(rslt > 0) continue;
+           n2GoodMuonInDimuon++;
+           
+
+           // Dimuon Selection
+           rslt=doDimuonSelection(mumuIdx);
+           if(eventLostAt < rslt) eventLostAt=rslt;
+           if(rslt > 0) { continue ; };
+           nDiMuNoVertexCandidates++;
+           
+           fill_dimuonHists(mumuIdx);
+           auto dimuMVAval= -3.0;
+           if(doDimuonMVA)
+           {
+                dimuMVAval = storageArrayDouble[mumuIdx+candidateMapInt["dimuonMVAScore"]];
+           }
+           
+           FillDimuMVAControlHistograms( dimuMVAval , mumuIdx  );
+           // Dimuon Vertex selection
+           //rslt = doVertexSelection(mumuIdx);
+           //if(eventLostAt < rslt) eventLostAt=rslt;
+           //if(rslt > 0) { continue ; };
+           if(doDimuonMVA)
+           {
+                if(doDimuonMVASelection)
+                        if( dimuMVAval < dimuonMVAThreshold) 
+                            continue;
+           }
+
+
+           auto dr= getDR( ntupleRawTree.b5_mm_kin_mu1eta[mumuIdx], ntupleRawTree.b5_mm_kin_mu1phi[mumuIdx] ,
+                      ntupleRawTree.b5_mm_kin_mu2eta[mumuIdx], ntupleRawTree.b5_mm_kin_mu2phi[mumuIdx] );
+           storageArrayDouble[nDiMuCandidates + candidateMapDouble["mumu_dr"] ]   = dr ;
+           
+           // Filling the histograms after dimuon selection
+           fill_dimuonPassHists(mumuIdx);
+           fill_dimuonEnvironmentHists(mumuIdx);
+
+
+           diMuLV.SetPtEtaPhiM(     ntupleRawTree.b5_mm_kin_pt[mumuIdx],   \
+                                    ntupleRawTree.b5_mm_kin_eta[mumuIdx],  \
+                                    ntupleRawTree.b5_mm_kin_phi[mumuIdx],  \
+                                    ntupleRawTree.b5_mm_kin_mass[mumuIdx]  );
+           nBMMGCandidatesPerDimu=0;
+           
+           for(int phoSCIdx=0;phoSCIdx < ntupleRawTree.bG_nSC ; phoSCIdx++)
+           {
+               // photon selection
+               if(photonSelectionCheck[phoSCIdx] < 0)
+               {
+                    photonSelectionCheck[phoSCIdx]=doPhotonSelection(phoSCIdx );
+               }
+               
+               rslt=photonSelectionCheck[phoSCIdx];
+               if(eventLostAt < rslt) eventLostAt=rslt;
+               if( rslt > 0) continue;
+
+               auto et= ntupleRawTree.bG_scE[phoSCIdx]/cosh(ntupleRawTree.bG_scEta[phoSCIdx]);
+               photonLV.SetPtEtaPhiM( et,ntupleRawTree.bG_scEta[phoSCIdx],ntupleRawTree.bG_scPhi[phoSCIdx], PHO_MASS );
+               bmmgLV = diMuLV + photonLV;
+               
+               rslt=doBMMGSelection(bmmgLV,mumuIdx,phoSCIdx);
+               if(eventLostAt < rslt) eventLostAt=rslt;
+               if(rslt > 0) continue;
+
+               
+               fill_bmmgHists( bmmgLV , mumuIdx, phoSCIdx ,"bmmg_");
+
+               nBMMGPrePassCandidates++;
+               Float_t mvaVal=-3.0;
+               FillMVAControlHistograms(mvaVal,bmmgLV.M());  
+               if(doBMMGMVA)
+               {
+                  mvaVal=doBMMGMVAScores(mumuIdx, phoSCIdx);
+                  if(doBMMGMVASelection )
+                       if( doBMMGMVAScores(mumuIdx, phoSCIdx) <  bmmgMVAThreshold ) continue;
+               }
+               nBMMGCandidates++;
+                
+               fill_bmmgHists( bmmgLV , mumuIdx, phoSCIdx ,"bmmgMVAPass_");
+
+               storageArrayDouble[  nBMMGCandidates + candidateMapDouble["dimuGamma_dr"]          ]   = dr           ;
+               storageArrayDouble[  nBMMGCandidates + candidateMapDouble["bmmg_mva"]              ]   = doBMMGMVAScores( mumuIdx,phoSCIdx ) ;
+               storageArrayDouble[  nBMMGCandidates + candidateMapDouble["bmmg_pt"]               ]   = bmmgLV.Pt()   ;
+               storageArrayDouble[  nBMMGCandidates + candidateMapDouble["bmmg_eta"]              ]   = bmmgLV.Eta()  ;
+               storageArrayDouble[  nBMMGCandidates + candidateMapDouble["bmmg_phi"]              ]   = bmmgLV.Phi()  ;
+               storageArrayDouble[  nBMMGCandidates + candidateMapDouble["bmmg_mass"]             ]   = bmmgLV.M()    ;
+               storageArrayDouble[  nBMMGCandidates + candidateMapDouble["bmmg_massErr"]          ]   = bmmgLV.M()*-1 ; // TODO
+               storageArrayInt[nBMMGCandidates + candidateMapInt["bmmg_dimuon_idx"]               ]   = mumuIdx       ;
+               storageArrayInt[nBMMGCandidates + candidateMapInt["bmmg_photonSC_idx"]             ]   = phoSCIdx      ;
+               
+               nBMMGCandidatesPerDimu++;
+
+               if(nBMMGCandidates >= NBMMG_MAX)
+               {
+                    std::cout<<" BMMG count per event above NBMMG_MAX , Aborting !! \n";
+                    exit(9);
+               }
+
+               
+           }
+           
+           
+           storageArrayInt[ nDiMuCandidates + candidateMapInt["nBMMGCandidatesPerDimu"]  ]   = nBMMGCandidatesPerDimu ;
+           nDiMuCandidates++;
+
+           if(nDiMuCandidates >= NDIMU_MAX)
+           {
+                std::cout<<" Dimuon count per event above NDIMU_MAX , Aborting !! \n";
+                exit(9);
+           }
+            
+       }
+
+    
+       EventCount++;
+       if(n2GoodMuonInDimuon > 0)
+       {
+            th1fStore["ProcessingSummary"]->Fill("EventCountWith2GoodMuons",1);
+            EventCountWith2GoodMuons++;
+       }
+       if(nDiMuNoVertexCandidates > 0)
+       {
+            th1fStore["ProcessingSummary"]->Fill("EventCountWithDimuCand",1);
+            EventCountWithDimuCand++;
+       }
+       if(nDiMuCandidates > 0)
+       {
+            EventCountWithDimuVertexCand++;
+            th1fStore["ProcessingSummary"]->Fill("EventCountWithDimuVertexCand",1);
+       }
+
+       if(nBMMGPrePassCandidates >0)
+       {
+   //   std::cout<<"\t "<<ntupleRawTree.b5_run<<" , "<<ntupleRawTree.b5_event<<" : Number of nBMMGCandidates = "<<nBMMGCandidates<<"\n";
+        EventCountWithCand++;
+        th1fStore["ProcessingSummary"]->Fill("EventCountWithBMMGCand",1);
+        eventLostAt=0;
+       }
+       if(nBMMGCandidates >0)
+       {
+   //   std::cout<<"\t "<<ntupleRawTree.b5_run<<" , "<<ntupleRawTree.b5_event<<" : Number of nBMMGCandidates = "<<nBMMGCandidates<<"\n";
+        EventCountWithBMMGPassCand++;
+        th1fStore["ProcessingSummary"]->Fill("EventCountWithBMMGPassCand",1);
+        eventLostAt=0;
+       }
+   //         std::cout<<"EventCountWith2GoodMuons : "<<EventCountWith2GoodMuons<<"\n";
+   //         std::cout<<"EventCountWithDimuCand : "<<EventCountWithDimuCand<<"\n";
+   //         std::cout<<"EventCountWithDimuVertexCand : "<<EventCountWithDimuVertexCand<<"\n";
+   //         std::cout<<"EventCountWithBMMGCand : "<<EventCountWithCand<<"\n";
+       
+       fill_globalEventHists();
+   //    std::cout<<"nBMMGCandidates  "<< nBMMGCandidates <<" , "<<eventLostAt<<"\n";
+       FillCutFlow(eventLostAt);
+       
+       if(outTree)  outTree->Fill();
+    }
+    std::cout<<"\n\n"
+            <<"  Number of Events with trigger = "<<EventCount<<"\n"
+            <<"  Number of Events with 2 good muon = "<<EventCountWith2GoodMuons<<"\n"
+            <<"  Number of Events with dimu candidates = "<<EventCountWithDimuCand<<"\n"
+            <<"  Number of Events with dimu vtx candidates = "<<EventCountWithDimuVertexCand<<"\n"
+            <<"  Number of Events with bmmg candidates = "<<EventCountWithCand<<"\n"
+            <<"  Number of Events with bmmgPass candidates = "<<EventCountWithBMMGPassCand<<"\n"
+            <<"  Analysis loop completed"
+            <<"  \n\n";
+
+}
+
 void BMMGAnalysis::Analyze()
 {
     /************************************************************************************
@@ -13,6 +349,7 @@ void BMMGAnalysis::Analyze()
     Long64_t EventCount=0;
     Long64_t EventCountWith2GoodMuons=0;
     Long64_t EventCountWithCand=0;
+    Long64_t EventCountWithBMMGPassCand=0;
     Long64_t EventCountWithDimuCand=0;
     Long64_t EventCountWithDimuVertexCand=0;
     Long64_t nb = 0,nbytes=0 ;
@@ -26,6 +363,7 @@ void BMMGAnalysis::Analyze()
     th1fStore["ProcessingSummary"]->Fill("DataAnalysis",1);
 
     int rslt;
+    Int_t nBMMGPrePassCandidates=0;
 
     for (Long64_t jentry=0; jentry<maxEvents; jentry++)
     {   
@@ -109,6 +447,7 @@ void BMMGAnalysis::Analyze()
                 
 
        nBMMGCandidates=0;
+       nBMMGPrePassCandidates=0;
 
        fill_muonHists();
        fill_scHists();
@@ -202,17 +541,18 @@ void BMMGAnalysis::Analyze()
                if(eventLostAt < rslt) eventLostAt=rslt;
                if( rslt > 0) continue;
 
-               rslt=doBMMGSelection(mumuIdx,phoSCIdx);
-               if(eventLostAt < rslt) eventLostAt=rslt;
-               if(rslt > 0) continue;
-
                auto et= ntupleRawTree.bG_scE[phoSCIdx]/cosh(ntupleRawTree.bG_scEta[phoSCIdx]);
                photonLV.SetPtEtaPhiM( et,ntupleRawTree.bG_scEta[phoSCIdx],ntupleRawTree.bG_scPhi[phoSCIdx], PHO_MASS );
                bmmgLV = diMuLV + photonLV;
+
+               rslt=doBMMGSelection(bmmgLV,mumuIdx,phoSCIdx);
+               if(eventLostAt < rslt) eventLostAt=rslt;
+               if(rslt > 0) continue;
                 
                fill_bmmgHists( bmmgLV , mumuIdx, phoSCIdx );
 
                storageArrayDouble[  nBMMGCandidates + candidateMapDouble["dimuGamma_dr"]          ]   = dr           ;
+               storageArrayDouble[  nBMMGCandidates + candidateMapDouble["bmmg_mva"]              ]   = doBMMGMVAScores( mumuIdx, phoSCIdx ) ;
                storageArrayDouble[  nBMMGCandidates + candidateMapDouble["bmmg_pt"]               ]   = bmmgLV.Pt()  ;
                storageArrayDouble[  nBMMGCandidates + candidateMapDouble["bmmg_eta"]              ]   = bmmgLV.Eta() ;
                storageArrayDouble[  nBMMGCandidates + candidateMapDouble["bmmg_phi"]              ]   = bmmgLV.Phi() ;
@@ -222,7 +562,6 @@ void BMMGAnalysis::Analyze()
                storageArrayInt[nBMMGCandidates + candidateMapInt["bmmg_photonSC_idx"] ]        = phoSCIdx      ;
                
                nBMMGCandidatesPerDimu++;
-               //std::cout<<"Found Bmmg for "<<phoSCIdx<<" , "<<mumuIdx<<"\n";
                nBMMGCandidates++;
 
                if(nBMMGCandidates >= NBMMG_MAX)
@@ -265,13 +604,22 @@ void BMMGAnalysis::Analyze()
             EventCountWithDimuVertexCand++;
             th1fStore["ProcessingSummary"]->Fill("EventCountWithDimuVertexCand",1);
        }
-       if(nBMMGCandidates >0)
+       if(nBMMGPrePassCandidates>0)
        {
    //   std::cout<<"\t "<<ntupleRawTree.b5_run<<" , "<<ntupleRawTree.b5_event<<" : Number of nBMMGCandidates = "<<nBMMGCandidates<<"\n";
         EventCountWithCand++;
         th1fStore["ProcessingSummary"]->Fill("EventCountWithBMMGCand",1);
         eventLostAt=0;
        }
+     if(nBMMGCandidates >0)
+       {
+        EventCountWithBMMGPassCand++;
+        th1fStore["ProcessingSummary"]->Fill("EventCountWithBMMGPassCand",1);
+        eventLostAt=0;
+       }
+
+
+
    //         std::cout<<"EventCountWith2GoodMuons : "<<EventCountWith2GoodMuons<<"\n";
    //         std::cout<<"EventCountWithDimuCand : "<<EventCountWithDimuCand<<"\n";
    //         std::cout<<"EventCountWithDimuVertexCand : "<<EventCountWithDimuVertexCand<<"\n";
@@ -604,9 +952,6 @@ void BMMGAnalysis::GenAnalyze()
                 }
                 n2GoodMuonInDimuon++;
                 // Muon Selection
-                fill_dimuonHists(mumuIdx);
-                fill_dimuonEnvironmentHists(mumuIdx);
-	            
                       
                 // Dimuon Selection
                 rslt=doDimuonSelection(mumuIdx);
@@ -614,11 +959,14 @@ void BMMGAnalysis::GenAnalyze()
                 if(rslt > 0) continue;        
                 nDiMuNoVertexCandidates++;
                 
+                fill_dimuonHists(mumuIdx);
+                fill_dimuonEnvironmentHists(mumuIdx);
+                
                 //Dimuon Vertex Selection
                 //rslt = doVertexSelection(mumuIdx);
                 // std::cout<<EventCountWithDimuVertexCand<<" doVertexSelection : "<<rslt<<"\n";
-                if(eventLostAt < rslt) eventLostAt=rslt;
-                if(rslt > 0) continue;
+                //if(eventLostAt < rslt) eventLostAt=rslt;
+                //if(rslt > 0) continue;
                 
 
                 auto dr= getDR( ntupleRawTree.b5_mm_kin_mu1eta[mumuIdx], ntupleRawTree.b5_mm_kin_mu1phi[mumuIdx] ,
@@ -659,18 +1007,19 @@ void BMMGAnalysis::GenAnalyze()
                         if(eventLostAt < rslt) eventLostAt=rslt;
                         if( rslt > 0) continue;
                         
-                        rslt=doBMMGSelection(mumuIdx,phoSCIdx);
-                        //std::cout<<"doBMMGSelection : "<<rslt<<"\n";
-                        if(eventLostAt < rslt) eventLostAt=rslt;
-                        if(rslt > 0) continue;
-                        
                         auto et= ntupleRawTree.bG_scE[phoSCIdx]/cosh(ntupleRawTree.bG_scEta[phoSCIdx]);
                         photonLV.SetPtEtaPhiM( et,ntupleRawTree.bG_scEta[phoSCIdx],ntupleRawTree.bG_scPhi[phoSCIdx], PHO_MASS );
                         bmmgLV = diMuLV + photonLV;
                          
+                        rslt=doBMMGSelection(bmmgLV,mumuIdx,phoSCIdx);
+                        //std::cout<<"doBMMGSelection : "<<rslt<<"\n";
+                        if(eventLostAt < rslt) eventLostAt=rslt;
+                        if(rslt > 0) continue;
+                        
                         fill_bmmgHists( bmmgLV , mumuIdx, phoSCIdx );
 
                         storageArrayDouble[  nBMMGCandidates + candidateMapDouble["dimuGamma_dr"]          ]   = dr           ;
+                        storageArrayDouble[  nBMMGCandidates + candidateMapDouble["bmmg_mva"]              ]   = doBMMGMVAScores( mumuIdx,phoSCIdx ) ;
                         storageArrayDouble[  nBMMGCandidates + candidateMapDouble["bmmg_pt"]               ]   = bmmgLV.Pt()  ;
                         storageArrayDouble[  nBMMGCandidates + candidateMapDouble["bmmg_eta"]              ]   = bmmgLV.Eta() ;
                         storageArrayDouble[  nBMMGCandidates + candidateMapDouble["bmmg_phi"]              ]   = bmmgLV.Phi() ;
@@ -768,47 +1117,28 @@ void BMMGAnalysis::setUpDimuonMVA()
     
     readerStore["dimuonMVA"] =  new TMVA::Reader( "!Color:!Silent" );
 
-    storageFloat["mm_bdt"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_bdt" ,  &(storageFloat["mm_bdt"]));
-    storageFloat["mm_doca"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_doca" ,  &(storageFloat["mm_doca"]));
-    storageFloat["mm_docatrk"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_docatrk" ,  &(storageFloat["mm_docatrk"]));
-    storageFloat["mm_iso"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_iso" ,  &(storageFloat["mm_iso"]));
-    storageFloat["mm_kal_lxy"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_kal_lxy" ,  &(storageFloat["mm_kal_lxy"]));
-    storageFloat["mm_kal_mass"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_kal_mass" ,  &(storageFloat["mm_kal_mass"]));
-    storageFloat["mm_kal_slxy"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_kal_slxy" ,  &(storageFloat["mm_kal_slxy"]));
-    storageFloat["mm_kal_vtx_prob"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_kal_vtx_prob" ,  &(storageFloat["mm_kal_vtx_prob"]));
-    storageFloat["mm_kin_pt"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_kin_pt" ,  &(storageFloat["mm_kin_pt"]));
-    storageFloat["mm_kin_mu1pt"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_kin_mu1pt" ,  &(storageFloat["mm_kin_mu1pt"]));
-    storageFloat["mm_kin_mu2pt"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_kin_mu2pt" ,  &(storageFloat["mm_kin_mu2pt"]));
-    storageFloat["mm_kin_l3d"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_kin_l3d" ,  &(storageFloat["mm_kin_l3d"]));
-    storageFloat["mm_kin_lxy"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_kin_lxy" ,  &(storageFloat["mm_kin_lxy"]));
-    storageFloat["mm_kin_mass"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_kin_mass" ,  &(storageFloat["mm_kin_mass"]));
-    storageFloat["mm_kin_massErr"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_kin_massErr" ,  &(storageFloat["mm_kin_massErr"]));
-    storageFloat["mm_kin_pv2ip"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_kin_pv2ip" ,  &(storageFloat["mm_kin_pv2ip"]));
-    storageFloat["mm_kin_pv2lip"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_kin_pv2lip" ,  &(storageFloat["mm_kin_pv2lip"]));
-    storageFloat["mm_kin_pv2lipErr"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_kin_pv2lipErr" ,  &(storageFloat["mm_kin_pv2lipErr"]));
-    storageFloat["mm_kin_pv2lipSig"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_kin_pv2lipSig" ,  &(storageFloat["mm_kin_pv2lipSig"]));
-    storageFloat["mm_kin_pv_zErr"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_kin_pv_zErr" ,  &(storageFloat["mm_kin_pv_zErr"]));
-    storageFloat["mm_kin_pvip"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_kin_pvip" ,  &(storageFloat["mm_kin_pvip"]));
-    storageFloat["mm_kin_pvipErr"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_kin_pvipErr" ,  &(storageFloat["mm_kin_pvipErr"]));
-    storageFloat["mm_kin_pvlip"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_kin_pvlip" ,  &(storageFloat["mm_kin_pvlip"]));
-    storageFloat["mm_kin_pvlipErr"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_kin_pvlipErr" ,  &(storageFloat["mm_kin_pvlipErr"]));
-    storageFloat["mm_kin_pvlipSig"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_kin_pvlipSig" ,  &(storageFloat["mm_kin_pvlipSig"]));
-    storageFloat["mm_kin_sl3d"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_kin_sl3d" ,  &(storageFloat["mm_kin_sl3d"]));
-    storageFloat["mm_kin_slxy"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_kin_slxy" ,  &(storageFloat["mm_kin_slxy"]));
-    storageFloat["mm_kin_spv2ip"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_kin_spv2ip" ,  &(storageFloat["mm_kin_spv2ip"]));
-    storageFloat["mm_kin_spvip"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_kin_spvip" ,  &(storageFloat["mm_kin_spvip"]));
-    storageFloat["mm_kin_vtx_chi2dof"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_kin_vtx_chi2dof" ,  &(storageFloat["mm_kin_vtx_chi2dof"]));
-    storageFloat["mm_kin_vtx_prob"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_kin_vtx_prob" ,  &(storageFloat["mm_kin_vtx_prob"]));
-    storageFloat["mm_kin_vtx_xErr"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_kin_vtx_xErr" ,  &(storageFloat["mm_kin_vtx_xErr"]));
-    storageFloat["mm_kin_vtx_yErr"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_kin_vtx_yErr" ,  &(storageFloat["mm_kin_vtx_yErr"]));
-    storageFloat["mm_kin_vtx_zErr"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_kin_vtx_zErr" ,  &(storageFloat["mm_kin_vtx_zErr"]));
-    storageFloat["mm_mva"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_mva" ,  &(storageFloat["mm_mva"]));
-    storageFloat["mm_otherVtxMaxProb1"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_otherVtxMaxProb1" ,  &(storageFloat["mm_otherVtxMaxProb1"]));
-    storageFloat["mm_closetrk"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_closetrk" ,  &(storageFloat["mm_closetrk"]));
-    storageFloat["mm_closetrks1"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_closetrks1" ,  &(storageFloat["mm_closetrks1"]));
-    storageFloat["mm_nBMTrks"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_nBMTrks" ,  &(storageFloat["mm_nBMTrks"]));
-    storageFloat["mm_nDisTrks"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_nDisTrks" ,  &(storageFloat["mm_nDisTrks"]));
-    storageFloat["mm_nTrks"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_nTrks" ,  &(storageFloat["mm_nTrks"]));
+    
+       storageFloat["mm_kin_vtx_prob"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_kin_vtx_prob" ,  &(storageFloat["mm_kin_vtx_prob"]));
+       storageFloat["mm_kin_vtx_chi2dof"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_kin_vtx_chi2dof" ,  &(storageFloat["mm_kin_vtx_chi2dof"]));
+       storageFloat["mm_kin_lxy"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_kin_lxy" ,  &(storageFloat["mm_kin_lxy"]));
+       storageFloat["mm_nTrks"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_nTrks" ,  &(storageFloat["mm_nTrks"]));
+       storageFloat["mm_doca"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_doca" ,  &(storageFloat["mm_doca"]));
+       storageFloat["mm_kin_massErr"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_kin_massErr" ,  &(storageFloat["mm_kin_massErr"]));
+       storageFloat["mm_kin_slxy"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_kin_slxy" ,  &(storageFloat["mm_kin_slxy"]));
+       storageFloat["mm_kin_spvip"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_kin_spvip" ,  &(storageFloat["mm_kin_spvip"]));
+       storageFloat["mm_kin_pvlip"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_kin_pvlip" ,  &(storageFloat["mm_kin_pvlip"]));
+       storageFloat["mm_kin_pvipErr"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_kin_pvipErr" ,  &(storageFloat["mm_kin_pvipErr"]));
+       storageFloat["mm_kin_pvlipErr"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_kin_pvlipErr" ,  &(storageFloat["mm_kin_pvlipErr"]));
+       storageFloat["mm_kin_sl3d"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_kin_sl3d" ,  &(storageFloat["mm_kin_sl3d"]));
+       storageFloat["mm_mva"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_mva" ,  &(storageFloat["mm_mva"]));
+       storageFloat["mm_closetrk"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_closetrk" ,  &(storageFloat["mm_closetrk"]));
+       storageFloat["mm_iso"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_iso" ,  &(storageFloat["mm_iso"]));
+       storageFloat["mm_docatrk"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_docatrk" ,  &(storageFloat["mm_docatrk"]));
+       storageFloat["mm_kin_pv2ip"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_kin_pv2ip" ,  &(storageFloat["mm_kin_pv2ip"]));
+       storageFloat["mm_otherVtxMaxProb2"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_otherVtxMaxProb2" ,  &(storageFloat["mm_otherVtxMaxProb2"]));
+       
+       
+
 
     readerStore["dimuonMVA"]->BookMVA("DimuonMVA", dimuonMVAWeightFile );
     
@@ -819,61 +1149,151 @@ void BMMGAnalysis::doDimuonMVAScores()
 {   
     if(not hasSetupDimuonMVA)
     {
-        std::cout<<" MVA not setup : "<<hasSetupPhotonMVA<<"\n";
+        std::cout<<" MVA not setup : "<<hasSetupDimuonMVA<<"\n";
         exit(2);
     }
 
     Double_t dimuonMVAScore;
     for(int  i=0  ; i < ntupleRawTree.b5_nmm ; i++)
     {
-    
-      storageFloat["mm_bdt"                  ]  = ntupleRawTree.b5_mm_bdt[i] ;
-      storageFloat["mm_doca"                  ]  = ntupleRawTree.b5_mm_doca[i] ;
-      storageFloat["mm_docatrk"                  ]  = ntupleRawTree.b5_mm_docatrk[i] ;
-      storageFloat["mm_iso"                  ]  = ntupleRawTree.b5_mm_iso[i] ;
-      storageFloat["mm_kal_lxy"                  ]  = ntupleRawTree.b5_mm_kal_lxy[i] ;
-      storageFloat["mm_kal_mass"                  ]  = ntupleRawTree.b5_mm_kal_mass[i] ;
-      storageFloat["mm_kal_slxy"                  ]  = ntupleRawTree.b5_mm_kal_slxy[i] ;
-      storageFloat["mm_kal_vtx_prob"                  ]  = ntupleRawTree.b5_mm_kal_vtx_prob[i] ;
-      storageFloat["mm_kin_pt"                  ]  = ntupleRawTree.b5_mm_kin_pt[i] ;
-      storageFloat["mm_kin_mu1pt"                  ]  = ntupleRawTree.b5_mm_kin_mu1pt[i] ;
-      storageFloat["mm_kin_mu2pt"                  ]  = ntupleRawTree.b5_mm_kin_mu2pt[i] ;
-      storageFloat["mm_kin_l3d"                  ]  = ntupleRawTree.b5_mm_kin_l3d[i] ;
-      storageFloat["mm_kin_lxy"                  ]  = ntupleRawTree.b5_mm_kin_lxy[i] ;
-      storageFloat["mm_kin_mass"                  ]  = ntupleRawTree.b5_mm_kin_mass[i] ;
-      storageFloat["mm_kin_massErr"                  ]  = ntupleRawTree.b5_mm_kin_massErr[i] ;
-      storageFloat["mm_kin_pv2ip"                  ]  = ntupleRawTree.b5_mm_kin_pv2ip[i] ;
-      storageFloat["mm_kin_pv2lip"                  ]  = ntupleRawTree.b5_mm_kin_pv2lip[i] ;
-      storageFloat["mm_kin_pv2lipErr"                  ]  = ntupleRawTree.b5_mm_kin_pv2lipErr[i] ;
-      storageFloat["mm_kin_pv2lipSig"                  ]  = ntupleRawTree.b5_mm_kin_pv2lipSig[i] ;
-      storageFloat["mm_kin_pv_zErr"                  ]  = ntupleRawTree.b5_mm_kin_pv_zErr[i] ;
-      storageFloat["mm_kin_pvip"                  ]  = ntupleRawTree.b5_mm_kin_pvip[i] ;
-      storageFloat["mm_kin_pvipErr"                  ]  = ntupleRawTree.b5_mm_kin_pvipErr[i] ;
-      storageFloat["mm_kin_pvlip"                  ]  = ntupleRawTree.b5_mm_kin_pvlip[i] ;
-      storageFloat["mm_kin_pvlipErr"                  ]  = ntupleRawTree.b5_mm_kin_pvlipErr[i] ;
-      storageFloat["mm_kin_pvlipSig"                  ]  = ntupleRawTree.b5_mm_kin_pvlipSig[i] ;
-      storageFloat["mm_kin_sl3d"                  ]  = ntupleRawTree.b5_mm_kin_sl3d[i] ;
-      storageFloat["mm_kin_slxy"                  ]  = ntupleRawTree.b5_mm_kin_slxy[i] ;
-      storageFloat["mm_kin_spv2ip"                  ]  = ntupleRawTree.b5_mm_kin_spv2ip[i] ;
-      storageFloat["mm_kin_spvip"                  ]  = ntupleRawTree.b5_mm_kin_spvip[i] ;
-      storageFloat["mm_kin_vtx_chi2dof"                  ]  = ntupleRawTree.b5_mm_kin_vtx_chi2dof[i] ;
-      storageFloat["mm_kin_vtx_prob"                  ]  = ntupleRawTree.b5_mm_kin_vtx_prob[i] ;
-      storageFloat["mm_kin_vtx_xErr"                  ]  = ntupleRawTree.b5_mm_kin_vtx_xErr[i] ;
-      storageFloat["mm_kin_vtx_yErr"                  ]  = ntupleRawTree.b5_mm_kin_vtx_yErr[i] ;
-      storageFloat["mm_kin_vtx_zErr"                  ]  = ntupleRawTree.b5_mm_kin_vtx_zErr[i] ;
-      storageFloat["mm_mva"                  ]  = ntupleRawTree.b5_mm_mva[i] ;
-      storageFloat["mm_otherVtxMaxProb1"                  ]  = ntupleRawTree.b5_mm_otherVtxMaxProb1[i] ;
-      storageFloat["mm_closetrk"                  ]  = ntupleRawTree.b5_mm_closetrk[i] ;
-      storageFloat["mm_closetrks1"                  ]  = ntupleRawTree.b5_mm_closetrks1[i] ;
-      storageFloat["mm_nBMTrks"                  ]  = ntupleRawTree.b5_mm_nBMTrks[i] ;
-      storageFloat["mm_nDisTrks"                  ]  = ntupleRawTree.b5_mm_nDisTrks[i] ;
-      storageFloat["mm_nTrks"                  ]  = ntupleRawTree.b5_mm_nTrks[i] ;
+       storageFloat["mm_kin_vtx_prob"]  = ntupleRawTree.b5_mm_kin_vtx_prob[i] ;
+       storageFloat["mm_kin_vtx_chi2dof"]  = ntupleRawTree.b5_mm_kin_vtx_chi2dof[i] ;
+       storageFloat["mm_kin_lxy"]  = ntupleRawTree.b5_mm_kin_lxy[i] ;
+       storageFloat["mm_nTrks"]  = ntupleRawTree.b5_mm_nTrks[i] ;
+       storageFloat["mm_doca"]  = ntupleRawTree.b5_mm_doca[i] ;
+       storageFloat["mm_kin_massErr"]  = ntupleRawTree.b5_mm_kin_massErr[i] ;
+       storageFloat["mm_kin_slxy"]  = ntupleRawTree.b5_mm_kin_slxy[i] ;
+       storageFloat["mm_kin_spvip"]  = ntupleRawTree.b5_mm_kin_spvip[i] ;
+       storageFloat["mm_kin_pvlip"]  = ntupleRawTree.b5_mm_kin_pvlip[i] ;
+       storageFloat["mm_kin_pvipErr"]  = ntupleRawTree.b5_mm_kin_pvipErr[i] ;
+       storageFloat["mm_kin_pvlipErr"]  = ntupleRawTree.b5_mm_kin_pvlipErr[i] ;
+       storageFloat["mm_kin_sl3d"]  = ntupleRawTree.b5_mm_kin_sl3d[i] ;
+       storageFloat["mm_mva"]  = ntupleRawTree.b5_mm_mva[i] ;
+       storageFloat["mm_closetrk"]  = ntupleRawTree.b5_mm_closetrk[i] ;
+       storageFloat["mm_iso"]  = ntupleRawTree.b5_mm_iso[i] ;
+       storageFloat["mm_docatrk"]  = ntupleRawTree.b5_mm_docatrk[i] ;
+       storageFloat["mm_kin_pv2ip"]  = ntupleRawTree.b5_mm_kin_pv2ip[i] ;
+       storageFloat["mm_otherVtxMaxProb2"]  = ntupleRawTree.b5_mm_otherVtxMaxProb2[i] ;
       
       dimuonMVAScore = readerStore["dimuonMVA"]->EvaluateMVA("DimuonMVA");
       storageArrayDouble[ i + candidateMapInt["dimuonMVAScore"]  ]   = dimuonMVAScore ;
       //std::cout<<" i = "<<dimuonMVAScore<<"\n";
     }
 }
+
+
+
+void BMMGAnalysis::setUpBMMGMVA()
+{
+    if(not hasBMMGWeightFiles)
+    {
+        std::cout<<"Weights are not provided exiting ! \n";
+        exit(4);
+    }
+
+    std::cout<<" ******** Setting up BMMG_MVA *********\n"
+             <<"Weight file : "<<bmmgMVAWeightFile<<"\n";
+    
+    readerStore["bmmgMVA"] =  new TMVA::Reader( "!Color:!Silent" );
+
+   // storageFloat["mm_doca"] = 0.0; readerStore["dimuonMVA"]->AddVariable("mm_doca" ,  &(storageFloat["mm_doca"]));
+      storageFloat["bmmgMVA_mm_kal_lxy"] = 0.0; readerStore["bmmgMVA"]->AddVariable("mm_kal_lxy" ,  &(storageFloat["bmmgMVA_mm_kal_lxy"]));
+      //storageFloat["bmmgMVA_mm_kal_vtx_prob"] = 0.0; readerStore["bmmgMVA"]->AddVariable("mm_kal_vtx_prob" ,  &(storageFloat["bmmgMVA_mm_kal_vtx_prob"]));
+      storageFloat["bmmgMVA_mm_kin_pt"] = 0.0; readerStore["bmmgMVA"]->AddVariable("mm_kin_pt" ,  &(storageFloat["bmmgMVA_mm_kin_pt"]));
+      storageFloat["bmmgMVA_mm_kin_mu1pt"] = 0.0; readerStore["bmmgMVA"]->AddVariable("mm_kin_mu1pt" ,  &(storageFloat["bmmgMVA_mm_kin_mu1pt"]));
+      storageFloat["bmmgMVA_mm_kin_mu1eta"] = 0.0; readerStore["bmmgMVA"]->AddVariable("mm_kin_mu1eta" ,  &(storageFloat["bmmgMVA_mm_kin_mu1eta"]));
+      storageFloat["bmmgMVA_mm_kin_mu1phi"] = 0.0; readerStore["bmmgMVA"]->AddVariable("mm_kin_mu1phi" ,  &(storageFloat["bmmgMVA_mm_kin_mu1phi"]));
+      storageFloat["bmmgMVA_mm_kin_mu2pt"] = 0.0; readerStore["bmmgMVA"]->AddVariable("mm_kin_mu2pt" ,  &(storageFloat["bmmgMVA_mm_kin_mu2pt"]));
+      storageFloat["bmmgMVA_mm_kin_mu2eta"] = 0.0; readerStore["bmmgMVA"]->AddVariable("mm_kin_mu2eta" ,  &(storageFloat["bmmgMVA_mm_kin_mu2eta"]));
+      storageFloat["bmmgMVA_mm_kin_mu2phi"] = 0.0; readerStore["bmmgMVA"]->AddVariable("mm_kin_mu2phi" ,  &(storageFloat["bmmgMVA_mm_kin_mu2phi"]));
+      storageFloat["bmmgMVA_mm_kin_mass"] = 0.0; readerStore["bmmgMVA"]->AddVariable("mm_kin_mass" ,  &(storageFloat["bmmgMVA_mm_kin_mass"]));
+      storageFloat["bmmgMVA_mm_kin_vtx_prob"] = 0.0; readerStore["bmmgMVA"]->AddVariable("mm_kin_vtx_prob" ,  &(storageFloat["bmmgMVA_mm_kin_vtx_prob"]));
+      storageFloat["bmmgMVA_bmmg_phoPt"] = 0.0; readerStore["bmmgMVA"]->AddVariable("bmmg_phoPt" ,  &(storageFloat["bmmgMVA_bmmg_phoPt"]));
+      storageFloat["bmmgMVA_bmmg_phoEta"] = 0.0; readerStore["bmmgMVA"]->AddVariable("bmmg_phoEta" ,  &(storageFloat["bmmgMVA_bmmg_phoEta"]));
+      storageFloat["bmmgMVA_bmmg_phoPhi"] = 0.0; readerStore["bmmgMVA"]->AddVariable("bmmg_phoPhi" ,  &(storageFloat["bmmgMVA_bmmg_phoPhi"]));
+      storageFloat["bmmgMVA_bmmg_phoMu1DR"] = 0.0; readerStore["bmmgMVA"]->AddVariable("bmmg_phoMu1DR" ,  &(storageFloat["bmmgMVA_bmmg_phoMu1DR"]));
+      storageFloat["bmmgMVA_bmmg_phoMu2DR"] = 0.0; readerStore["bmmgMVA"]->AddVariable("bmmg_phoMu2DR" ,  &(storageFloat["bmmgMVA_bmmg_phoMu2DR"]));
+      storageFloat["bmmgMVA_bmmg_phoDimuDR"] = 0.0; readerStore["bmmgMVA"]->AddVariable("bmmg_phoDimuDR" ,  &(storageFloat["bmmgMVA_bmmg_phoDimuDR"]));
+      storageFloat["bmmgMVA_bmmg_phoMu1Mass"] = 0.0; readerStore["bmmgMVA"]->AddVariable("bmmg_phoMu1Mass" ,  &(storageFloat["bmmgMVA_bmmg_phoMu1Mass"]));
+      storageFloat["bmmgMVA_bmmg_phoMu2Mass"] = 0.0; readerStore["bmmgMVA"]->AddVariable("bmmg_phoMu2Mass" ,  &(storageFloat["bmmgMVA_bmmg_phoMu2Mass"]));
+      storageFloat["bmmgMVA_bmmg_phoDimuDCA"] = 0.0; readerStore["bmmgMVA"]->AddVariable("bmmg_phoDimuDCA" ,  &(storageFloat["bmmgMVA_bmmg_phoDimuDCA"]));
+      //storageFloat["bmmgMVA_bmmg_pt"] = 0.0; readerStore["bmmgMVA"]->AddVariable("bmmg_pt" ,  &(storageFloat["bmmgMVA_bmmg_pt"]));
+      //storageFloat["bmmgMVA_bmmg_eta"] = 0.0; readerStore["bmmgMVA"]->AddVariable("bmmg_eta" ,  &(storageFloat["bmmgMVA_bmmg_eta"]));
+      //storageFloat["bmmgMVA_bmmg_phi"] = 0.0; readerStore["bmmgMVA"]->AddVariable("bmmg_phi" ,  &(storageFloat["bmmgMVA_bmmg_phi"]));
+
+    readerStore["bmmgMVA"]->BookMVA("bmmgMVA", bmmgMVAWeightFile );
+    
+    hasSetupBMMGMVA=true;
+}
+
+Float_t BMMGAnalysis::doBMMGMVAScores(Int_t mumuIdx,Int_t scIdx)
+{   
+    if(not hasSetupBMMGMVA)
+    {
+        std::cout<<" MVA not setup : "<<hasSetupBMMGMVA<<"\n";
+        exit(2);
+    }
+    
+    storageFloat["bmmgMVA_mm_kal_lxy"]       = ntupleRawTree.b5_mm_kal_lxy[mumuIdx] ;
+    storageFloat["bmmgMVA_mm_kal_vtx_prob"]  = ntupleRawTree.b5_mm_kal_vtx_prob[mumuIdx] ;
+    storageFloat["bmmgMVA_mm_kin_pt"]        = ntupleRawTree.b5_mm_kin_pt[mumuIdx] ;
+    storageFloat["bmmgMVA_mm_kin_mu1pt"]     = ntupleRawTree.b5_mm_kin_mu1pt[mumuIdx] ;
+    storageFloat["bmmgMVA_mm_kin_mu1eta"]    = ntupleRawTree.b5_mm_kin_mu1eta[mumuIdx] ;
+    storageFloat["bmmgMVA_mm_kin_mu1phi"]    = ntupleRawTree.b5_mm_kin_mu1phi[mumuIdx] ;
+    storageFloat["bmmgMVA_mm_kin_mu2pt"]     = ntupleRawTree.b5_mm_kin_mu2pt[mumuIdx] ;
+    storageFloat["bmmgMVA_mm_kin_mu2eta"]    = ntupleRawTree.b5_mm_kin_mu2eta[mumuIdx] ;
+    storageFloat["bmmgMVA_mm_kin_mu2phi"]    = ntupleRawTree.b5_mm_kin_mu2phi[mumuIdx] ;
+    storageFloat["bmmgMVA_mm_kin_mass"]      = ntupleRawTree.b5_mm_kin_mass[mumuIdx] ;
+    storageFloat["bmmgMVA_mm_kin_vtx_prob"]  = ntupleRawTree.b5_mm_kin_vtx_prob[mumuIdx] ;
+    
+
+    mu1LV.SetPtEtaPhiM( ntupleRawTree.b5_mm_mu1_pt[mumuIdx],ntupleRawTree.b5_mm_mu1_eta[mumuIdx],ntupleRawTree.b5_mm_mu1_phi[mumuIdx], PHO_MASS );
+    mu2LV.SetPtEtaPhiM( ntupleRawTree.b5_mm_mu2_pt[mumuIdx],ntupleRawTree.b5_mm_mu2_eta[mumuIdx],ntupleRawTree.b5_mm_mu2_phi[mumuIdx], PHO_MASS );
+    
+    auto et= ntupleRawTree.bG_scE[scIdx]/cosh(ntupleRawTree.bG_scEta[scIdx]);
+    photonLV.SetPtEtaPhiM( et,ntupleRawTree.bG_scEta[scIdx],ntupleRawTree.bG_scPhi[scIdx], PHO_MASS );
+    diMuLV.SetPtEtaPhiM(     ntupleRawTree.b5_mm_kin_pt[mumuIdx],   \
+                             ntupleRawTree.b5_mm_kin_eta[mumuIdx],  \
+                             ntupleRawTree.b5_mm_kin_phi[mumuIdx],  \
+                             ntupleRawTree.b5_mm_kin_mass[mumuIdx]  );
+    bmmgLV = diMuLV + photonLV;
+    auto pvMatch=getPVMatch(mumuIdx);
+    svDisplacementVecor.SetCoordinates( 
+                                        ntupleRawTree.b5_mm_kin_vtx_x[mumuIdx] - ntupleRawTree.bG_primaryVertex_x[pvMatch],
+                                        ntupleRawTree.b5_mm_kin_vtx_y[mumuIdx] - ntupleRawTree.bG_primaryVertex_y[pvMatch],
+                                        ntupleRawTree.b5_mm_kin_vtx_z[mumuIdx] - ntupleRawTree.bG_primaryVertex_z[pvMatch]
+                                     );
+     bmmg3Momentum.SetCoordinates(
+                                    bmmgLV.Px(),
+                                    bmmgLV.Py(),
+                                    bmmgLV.Pz()
+                               );
+    
+   auto cos_beta       =  bmmg3Momentum.Dot(svDisplacementVecor)/sqrt(bmmg3Momentum.Mag2())/sqrt(svDisplacementVecor.Mag2());
+   auto beta           =  acos(cos_beta);  
+   auto cos_beta_error =  cos_beta*-1;
+    
+    storageFloat["bmmgMVA_bmmg_phoPt"]       =  photonLV.Pt();
+    storageFloat["bmmgMVA_bmmg_phoEta"]      =  photonLV.Eta();
+    storageFloat["bmmgMVA_bmmg_phoPhi"]      =  photonLV.Phi();
+    storageFloat["bmmgMVA_bmmg_phoMu1DR"]    =  photonLV.DeltaR(mu1LV) ;
+    storageFloat["bmmgMVA_bmmg_phoMu2DR"]    =  photonLV.DeltaR(mu2LV) ;
+    storageFloat["bmmgMVA_bmmg_phoDimuDR"]   =  photonLV.DeltaR(diMuLV) ;
+    storageFloat["bmmgMVA_bmmg_phoMu1Mass"]  = (photonLV+mu1LV).M() ;
+    storageFloat["bmmgMVA_bmmg_phoMu2Mass"]  = (photonLV+mu2LV).M() ;
+    storageFloat["bmmgMVA_bmmg_phoDimuDCA"]  = getDCAGammaToDimuVertex(mumuIdx,scIdx) ;
+    storageFloat["bmmgMVA_bmmg_pt"]          = bmmgLV.Pt();
+    storageFloat["bmmgMVA_bmmg_eta"]         = bmmgLV.Eta();
+    storageFloat["bmmgMVA_bmmg_phi"]         = bmmgLV.Phi();
+
+    Float_t bmmgMVAScore;
+    bmmgMVAScore = readerStore["bmmgMVA"]->EvaluateMVA("bmmgMVA");
+    return bmmgMVAScore;
+}
+
+
+
+
 
 
 
@@ -1003,6 +1423,9 @@ void BMMGAnalysis::AllocateBMMGBranches()
     
     candidateMapDouble["dimuGamma_dr"]  = storageIdxFilledDouble                ;
     outTree->Branch( "dimuGamma_dr",&(storageArrayDouble[storageIdxFilledDouble]),"dimuGamma_dr[nBMMGCandidates]/D" )   ;   storageIdxFilledDouble+=NBMMG_MAX;
+
+    candidateMapDouble["bmmg_mva"]       = storageIdxFilledDouble ;
+    outTree->Branch( "bmmg_mva",&(storageArrayDouble[storageIdxFilledDouble]),"bmmg_mva[nBMMGCandidates]/D" )   ;   storageIdxFilledDouble+=NBMMG_MAX;
 
     candidateMapDouble["bmmg_pt"]       = storageIdxFilledDouble ;
     outTree->Branch( "bmmg_pt",&(storageArrayDouble[storageIdxFilledDouble]),"bmmg_pt[nBMMGCandidates]/D" )   ;   storageIdxFilledDouble+=NBMMG_MAX;
@@ -1470,6 +1893,56 @@ void BMMGAnalysis::setupReducedAnalysisTreeBranches()
 
 }
 
+void BMMGAnalysis::FillMVAControlHistograms(Float_t mvaVal,Float_t mmgMass)
+{
+
+    if( (mmgMass > mmgSideBandLBeg) and (mmgMass < mmgSideBandLEnd) )
+    {
+        th1fStore["bmmg_MVA_CtrlL"]->Fill( mvaVal  );
+    }
+    if( (mmgMass > mmgSigRegionBeg ) and (mmgMass < mmgSigRegionEnd) )
+    {
+        th1fStore["bmmg_MVA_Sig"]->Fill( mvaVal  );
+    }
+    if( (mmgMass > mmgSideBandRBeg) and (mmgMass < mmgSideBandREnd) )
+    {
+        th1fStore["bmmg_MVA_CtrlR"]->Fill( mvaVal  );
+    }
+    
+    std::string tmpA,tmpB;
+    for(auto i=0;i<(mvaControlRegionSplits.size()-1);i++)
+    {
+        if( (mvaVal < mvaControlRegionSplits[i+1]) and ( mvaVal > mvaControlRegionSplits[i] ))
+        {
+            tmpA = std::to_string(mvaControlRegionSplits[i  ]).substr(0, 5);
+            tmpB = std::to_string(mvaControlRegionSplits[i+1]).substr(0, 5);
+            th1fStore[("MMG_MvaSplitRegion_"+tmpA+"TO"+tmpB).c_str()]->Fill(mmgMass);
+        }
+        
+    }
+
+}
+
+void BMMGAnalysis::FillDimuMVAControlHistograms(Float_t mvaVal,Int_t mumuIdx)
+{
+     string tmpA,tmpB;
+
+     for(auto i=0;i<(mvaControlRegionSplits.size()-1);i++)
+     {
+        if( (mvaVal < mvaControlRegionSplits[i+1]) and ( mvaVal > mvaControlRegionSplits[i] )) {
+          tmpA = std::to_string(mvaControlRegionSplits[i  ]).substr(0, 5);
+          tmpB = std::to_string(mvaControlRegionSplits[i+1]).substr(0, 5);
+          th1fStore[("DiMu_MvaSplitRegion_"+tmpA+"TO"+tmpB).c_str()] ->Fill( mvaVal ) ; 
+
+          th1fStore[("DiMu_Pt1_MvaRegion_"+tmpA+"TO"+tmpB).c_str()]  ->Fill( ntupleRawTree.b5_mm_mu1_pt[mumuIdx] ) ;
+          th1fStore[("DiMu_Pt2_MvaRegion_"+tmpA+"TO"+tmpB).c_str()]  ->Fill( ntupleRawTree.b5_mm_mu2_pt[mumuIdx] ) ;
+          th1fStore[("DiMu_Mass_MvaRegion_"+tmpA+"TO"+tmpB).c_str()] ->Fill( ntupleRawTree.b5_mm_kin_mass[mumuIdx] ) ;
+          th1fStore[("DiMu_Pt_MvaRegion_"+tmpA+"TO"+tmpB).c_str()]  ->Fill( ntupleRawTree.b5_mm_kin_pt[mumuIdx] ) ;
+          th1fStore[("DiMu_Eta_MvaRegion_"+tmpA+"TO"+tmpB).c_str()]  ->Fill( ntupleRawTree.b5_mm_kin_eta[mumuIdx] ) ;
+        }
+     }
+}
+
 void BMMGAnalysis::bookHistograms()
 {
      const int   pTBins=50;
@@ -1488,7 +1961,39 @@ void BMMGAnalysis::bookHistograms()
      const float deltaRMin(0.0);
      const float deltaRMax(3.0);
     
-    //All Mu Hist
+    // MVA Control Histograms
+     th1fStore["bmmg_MVA_CtrlL"]     = new TH1F("bmmg_MVA_CtrlL","MVA Vals from Left Side Band" , 80 , -2.0   , 2.0  );
+     th1fStore["bmmg_MVA_CtrlR"]     = new TH1F("bmmg_MVA_CtrlR","MVA Vals from Right Side Band", 80 , -2.0   , 2.0  );
+     th1fStore["bmmg_MVA_Sig"]       = new TH1F("bmmg_MVA_Sig","MVA Vals from Sig", 80 , -2.0    , 2.0 );
+     
+     std::string tmpA,tmpB;
+     for(auto i=0;i<(mvaControlRegionSplits.size()-1);i++)
+     {
+            tmpA = std::to_string(mvaControlRegionSplits[i  ]).substr(0, 5);
+            tmpB = std::to_string(mvaControlRegionSplits[i+1]).substr(0, 5);
+        //std::cout<<__LINE__<<"  "<<("MMG_MvaSplitRegion_"+tmpA+"TO"+tmpB).c_str()<<" ->  Checking !! \n";
+        th1fStore[("MMG_MvaSplitRegion_"+tmpA+"TO"+tmpB).c_str()]  = new TH1F(("MMG_MvaSplitRegion_"+tmpA+"TO"+tmpB).c_str(),(" MMMG in "+tmpA+" To "+tmpB).c_str(), 100 , 0.0 , 10.0 );
+     }
+     
+     for(auto i=0;i<(mvaControlRegionSplits.size()-1);i++)
+     {
+        tmpA = std::to_string(mvaControlRegionSplits[i  ]).substr(0, 5);
+        tmpB = std::to_string(mvaControlRegionSplits[i+1]).substr(0, 5);
+        
+        std::cout<<"  setting up  : "<<("DiMu_MvaSplitRegion_"+tmpA+"TO"+tmpB).c_str()<<"\n";
+        th1fStore[("DiMu_MvaSplitRegion_"+tmpA+"TO"+tmpB).c_str()] = new TH1F(("DiMu_MvaSplitRegion_"+tmpA+"TO"+tmpB).c_str(),(" MMMG in "+tmpA+" To "+tmpB).c_str(), 100 , -2.0 , 2.0 );
+
+        th1fStore[("DiMu_Pt1_MvaRegion_"+tmpA+"TO"+tmpB).c_str()]  = new TH1F(("DiMu_Pt1_MvaRegion_"+tmpA+"TO"+tmpB).c_str(),(" MMMG in "+tmpA+" To "+tmpB).c_str(), 200 , 0.0 , 100.0 );
+        th1fStore[("DiMu_Pt2_MvaRegion_"+tmpA+"TO"+tmpB).c_str()]  = new TH1F(("DiMu_Pt2_MvaRegion_"+tmpA+"TO"+tmpB).c_str(),(" MMMG in "+tmpA+" To "+tmpB).c_str(), 200 , 0.0 , 100.0 );
+        th1fStore[("DiMu_Mass_MvaRegion_"+tmpA+"TO"+tmpB).c_str()] = new TH1F(("DiMu_Mass_MvaRegion_"+tmpA+"TO"+tmpB).c_str(),(" MMMG in "+tmpA+" To "+tmpB).c_str(), 100 , 0.0 , 10.0 );
+        th1fStore[("DiMu_Pt_MvaRegion_"+tmpA+"TO"+tmpB).c_str()]  = new TH1F( ("DiMu_Pt_MvaRegion_"+tmpA+"TO"+tmpB).c_str(),(" MMMG in "+tmpA+" To "+tmpB).c_str(), 100 , 0.0 , 50.0 );
+        th1fStore[("DiMu_Eta_MvaRegion_"+tmpA+"TO"+tmpB).c_str()]  = new TH1F(("DiMu_Eta_MvaRegion_"+tmpA+"TO"+tmpB).c_str(),(" MMMG in "+tmpA+" To "+tmpB).c_str(), 100 ,-4.0 , 4.0 );
+     }
+
+
+
+
+    // All Mu Hist
      th1fStore["mu_Pt"]     = new TH1F("mu_Pt","Pt of mu Candidate", pTBins , pTmin  , pTmax  );
      th1fStore["mu_Eta"]     = new TH1F("mu_Eta","Eta of mu Candidate", etaBins , etamin  , etamax  );
      th1fStore["mu_Charge"]     = new TH1F("mu_charge","charge of mu Candidate", 3 , -1.5  , 1.5  );
@@ -1537,7 +2042,8 @@ void BMMGAnalysis::bookHistograms()
      th1fStore["dimu_mva"]     = new TH1F("dimu_mva","MVA score of dimu Candidate", 80 , -2.0  , 2.0  );
 
     // Selected Dimu Vertex Hists
-     th1fStore["dimuPass_mumuDeltaR"]   = new TH1F("mumuDeltaR","#Delta(#mu,#mu)", deltaRNBins , deltaRMin  , deltaRMax  );
+     th1fStore["dimuPass_nDimuons"]   = new TH1F("dimuPass_nDimuons"," number of dimuons in events", 20 , -0.5  , 19.5  );
+     th1fStore["dimuPass_mumuDeltaR"]   = new TH1F("dimuPass_mumuDeltaR","#Delta(#mu,#mu)", deltaRNBins , deltaRMin  , deltaRMax  );
      th1fStore["dimuPass_muLeadPt"]     = new TH1F("dimuPass_muLeadPt","Pt of lead mu Candidate", pTBins , pTmin  , pTmax  );
      th1fStore["dimuPass_muSubLeadPt"]  = new TH1F("dimuPass_muSubLeadPt","Pt of sub-lead mu Candidate", pTBins , pTmin  , pTmax  );
      th1fStore["dimuPass_muLeadIsolation"]  = new TH1F("dimuPass_muLeadIsolation","I(#mu_{1}) for #mu#mu#gamma Candidate" ,120 , -0.10 , 1.1  );
@@ -1560,10 +2066,11 @@ void BMMGAnalysis::bookHistograms()
      th1fStore["dimuPass_LIPwrtPVsignificance"]  = new TH1F("dimuPass_LIPwrtPVsignificance","Longitudinal IP(#mu#mu) wrt. PV for #mu#mu#gamma Candidate" , 400 , -50.0 , 50.0 );
      th1fStore["dimuPass_docatrk"]       = new TH1F("dimuPass_dcaToCloseTrack","min(doca,0.03) to all pf tracks  #mu#mu Candidate" ,100 , 0.0 , 0.04  );
      th1fStore["dimuPass_NTrakClose"]       = new TH1F("dimuPass_NTrakClose","#Tracks doca(trk,sv) < 0.3 for #mu#mu#gamma Candidate" ,100 , -0.50 , 99.5  );
-     th1fStore["dimuPass_NTrakCloseSig1"]= new TH1F("dimuPass_NTrakCloseSig1","#trk d(trk,sv) < 0.3 & d(trk,sv)/#sigma_{d}(trk,sv) < 1 for #mu#mu#gamma Candidate" ,100 , -0.50 , 99.5  );
-     th1fStore["dimuPass_NTrakCloseSig2"]= new TH1F("dimuPass_NTrakCloseSig2","#trk d(trk,sv) < 0.3 & d(trk,sv)/#sigma_{d}(trk,sv) < 2 for #mu#mu#gamma Candidate" ,100 , -0.50 , 99.5  );
-     th1fStore["dimuPass_NTrakCloseSig3"]= new TH1F("dimuPass_NTrakCloseSig3","#trk d(trk,sv) < 0.3 & d(trk,sv)/#sigma_{d}(trk,sv) < 3 for #mu#mu#gamma Candidate" ,100 , -0.50 , 99.5  );
+     th1fStore["dimuPass_NTrakCloseSig1"]=new TH1F("dimuPass_NTrakCloseSig1","#trk d(trk,sv) < 0.3 & d(trk,sv)/#sigma_{d}(trk,sv) < 1 for #mu#mu#gamma Candidate" ,100 , -0.50 , 99.5  );
+     th1fStore["dimuPass_NTrakCloseSig2"]=new TH1F("dimuPass_NTrakCloseSig2","#trk d(trk,sv) < 0.3 & d(trk,sv)/#sigma_{d}(trk,sv) < 2 for #mu#mu#gamma Candidate" ,100 , -0.50 , 99.5  );
+     th1fStore["dimuPass_NTrakCloseSig3"]=new TH1F("dimuPass_NTrakCloseSig3","#trk d(trk,sv) < 0.3 & d(trk,sv)/#sigma_{d}(trk,sv) < 3 for #mu#mu#gamma Candidate" ,100 , -0.50 , 99.5  );
      th1fStore["dimuPass_Isolation"]  = new TH1F("dimuPass_Isolation","I(#mu#mu) for #mu#mu#gamma Candidate" ,120 , -0.10 , 1.1  );
+     th1fStore["dimuPass_mva"]     = new TH1F("dimuPass_mva","MVA score of dimu Candidate", 80 , -2.0  , 2.0  );
  
     // Photon Environment Hists after Dimuon Selection
     th1fStore["dimu_photonMultiplicityDrMax0p5"] = new TH1F("dimu_photonMultiplicityDrMax0p5","Multiplicity of photon around #mu#mu , #Delta R < 0.5",15, -0.5,14.5);
@@ -1579,43 +2086,8 @@ void BMMGAnalysis::bookHistograms()
     th1fStore["dimu_dcaGammaDimuSVDrMax1p3"] = new TH1F("dimu_dcaGammaDimuSVDrMax1p3","DCA(#mu#mu,#gamma) for #mu#mu#gamma Candidate" ,200 , 0.0 , 2.00 );
  
     // BMMG HISTS
-     th1fStore["bmmg_photonPt"]         = new TH1F("bmmg_photonPt","Pt of photon  Candidate", pTBins , pTmin  , pTmax  );
-     th1fStore["bmmg_mmMass"]           = new TH1F("bmmg_mmMass","InvMass of mumu Candidate", massNBins , massMin , massMax  );
-     th1fStore["bmmg_mmgMass"]          = new TH1F("bmmg_mmgMass","InvMass of mmgCandidate" , massNBins , massMin , massMax  );
-     th1fStore["bmmg_mmgPt"]            = new TH1F("bmmg_mmgPt","p_{T} of #mu#mu#gamma Candidate" , pTBins , pTmin , pTmax  );
-     th1fStore["bmmg_beta"]             = new TH1F("bmmg_beta","#beta(#mu#mu) of #mu#mu#gamma  Candidate", 20 ,0.0,3.50  );
-     th1fStore["bmmg_cosbeta"]          = new TH1F("bmmg_cosbeta","cos(#beta(#mu#mu)) of #mu#mu#gamma  Candidate", 22 ,-1.10 ,1.10  );
-     th1fStore["bmmg_dimuGammaDeltaR"] = new TH1F("bmmg_dimuGammaDeltaR","#Delta(#mu#mu,#gamma) for #mu#mu#gamma", deltaRNBins , deltaRMin  , deltaRMax  );
-     
-     th1fStore["bmmg_mumuDeltaR"]   = new TH1F("bmmg_mumuDeltaR","#Delta(#mu,#mu) for #mu#mu#gamma", deltaRNBins , deltaRMin  , deltaRMax  );
-     th1fStore["bmmg_muLeadPt"]     = new TH1F("bmmg_muLeadPt","Pt of lead mu Candidate for #mu#mu#gamma", pTBins , pTmin  , pTmax  );
-     th1fStore["bmmg_muSubLeadPt"]  = new TH1F("bmmg_muSubLeadPt","Pt of sub-lead #mu#mu#gamma Candidate", pTBins , pTmin  , pTmax  );
-     th1fStore["bmmg_muLeadIsolation"]  = new TH1F("bmmg_muLeadIsolation","I(#mu_{1}) for #mu#mu#gamma Candidate" ,120 , -0.10 , 1.1  );
-     th1fStore["bmmg_muSubLeadIsolation"]  = new TH1F("bmmg_muSubLeadIsolation","I(#mu_{2}) for #mu#mu#gamma Candidate" ,120 , -0.10 , 1.1  );
-     th1fStore["bmmg_mass"]         = new TH1F("bmmg_mass","InvMass of #mu#mu#gamma Candidate", massNBins , massMin , massMax  );
-     th1fStore["bmmg_dxy"]          = new TH1F("bmmg_dxy","dxy(#mu#mu)of #mu#mu#gamma  Candidate", 20 ,0.0,2.50  );
-     th1fStore["bmmg_vtxProba"]     = new TH1F("bmmg_vtxProbay","vtx Proba. of bmmg  Candidate", 20 ,0.0,2.50  );
-     th1fStore["bmmg_alpha"]        = new TH1F("bmmg_alpha","#alpha(#mu#mu) of #mu#mu#gamma  Candidate", 20 ,0.0,3.50  );
-     th1fStore["bmmg_cosalpha"]        = new TH1F("bmmg_cosalpha","cos(#alpha(#mu#mu)) of #mu#mu#gamma  Candidate", 22 ,-1.10 ,1.10  );
-     th1fStore["bmmg_VertexChi2overNDOF"] = new TH1F("bmmg_VertexChi2overNDOF","#Chi^{2}/ndof(#mu#mu) vertex for #mu#mu#gamma Candidate" ,200 , 0.0 , 50.0  );
-     th1fStore["bmmg_DCA"]  = new TH1F("bmmg_Dca","DCA(#mu#mu) for #mu#mu#gamma Candidate" ,100 , 0.0 , 0.050  );
-     th1fStore["bmmg_VertexOtherTrackDOCA"]  = new TH1F("bmmg_VertexOtherTrackDOCA","DCA(#mu#mu vertex, other track) for #mu#mu#gamma Candidate" ,100 , 0.0 , 5.0 );
-     th1fStore["bmmg_L3D"]              = new TH1F("bmmg_L3D","l_{3D}(#mu#mu) for #mu#mu#gamma Candidate" ,120 , 0.0 , 6.0  );
-     th1fStore["bmmg_L3Dsignificance"]  = new TH1F("bmmg_L3Dsignificance","l_{3D}(#mu#mu)/#sigma(l_{3D}) for #mu#mu#gamma Candidate" ,50 , 0.0 , 2.5  );
-     th1fStore["bmmg_LXY"]              = new TH1F("bmmg_LXY","l_{XY}(#mu#mu) for #mu#mu#gamma Candidate" ,50 , 0.0 , 2.0  );
-     th1fStore["bmmg_LXYsignificance"]  = new TH1F("bmmg_LXYsignificance","l_{XY}(#mu#mu)/#sigma(l_{XY}) for #mu#mu#gamma Candidate" ,240 , 0.0 , 120.0 );
-     th1fStore["bmmg_IPwrtPV"]              = new TH1F("bmmg_IPwrtPV","IP(#mu#mu) wrt. PV for #mu#mu#gamma Candidate" , 80 , 0.0 , 0.40  );
-     th1fStore["bmmg_IPwrtPVsignificance"]  = new TH1F("bmmg_IPwrtPVsignificance","IP(#mu#mu) wrt. PV for #mu#mu#gamma Candidate" ,160 , 0.0 , 40.0 );
-     th1fStore["bmmg_LIPwrtPV"]              = new TH1F("bmmg_LIPwrtPV","Longitudinal IP(#mu#mu) wrt. PV for #mu#mu#gamma Candidate" , 200 , -2.0 , 2.0  );
-     th1fStore["bmmg_LIPwrtPVsignificance"]  = new TH1F("bmmg_LIPwrtPVsignificance","Longitudinal IP(#mu#mu) wrt. PV for #mu#mu#gamma Candidate" , 400 , -50.0 , 50.0 );
-     th1fStore["bmmg_docatrk"]       = new TH1F("bmmg_dcaToCloseTrack","min(doca,0.03) to all pf tracks  #mu#mu Candidate" ,100 , 0.0 , 0.04  );
-     th1fStore["bmmg_NTrakClose"]       = new TH1F("bmmg_NTrakClose","#Tracks doca(trk,sv) < 0.3 for #mu#mu#gamma Candidate" ,100 , -0.50 , 99.5  );
-     th1fStore["bmmg_NTrakCloseSig1"]= new TH1F("bmmg_NTrakCloseSig1","#trk d(trk,sv) < 0.3 & d(trk,sv)/#sigma_{d}(trk,sv) < 1 for #mu#mu#gamma Candidate" ,100 , -0.50 , 99.5  );
-     th1fStore["bmmg_NTrakCloseSig2"]= new TH1F("bmmg_NTrakCloseSig2","#trk d(trk,sv) < 0.3 & d(trk,sv)/#sigma_{d}(trk,sv) < 2 for #mu#mu#gamma Candidate" ,100 , -0.50 , 99.5  );
-     th1fStore["bmmg_NTrakCloseSig3"]= new TH1F("bmmg_NTrakCloseSig3","#trk d(trk,sv) < 0.3 & d(trk,sv)/#sigma_{d}(trk,sv) < 3 for #mu#mu#gamma Candidate" ,100 , -0.50 , 99.5  );
-     th1fStore["bmmg_Isolation"]  = new TH1F("bmmg_Isolation","I(#mu#mu) for #mu#mu#gamma Candidate" ,120 , -0.10 , 1.1  );
-     th1fStore["bmmg_dcaGammaDimuSV"] = new TH1F("bmmg_dcaGammaDimuSV","DCA(#mu#mu,#gamma) for #mu#mu#gamma Candidate" ,200 , 0.0 , 2.00 );
-
+        bookBMMGHists("bmmg_");
+        bookBMMGHists("bmmgMVAPass_");
     // Global Event Hists
     th1fStore["dimuPass_bmmgCandidateMultiplicity"]   = new TH1F("dimuPass_bmmgCandidateMultiplicity","Multiplicity of BMMG Candidates Per dimuon",15, -0.5,14.5);
     th1fStore["dimuPass_Multiplicity"]       = new TH1F("dimuPass_Multiplicity","Multiplicity of dimu Candidates in an event",15, -0.5,14.5);
@@ -1631,6 +2103,67 @@ void BMMGAnalysis::bookHistograms()
      
      th1fStore["CutFlowSummary"] = new TH1F("cutFlow_summary","",3,0.0,3.0);
      th1fStore["ProcessingSummary"]->SetCanExtend(TH1::kAllAxes);
+}
+
+void BMMGAnalysis::bookBMMGHists( TString tag  )
+{
+     const int   pTBins=50;
+     const float pTmin(0.0);
+     const float pTmax(50.0);
+
+     const int   etaBins=70;
+     const float etamin(-3.5);
+     const float etamax(3.5);
+
+     const int   massNBins=20*100;
+     const float massMin(0.0);
+     const float massMax(20.0);
+     
+     const int   deltaRNBins=30;
+     const float deltaRMin(0.0);
+     const float deltaRMax(3.0);
+    
+     std:cout<<"\n Tag  = "<<tag<<"\n";
+     std::cout<<tag + "photonPt "<<"  <- tag+\"photonPt\"\n";
+     th1fStore[tag+"photonPt"]         = new TH1F(tag+"photonPt","Pt of photon  Candidate", pTBins , pTmin  , pTmax  );
+     th1fStore[tag+"mmMass"]           = new TH1F(tag+"mmMass","InvMass of mumu Candidate", massNBins , massMin , massMax  );
+     th1fStore[tag+"mmgMass"]          = new TH1F(tag+"mmgMass","InvMass of mmgCandidate" , massNBins , massMin , massMax  );
+     th1fStore[tag+"mmgPt"]            = new TH1F(tag+"mmgPt","p_{T} of #mu#mu#gamma Candidate" , pTBins , pTmin , pTmax  );
+     th1fStore[tag+"beta"]             = new TH1F(tag+"beta","#beta(#mu#mu) of #mu#mu#gamma  Candidate", 20 ,0.0,3.50  );
+     th1fStore[tag+"cosbeta"]          = new TH1F(tag+"cosbeta","cos(#beta(#mu#mu)) of #mu#mu#gamma  Candidate", 22 ,-1.10 ,1.10  );
+     th1fStore[tag+"dimuGammaDeltaR"] = new TH1F(tag+"dimuGammaDeltaR","#Delta(#mu#mu,#gamma) for #mu#mu#gamma", deltaRNBins , deltaRMin  , deltaRMax  );
+     th1fStore[tag+"mumuDeltaR"]   = new TH1F(tag+"mumuDeltaR","#Delta(#mu,#mu) for #mu#mu#gamma", deltaRNBins , deltaRMin  , deltaRMax  );
+     th1fStore[tag+"muLeadPt"]     = new TH1F(tag+"muLeadPt","Pt of lead mu Candidate for #mu#mu#gamma", pTBins , pTmin  , pTmax  );
+     th1fStore[tag+"muSubLeadPt"]  = new TH1F(tag+"muSubLeadPt","Pt of sub-lead #mu#mu#gamma Candidate", pTBins , pTmin  , pTmax  );
+     th1fStore[tag+"muLeadIsolation"]  = new TH1F(tag+"muLeadIsolation","I(#mu_{1}) for #mu#mu#gamma Candidate" ,120 , -0.10 , 1.1  );
+     th1fStore[tag+"muSubLeadIsolation"]  = new TH1F(tag+"muSubLeadIsolation","I(#mu_{2}) for #mu#mu#gamma Candidate" ,120 , -0.10 , 1.1  );
+     th1fStore[tag+"mass"]         = new TH1F(tag+"mass","InvMass of #mu#mu#gamma Candidate", massNBins , massMin , massMax  );
+     th1fStore[tag+"dxy"]          = new TH1F(tag+"dxy","dxy(#mu#mu)of #mu#mu#gamma  Candidate", 20 ,0.0,2.50  );
+     th1fStore[tag+"vtxProba"]     = new TH1F(tag+"vtxProbay","vtx Proba. of bmmg  Candidate", 20 ,0.0,2.50  );
+     th1fStore[tag+"alpha"]        = new TH1F(tag+"alpha","#alpha(#mu#mu) of #mu#mu#gamma  Candidate", 20 ,0.0,3.50  );
+     th1fStore[tag+"cosalpha"]        = new TH1F(tag+"cosalpha","cos(#alpha(#mu#mu)) of #mu#mu#gamma  Candidate", 22 ,-1.10 ,1.10  );
+     th1fStore[tag+"VertexChi2overNDOF"] = new TH1F(tag+"VertexChi2overNDOF","#Chi^{2}/ndof(#mu#mu) vertex for #mu#mu#gamma Candidate" ,200 , 0.0 , 50.0  );
+     th1fStore[tag+"DCA"]  = new TH1F(tag+"Dca","DCA(#mu#mu) for #mu#mu#gamma Candidate" ,100 , 0.0 , 0.050  );
+     th1fStore[tag+"VertexOtherTrackDOCA"]  = new TH1F(tag+"VertexOtherTrackDOCA","DCA(#mu#mu vertex, other track) for #mu#mu#gamma Candidate" ,100 , 0.0 , 5.0 );
+     th1fStore[tag+"L3D"]              = new TH1F(tag+"L3D","l_{3D}(#mu#mu) for #mu#mu#gamma Candidate" ,120 , 0.0 , 6.0  );
+     th1fStore[tag+"L3Dsignificance"]  = new TH1F(tag+"L3Dsignificance","l_{3D}(#mu#mu)/#sigma(l_{3D}) for #mu#mu#gamma Candidate" ,50 , 0.0 , 2.5  );
+     th1fStore[tag+"LXY"]              = new TH1F(tag+"LXY","l_{XY}(#mu#mu) for #mu#mu#gamma Candidate" ,50 , 0.0 , 2.0  );
+     th1fStore[tag+"LXYsignificance"]  = new TH1F(tag+"LXYsignificance","l_{XY}(#mu#mu)/#sigma(l_{XY}) for #mu#mu#gamma Candidate" ,240 , 0.0 , 120.0 );
+     th1fStore[tag+"IPwrtPV"]              = new TH1F(tag+"IPwrtPV","IP(#mu#mu) wrt. PV for #mu#mu#gamma Candidate" , 80 , 0.0 , 0.40  );
+     th1fStore[tag+"IPwrtPVsignificance"]  = new TH1F(tag+"IPwrtPVsignificance","IP(#mu#mu) wrt. PV for #mu#mu#gamma Candidate" ,160 , 0.0 , 40.0 );
+     th1fStore[tag+"LIPwrtPV"]              = new TH1F(tag+"LIPwrtPV","Longitudinal IP(#mu#mu) wrt. PV for #mu#mu#gamma Candidate" , 200 , -2.0 , 2.0  );
+     th1fStore[tag+"LIPwrtPVsignificance"]  = new TH1F(tag+"LIPwrtPVsignificance","Longitudinal IP(#mu#mu) wrt. PV for #mu#mu#gamma Candidate" , 400 , -50.0 , 50.0 );
+     th1fStore[tag+"docatrk"]       = new TH1F(tag+"dcaToCloseTrack","min(doca,0.03) to all pf tracks  #mu#mu Candidate" ,100 , 0.0 , 0.04  );
+     th1fStore[tag+"NTrakClose"]       = new TH1F(tag+"NTrakClose","#Tracks doca(trk,sv) < 0.3 for #mu#mu#gamma Candidate" ,100 , -0.50 , 99.5  );
+     th1fStore[tag+"NTrakCloseSig1"]= new TH1F(tag+"NTrakCloseSig1","#trk d(trk,sv) < 0.3 & d(trk,sv)/#sigma_{d}(trk,sv) < 1 for #mu#mu#gamma Candidate" ,100 , -0.50 , 99.5  );
+     th1fStore[tag+"NTrakCloseSig2"]= new TH1F(tag+"NTrakCloseSig2","#trk d(trk,sv) < 0.3 & d(trk,sv)/#sigma_{d}(trk,sv) < 2 for #mu#mu#gamma Candidate" ,100 , -0.50 , 99.5  );
+     th1fStore[tag+"NTrakCloseSig3"]= new TH1F(tag+"NTrakCloseSig3","#trk d(trk,sv) < 0.3 & d(trk,sv)/#sigma_{d}(trk,sv) < 3 for #mu#mu#gamma Candidate" ,100 , -0.50 , 99.5  );
+     th1fStore[tag+"Isolation"]  = new TH1F(tag+"Isolation","I(#mu#mu) for #mu#mu#gamma Candidate" ,120 , -0.10 , 1.1  );
+     th1fStore[tag+"dcaGammaDimuSV"] = new TH1F(tag+"dcaGammaDimuSV","DCA(#mu#mu,#gamma) for #mu#mu#gamma Candidate" ,200 , 0.0 , 2.00 );
+     th1fStore[tag+"dimuMVA"]     = new TH1F(tag+"dimuMVA","MVA score of dimu Candidate", 80 , -2.0  , 2.0  );
+    
+    std::cout<<"Booked BMMG Histograms : "<<tag<<" -> tag"<<"\n";
+
 }
 
 
@@ -1767,6 +2300,7 @@ void BMMGAnalysis::fill_dimuonPassHists(Int_t mumuIdx)
      th1fStore["dimuPass_NTrakCloseSig2"]   ->Fill(ntupleRawTree.b5_mm_closetrks2[mumuIdx]);
      th1fStore["dimuPass_NTrakCloseSig3"]   ->Fill(ntupleRawTree.b5_mm_closetrks3[mumuIdx]);
      th1fStore["dimuPass_Isolation"]  ->Fill(ntupleRawTree.b5_mm_iso[mumuIdx]);
+     th1fStore["dimuPass_mva"]   ->Fill(storageArrayDouble[ mumuIdx + candidateMapInt["dimuonMVAScore"]  ]); 
 
 }
 
@@ -1819,52 +2353,52 @@ void BMMGAnalysis::fill_dimuonEnvironmentHists(Int_t mumuIdx)
 }
 
 
-void BMMGAnalysis::fill_bmmgHists(  TLorentzVector &bmmgLV , Int_t mumuIdx, Int_t phoSCIdx)
+void BMMGAnalysis::fill_bmmgHists(  TLorentzVector &bmmgLV , Int_t mumuIdx, Int_t phoSCIdx,TString tag)
 {
     auto dr=getDR(ntupleRawTree.bG_scEta[phoSCIdx],ntupleRawTree.bG_scPhi[phoSCIdx],
                   ntupleRawTree.b5_mm_kin_eta[mumuIdx],ntupleRawTree.b5_mm_kin_phi[mumuIdx]);
-    th1fStore["bmmg_dimuGammaDeltaR"]  ->Fill(dr);
+    th1fStore[tag+"dimuGammaDeltaR"]  ->Fill(dr);
     
     dr=getDR(ntupleRawTree.b5_mm_mu1_eta[mumuIdx],ntupleRawTree.b5_mm_mu1_phi[mumuIdx],
                   ntupleRawTree.b5_mm_mu2_eta[mumuIdx],ntupleRawTree.b5_mm_mu2_phi[mumuIdx]);
-    th1fStore["bmmg_mumuDeltaR"]       ->Fill(dr);
-
-    th1fStore["bmmg_photonPt"]         ->Fill(ntupleRawTree.bG_scEt[phoSCIdx]);
-    th1fStore["bmmg_mmMass"]           ->Fill(ntupleRawTree.b5_mm_kin_mass[mumuIdx]);
-    th1fStore["bmmg_mmgMass"]          ->Fill(bmmgLV.M());
+    th1fStore[tag+"mumuDeltaR"]       ->Fill(dr);
+    th1fStore[tag+"photonPt"]         ->Fill(ntupleRawTree.bG_scEt[phoSCIdx]);
+    th1fStore[tag+"mmMass"]           ->Fill(ntupleRawTree.b5_mm_kin_mass[mumuIdx]);
+    th1fStore[tag+"mmgMass"]          ->Fill(bmmgLV.M());
     
-    th1fStore["bmmg_mumuDeltaR"]  ->Fill(dr);
-    th1fStore["bmmg_muLeadPt"]    ->Fill(ntupleRawTree.b5_mm_kin_mu1pt[mumuIdx]);
-    th1fStore["bmmg_muSubLeadPt"] ->Fill(ntupleRawTree.b5_mm_kin_mu2pt[mumuIdx]);
-    th1fStore["bmmg_muLeadIsolation"]    ->Fill(ntupleRawTree.b5_mm_m1iso[mumuIdx]);
-    th1fStore["bmmg_muSubLeadIsolation"] ->Fill(ntupleRawTree.b5_mm_m2iso[mumuIdx]);
-    th1fStore["bmmg_mass"]        ->Fill(ntupleRawTree.b5_mm_kin_mass[mumuIdx]);
-    th1fStore["bmmg_dxy"]         ->Fill(ntupleRawTree.b5_mm_kin_lxy[mumuIdx]);
-    th1fStore["bmmg_vtxProba"]    ->Fill(ntupleRawTree.b5_mm_kin_vtx_prob[mumuIdx]);
-    th1fStore["bmmg_alpha"]       ->Fill(ntupleRawTree.b5_mm_kin_alpha[mumuIdx]);
-    th1fStore["bmmg_cosalpha"]        ->Fill(cos(ntupleRawTree.b5_mm_kin_alpha[mumuIdx]));
-    th1fStore["bmmg_VertexChi2overNDOF"] ->Fill(ntupleRawTree.b5_mm_kin_vtx_chi2dof[mumuIdx]);
-    th1fStore["bmmg_DCA"]  ->Fill(ntupleRawTree.b5_mm_doca[mumuIdx]);
-    th1fStore["bmmg_VertexOtherTrackDOCA"]  ->Fill(ntupleRawTree.b5_mm_docatrk[mumuIdx]);
-    th1fStore["bmmg_L3D"]              ->Fill(ntupleRawTree.b5_mm_kin_l3d[mumuIdx]);
-    th1fStore["bmmg_L3Dsignificance"]  ->Fill(ntupleRawTree.b5_mm_kin_sl3d[mumuIdx]);
-    th1fStore["bmmg_LXY"]              ->Fill(ntupleRawTree.b5_mm_kin_lxy[mumuIdx]);
-    th1fStore["bmmg_LXYsignificance"]  ->Fill(ntupleRawTree.b5_mm_kin_slxy[mumuIdx]);
-    th1fStore["bmmg_IPwrtPV"]              ->Fill(ntupleRawTree.b5_mm_kin_pvip[mumuIdx]);
-    th1fStore["bmmg_IPwrtPVsignificance"]  ->Fill(ntupleRawTree.b5_mm_kin_spvip[mumuIdx]);
-    th1fStore["bmmg_LIPwrtPV"]              ->Fill(ntupleRawTree.b5_mm_kin_pvlip[mumuIdx]);
-    th1fStore["bmmg_LIPwrtPVsignificance"]  ->Fill(ntupleRawTree.b5_mm_kin_pvlipSig[mumuIdx]);
-    th1fStore["bmmg_docatrk"]       ->Fill(min(ntupleRawTree.b5_mm_docatrk[mumuIdx],Float_t(0.04)));
-    th1fStore["bmmg_NTrakClose"]       ->Fill(ntupleRawTree.b5_mm_closetrk[mumuIdx]);
-    th1fStore["bmmg_NTrakCloseSig1"]   ->Fill(ntupleRawTree.b5_mm_closetrks1[mumuIdx]);
-    th1fStore["bmmg_NTrakCloseSig2"]   ->Fill(ntupleRawTree.b5_mm_closetrks2[mumuIdx]);
-    th1fStore["bmmg_NTrakCloseSig3"]   ->Fill(ntupleRawTree.b5_mm_closetrks3[mumuIdx]);
-    th1fStore["bmmg_Isolation"]  ->Fill(ntupleRawTree.b5_mm_iso[mumuIdx]);
+    th1fStore[tag+"mumuDeltaR"]  ->Fill(dr);
+    th1fStore[tag+"muLeadPt"]    ->Fill(ntupleRawTree.b5_mm_kin_mu1pt[mumuIdx]);
+    th1fStore[tag+"muSubLeadPt"] ->Fill(ntupleRawTree.b5_mm_kin_mu2pt[mumuIdx]);
+    th1fStore[tag+"muLeadIsolation"]    ->Fill(ntupleRawTree.b5_mm_m1iso[mumuIdx]);
+    th1fStore[tag+"muSubLeadIsolation"] ->Fill(ntupleRawTree.b5_mm_m2iso[mumuIdx]);
+    th1fStore[tag+"mass"]        ->Fill(ntupleRawTree.b5_mm_kin_mass[mumuIdx]);
+    th1fStore[tag+"dxy"]         ->Fill(ntupleRawTree.b5_mm_kin_lxy[mumuIdx]);
+    th1fStore[tag+"vtxProba"]    ->Fill(ntupleRawTree.b5_mm_kin_vtx_prob[mumuIdx]);
+    th1fStore[tag+"alpha"]       ->Fill(ntupleRawTree.b5_mm_kin_alpha[mumuIdx]);
+    th1fStore[tag+"cosalpha"]        ->Fill(cos(ntupleRawTree.b5_mm_kin_alpha[mumuIdx]));
+    th1fStore[tag+"VertexChi2overNDOF"] ->Fill(ntupleRawTree.b5_mm_kin_vtx_chi2dof[mumuIdx]);
+    th1fStore[tag+"DCA"]  ->Fill(ntupleRawTree.b5_mm_doca[mumuIdx]);
+    th1fStore[tag+"VertexOtherTrackDOCA"]  ->Fill(ntupleRawTree.b5_mm_docatrk[mumuIdx]);
+    th1fStore[tag+"L3D"]              ->Fill(ntupleRawTree.b5_mm_kin_l3d[mumuIdx]);
+    th1fStore[tag+"L3Dsignificance"]  ->Fill(ntupleRawTree.b5_mm_kin_sl3d[mumuIdx]);
+    th1fStore[tag+"LXY"]              ->Fill(ntupleRawTree.b5_mm_kin_lxy[mumuIdx]);
+    th1fStore[tag+"LXYsignificance"]  ->Fill(ntupleRawTree.b5_mm_kin_slxy[mumuIdx]);
+    th1fStore[tag+"IPwrtPV"]              ->Fill(ntupleRawTree.b5_mm_kin_pvip[mumuIdx]);
+    th1fStore[tag+"IPwrtPVsignificance"]  ->Fill(ntupleRawTree.b5_mm_kin_spvip[mumuIdx]);
+    th1fStore[tag+"LIPwrtPV"]              ->Fill(ntupleRawTree.b5_mm_kin_pvlip[mumuIdx]);
+    th1fStore[tag+"LIPwrtPVsignificance"]  ->Fill(ntupleRawTree.b5_mm_kin_pvlipSig[mumuIdx]);
+    th1fStore[tag+"docatrk"]       ->Fill(min(ntupleRawTree.b5_mm_docatrk[mumuIdx],Float_t(0.04)));
+    th1fStore[tag+"NTrakClose"]       ->Fill(ntupleRawTree.b5_mm_closetrk[mumuIdx]);
+    th1fStore[tag+"NTrakCloseSig1"]   ->Fill(ntupleRawTree.b5_mm_closetrks1[mumuIdx]);
+    th1fStore[tag+"NTrakCloseSig2"]   ->Fill(ntupleRawTree.b5_mm_closetrks2[mumuIdx]);
+    th1fStore[tag+"NTrakCloseSig3"]   ->Fill(ntupleRawTree.b5_mm_closetrks3[mumuIdx]);
+    th1fStore[tag+"Isolation"]  ->Fill(ntupleRawTree.b5_mm_iso[mumuIdx]);
+    th1fStore[tag+"dimuMVA"]   ->Fill(storageArrayDouble[ mumuIdx + candidateMapInt["dimuonMVAScore"]  ]); 
 
-   auto pvMatch=getPVMatch(mumuIdx);
 
 //   TODO  : NEED TO USES THE PROPER ERROR FINDING APPROCH FOR BETA // try out implimnetation in saras Util.cc 
    
+   auto pvMatch=getPVMatch(mumuIdx);
    svDisplacementVecor.SetCoordinates( 
                                         ntupleRawTree.b5_mm_kin_vtx_x[mumuIdx] - ntupleRawTree.bG_primaryVertex_x[pvMatch],
                                         ntupleRawTree.b5_mm_kin_vtx_y[mumuIdx] - ntupleRawTree.bG_primaryVertex_y[pvMatch],
@@ -1900,6 +2434,53 @@ void BMMGAnalysis::fill_globalEventHists()
 }
 
 
+bool BMMGAnalysis::doTriggerSelection()
+{
+   bool rslt= false;
+   rslt = true;   
+//   if( ntupleRawTree.b5_HLT_Mu12_IP6_part0) rslt = true ;
+//   if( ntupleRawTree.b5_HLT_Mu12_IP6_part1) rslt = true ;
+//   if( ntupleRawTree.b5_HLT_Mu12_IP6_part2) rslt = true ;
+//   if( ntupleRawTree.b5_HLT_Mu12_IP6_part3) rslt = true ;
+//   if( ntupleRawTree.b5_HLT_Mu12_IP6_part4) rslt = true ;
+//   if( ntupleRawTree.b5_HLT_Mu9_IP5_part0 ) rslt = true ;
+//   if( ntupleRawTree.b5_HLT_Mu9_IP5_part1 ) rslt = true ;
+//   if( ntupleRawTree.b5_HLT_Mu9_IP5_part2 ) rslt = true ;
+//   if( ntupleRawTree.b5_HLT_Mu9_IP5_part3 ) rslt = true ;
+//   if( ntupleRawTree.b5_HLT_Mu9_IP5_part4 ) rslt = true ;
+//   if( ntupleRawTree.b5_HLT_Mu7_IP4_part0 ) rslt = true ;
+//   if( ntupleRawTree.b5_HLT_Mu7_IP4_part1 ) rslt = true ;
+//   if( ntupleRawTree.b5_HLT_Mu7_IP4_part2 ) rslt = true ;
+//   if( ntupleRawTree.b5_HLT_Mu7_IP4_part3 ) rslt = true ;
+//   if( ntupleRawTree.b5_HLT_Mu7_IP4_part4 ) rslt = true ;
+//   if( ntupleRawTree.b5_HLT_Mu9_IP4_part0 ) rslt = true ;
+//   if( ntupleRawTree.b5_HLT_Mu9_IP4_part1 ) rslt = true ;
+//   if( ntupleRawTree.b5_HLT_Mu9_IP4_part2 ) rslt = true ;
+//   if( ntupleRawTree.b5_HLT_Mu9_IP4_part3 ) rslt = true ;
+//   if( ntupleRawTree.b5_HLT_Mu9_IP4_part4 ) rslt = true ;
+//   if( ntupleRawTree.b5_HLT_Mu8_IP5_part0 ) rslt = true ;
+//   if( ntupleRawTree.b5_HLT_Mu8_IP5_part1 ) rslt = true ;
+//   if( ntupleRawTree.b5_HLT_Mu8_IP5_part2 ) rslt = true ;
+//   if( ntupleRawTree.b5_HLT_Mu8_IP5_part3 ) rslt = true ;
+//   if( ntupleRawTree.b5_HLT_Mu8_IP5_part4 ) rslt = true ;
+//   if( ntupleRawTree.b5_HLT_Mu8_IP6_part0 ) rslt = true ;
+//   if( ntupleRawTree.b5_HLT_Mu8_IP6_part1 ) rslt = true ;
+//   if( ntupleRawTree.b5_HLT_Mu8_IP6_part2 ) rslt = true ;
+//   if( ntupleRawTree.b5_HLT_Mu8_IP6_part3 ) rslt = true ;
+//   if( ntupleRawTree.b5_HLT_Mu8_IP6_part4 ) rslt = true ;
+//   if( ntupleRawTree.b5_HLT_Mu9_IP6_part0 ) rslt = true ;
+//   if( ntupleRawTree.b5_HLT_Mu9_IP6_part1 ) rslt = true ;
+//   if( ntupleRawTree.b5_HLT_Mu9_IP6_part2 ) rslt = true ;
+//   if( ntupleRawTree.b5_HLT_Mu9_IP6_part3 ) rslt = true ;
+//   if( ntupleRawTree.b5_HLT_Mu9_IP6_part4 ) rslt = true ;
+//   if( ntupleRawTree.b5_HLT_Mu8_IP3_part0 ) rslt = true ;
+//   if( ntupleRawTree.b5_HLT_Mu8_IP3_part1 ) rslt = true ;
+//   if( ntupleRawTree.b5_HLT_Mu8_IP3_part2 ) rslt = true ;
+//   if( ntupleRawTree.b5_HLT_Mu8_IP3_part3 ) rslt = true ;
+//   if( ntupleRawTree.b5_HLT_Mu8_IP3_part4 ) rslt = true ;
+   
+   return rslt;
+}
 
 Int_t BMMGAnalysis::doMuonSelection(Int_t muIdx, bool isLead)
 {
@@ -1934,11 +2515,10 @@ Int_t BMMGAnalysis::doDimuonSelection(Int_t mumuIdx)
 {
     Int_t rslt(0);
 	rslt++;   
-    //std::cout<<" "<<ntupleRawTree.b5_mm_m1iso[mumuIdx] <<" < "<<minLeadMuIsolation<<"\n";
+    
     if( ntupleRawTree.b5_mm_m1iso[mumuIdx]  < minLeadMuIsolation ) 
 		 return cutFlowOffsets["diMuonSelection"] + rslt ;
 	rslt++;
-    //std::cout<<" "<<ntupleRawTree.b5_mm_m2iso[mumuIdx] <<" < "<<minLeadMuIsolation<<"\n";
     if( ntupleRawTree.b5_mm_m2iso[mumuIdx]  < minSubLeadMuIsolation ) 
 		 return cutFlowOffsets["diMuonSelection"] + rslt ;
 
@@ -1956,8 +2536,6 @@ Int_t BMMGAnalysis::doDimuonSelection(Int_t mumuIdx)
     
     auto diMuMass = diMuLV.M();
     bool selection=false;
-    
-    //std::cout<<"MuMu mass : "<<diMuMass<<"\n";
     for(int i=0;i<minDimuMass.size();i++)
     {
          if(diMuMass > minDimuMass[i] and diMuMass < maxDimuMass[i]) selection=true;
@@ -1967,8 +2545,6 @@ Int_t BMMGAnalysis::doDimuonSelection(Int_t mumuIdx)
     if( not selection ) 
 		 return cutFlowOffsets["diMuonSelection"] + rslt ;
     //std::cout<<"MuMu mass : pass"<<"\n";
-
-    
     return 0;
            
 }
@@ -2015,19 +2591,39 @@ Int_t BMMGAnalysis::doVertexSelection(Int_t mumuIdx)
 Int_t BMMGAnalysis::doPhotonSelection(Int_t scIdx)
 {
     Int_t rslt=0;
+
     rslt++;
-    if( ntupleRawTree.bG_scEt[scIdx] < minSCEt )  return  cutFlowOffsets["photonSelection"]+rslt;
+    if( ntupleRawTree.bG_scEt[scIdx] < minSCEt )         return  cutFlowOffsets["photonSelection"]+rslt;
     rslt++;
     if( abs(ntupleRawTree.bG_scEta[scIdx]) > maxSCEta )  return  cutFlowOffsets["photonSelection"]+rslt;
     
-    rslt++;
-    if( storageArrayDouble[ scIdx + candidateMapInt["scPhotonMVAScore"]  ] < photonIDcut  ) 
-    return cutFlowOffsets["photonSelection"]+rslt;
+      rslt++;
+      if(abs(ntupleRawTree.bG_scEta[scIdx]) <1.48) 
+      {
+        if(storageArrayDouble[ scIdx + candidateMapInt["scPhotonMVAScore"]  ] < photonIDcutBarrel)
+        return  cutFlowOffsets["photonSelection"]+rslt;;
+      }
+      else if(abs(ntupleRawTree.bG_scEta[scIdx]) < 2.5)
+      {
+        if(storageArrayDouble[ scIdx + candidateMapInt["scPhotonMVAScore"]  ] < photonIDcutECap)
+        return  cutFlowOffsets["photonSelection"]+rslt;;
+      }
+      else
+      { 
+        return  cutFlowOffsets["photonSelection"]+rslt;;
+      }
+
+      rslt++;
+      if(ntupleRawTree.bG_scFoundGsfMatch_[scIdx] > 0.5 )
+      {
+        return  cutFlowOffsets["photonSelection"]+rslt;;
+      }
+
     
     return 0;
 }
 
-Int_t BMMGAnalysis::doBMMGSelection(Int_t mumuIdx, Int_t phoSCIdx)
+Int_t BMMGAnalysis::doBMMGSelection(TLorentzVector &bmmgLV,Int_t mumuIdx, Int_t phoSCIdx)
 {
    Int_t rslt(0);
    rslt++;
@@ -2043,8 +2639,22 @@ Int_t BMMGAnalysis::doBMMGSelection(Int_t mumuIdx, Int_t phoSCIdx)
    if(dr > maxDimuPhotonDr ) 
         return cutFlowOffsets["bmmgSelection"] + rslt;
    rslt++;
-   if(getDCAGammaToDimuVertex(mumuIdx,phoSCIdx) > svGammaMaxDCA) 
+   if( getDCAGammaToDimuVertex(mumuIdx,phoSCIdx) > svGammaMaxDCA ) 
+        return cutFlowOffsets["bmmgSelection"] + rslt ;
+
+    auto mass = bmmgLV.M();
+    bool selection=false;
+
+   for(int i=0;i<minBMMGMass.size();i++)
+    {
+         if(mass > minBMMGMass[i] and mass <= maxBMMGMass[i]) selection=true;
+         if(selection) break;
+    }
+    rslt++;
+    if(not selection)
+    {
         return cutFlowOffsets["bmmgSelection"] + rslt;
+    }
 
    return 0;
 }
@@ -2067,8 +2677,8 @@ Int_t BMMGAnalysis::getMuonMatch(Double_t muEta,Double_t muPhi)
         }
         if( dr < 1e-3) break;
     }
-    std::cout<<"\r\rdrMin for "<<muEta<<","<<muPhi<<" : "<<drMin<<"\n";
     
+    std::cout<<"\r\rdrMin for "<<muEta<<","<<muPhi<<" : "<<drMin<<"\n";
     return muMatch;
 
 }
@@ -2222,6 +2832,7 @@ void BMMGAnalysis::SkimData()
        fill_scHists();
        fill_photonHists();
        nDiMuNoVertexCandidates=0;
+       nDiMuCandidates=0;
        eventLostAt=0;
        rslt=0;
        
@@ -2288,7 +2899,7 @@ void BMMGAnalysis::SkimData()
 
            if(nDiMuCandidates >= NDIMU_MAX)
            {
-                std::cout<<" Dimuon count per event above NDIMU_MAX , Aborting !! \n";
+                std::cout<<__LINE__<<" Dimuon count per event above NDIMU_MAX , Aborting !! ("<<ntupleRawTree.b5_nmm<<" / "<<NDIMU_MAX<<" ) "<<"\n";
                 exit(9);
            }
             
@@ -2326,5 +2937,6 @@ void BMMGAnalysis::SkimData()
             <<"  Number of Events with candidates = "<<EventCountWithCand<<"\n"
             <<"  Analysis loop completed"
             <<"  \n\n";
-
 }
+
+

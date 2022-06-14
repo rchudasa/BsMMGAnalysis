@@ -7,11 +7,11 @@ echo NJOBS : $NJOBS
 echo FILES_PER_JOB : $FILES_PER_JOB
 echo MAXEVENTS : $MAXEVENTS
 echo ""
-EXECUTABLE=mcAnalysis.exe
+EXECUTABLE=analysisMVA.exe
 
 declare -a SourceFiles=(\
-"fileList/mc_sig_BsTMMG_v2.files" \
-"fileList/mc_sig_BsTMMG_v2.files" \
+#"fileList/mc_sig_BsTMMG_v2.files" \
+#"fileList/mc_sig_BsTMMG_v2.files" \
 "fileList/mc_bkg_bdToKK.files" \
 "fileList/mc_bkg_bdToKPi.files" \
 "fileList/mc_bkg_bdToPiMuNu.files" \
@@ -23,34 +23,34 @@ declare -a SourceFiles=(\
 )
 
 declare -a tagArr=(\
-"mc_sig_bs2mmg_genAnalysis" \
-"mc_sig_bs2mmg" \
-"mc_bkg_bdToKKg" \
-"mc_bkg_bdToKPig" \
-"mc_bkg_bdToPiMuNug" \
-"mc_bkg_bdToPiPig" \
-"mc_bkg_bsToKKg" \
-"mc_bkg_bsToKMuNug" \
-"mc_bkg_bsToKPig" \
-"mc_bkg_bsToPiPig" \
+#"mc_sig_bs2mmg_genAnalysisV2" \
+#"mc_sig_bs2mmV2" \
+"mc_bkg_bdToKKV2" \
+"mc_bkg_bdToKPiV2" \
+"mc_bkg_bdToPiMuNuV2" \
+"mc_bkg_bdToPiPiV2" \
+"mc_bkg_bsToKKV2" \
+"mc_bkg_bsToKMuNuV2" \
+"mc_bkg_bsToKPiV2" \
+"mc_bkg_bsToPiPiV2" \
 )
 
 declare -a AnalysisOption=(\
-0 \
-1 \
-1 \
-1 \
-1 \
-1 \
-1 \
-1 \
-1 \
-1 \
+#0 \
+#2 \
+2 \
+2 \
+2 \
+2 \
+2 \
+2 \
+2 \
+2 \
 )
 
 declare -a CfgTemplate=(\
-"configs/analysisMC.tpl.cfg" \
-"configs/analysis.tpl.cfg" \
+#"configs/analysisMC.tpl.cfg" \
+#"configs/analysis.tpl.cfg" \
 "configs/analysis.tpl.cfg" \
 "configs/analysis.tpl.cfg" \
 "configs/analysis.tpl.cfg" \
@@ -69,7 +69,7 @@ for i in "${!tagArr[@]}"; do
     ANALYSIS_OPT=${AnalysisOption[$i]}
     CFG_TEMPLATE=${CfgTemplate[$i]}
     set -x
-    ./makeCondorJobForAnalysis.py \
+    ./misc/makeCondorJobForAnalysis.py \
         $EXECUTABLE \
         $src \
         $CFG_TEMPLATE \

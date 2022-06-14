@@ -188,6 +188,11 @@ void MVATrainer::readParameters(string fname)
                  bkgCuts=field;
                  cout<<" setting bkgCuts = "<<bkgCuts<<"\n";
             }
+            if(field.compare("TestTrainConfig")==0){
+                 getline(strStream, field);
+                 testTrainConfig=field;
+                 cout<<" setting testTrainConfig = "<<testTrainConfig<<"\n";
+            }
             if(field.compare("SigCuts")==0){
                  getline(strStream, field);
                  sigCuts=field;

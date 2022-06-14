@@ -23,7 +23,7 @@
 #define  Mu_MASS 0.10565837
 
 #define NSTORAGE_ARRAY_MAX 200000
-#define NDIMU_MAX 20
+#define NDIMU_MAX 200
 #define NBMMG_MAX 100
 #define NSC_MAX   50
 #define NMUONS_MAX  20
@@ -92,7 +92,7 @@ class BMMGAnalysis
     Int_t* photonSelectionCheck;
     
     std::map<string,Double_t> storageDouble;
-    std::map<string,Float_t> storageFloat;
+    std::map<TString,Float_t> storageFloat;
     std::vector<string> mvaTrainVars;
     std::vector<string> spectatorVars;
     
@@ -129,15 +129,17 @@ class BMMGAnalysis
     bool initDone;
     std::map<string,string> string_parameters;
     std::map<string,Double_t> double_parameters;
-    std::vector<TTree*> treesToStore;
+    std::map<TString,TTree*> treesToStore;
     Long64_t nentries, maxEvents ;
     Int_t reportEvery;
     
     // Dimuon MVA vars 
     bool doDimuonMVA;
+    bool doDimuonMVASelection;
     bool hasDimuonWeightFiles;
     bool hasSetupDimuonMVA;
     TString dimuonMVAWeightFile;
+    Float_t dimuonMVAThreshold;
     
     // Photon MVA vars 
     bool doPhotonMVA;
@@ -151,7 +153,31 @@ class BMMGAnalysis
     TString photonIdxBarrelMVAWeightFile;
     Float_t photonMVAValue;
     Float_t photonIDcut;
+    Float_t photonIDcutBarrel;
+    Float_t photonIDcutECap;
 
+    
+
+    // BMMG MVA Vars
+    bool doBMMGMVA;
+    bool doBMMGMVASelection;
+    bool hasBMMGWeightFiles;
+    bool hasSetupBMMGMVA;
+    TString bmmgMVAWeightFile;
+    Float_t bmmgMVAThreshold;
+
+    Float_t mmgSideBandRBeg ; 
+    Float_t mmgSideBandREnd ;
+    Float_t mmgSideBandLBeg ;
+    Float_t mmgSideBandLEnd ;
+    Float_t mmgSigRegionBeg ;
+    Float_t mmgSigRegionEnd ;
+
+    std::vector<Float_t> mvaControlRegionSplits;
+    
+    void setUpBMMGMVA();
+    Float_t doBMMGMVAScores(Int_t mumuIdx,Int_t scIdx);
+    
     // Muon MVA CUT
     const Double_t BDTWorkingPoint ; 
     
@@ -168,6 +194,7 @@ class BMMGAnalysis
     Int_t  svMaxN3SigmaTracksClose;
 
     Float_t minMuonPt      ;
+    Float_t minMuonEta     ;
     Float_t maxMuonEta     ;
     Float_t minSCEt        ;
     Float_t maxSCEta       ;
@@ -177,6 +204,8 @@ class BMMGAnalysis
     Double_t maxDimuPhotonDr    ;
     Double_t maxMMGMass         ;
     Double_t minMMGMass         ;
+    std::vector<Double_t> minBMMGMass;
+    std::vector<Double_t> maxBMMGMass;
     std::vector<Double_t> minDimuMass;
     std::vector<Double_t> maxDimuMass;
 
@@ -203,6 +232,7 @@ class BMMGAnalysis
     void AllocateMemory();
     void AllocateBMMGBranches();
     void setupBranchStatus();
+    void treeFill(TString tag);
     void SaveFile();
     void SetupAnalysis(bool makeTreeCopy=false);
     void setupOutPuts(bool makeTreeCopy=false);
@@ -210,6 +240,8 @@ class BMMGAnalysis
     Int_t getMuonMatch(Double_t muEta,Double_t muPhi);
     // Histogram Related Functions
     void bookHistograms();
+    void bookBMMGHists(TString tag);
+
     Double_t getDCAGammaToDimuVertex(Int_t mumuIdx,Int_t phoId);
     void FillCutFlow(Int_t);
     void fill_muonHists(Int_t idx=-1);
@@ -218,8 +250,9 @@ class BMMGAnalysis
     void fill_dimuonPassHists(Int_t idx=-1);
     void fill_dimuonHists(Int_t mumuIdx=-1);
     void fill_dimuonEnvironmentHists(Int_t mumuIdx);
-    void fill_bmmgHists(TLorentzVector &bmmgLV,Int_t mumuIdx, Int_t phoSCIdx);
+    void fill_bmmgHists(TLorentzVector &bmmgLV,Int_t mumuIdx, Int_t phoSCIdx,TString tag="bmmg_");
     void fill_globalEventHists();
+
     //void getVetorFillledFromConfigFile( fstream &cfgFile , std::vector<string> &vecList, string beginTag,string endTag, bool verbose);
     //void getFloatFromTag(string tag,std::istringstream &strStream, string inputStr ,Float_t &var);
     //void getIntFromTag(string tag,std::istringstream &strStream, string inputStr ,Int_t &var);
@@ -227,26 +260,44 @@ class BMMGAnalysis
     // Analysis Functions
     void doPhotonMVAScores();
     void setUpPhotonMVA();
-    void doDimuonMVAScores();
     
     void doMuonMVAScores();
-    void setUpDimuonMVA();
     
+    void setUpDimuonMVA();
+    void doDimuonMVAScores();
+
+    void FillMVAControlHistograms(Float_t mvaVal,Float_t mmgMass);
+    void FillDimuMVAControlHistograms(Float_t mvaVal,Int_t mumuIdx);
+    
+    bool doTriggerSelection();
     Int_t doMuonSelection(Int_t muIdx, bool isLead);
     Int_t doDimuonSelection(Int_t mumuIdx);
     Int_t doVertexSelection(Int_t mumuIdx);
-    Int_t doBMMGSelection(Int_t mumuIdx , Int_t phoSCIdx);
+    Int_t doBMMGSelection(TLorentzVector &bmmgLV,Int_t mumuIdx , Int_t phoSCIdx);
     Int_t doPhotonSelection(Int_t scIdx);
     Int_t getPVMatch(Int_t mumuIdx);
     void setupReducedAnalysisTreeBranches();
     void SkimData();
+    void MVAAnalyze();
     void Analyze();
+    
+    void makeMVATree();
+    void fillBMMGTreeVars(Int_t mumuIdx,Int_t phoSCIdx);
+    void AddBMMGmvaTree(TString);
+    
+    void makeDimuonMVATree();
+    void makeGenDimuonMVATree();
+    void fillDimuonVertexVars( Int_t mumuIdx);
+    void AddDimuonTree(TString tag);
+
+
     #ifdef __MCANALYSIS__
     void GenAnalyze();
+    void makeGenMVATree();
     #endif
 
     // Temporary vars with class scope
-    TLorentzVector bmmgLV,diMuLV,photonLV;
+    TLorentzVector mu1LV,mu2LV,bmmgLV,diMuLV,photonLV;
     ROOT::Math::XYZVector svDisplacementVecor, bmmg3Momentum ;
 };
 
@@ -268,6 +319,7 @@ void BMMGAnalysis::Init(string cfgFileName)
     maxEvents=1000;
     reportEvery=1;
     photonIDcut=0.0;
+
     muMuVtxProbabilityMin=0.0;
     muMuMaxDOCA=1e3;
     muMuMaxNTracksClose1Sigma=100;
@@ -277,8 +329,18 @@ void BMMGAnalysis::Init(string cfgFileName)
     reader=nullptr;
     readerStore["photonIDMVA"]=nullptr;
     readerStore["dimuonMVA"]=nullptr;
+    dimuonMVAThreshold=-2.0;
+
+
+    mmgSideBandRBeg  =  0.0 ;  
+    mmgSideBandREnd  =  4.5 ;
+    mmgSideBandLBeg  =  4.5 ;
+    mmgSideBandLEnd  =  6.22 ;
+    mmgSigRegionBeg  =  6.22 ;
+    mmgSigRegionEnd  =  10.0 ;
 
     minMuonPt          = -1.0;
+    minMuonEta         = -1e9;
     maxMuonEta         =  1e9;
     minSCEt            = -1.0;
     maxSCEta           =  1e3;
@@ -304,15 +366,31 @@ void BMMGAnalysis::Init(string cfgFileName)
     photonIdxBarrelMVAWeightFile="";
     photonIdxECapMVAWeightFile="";
     hasWeightFiles=false;
+    photonIDcutBarrel=-1.5;
+    photonIDcutECap=-1.5;
 
     doDimuonMVA=false;
+    doDimuonMVASelection=false;
     dimuonMVAWeightFile="";
     hasDimuonWeightFiles=false;
+    dimuonMVAThreshold=-2.0;
     hasSetupDimuonMVA=false;
+    
+    doBMMGMVA=false;
+    doBMMGMVASelection=false;
+    bmmgMVAWeightFile="";
+    hasBMMGWeightFiles=false;
+    bmmgMVAThreshold=-2.0;
+    hasSetupBMMGMVA=false;
     
     doRunLumiMask=false;
     doReducedTree=false;
     doRunLumiLog=false;
+    mvaControlRegionSplits.clear() ; 
+        mvaControlRegionSplits.push_back(-1.0);
+        mvaControlRegionSplits.push_back(1.0);
+    minBMMGMass.clear(); minBMMGMass.push_back(-1.0);
+    maxBMMGMass.clear(); maxBMMGMass.push_back(1e9);
     minDimuMass.clear(); minDimuMass.push_back(0.0);
     maxDimuMass.clear(); maxDimuMass.push_back(6.0);
 
@@ -321,6 +399,10 @@ void BMMGAnalysis::Init(string cfgFileName)
     if(doDimuonMVA)
     {
        setUpDimuonMVA();
+    }
+    if(doBMMGMVA)
+    {
+       setUpBMMGMVA();
     }
  
     if(doPhotonMVA)
@@ -510,6 +592,10 @@ void BMMGAnalysis::AllocateMemory()
     std::cout<<"Allocated "<<sizeof(Int_t)*NSC_MAX/1024<<" kB of storage for "<<NSTORAGE_ARRAY_MAX<<" Ints\n";
 }
 
+void BMMGAnalysis::treeFill(TString tag)
+{
+    treesToStore[tag]->Fill();
+}
 void BMMGAnalysis::SaveFile()
 {
     outputFile->cd();
@@ -524,6 +610,16 @@ void BMMGAnalysis::SaveFile()
         auto &ahist = *(it->second); 
         ahist.Write();
     }
+
+    for (std::map<TString,TTree *>::iterator it=treesToStore.begin() ; it!=treesToStore.end(); ++it)
+    {
+        
+        //std::cout<<"Writing "<<it->first<<" to file ! \n";
+        auto &a= *(it->second); 
+        a.Write();
+    }
+
+
 
     if(doRunLumiLog) runLumiLogger.saveAsJson((prefix + runLumiJsonName));
     outputFile->Write();
@@ -563,6 +659,8 @@ void BMMGAnalysis::readParameters(string fname)
            getFloatFromTag("MuMuMaxDOCA"			  ,strStream , field , muMuMaxDOCA);
            getFloatFromTag("SvGammaMaxDCA"		      ,strStream , field , svGammaMaxDCA);
            getFloatFromTag("MinMuonPt"			      ,strStream , field , minMuonPt);
+           getFloatFromTag("MinMuonEta"			      ,strStream , field , minMuonEta);
+           getFloatFromTag("MaxMuonEta"			      ,strStream , field , maxMuonEta);
            getFloatFromTag("MinSCEt"			      ,strStream , field , minSCEt);
            getFloatFromTag("MaxSCEta"			      ,strStream , field , maxSCEta);
            getFloatFromTag("SvMinDocaTrack"			  ,strStream , field , svMinDocaTrack);
@@ -580,7 +678,20 @@ void BMMGAnalysis::readParameters(string fname)
            getBoolFromTag("MuonHasToBeHighPurity"	  ,strStream , field , muonHasToBeHighPurity);
            getBoolFromTag("DoReducedTree"	          ,strStream , field , doReducedTree);
            getBoolFromTag("DoDimuonMVA"	              ,strStream , field , doDimuonMVA);
-           //getTStringFromTag("DimuonMVAWeightFile"	  ,strStream , field , dimuonMVAWeightFile);
+           getBoolFromTag("DoDiMuonMVASelection"      ,strStream , field , doDimuonMVASelection);
+           getBoolFromTag("DoBMMGMVA"	              ,strStream , field , doBMMGMVA);
+           getBoolFromTag("DoBMMGMVASelction"	      ,strStream , field , doBMMGMVASelection);
+           getFloatFromTag("DimuonMVAThreshold"	      ,strStream , field , dimuonMVAThreshold);
+           getFloatFromTag("BmmgMVAThreshold"	      ,strStream , field , bmmgMVAThreshold);
+           //getTStringFromTag("BMMGMVAWeightFile"	  ,strStream , field , bmmgMVAWeightFile);
+           getFloatFromTag("MmgSideBandRBeg"	      ,strStream , field , mmgSideBandRBeg);
+           getFloatFromTag("MmgSideBandREnd"	      ,strStream , field , mmgSideBandREnd);
+           getFloatFromTag("MmgSideBandLBeg"	      ,strStream , field , mmgSideBandLBeg);
+           getFloatFromTag("MmgSideBandLEnd"	      ,strStream , field , mmgSideBandLEnd);
+           getFloatFromTag("MmgSigRegionBeg"	      ,strStream , field , mmgSigRegionBeg);
+           getFloatFromTag("MmgSigRegionEnd"	      ,strStream , field , mmgSigRegionEnd);
+           getFloatFromTag("PhotonIDcutBarrel"	      ,strStream , field , photonIDcutBarrel);
+           getFloatFromTag("PhotonIDcutECap"	      ,strStream , field , photonIDcutECap);
 
            if(field.compare("MaxMuMuDr")==0){
                  getline(strStream, field);
@@ -658,6 +769,12 @@ void BMMGAnalysis::readParameters(string fname)
                  doPhotonMVA= tmpI >0 ? 1 : 0;
                  cout<<" setting DoPhotonMVAID  = "<<doPhotonMVA<<"\n";
             }
+             if(field.compare("BmmgMVAWeightFile")==0){
+                 hasBMMGWeightFiles=true;
+                 getline(strStream, field);
+                 bmmgMVAWeightFile=field;
+                 std::cout<<" setting BmmgMVAWeightFile = "<<bmmgMVAWeightFile<<"\n";
+            }
              if(field.compare("DimuonMVAWeightFile")==0){
                  hasDimuonWeightFiles=true;
                  getline(strStream, field);
@@ -683,6 +800,38 @@ void BMMGAnalysis::readParameters(string fname)
                  std::cout<<" setting photonIdxECapMVAWeightFile = "<<photonIdxECapMVAWeightFile<<"\n";
             }
             
+            if(field.compare("MvaControlRegionSplits")==0){
+                 mvaControlRegionSplits.clear();
+                 cout<<" setting mvaControlRegionSplits  = { ";
+                 while( strStream >> aDouble )
+                 {
+                    cout<<aDouble<<", ";
+                    mvaControlRegionSplits.push_back(aDouble);
+                 }
+                 cout<<" }\n";
+            }            
+
+           if(field.compare("MinBMMGMass")==0){
+                 minBMMGMass.clear();
+                 cout<<" setting minBMMGMass  = { ";
+                 while( strStream >> aDouble )
+                 {
+                    cout<<aDouble<<", ";
+                    minBMMGMass.push_back(aDouble);
+                 }
+                 cout<<" }\n";
+            }            
+            if(field.compare("MaxBMMGMass")==0){
+                 maxBMMGMass.clear();
+                 cout<<" setting maxBMMGMass  = { ";
+                 while( strStream >> aDouble )
+                 {
+                    cout<<aDouble<<", ";
+                    maxBMMGMass.push_back(aDouble);
+                 }
+                 cout<<" }\n";
+            } 
+
             if(field.compare("MinDimuMass")==0){
                  minDimuMass.clear();
                  cout<<" setting minDimuMass  = { ";
@@ -733,4 +882,6 @@ void BMMGAnalysis::readParameters(string fname)
 
 
 #include "../src/BMMGAnalysis.cc"
+#include "../src/BMMGmvaTreeMaker.cc"
+
 

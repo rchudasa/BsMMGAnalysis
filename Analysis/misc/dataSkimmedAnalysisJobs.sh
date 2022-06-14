@@ -3,22 +3,23 @@
 NJOBS=${1-5}
 FILES_PER_JOB=${2-1}
 MAXEVENTS=${3--1}
+EXT=${4-- }
 echo NJOBS : $NJOBS
 echo FILES_PER_JOB : $FILES_PER_JOB
 echo MAXEVENTS : $MAXEVENTS
 echo ""
-EXECUTABLE=analysis.exe
+EXECUTABLE=analysisMVA.exe
 
 declare -a SourceFiles=(\
 "fileList/bphSkimmed.fls" \
 )
 
 declare -a tagArr=(\
-"bphSkimmed" \
+"bphSkimmedMVA" \
 )
 
 declare -a AnalysisOption=(\
-1 \
+2 \
 )
 
 declare -a CfgTemplate=(\
@@ -33,15 +34,15 @@ for i in "${!tagArr[@]}"; do
     ANALYSIS_OPT=${AnalysisOption[$i]}
     CFG_TEMPLATE=${CfgTemplate[$i]}
     set -x
-    ./makeCondorJobForAnalysis.py \
+    ./misc/makeCondorJobForAnalysis.py \
         $EXECUTABLE \
         $src \
         $CFG_TEMPLATE \
         $ANALYSIS_OPT \
-        $PWD/results/Data/$TAG \
+        $PWD/results/Data/$TAG$EXT \
         $NJOBS \
         $FILES_PER_JOB \
         $MAXEVENTS \
-        $TAG
+        $TAG$EXT
     set +x
 done

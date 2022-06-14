@@ -11,13 +11,16 @@ all:	$(TARGET)
 main : src/main.cc  src/BMMGAnalysis.cc 
 	$(CXX) $(CXXFLAGS) -I$(INCPATH) -o $@.exe $<  $(LIBS)
 
-analysisNtupleMaker : src/analysisNtupleMaker.cc src/BMMGAnalysis.cc 
+analysisNtupleMaker : src/analysisNtupleMaker.cc 
 	$(CXX) $(CXXFLAGS) -I$(INCPATH) -o $@.exe $<  $(LIBS)
 
 mcAnalysis : src/mcAnalysis.cc src/BMMGAnalysis.cc 
 	$(CXX) $(CXXFLAGS) -I$(INCPATH) -o $@.exe $<  $(LIBS)
 
 analysis : src/analysis.cc src/BMMGAnalysis.cc 
+	$(CXX) $(CXXFLAGS) -I$(INCPATH) -o $@.exe $<  $(LIBS)
+
+analysisMVA : src/analysisMVA.cc
 	$(CXX) $(CXXFLAGS) -I$(INCPATH) -o $@.exe $<  $(LIBS)
 
 mvaDataMaker : src/mvaDataMaker.cc
@@ -30,6 +33,24 @@ runlumi : src/runLumi.cc
 	$(CXX) $(CXXFLAGS) -I$(INCPATH) -o $@.exe $<  $(LIBS)
 
 mvaTrainer : src/makeMVAModels.cc
+	$(CXX) $(CXXFLAGS) -I$(INCPATH) -o $@.exe $<  $(LIBS)
+
+makeBMMGMVADataTree : src/makeBMMGMVADataTree.cc
+	$(CXX) $(CXXFLAGS) -I$(INCPATH) -o $@.exe $<  $(LIBS)
+
+makeBMMGMVAMCTree : src/makeBMMGMVAMCTree.cc
+	$(CXX) $(CXXFLAGS) -I$(INCPATH) -o $@.exe $<  $(LIBS)
+
+testMVAModels : src/testMVAModels.cc
+	$(CXX) $(CXXFLAGS) -I$(INCPATH) -o $@.exe $<  $(LIBS)
+
+makeDimuonMVADataTree : src/makeDimuonMVADataTree.cc
+	$(CXX) $(CXXFLAGS) -I$(INCPATH) -o $@.exe $<  $(LIBS)
+
+makeDimuonMVAMCTree : src/makeDimuonMVAMCTree.cc
+	$(CXX) $(CXXFLAGS) -I$(INCPATH) -o $@.exe $<  $(LIBS)
+
+treeSkimmer: src/treeSkimmer.cc
 	$(CXX) $(CXXFLAGS) -I$(INCPATH) -o $@.exe $<  $(LIBS)
 
 clean :
